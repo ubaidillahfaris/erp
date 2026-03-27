@@ -7,7 +7,6 @@ import { index as bomIndex, update } from '@/actions/App/Http/Controllers/BOMCon
 import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
 import CreatableSelect from '@/components/CreatableSelect.vue';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {

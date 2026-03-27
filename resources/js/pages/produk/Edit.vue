@@ -26,7 +26,6 @@ import FormActionButtons from '@/components/FormActionButtons.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
@@ -160,12 +159,16 @@ const handleCreateSatuan = async (nama: string, onCreated?: (id: number) => void
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-2 py-4 border-b border-muted/50">
-                        <Checkbox id="track_stock" :checked="form.track_stock"
-                            @update:checked="(val: boolean) => form.track_stock = val" />
+                    <div class="flex items-center space-x-3 py-4 border-b border-muted/50">
+                        <input 
+                            type="checkbox"
+                            id="track_stock" 
+                            v-model="form.track_stock"
+                            class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary cursor-pointer"
+                        />
                         <div class="grid gap-1.5 leading-none">
                             <label for="track_stock"
-                                class="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                class="text-sm font-bold leading-none cursor-pointer">
                                 Pantau Stok Barang
                             </label>
                             <p class="text-xs text-muted-foreground">
@@ -234,10 +237,14 @@ const handleCreateSatuan = async (nama: string, onCreated?: (id: number) => void
                         </div>
                     </div>
 
-                            <div class="flex items-center space-x-2">
-                                <Checkbox id="is_active" :checked="form.is_active"
-                                    @update:checked="(val: boolean) => form.is_active = val" />
-                                <Label for="is_active">Produk Aktif</Label>
+                            <div class="flex items-center space-x-3">
+                                <input 
+                                    type="checkbox"
+                                    id="is_active" 
+                                    v-model="form.is_active"
+                                    class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary cursor-pointer"
+                                />
+                                <Label for="is_active" class="cursor-pointer">Produk Aktif</Label>
                             </div>
 
                             <div class="flex items-center justify-end border-t pt-6">

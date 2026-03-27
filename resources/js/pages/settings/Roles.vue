@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { 
     Table, TableBody, TableCell, 
     TableHead, TableHeader, TableRow 
@@ -218,30 +217,34 @@ const deleteRole = (id: number) => {
                             <div class="rounded-md border p-4 space-y-4">
                                 <div v-for="menu in menus" :key="menu.id" class="space-y-3">
                                     <div class="flex items-center space-x-2">
-                                        <Checkbox 
+                                        <input 
+                                            type="checkbox"
                                             :id="'menu-' + menu.id" 
                                             :checked="isChecked(menu.id)"
-                                            @update:checked="(val) => toggleMenu(menu.id, !!val)"
+                                            @change="(e) => toggleMenu(menu.id, (e.target as HTMLInputElement).checked)"
+                                            class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary"
                                         />
                                         <label 
                                             :for="'menu-' + menu.id"
-                                            class="text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            class="text-sm font-semibold leading-none cursor-pointer"
                                         >
                                             {{ menu.name }}
                                         </label>
                                     </div>
 
                                     <!-- Nested Children -->
-                                    <div v-if="menu.children && menu.children.length > 0" class="ml-6 grid grid-cols-2 gap-2">
+                                    <div v-if="menu.children && menu.children.length > 0" class="ml-6 grid grid-cols-2 gap-2 mt-2">
                                         <div v-for="child in menu.children" :key="child.id" class="flex items-center space-x-2">
-                                            <Checkbox 
+                                            <input 
+                                                type="checkbox"
                                                 :id="'menu-' + child.id" 
                                                 :checked="isChecked(child.id)"
-                                                @update:checked="(val) => toggleMenu(child.id, !!val)"
+                                                @change="(e) => toggleMenu(child.id, (e.target as HTMLInputElement).checked)"
+                                                class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary"
                                             />
                                             <label 
                                                 :for="'menu-' + child.id"
-                                                class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                class="text-sm leading-none cursor-pointer"
                                             >
                                                 {{ child.name }}
                                             </label>
