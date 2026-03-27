@@ -41,14 +41,26 @@ onMounted(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div v-if="isLoading" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/80 backdrop-blur-xl">
-                <div class="relative flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-500">
-                    <div class="bg-primary/10 p-4 rounded-2xl ring-1 ring-primary/20 shadow-2xl shadow-primary/10">
-                        <AppLogo class="h-12 w-12 text-primary" />
+            <div v-if="isLoading" class="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-2xl">
+                <div class="flex flex-col items-center gap-8 animate-in fade-in zoom-in duration-700">
+                    <!-- Premium Logo Container -->
+                    <div class="group relative">
+                        <!-- Orbiting Ring Animation -->
+                        <div class="absolute -inset-4 rounded-full border border-primary/20 animate-[spin_4s_linear_infinite]" />
+                        <div class="absolute -inset-4 rounded-full border border-primary/10 animate-[spin_6s_linear_reverse_infinite]" />
+                        
+                        <div class="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-primary shadow-2xl shadow-primary/20 ring-1 ring-white/20 transition-transform duration-500 group-hover:scale-110">
+                            <AppLogo :is-icon-only="true" class="h-10 w-10 text-primary-foreground" />
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2 text-muted-foreground font-medium animate-pulse">
-                        <Loader2 class="h-4 w-4 animate-spin" />
-                        <span>Menyiapkan Dashboard...</span>
+
+                    <!-- Status Indicator -->
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="flex items-center gap-3 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 shadow-sm animate-pulse">
+                            <Loader2 class="h-4 w-4 text-primary animate-spin" />
+                            <span class="text-sm font-semibold tracking-wide text-primary uppercase">Initializing Systems</span>
+                        </div>
+                        <p class="text-xs text-muted-foreground font-medium opacity-50">Menyiapkan Dashboard Martous...</p>
                     </div>
                 </div>
             </div>

@@ -37,21 +37,6 @@ const sidebarNavItems = computed((): NavItem[] => {
         },
     ];
 
-    if (isSuperAdmin.value) {
-        items.push(
-            {
-                title: 'User Management',
-                href: '/settings/users',
-                icon: Users,
-            },
-            {
-                title: 'Role Management',
-                href: '/settings/roles',
-                icon: ShieldCheck,
-            }
-        );
-    }
-
     return items;
 });
 
