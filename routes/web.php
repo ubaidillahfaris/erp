@@ -1,18 +1,18 @@
 <?php
 
-use App\Http\Controllers\ProdukController;
-use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\BOMController;
-use App\Http\Controllers\RestockController;
-use App\Http\Controllers\PengeluaranController;
-use App\Http\Controllers\VendorController;
 use App\Http\Controllers\JournalController;
-use App\Http\Controllers\ProfitLossController;
+use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\ProfitLossController;
 use App\Http\Controllers\QuickCreateSatuanController;
+use App\Http\Controllers\RestockController;
+use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -20,7 +20,7 @@ Route::inertia('/', 'Welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     // POS (Point of Sale) - Accessible by both superadmin and cashier
     Route::get('pos', [PosController::class, 'index'])->name('pos.index');
     Route::post('pos', [PosController::class, 'store'])->name('pos.store');
@@ -51,4 +51,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

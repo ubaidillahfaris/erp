@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Produk;
+use Illuminate\Support\Facades\Gate;
 use App\Models\Restock;
 use App\Models\Production;
 use App\Models\StockMovement;
@@ -49,6 +50,12 @@ class AppServiceProvider extends ServiceProvider
         Pengeluaran::observe(PengeluaranObserver::class);
         Sale::observe(SaleObserver::class);
         SaleItem::observe(SaleItemObserver::class);
+
+        // Implicitly grant "Super Admin" role all permissions
+        // This works in the app by using gate-related functions like auth()->user->can() and @can()
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('superadmin') ? true : null;
+        });
     }
 
     /**

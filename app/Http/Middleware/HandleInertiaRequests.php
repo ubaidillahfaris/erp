@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\RoleService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -48,6 +49,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'menus' => $request->user() ? app(RoleService::class)->getAuthorizedMenus($request->user()) : [],
         ];
     }
 }

@@ -22,6 +22,7 @@ class RoleAndPermissionSeeder extends Seeder
         $permissions = [
             'view dashboard',
             'manage users',
+            'manage roles',
             'manage products',
             'manage vendors',
             'manage stock',

@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\MenuSeeder;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class RoleAccessTest extends TestCase
@@ -14,33 +16,63 @@ class RoleAccessTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Seed roles
-        Role::create(['name' => 'superadmin']);
-        Role::create(['name' => 'cashier']);
+
+        // Seed roles, permissions and menus
+        $this->seed(RoleAndPermissionSeeder::class);
+        $this->seed(MenuSeeder::class);
     }
 
-    public function test_superadmin_can_access_dashboard()
+    public function test_superadmin_sees_all_menus_in_inertia_props()
     {
         $user = User::factory()->create();
         $user->assignRole('superadmin');
 
-        $response = $this->actingAs($user)->get(route('dashboard'));
-
-        $response->assertStatus(200);
+        $this->actingAs($user)
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('menus', 13)
+            );
     }
 
-    public function test_cashier_cannot_access_dashboard()
+    public function test_cashier_sees_filtered_menus_in_inertia_props()
     {
         $user = User::factory()->create();
         $user->assignRole('cashier');
 
-        $response = $this->actingAs($user)->get(route('dashboard'));
-
-        $response->assertStatus(403);
+        $this->actingAs($user)
+            ->get(route('pos.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('menus', function (Assert $menu) {
+                    $menu->where('0.name', 'Dashboard')
+                        ->where('1.name', 'Penjualan (POS)')
+                        ->etc();
+                })
+            );
     }
 
-    public function test_cashier_can_access_pos()
+    public function test_middleware_blocks_unauthorized_web_request_with_403()
+    {
+        $user = User::factory()->create();
+        $user->assignRole('cashier');
+
+        $response = $this->actingAs($user)->get(route('journal.index'));
+
+        $response->assertForbidden();
+    }
+
+    public function test_middleware_redirects_unauthorized_inertia_request()
+    {
+        $user = User::factory()->create();
+        $user->assignRole('cashier');
+
+        $response = $this->actingAs($user)->get(route('journal.index'), [
+            'X-Inertia' => 'true',
+        ]);
+
+        $response->assertRedirect(route('pos.index'));
+    }
+
+    public function test_middleware_allows_authorized_route()
     {
         $user = User::factory()->create();
         $user->assignRole('cashier');
@@ -48,15 +80,5 @@ class RoleAccessTest extends TestCase
         $response = $this->actingAs($user)->get(route('pos.index'));
 
         $response->assertStatus(200);
-    }
-
-    public function test_cashier_cannot_access_produk()
-    {
-        $user = User::factory()->create();
-        $user->assignRole('cashier');
-
-        $response = $this->actingAs($user)->get(route('produk.index'));
-
-        $response->assertStatus(403);
     }
 }
