@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Bom extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'produk_id',
+        'sku',
+        'nama',
+        'is_active',
+        'expected_yield',
+        'auto_deduct_on_sale',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'auto_deduct_on_sale' => 'boolean',
+        ];
+    }
+
+    /**
+     * Get the finished product that owns the BOM.
+     */
+    public function produk(): BelongsTo
+    {
+        return $this->belongsTo(Produk::class, 'produk_id');
+    }
+
+    /**
+     * Get the items (ingredients) for the BOM.
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(BomItem::class);
+    }
+}

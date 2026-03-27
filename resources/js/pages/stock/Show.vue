@@ -1,0 +1,180 @@
+<script setup lang="ts">
+import { Head, Link } from '@inertiajs/vue3';
+import { ArrowLeft, ArrowUpCircle, ArrowDownCircle, Info } from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
+import DataTablePagination from '@/components/DataTablePagination.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import type { BreadcrumbItem } from '@/types';
+import { ref, watch } from 'vue';
+import { router } from '@inertiajs/vue3';
+import debounce from 'lodash/debounce';
+
+const props = defineProps<{
+    produk: any;
+    movements: {
+        data: any[];
+        links: any[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        next_page_url: string | null;
+    };
+    filters: {
+        per_page?: string;
+    }
+}>();
+
+const perPage = ref(props.filters.per_page || String(props.movements.per_page));
+
+watch(perPage, debounce((newPerPage) => {
+    router.get(`/stock/${props.produk.id}`, {
+        per_page: newPerPage
+    }, { preserveState: true, replace: true, preserveScroll: true });
+}, 300));
+
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Stok Inventori', href: '/stock' },
+    { title: props.produk.nama, href: `/stock/${props.produk.id}` },
+];
+
+const formatDate = (dateString: string) => {
+    return new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(new Date(dateString));
+};
+
+const getMovementDetails = (movement: any) => {
+    switch (movement.reference_type) {
+        case 'restock':
+            return { label: 'Restock', color: 'bg-blue-100 text-blue-700', refHref: `/restock/${movement.reference_id}/edit` };
+        case 'production_usage':
+            return { label: 'Pemakaian Produksi', color: 'bg-orange-100 text-orange-700', refHref: `/production` };
+        case 'production_yield':
+            return { label: 'Hasil Produksi', color: 'bg-green-100 text-green-700', refHref: `/production` };
+        case 'adjustment':
+            return { label: 'Penyesuaian Manual', color: 'bg-purple-100 text-purple-700', refHref: null };
+        default:
+            return { label: movement.reference_type || 'Mutasi', color: 'bg-gray-100 text-gray-700', refHref: null };
+    }
+};
+</script>
+
+<template>
+<Head :title="`Histori Stok - ${produk.nama}`" />
+
+<AppLayout :breadcrumbs="breadcrumbs">
+    <div class="p-6 flex flex-col gap-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <Link href="/stock" class="hover:bg-muted p-2 rounded-full transition-colors">
+                    <ArrowLeft class="h-6 w-6" />
+                </Link>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">Histori Mutasi Stok</h1>
+                    <p class="text-muted-foreground">{{ produk.nama }} ({{ produk.sku }})</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-6 bg-card border rounded-lg px-6 py-3 shadow-sm">
+                <div class="text-center border-r pr-6">
+                    <p class="text-xs text-muted-foreground uppercase font-semibold">Saldo Saat Ini</p>
+                    <p class="text-3xl font-black text-primary">
+                        {{ parseFloat(produk.stock?.balance || 0).toLocaleString('id-ID') }}
+                    </p>
+                </div>
+                <div class="text-left">
+                    <p class="text-xs text-muted-foreground uppercase font-semibold">Satuan</p>
+                    <p class="text-lg font-bold">{{ produk.satuan?.nama }}</p>
+                </div>
+            </div>
+        </div>
+
+        <Card class="border-0 rounded-none shadow-none bg-transparent">
+            <CardHeader class="px-0 pt-0">
+                <CardTitle>Histori Pergerakan</CardTitle>
+                <CardDescription>Daftar lengkap transaksi masuk dan keluar untuk produk ini.</CardDescription>
+            </CardHeader>
+            <CardContent class="px-0">
+                <div class="rounded-lg border bg-card shadow-sm overflow-hidden">
+                    <!-- Top Pagination -->
+                    <DataTablePagination :paginator="movements" v-model:perPage="perPage"
+                        class="border-b bg-card px-4 pt-4" />
+
+                    <Table>
+                        <TableHeader>
+                            <TableRow class="bg-muted/50">
+                                <TableHead class="w-[200px]">Tanggal & Waktu</TableHead>
+                                <TableHead>Tipe Mutasi</TableHead>
+                                <TableHead class="text-right">Masuk / Keluar</TableHead>
+                                <TableHead>Referensi / Keterangan</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="m in movements.data" :key="m.id"
+                                class="hover:bg-muted/20 transition-colors">
+                                <TableCell class="text-sm font-medium">
+                                    {{ formatDate(m.created_at) }}
+                                </TableCell>
+                                <TableCell>
+                                    <div class="flex flex-col gap-1">
+                                        <Badge variant="secondary"
+                                            :class="['w-fit font-bold uppercase text-[10px] tracking-tight px-1.5 py-0', getMovementDetails(m).color]">
+                                            {{ getMovementDetails(m).label }}
+                                        </Badge>
+                                    </div>
+                                </TableCell>
+                                <TableCell class="text-right font-mono text-base">
+                                    <div class="flex items-center justify-end gap-2"
+                                        :class="m.type === 'in' ? 'text-green-600' : 'text-destructive'">
+                                        <ArrowUpCircle v-if="m.type === 'in'" class="h-4 w-4" />
+                                        <ArrowDownCircle v-else class="h-4 w-4" />
+                                        <span class="font-bold">
+                                            {{ (m.type === 'in' ? '+' : '-') }} {{
+                                                parseFloat(m.jumlah).toLocaleString('id-ID') }}
+                                        </span>
+                                        <span class="text-xs text-muted-foreground font-sans">{{ m.satuan?.nama
+                                        }}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div class="flex flex-col gap-0.5">
+                                        <p class="text-sm">{{ m.keterangan || '-' }}</p>
+                                        <p v-if="m.reference_type && m.reference_id"
+                                            class="text-xs text-muted-foreground italic flex items-center gap-1">
+                                            <Info class="h-3 w-3" />
+                                            Source: {{ m.reference_type }} #{{ m.reference_id }}
+                                        </p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                            <TableRow v-if="movements.data.length === 0">
+                                <TableCell colspan="4" class="h-32 text-center text-muted-foreground">
+                                    Belum ada histori pergerakan stok.
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <!-- Bottom Pagination -->
+                <DataTablePagination :paginator="movements" v-model:perPage="perPage" class="mt-4" />
+            </CardContent>
+        </Card>
+    </div>
+</AppLayout>
+</template>
