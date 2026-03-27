@@ -1,24 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Search, History, Settings2, AlertTriangle, CheckCircle2, Loader2, Plus, Minus, MoreHorizontal, ShoppingCart, TestTube, SplitSquareHorizontal } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { ref, watch } from 'vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -27,8 +15,20 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
@@ -80,11 +80,11 @@ const adjustmentForm = useForm({
 const getConversionRatio = (fromId: any, toId: any) => {
     if (String(fromId) === String(toId) || !fromId || !toId) return 1.0;
 
-    let queue: [any, number][] = [[fromId, 1.0]];
-    let visited = new Set([String(fromId)]);
+    const queue: [any, number][] = [[fromId, 1.0]];
+    const visited = new Set([String(fromId)]);
 
     while (queue.length > 0) {
-        let [currentId, currentRatio] = queue.shift()!;
+        const [currentId, currentRatio] = queue.shift()!;
         if (String(currentId) === String(toId)) return currentRatio;
 
         // Direct

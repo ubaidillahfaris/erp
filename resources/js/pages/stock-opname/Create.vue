@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import debounce from 'lodash/debounce';
 import { Save, CheckCircle, ArrowLeft, Search, AlertCircle, Loader2 } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { ref, watch, computed } from 'vue';
+import DataTablePagination from '@/components/DataTablePagination.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
     Table,
     TableBody,
@@ -14,12 +17,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import DataTablePagination from '@/components/DataTablePagination.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { ref, watch, computed } from 'vue';
-import debounce from 'lodash/debounce';
 
 const props = defineProps<{
     produks: {

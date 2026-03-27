@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { ArrowLeft } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { index, store } from '@/actions/App/Http/Controllers/PengeluaranController';
+import CreatableSelect from '@/components/CreatableSelect.vue';
+import FormActionButtons from '@/components/FormActionButtons.vue';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import CreatableSelect from '@/components/CreatableSelect.vue';
-import { ref } from 'vue';
-import InputError from '@/components/InputError.vue';
-import FormActionButtons from '@/components/FormActionButtons.vue';
-import { ArrowLeft } from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { index, store } from '@/actions/App/Http/Controllers/PengeluaranController';
 const expenseTypes = ref([
     { id: 'Listrik', nama: 'Listrik' },
     { id: 'Air & Galon', nama: 'Air & Galon' },

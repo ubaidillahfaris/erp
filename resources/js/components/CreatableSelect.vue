@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { Check, ChevronsUpDown, Plus, Loader2 } from 'lucide-vue-next';
 import {
     ComboboxRoot,
     ComboboxInput,
@@ -13,7 +13,7 @@ import {
     ComboboxAnchor,
     ComboboxPortal
 } from 'reka-ui';
-import { Check, ChevronsUpDown, Plus, Loader2 } from 'lucide-vue-next';
+import { ref, computed, watch } from 'vue';
 import { cn } from '@/lib/utils';
 
 interface Option {

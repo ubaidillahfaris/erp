@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import { 
     Search, ShoppingCart, Plus, Minus, 
     CreditCard, Banknote, QrCode, X, 
     Package, History, Landmark
 } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ref, computed } from 'vue';
+import { toast } from 'vue-sonner';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { 
     Dialog, DialogContent, DialogHeader, DialogTitle, 
     DialogFooter, DialogTrigger, DialogDescription 
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
-import { toast } from 'vue-sonner';
 
 const props = defineProps<{
     produks: any[];

@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { Plus, Trash2, ArrowLeft } from 'lucide-vue-next';
+import { ref, watch, onMounted } from 'vue';
+import { index as satuanIndex, update as satuanUpdate } from '@/actions/App/Http/Controllers/SatuanController';
+import CreatableSelect from '@/components/CreatableSelect.vue';
+import FormActionButtons from '@/components/FormActionButtons.vue';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import InputError from '@/components/InputError.vue';
-import FormActionButtons from '@/components/FormActionButtons.vue';
-import type { BreadcrumbItem } from '@/types';
-import { index as satuanIndex, update as satuanUpdate } from '@/actions/App/Http/Controllers/SatuanController';
-import { Plus, Trash2, ArrowLeft } from 'lucide-vue-next';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
     satuan: {

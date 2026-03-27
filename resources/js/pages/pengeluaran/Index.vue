@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, router, WhenVisible } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import DataTablePagination from '@/components/DataTablePagination.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import debounce from 'lodash/debounce';
 import { Plus, Search, FileText } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import debounce from 'lodash/debounce';
+import DataTablePagination from '@/components/DataTablePagination.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{

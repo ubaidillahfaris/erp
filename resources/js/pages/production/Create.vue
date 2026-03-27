@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { watch, ref } from 'vue';
 import axios from 'axios';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { ArrowLeft } from 'lucide-vue-next';
+import { watch, ref } from 'vue';
+import bomIndexAction from '@/actions/App/Http/Controllers/BOMController';
+import { store, index } from '@/actions/App/Http/Controllers/ProductionController';
+import CreatableSelect from '@/components/CreatableSelect.vue';
+import FormActionButtons from '@/components/FormActionButtons.vue';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import CreatableSelect from '@/components/CreatableSelect.vue';
-import InputError from '@/components/InputError.vue';
-import FormActionButtons from '@/components/FormActionButtons.vue';
-import { ArrowLeft } from 'lucide-vue-next';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { store, index } from '@/actions/App/Http/Controllers/ProductionController';
-import bomIndexAction from '@/actions/App/Http/Controllers/BOMController';
 
 const props = defineProps<{
     boms: Array<any>;

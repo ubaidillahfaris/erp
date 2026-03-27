@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
+import debounce from 'lodash/debounce';
 import { ArrowLeft, ArrowUpCircle, ArrowDownCircle, Info } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { ref, watch } from 'vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
     Table,
     TableBody,
@@ -14,10 +16,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
-import debounce from 'lodash/debounce';
 
 const props = defineProps<{
     produk: any;

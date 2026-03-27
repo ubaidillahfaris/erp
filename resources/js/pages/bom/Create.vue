@@ -21,6 +21,12 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
+interface BOMItem {
+    produk_id: string;
+    satuan_id: string | number | null;
+    jumlah: number;
+}
+
 const props = defineProps<{
     produks: any[];
     bahanBakus: any[];
@@ -44,7 +50,7 @@ const form = useForm({
     expected_yield: 1,
     auto_deduct_on_sale: false,
     items: [
-        { produk_id: '', satuan_id: null, jumlah: 1 }
+        { produk_id: '', satuan_id: null, jumlah: 1 } as BOMItem
     ]
 });
 
@@ -54,7 +60,7 @@ const selectedProdukSatuan = computed(() => {
 });
 
 const addItem = () => {
-    form.items.push({ produk_id: '', satuan_id: '', jumlah: 1 });
+    form.items.push({ produk_id: '', satuan_id: null, jumlah: 1 } as BOMItem);
 };
 
 const removeItem = (index: number) => {
@@ -199,21 +205,17 @@ const submit = () => {
                                 <Input id="expected_yield" type="number" step="0.0001" min="0.0001"
                                     v-model="form.expected_yield" />
                                 <span class="text-muted-foreground whitespace-nowrap min-w-8">{{ selectedProdukSatuan
-                                }}</span>
+                                    }}</span>
                             </div>
                             <p v-if="form.errors.expected_yield" class="text-sm text-destructive">{{
                                 form.errors.expected_yield }}</p>
                             <p class="text-xs text-muted-foreground">Jumlah barang jadi yang dihasilkan dari komposisi
                                 di bawah.</p>
                         </div>
-                        
+
                         <div class="flex items-center space-x-2 py-4 border-t border-muted/50 mt-4">
-                            <input 
-                                id="auto_deduct_on_sale" 
-                                type="checkbox" 
-                                v-model="form.auto_deduct_on_sale"
-                                class="size-4 rounded border-input accent-primary transition-all cursor-pointer"
-                            />
+                            <input id="auto_deduct_on_sale" type="checkbox" v-model="form.auto_deduct_on_sale"
+                                class="size-4 rounded border-input accent-primary transition-all cursor-pointer" />
                             <div class="grid gap-1.5 leading-none">
                                 <label for="auto_deduct_on_sale"
                                     class="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -261,9 +263,9 @@ const submit = () => {
                                     <Input type="number" step="0.0001" v-model="item.jumlah" />
                                 </TableCell>
                                 <TableCell>
-                                    <CreatableSelect v-model="item.satuan_id" :options="localSatuans" placeholder="Satuan"
-                                        hide-label hide-error display-expr="simbol"
-                                        @create="(nama) => handleCreateSatuan(nama, (id) => item.satuan_id = id.toString())" />
+                                    <CreatableSelect v-model="item.satuan_id" :options="localSatuans"
+                                        placeholder="Satuan" hide-label hide-error display-expr="simbol"
+                                        @create="(nama: string) => handleCreateSatuan(nama, (id: number) => item.satuan_id = id)" />
                                 </TableCell>
                                 <TableCell class="text-right whitespace-nowrap">
                                     {{ formatCurrency(getItemCost(item)) }}

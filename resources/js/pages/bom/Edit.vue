@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { index as bomIndex, update } from '@/actions/App/Http/Controllers/BOMController';
+import axios from 'axios';
 import { Plus, Trash2, ArrowLeft, Save, Info } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { computed } from 'vue';
+import { index as bomIndex, update } from '@/actions/App/Http/Controllers/BOMController';
+import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
+import CreatableSelect from '@/components/CreatableSelect.vue';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -15,11 +18,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import CreatableSelect from '@/components/CreatableSelect.vue';
-import axios from 'axios';
-import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+
+interface BOMItem {
+    produk_id: string;
+    satuan_id: string | number | null;
+    jumlah: number;
+}
 
 const props = defineProps<{ bom: any; produks: any[]; bahanBakus: any[]; satuans: any[]; conversions: any[]; latest_production_yield?: number | null; }>();
 
@@ -40,7 +46,7 @@ const form = useForm({
         produk_id: item.produk_id.toString(),
         satuan_id: item.satuan_id ? item.satuan_id.toString() : null,
         jumlah: Number(item.jumlah)
-    }))
+    })) as BOMItem[]
 });
 
 const selectedProdukSatuan = computed(() => {
@@ -60,7 +66,7 @@ const syncYield = () => {
 };
 
 const addItem = () => {
-    form.items.push({ produk_id: '', satuan_id: '', jumlah: 1 });
+    form.items.push({ produk_id: '', satuan_id: null, jumlah: 1 } as BOMItem);
 };
 
 const removeItem = (index: number | string) => {
@@ -288,7 +294,7 @@ const submit = () => {
                                 <TableCell>
                                     <CreatableSelect v-model="item.satuan_id" :options="satuans" placeholder="Satuan"
                                         hide-label hide-error display-expr="simbol"
-                                        @create="(nama) => handleCreateSatuan(nama, (id) => item.satuan_id = id.toString())" />
+                                        @create="(nama: string) => handleCreateSatuan(nama, (id: number) => item.satuan_id = id)" />
                                 </TableCell>
                                 <TableCell class="text-right whitespace-nowrap">
                                     {{ formatCurrency(getItemCost(item)) }}

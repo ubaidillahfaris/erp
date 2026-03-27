@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import CreatableSelect from '@/components/CreatableSelect.vue';
 import axios from 'axios';
-import { Checkbox } from '@/components/ui/checkbox';
-import InputError from '@/components/InputError.vue';
-import FormActionButtons from '@/components/FormActionButtons.vue';
 import { ArrowLeft } from 'lucide-vue-next';
-import type { BreadcrumbItem } from '@/types';
 import { store, index } from '@/actions/App/Http/Controllers/ProdukController';
 import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
+import CreatableSelect from '@/components/CreatableSelect.vue';
+import FormActionButtons from '@/components/FormActionButtons.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/AppLayout.vue';
+import type { BreadcrumbItem } from '@/types';
 const props = defineProps<{
     satuans: Array<{
         id: number;

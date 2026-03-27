@@ -1,19 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import CreatableSelect from '@/components/CreatableSelect.vue';
 import axios from 'axios';
-import InputError from '@/components/InputError.vue';
-import FormActionButtons from '@/components/FormActionButtons.vue';
 import { ArrowLeft } from 'lucide-vue-next';
-import type { BreadcrumbItem } from '@/types';
-import { index, update as updateAction } from '@/actions/App/Http/Controllers/ProdukController';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 const formatCurrency = (value: number | string) => {
     return new Intl.NumberFormat('id-ID').format(Number(value));
@@ -29,8 +18,19 @@ const productTypes = [
     { value: 'raw_material', label: 'Bahan Baku (Raw Material)' },
 ];
 
-import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
 import { edit as editBomAction, create as createBomAction } from '@/actions/App/Http/Controllers/BOMController';
+import { index, update as updateAction } from '@/actions/App/Http/Controllers/ProdukController';
+import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
+import CreatableSelect from '@/components/CreatableSelect.vue';
+import FormActionButtons from '@/components/FormActionButtons.vue';
+import InputError from '@/components/InputError.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },

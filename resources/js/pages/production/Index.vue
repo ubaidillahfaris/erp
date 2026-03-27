@@ -2,13 +2,14 @@
 import { Head, Link, router, WhenVisible } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Plus, Search, Edit2, Trash2, Loader2, PlayCircle, CheckCircle2, RotateCcw, Eye, MoreHorizontal } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { ref, watch } from 'vue';
+import { index, create, show, edit, destroy } from '@/actions/App/Http/Controllers/ProductionController';
 import DataTablePagination from '@/components/DataTablePagination.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -17,9 +18,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { index, create, show, edit, destroy } from '@/actions/App/Http/Controllers/ProductionController';
-import { ref, watch } from 'vue';
 
 const props = defineProps<{
     productions: {

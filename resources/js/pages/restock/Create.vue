@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { index as restockIndex, store } from '@/actions/App/Http/Controllers/RestockController';
 import { Plus, Trash2, ArrowLeft, Save } from 'lucide-vue-next';
-import AppLayout from '@/layouts/AppLayout.vue';
+import { computed } from 'vue';
+import { index as restockIndex, store } from '@/actions/App/Http/Controllers/RestockController';
+import CreatableSelect from '@/components/CreatableSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,9 +15,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
-import { computed } from 'vue';
 
 const props = defineProps<{ 
     bahanBakus: any[]; 
