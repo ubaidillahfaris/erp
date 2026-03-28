@@ -1,3 +1,9 @@
+<script lang="ts">
+// Module-level: persists across component remounts during SPA navigation
+let hasInitialized = false;
+export { hasInitialized };
+</script>
+
 <script setup lang="ts">
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
@@ -20,13 +26,15 @@ withDefaults(defineProps<Props>(), {
 
 useToasts();
 
-const isLoading = ref(true);
+const isLoading = ref(!hasInitialized);
 
 onMounted(() => {
-    // Brief delay for the "WOW" effect and to ensure Inertia props are fully ready
-    setTimeout(() => {
-        isLoading.value = false;
-    }, 800);
+    if (!hasInitialized) {
+        setTimeout(() => {
+            isLoading.value = false;
+            hasInitialized = true;
+        }, 800);
+    }
 });
 </script>
 
