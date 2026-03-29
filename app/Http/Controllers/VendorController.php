@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use App\Models\Vendor;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +29,14 @@ class VendorController extends Controller
     }
 
     /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Vendor/Create');
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -37,6 +44,8 @@ class VendorController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'alamat' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'telepon' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'keterangan' => 'nullable|string',
@@ -44,7 +53,14 @@ class VendorController extends Controller
 
         Vendor::create($request->all());
 
-        return back()->with('success', 'Vendor berhasil ditambahkan.');
+        return to_route('vendor.index')->with('success', 'Vendor berhasil ditambahkan.');
+    }
+
+    public function edit(Vendor $vendor): Response
+    {
+        return Inertia::render('Vendor/Edit', [
+            'vendor' => $vendor,
+        ]);
     }
 
     /**
@@ -55,6 +71,8 @@ class VendorController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'alamat' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'telepon' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'keterangan' => 'nullable|string',
@@ -62,7 +80,7 @@ class VendorController extends Controller
 
         $vendor->update($request->all());
 
-        return back()->with('success', 'Vendor berhasil diperbarui.');
+        return to_route('vendor.index')->with('success', 'Vendor berhasil diperbarui.');
     }
 
     /**

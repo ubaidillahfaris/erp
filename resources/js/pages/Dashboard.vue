@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import Map from '@/components/Map.vue';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 import {
     Banknote, AlertTriangle, FlaskConical, TrendingDown,
     Plus, ChevronRight, MoreHorizontal,
-    FileText, PackageOpen
+    FileText, PackageOpen, MapPin, Store, Filter
 } from 'lucide-vue-next';
 
 // Define layout persistently to prevent Sidebar remounting
@@ -30,9 +31,19 @@ type SaleInfo = {
     total_amount: string | number;
 };
 
+type VendorInfo = {
+    id: number;
+    nama: string;
+    alamat: string;
+    latitude: number;
+    longitude: number;
+    telepon: string;
+};
+
 const props = defineProps<{
     metrics: MetricData;
     recent_sales: SaleInfo[];
+    vendors: VendorInfo[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -95,18 +106,64 @@ const metricCards = computed(() => [
         dotColor: 'bg-violet-400',
     },
 ]);
+
+const showVendors = ref(true);
+
+const mapMarkers = computed(() => {
+    const markers: Array<{position: [number, number], title: string, content: string}> = [];
+    
+    if (showVendors.value && props.vendors) {
+        props.vendors.forEach(v => {
+            markers.push({
+                position: [v.latitude, v.longitude],
+                title: v.nama,
+                content: `
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[11px] font-medium leading-tight">${v.alamat}</p>
+                        <p class="text-[10px] text-accent font-bold mt-1">${v.telepon}</p>
+                    </div>
+                `
+            });
+        });
+    }
+    
+    return markers;
+});
 </script>
 
 <template>
 <Head title="Dashboard" />
 
 <!-- Map panel -->
+<div class="flex flex-row h-[600px] bg-[#F8F9FA] relative">
+    <div class="w-full p-4 relative h-full">
+        <!-- Floating Filter -->
+        <div class="absolute top-8 right-8 z-[1001] flex flex-col gap-2">
+            <div class="bg-white/90 backdrop-blur-md border border-border/40 p-1.5 rounded-xl shadow-xl flex items-center gap-1">
+                <button 
+                    @click="showVendors = !showVendors"
+                    :class="[
+                        'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-300',
+                        showVendors ? 'bg-accent text-white shadow-md' : 'bg-secondary text-muted-foreground hover:bg-muted'
+                    ]"
+                >
+                    <Store class="w-3.5 h-3.5" />
+                    Vendors
+                    <div v-if="showVendors" class="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                </button>
+            </div>
+        </div>
 
-<!-- End map panel -->
-<div class="flex flex-col lg:flex-col min-h-[calc(100vh-64px)] bg-[#F8F9FA]">
-    <div class="w-full bg-white rounded-md">
-        Map
+        <Map 
+            :center="[-6.200000, 106.816666]" 
+            :zoom="13" 
+            :markers="mapMarkers"
+        />
     </div>
+</div>
+<!-- End map panel -->
+<div class="flex flex-col lg:flex-row min-h-[calc(100vh-64px)] bg-[#F8F9FA]">
+
     <!-- first Head Pane -->
 
 
@@ -122,7 +179,7 @@ const metricCards = computed(() => [
                 </div>
             </div>
             <div>
-                <h2 class="text-lg font-bold text-foreground">{{ user?.name || 'Admin User' }}</h2>
+                <h2 class="text-lg font-bold text-foreground">{{ user?.name || 'User' }}</h2>
                 <p class="text-[11px] font-bold text-muted-foreground/50 uppercase tracking-widest mt-1">Group ID |
                     #5236852</p>
             </div>
@@ -206,7 +263,8 @@ const metricCards = computed(() => [
             <div class="flex flex-col gap-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-md font-bold text-foreground">Recent Transactions</h3>
-                    <Link href="/reports" class="text-[11px] font-bold uppercase text-accent hover:underline">View All
+                    <Link href="/reports" class="text-[11px] font-bold uppercase text-accent hover:underline">View
+                        All
                     </Link>
                 </div>
 

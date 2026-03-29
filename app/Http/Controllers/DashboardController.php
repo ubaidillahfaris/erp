@@ -6,6 +6,7 @@ use App\Models\Pengeluaran;
 use App\Models\Production;
 use App\Models\Sale;
 use App\Models\Stock;
+use App\Models\Vendor;
 use Carbon\Carbon;
 use Inertia\Inertia;
 
@@ -32,6 +33,11 @@ class DashboardController extends Controller
         // Recent Sales untuk data list
         $recentSales = Sale::latest()->take(5)->get();
 
+        // Vendors with location
+        $vendors = Vendor::whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
         return Inertia::render('Dashboard', [
             'metrics' => [
                 'sales_today' => (float) $salesToday,
@@ -40,6 +46,7 @@ class DashboardController extends Controller
                 'expenses_today' => (float) $expensesToday,
             ],
             'recent_sales' => $recentSales,
+            'vendors' => $vendors,
         ]);
     }
 }

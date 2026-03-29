@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, router, Link } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Plus, Search, Edit2, Trash2, MoreHorizontal, Building2, Phone, Mail, MapPin, Info, ChevronRight } from 'lucide-vue-next';
+import { Plus, Search, Edit2, Trash2, MoreHorizontal, Building2, Phone, Mail, MapPin, Info, ChevronRight, Map as MapIcon } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Table,
     TableBody,
@@ -17,7 +15,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { useConfirm } from '@/composables/useConfirm';
@@ -55,52 +52,6 @@ watch([search, perPage], debounce(([newSearch, newPerPage]) => {
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
-// Form Logic
-const showModal = ref(false);
-const editingVendor = ref<any>(null);
-
-const form = useForm({
-    nama: '',
-    alamat: '',
-    telepon: '',
-    email: '',
-    keterangan: '',
-});
-
-const openCreateModal = () => {
-    editingVendor.value = null;
-    form.reset();
-    showModal.value = true;
-};
-
-const openEditModal = (vendor: any) => {
-    editingVendor.value = vendor;
-    form.nama = vendor.nama;
-    form.alamat = vendor.alamat;
-    form.telepon = vendor.telepon;
-    form.email = vendor.email;
-    form.keterangan = vendor.keterangan;
-    showModal.value = true;
-};
-
-const submitForm = () => {
-    if (editingVendor.value) {
-        form.put(`/vendors/${editingVendor.value.id}`, {
-            onSuccess: () => {
-                showModal.value = false;
-                form.reset();
-            },
-        });
-    } else {
-        form.post('/vendors', {
-            onSuccess: () => {
-                showModal.value = false;
-                form.reset();
-            },
-        });
-    }
-};
-
 const { confirmDialog } = useConfirm();
 
 const deleteVendor = async (id: number) => {
@@ -123,9 +74,11 @@ const deleteVendor = async (id: number) => {
             </div>
             <div class="flex items-end justify-between">
                 <h1 class="text-3xl font-bold tracking-tight text-foreground">Vendor & Supplier</h1>
-                <Button @click="openCreateModal" class="h-10 px-5 text-xs font-bold rounded-lg bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20 gap-2 transition-all">
-                    <Plus class="h-4 w-4" />
-                    Tambah Vendor
+                <Button as-child class="h-10 px-5 text-xs font-bold rounded-lg bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20 gap-2 transition-all">
+                    <Link href="/vendors/create">
+                        <Plus class="h-4 w-4" />
+                        Tambah Vendor
+                    </Link>
                 </Button>
             </div>
         </div>
@@ -197,9 +150,11 @@ const deleteVendor = async (id: number) => {
                             </TableCell>
                             <TableCell class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-1">
-                                    <button @click="openEditModal(vendor)" class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
-                                        <ChevronRight class="h-4 w-4" />
-                                    </button>
+                                    <Button variant="ghost" size="icon" as-child class="h-8 w-8 text-muted-foreground/30 hover:bg-secondary hover:text-foreground">
+                                        <Link :href="`/vendors/${vendor.id}/edit`">
+                                            <ChevronRight class="h-4 w-4" />
+                                        </Link>
+                                    </Button>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger as-child>
                                             <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
@@ -209,8 +164,10 @@ const deleteVendor = async (id: number) => {
                                         <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-lg border-border/40">
                                             <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-2 py-1.5">Opsi Vendor</DropdownMenuLabel>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem @click="openEditModal(vendor)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
-                                                <Edit2 class="h-3.5 w-3.5 text-muted-foreground/60" /> Edit Detail
+                                            <DropdownMenuItem as-child>
+                                                <Link :href="`/vendors/${vendor.id}/edit`" class="flex items-center w-full rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
+                                                    <Edit2 class="h-3.5 w-3.5 text-muted-foreground/60" /> Edit Detail
+                                                </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem @click="deleteVendor(vendor.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive font-medium focus:text-destructive focus:bg-destructive/5">
                                                 <Trash2 class="h-3.5 w-3.5" /> Hapus Vendor
@@ -238,95 +195,4 @@ const deleteVendor = async (id: number) => {
             </div>
         </div>
     </div>
-
-    <!-- Modal Form -->
-    <Dialog v-model:open="showModal">
-        <DialogContent class="sm:max-w-[540px] rounded-2xl border-none p-0 overflow-hidden shadow-2xl">
-            <DialogHeader class="px-8 pt-8 pb-6 bg-accent text-white">
-                <div class="flex items-center gap-4">
-                    <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                        <Building2 class="h-6 w-6" />
-                    </div>
-                    <div class="flex flex-col gap-0.5">
-                        <DialogTitle class="text-xl font-bold">{{ editingVendor ? 'Edit Profil Vendor' : 'Tambah Vendor Baru' }}</DialogTitle>
-                        <DialogDescription class="text-white/60 text-[11px] font-bold uppercase tracking-widest">
-                            Informasi Rekanan Bisnis
-                        </DialogDescription>
-                    </div>
-                </div>
-            </DialogHeader>
-
-            <form @submit.prevent="submitForm" class="p-8 flex flex-col gap-6 bg-white">
-                <div class="flex flex-col gap-2">
-                    <Label for="nama" class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Nama Perusahaan / Personal *</Label>
-                    <Input 
-                        id="nama" 
-                        v-model="form.nama" 
-                        required 
-                        placeholder="Contoh: PT. Sumber Makmur"
-                        class="h-12 rounded-xl border-border/40 bg-[#F8F9FA] focus:border-accent/30 shadow-none transition-all font-medium text-[13px]"
-                        :disabled="form.processing"
-                    />
-                    <div v-if="form.errors.nama" class="text-[11px] font-semibold text-destructive px-1">{{ form.errors.nama }}</div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="flex flex-col gap-2">
-                        <Label for="telepon" class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Nomor Telepon</Label>
-                        <Input 
-                            id="telepon" 
-                            v-model="form.telepon" 
-                            placeholder="08..."
-                            class="h-12 rounded-xl border-border/40 bg-[#F8F9FA] focus:border-accent/30 shadow-none transition-all font-medium text-[13px]"
-                            :disabled="form.processing"
-                        />
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <Label for="email" class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Email</Label>
-                        <Input 
-                            id="email" 
-                            type="email"
-                            v-model="form.email" 
-                            placeholder="vendor@mail.com"
-                            class="h-12 rounded-xl border-border/40 bg-[#F8F9FA] focus:border-accent/30 shadow-none transition-all font-medium text-[13px]"
-                            :disabled="form.processing"
-                        />
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <Label for="alamat" class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Alamat Lengkap</Label>
-                    <Textarea 
-                        id="alamat" 
-                        v-model="form.alamat" 
-                        rows="3"
-                        placeholder="Jl. Raya No. 123..."
-                        class="rounded-xl border-border/40 bg-[#F8F9FA] focus:border-accent/30 shadow-none transition-all resize-none font-medium text-[13px] p-4"
-                        :disabled="form.processing"
-                    />
-                </div>
-
-                <div class="flex flex-col gap-2">
-                    <Label for="keterangan" class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 px-1">Catatan Tambahan</Label>
-                    <Textarea 
-                        id="keterangan" 
-                        v-model="form.keterangan" 
-                        rows="2"
-                        placeholder="Syarat pembayaran, PIC, dll..."
-                        class="rounded-xl border-border/40 bg-[#F8F9FA] focus:border-accent/30 shadow-none transition-all resize-none font-medium text-[13px] p-4"
-                        :disabled="form.processing"
-                    />
-                </div>
-
-                <DialogFooter class="mt-4 pt-6 border-t border-border/10 flex items-center justify-end gap-3">
-                    <Button type="button" variant="ghost" class="text-xs font-bold uppercase tracking-widest h-11 px-6 rounded-lg" @click="showModal = false" :disabled="form.processing">
-                        Batal
-                    </Button>
-                    <Button type="submit" class="h-11 px-10 text-xs font-bold uppercase tracking-widest bg-accent text-white hover:bg-accent/90 rounded-lg shadow-lg shadow-accent/10 transition-all" :disabled="form.processing">
-                        {{ editingVendor ? 'Update Profile' : 'Simpan Vendor' }}
-                    </Button>
-                </DialogFooter>
-            </form>
-        </DialogContent>
-    </Dialog>
 </template>
