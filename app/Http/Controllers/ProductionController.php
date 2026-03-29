@@ -19,14 +19,22 @@ class ProductionController extends Controller
 {
     public function index(Request $request): Response
     {
+        $perPage = $request->input('per_page', 10);
+        $sort = $request->input('sort') ?: 'tanggal';
+        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
+
         $query = Production::with(['produk', 'bom', 'items.produk.currentPrice']);
 
         if ($request->has('search') && !empty($request->search)) {
-            $query->where('sku', 'like', "%{$request->search}%");
+            $query->where('sku', 'like', "%{$request->search}%")
+                  ->orWhereHas('produk', function ($q) use ($request) {
+                      $q->where('nama', 'like', "%{$request->search}%");
+                  });
         }
 
-        $perPage = $request->input('per_page', 10);
-        $paginator = $query->latest('tanggal')->latest('id')->paginate($perPage)->withQueryString();
+        $paginator = $query->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
 
         // Add estimated cost for in-progress productions
         $paginator->getCollection()->transform(function ($production) {
@@ -51,7 +59,7 @@ class ProductionController extends Controller
 
         return inertia('production/Index', [
             'productions' => $paginator,
-            'filters' => $request->only(['search', 'per_page']),
+            'filters' => $request->only(['search', 'per_page', 'sort', 'direction']),
         ]);
     }
 
@@ -134,7 +142,7 @@ class ProductionController extends Controller
         });
 
         if ($production->status === 'in_progress' && is_null($production->total_cost)) {
-            $production->total_cost = $estimatedTotal;
+            $production->total_cost = (float) $estimatedTotal;
             $production->is_estimated = true;
         }
 
@@ -216,5 +224,33 @@ class ProductionController extends Controller
         $production->delete();
 
         return redirect()->route('production.index')->with('success', 'Produksi berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:productions,id',
+        ]);
+
+        $deletedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($request->ids as $id) {
+            $production = Production::find($id);
+            if ($production && $production->status !== 'completed') {
+                $production->delete();
+                $deletedCount++;
+            } else {
+                $skippedCount++;
+            }
+        }
+
+        $message = "{$deletedCount} data produksi berhasil dihapus.";
+        if ($skippedCount > 0) {
+            $message .= " {$skippedCount} data dilewati karena sudah selesai.";
+        }
+
+        return to_route('production.index')->with($deletedCount > 0 ? 'success' : 'error', $message);
     }
 }

@@ -17,11 +17,13 @@ class JournalController extends Controller
         $endDate = $request->input('end_date', now()->endOfDay()->format('Y-m-d'));
 
         $perPage = $request->integer('per_page', 10);
+        $sort = $request->input('sort') ?: 'tanggal';
+        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         $journals = Journal::query()
             ->with(['reference'])
             ->whereBetween('tanggal', [$startDate, $endDate])
-            ->orderBy('tanggal', 'desc')
+            ->orderBy($sort, $direction)
             ->orderBy('id', 'desc')
             ->paginate($perPage)
             ->withQueryString();
@@ -37,6 +39,8 @@ class JournalController extends Controller
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'per_page' => $perPage,
+                'sort' => $sort,
+                'direction' => $direction,
             ],
         ]);
     }

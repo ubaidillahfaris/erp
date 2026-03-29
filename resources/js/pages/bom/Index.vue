@@ -3,7 +3,8 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Package, Search, Plus, Trash2, Edit, MoreHorizontal, BookOpen, ChevronRight } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { index, create, edit, destroy } from '@/actions/App/Http/Controllers/BOMController';
+import { index, create, edit, destroy, bulkDestroy } from '@/actions/App/Http/Controllers/BOMController';
+import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -28,6 +29,8 @@ const props = defineProps<{
     filters: {
         search?: string;
         per_page?: string;
+        sort?: string;
+        direction?: string;
     };
 }>();
 
@@ -38,22 +41,44 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const perPage = ref(props.filters.per_page || String(props.boms.per_page));
+const sort = ref(props.filters.sort || '');
+const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'reference', label: 'Reference & Produk' },
-    { key: 'info', label: 'Recipe Info' },
+    { key: 'reference', label: 'Reference & Produk', sortKey: 'sku' },
+    { key: 'info', label: 'Recipe Info', sortKey: 'nama' },
     { key: 'estimation', label: 'Estimation', align: 'center' },
     { key: 'status', label: 'Status', align: 'center' },
 ] as const;
 
-watch([search, perPage], debounce(([newSearch, newPerPage]) => {
+watch([search, perPage, sort, direction], debounce(([newSearch, newPerPage, newSort, newDirection]) => {
     router.get('/bom', {
-        search: newSearch,
-        per_page: newPerPage
+        search: newSearch || undefined,
+        per_page: newPerPage,
+        sort: newSort || undefined,
+        direction: newSort ? (newDirection || 'asc') : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
 const { confirmDialog } = useConfirm();
+
+const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
+    sort.value = payload.key || '';
+    direction.value = payload.direction || '';
+};
+
+const handleBulkDelete = async (ids: (string | number)[]) => {
+    if (await confirmDialog('Hapus Resep Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} resep yang dipilih?`)) {
+        router.post(bulkDestroy().url, {
+            _method: 'DELETE',
+            ids: ids
+        }, {
+            onSuccess: () => {
+                // Flash messages handled by server
+            }
+        });
+    }
+};
 
 const deleteBom = async (id: number) => {
     if (await confirmDialog('Hapus Resep BOM?', 'Apakah Anda yakin ingin menghapus resep produksi ini? Data yang terkait mungkin ikut terhapus.')) {
@@ -88,6 +113,10 @@ const formatCurrency = (value: number) => {
                 :columns="columns"
                 v-model:search="search"
                 v-model:perPage="perPage"
+                :sort="sort"
+                :direction="direction as any"
+                @sort-change="handleSortChange"
+                @bulk-delete="handleBulkDelete"
                 search-placeholder="Cari resep atau produk..."
                 toolbar-title="Master Formula"
                 :title="'Recipes & BOM'"

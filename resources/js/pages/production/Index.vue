@@ -3,7 +3,8 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Plus, Search, Trash2, CheckCircle2, RotateCcw, Eye, MoreHorizontal, ChevronRight, Boxes, History } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { index, create, show, edit, destroy } from '@/actions/App/Http/Controllers/ProductionController';
+import { index, create, show, edit, destroy, bulkDestroy } from '@/actions/App/Http/Controllers/ProductionController';
+import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -28,6 +29,8 @@ const props = defineProps<{
     filters: {
         search?: string;
         per_page?: string;
+        sort?: string;
+        direction?: string;
     };
     flash?: {
         success?: string;
@@ -42,22 +45,44 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const perPage = ref(props.filters.per_page || String(props.productions.per_page));
+const sort = ref(props.filters.sort || '');
+const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'batch', label: 'Batch & Produk' },
+    { key: 'batch', label: 'Batch & Produk', sortKey: 'sku' },
     { key: 'yield', label: 'Yield (Target / Aktual)', align: 'center' },
-    { key: 'cost', label: 'Total Biaya', align: 'right' },
+    { key: 'cost', label: 'Total Biaya', align: 'right', sortKey: 'total_cost' },
     { key: 'status', label: 'Status', align: 'center' },
 ] as const;
 
-watch([search, perPage], debounce(([newSearch, newPerPage]) => {
+watch([search, perPage, sort, direction], debounce(([newSearch, newPerPage, newSort, newDirection]) => {
     router.get(index().url, {
-        search: newSearch,
-        per_page: newPerPage
+        search: newSearch || undefined,
+        per_page: newPerPage,
+        sort: newSort || undefined,
+        direction: newSort ? (newDirection || 'asc') : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
 const { confirmDialog } = useConfirm();
+
+const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
+    sort.value = payload.key || '';
+    direction.value = payload.direction || '';
+};
+
+const handleBulkDelete = async (ids: (string | number)[]) => {
+    if (await confirmDialog('Hapus Produksi Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} data produksi yang dipilih? (Produksi yang sudah selesai akan dilewati).`)) {
+        router.post(bulkDestroy().url, {
+            _method: 'DELETE',
+            ids: ids
+        }, {
+            onSuccess: () => {
+                // Flash messages handled by server
+            }
+        });
+    }
+};
 
 const deleteProduction = async (id: number) => {
     if (await confirmDialog('Hapus Catatan Produksi?', 'Apakah Anda yakin ingin menghapus catatan produksi ini? Tindakan ini tidak dapat dibatalkan.')) {
@@ -129,6 +154,10 @@ const getStatusStyles = (status: string) => {
                 :columns="columns"
                 v-model:search="search"
                 v-model:perPage="perPage"
+                :sort="sort"
+                :direction="direction as any"
+                @sort-change="handleSortChange"
+                @bulk-delete="handleBulkDelete"
                 search-placeholder="Cari No. Referensi..."
                 toolbar-title="Riwayat Batch"
                 :title="'Production Logs'"

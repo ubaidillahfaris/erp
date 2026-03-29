@@ -19,6 +19,10 @@ class RestockController extends Controller
      */
     public function index(Request $request): Response
     {
+        $perPage = $request->input('per_page', 10);
+        $sort = $request->input('sort') ?: 'tanggal';
+        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
+
         $query = Restock::with(['vendor'])->withCount('items');
 
         if ($request->has('search') && !empty($request->search)) {
@@ -35,11 +39,13 @@ class RestockController extends Controller
             $query->where('status_pembayaran', $request->status);
         }
 
-        $perPage = $request->input('per_page', 10);
+        $restocks = $query->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return Inertia::render('restock/Index', [
-            'restocks' => $query->latest('tanggal')->latest('id')->paginate($perPage)->withQueryString(),
-            'filters' => $request->only(['search', 'status', 'per_page']),
+            'restocks' => $restocks,
+            'filters' => $request->only(['search', 'status', 'per_page', 'sort', 'direction']),
         ]);
     }
 
@@ -157,6 +163,18 @@ class RestockController extends Controller
         $restock->delete();
 
         return redirect()->route('restock.index')->with('success', 'Data Restock berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:restocks,id',
+        ]);
+
+        Restock::whereIn('id', $request->ids)->delete();
+
+        return to_route('restock.index')->with('success', count($request->ids) . ' data restock berhasil dihapus.');
     }
 
     /**

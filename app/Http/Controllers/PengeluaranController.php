@@ -12,19 +12,27 @@ class PengeluaranController extends Controller
      */
     public function index(Request $request)
     {
+        $perPage = $request->input('per_page', 10);
+        $sort = $request->input('sort') ?: 'tanggal';
+        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
+
         $query = Pengeluaran::query();
 
         if ($request->has('search')) {
-            $query->where('nama_pengeluaran', 'like', '%' . $request->search . '%')
-                ->orWhere('keterangan', 'like', '%' . $request->search . '%')
-                ->orWhere('jenis_pengeluaran', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_pengeluaran', 'like', '%' . $request->search . '%')
+                  ->orWhere('keterangan', 'like', '%' . $request->search . '%')
+                  ->orWhere('jenis_pengeluaran', 'like', '%' . $request->search . '%');
+            });
         }
 
-        $perPage = $request->input('per_page', 10);
+        $pengeluarans = $query->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return inertia('pengeluaran/Index', [
-            'pengeluarans' => $query->latest('tanggal')->latest('id')->paginate($perPage)->withQueryString(),
-            'filters' => $request->only(['search', 'per_page']),
+            'pengeluarans' => $pengeluarans,
+            'filters' => $request->only(['search', 'per_page', 'sort', 'direction']),
         ]);
     }
 
@@ -70,5 +78,17 @@ class PengeluaranController extends Controller
 
         return redirect()->route('pengeluaran.index')
             ->with('success', 'Catatan pengeluaran berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:pengeluarans,id',
+        ]);
+
+        Pengeluaran::whereIn('id', $request->ids)->delete();
+
+        return to_route('pengeluaran.index')->with('success', count($request->ids) . ' catatan pengeluaran berhasil dihapus.');
     }
 }

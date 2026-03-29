@@ -165,12 +165,9 @@ const deleteVendor = async (id: number) => {
 
             <template #actions="{ row }">
                 <div class="flex items-center justify-end gap-1 px-2">
-                    <Button variant="ghost" size="icon" as-child
-                        class="h-8 w-8 text-muted-foreground/30 hover:bg-secondary hover:text-foreground rounded-lg">
-                        <Link :href="`/vendors/${row.id}/edit`">
+                        <Link :href="`/vendors/${row.id}/edit`" class="block w-full h-full flex items-center justify-center">
                             <ChevronRight class="h-4 w-4" />
                         </Link>
-                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
                             <button

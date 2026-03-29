@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Plus, Search, FileText, ChevronRight, ReceiptText } from 'lucide-vue-next';
+import { Plus, Search, FileText, ChevronRight, ReceiptText, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { index as pengeluaranIndex, bulkDestroy as pengeluaranBulkDestroy } from '@/actions/App/Http/Controllers/PengeluaranController';
+import { useConfirm } from '@/composables/useConfirm';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +30,8 @@ const props = defineProps<{
     filters: {
         search?: string;
         per_page?: string;
+        sort?: string;
+        direction?: string;
     };
 }>();
 
@@ -38,19 +42,43 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const perPage = ref(props.filters.per_page || String(props.pengeluarans.per_page));
+const sort = ref(props.filters.sort || '');
+const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'detail', label: 'Detail Pengeluaran' },
-    { key: 'kategori', label: 'Kategori & Tanggal' },
-    { key: 'nominal', label: 'Nominal', align: 'right' },
+    { key: 'detail', label: 'Detail Pengeluaran', sortKey: 'nama_pengeluaran' },
+    { key: 'kategori', label: 'Kategori & Tanggal', sortKey: 'tanggal' },
+    { key: 'nominal', label: 'Nominal', align: 'right', sortKey: 'nominal' },
 ] as const;
 
-watch([search, perPage], debounce(([newSearch, newPerPage]) => {
-    router.get('/pengeluaran', {
-        search: newSearch,
-        per_page: newPerPage
+watch([search, perPage, sort, direction], debounce(([newSearch, newPerPage, newSort, newDirection]) => {
+    router.get(pengeluaranIndex().url, {
+        search: newSearch || undefined,
+        per_page: newPerPage,
+        sort: newSort || undefined,
+        direction: newSort ? (newDirection || 'asc') : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
+
+const { confirmDialog } = useConfirm();
+
+const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
+    sort.value = payload.key || '';
+    direction.value = payload.direction || '';
+};
+
+const handleBulkDelete = async (ids: (string | number)[]) => {
+    if (await confirmDialog('Hapus Pengeluaran Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} catatan pengeluaran yang dipilih?`)) {
+        router.post(pengeluaranBulkDestroy().url, {
+            _method: 'DELETE',
+            ids: ids
+        }, {
+            onSuccess: () => {
+                // Flash messages handled by server
+            }
+        });
+    }
+};
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -98,8 +126,14 @@ const formatDate = (dateString: string) => {
                 :columns="columns"
                 v-model:search="search"
                 v-model:perPage="perPage"
+                :sort="sort"
+                :direction="direction as any"
+                @sort-change="handleSortChange"
+                @bulk-delete="handleBulkDelete"
                 search-placeholder="Cari keterangan / jenis..."
                 toolbar-title="Riwayat Pengeluaran"
+                :title="'Cash Outflow'"
+                :total-count="pengeluarans.total"
             >
                 <template #cell(detail)="{ row }">
                     <div class="flex items-center gap-4">

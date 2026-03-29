@@ -3,6 +3,8 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Plus, Search, Filter, Trash2, Edit2, MoreHorizontal, Check, ChevronRight, ShoppingCart, History } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import { index as restockIndex, bulkDestroy as restockBulkDestroy } from '@/actions/App/Http/Controllers/RestockController';
+import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -30,6 +32,8 @@ const props = defineProps<{
         vendor?: string;
         status?: string;
         per_page?: string;
+        sort?: string;
+        direction?: string;
     };
 }>();
 
@@ -42,25 +46,47 @@ const search = ref(props.filters.search || '');
 const vendor = ref(props.filters.vendor || '');
 const status = ref(props.filters.status || 'semua');
 const perPage = ref(props.filters.per_page || String(props.restocks.per_page));
+const sort = ref(props.filters.sort || '');
+const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'vendor', label: 'Timestamp & Vendor' },
+    { key: 'vendor', label: 'Timestamp & Vendor', sortKey: 'tanggal' },
     { key: 'info', label: 'Keterangan' },
     { key: 'items', label: 'Items', align: 'center' },
-    { key: 'cost', label: 'Total Biaya', align: 'right' },
+    { key: 'cost', label: 'Total Biaya', align: 'right', sortKey: 'total_biaya' },
     { key: 'status', label: 'Status', align: 'center' },
 ] as const;
 
-watch([search, vendor, status, perPage], debounce(([newSearch, newVendor, newStatus, newPerPage]) => {
-    router.get('/restock', {
-        search: newSearch,
-        vendor: newVendor,
-        status: newStatus,
-        per_page: newPerPage
+watch([search, vendor, status, perPage, sort, direction], debounce(([newSearch, newVendor, newStatus, newPerPage, newSort, newDirection]) => {
+    router.get(restockIndex().url, {
+        search: newSearch || undefined,
+        vendor: newVendor || undefined,
+        status: newStatus === 'semua' ? undefined : newStatus,
+        per_page: newPerPage,
+        sort: newSort || undefined,
+        direction: newSort ? (newDirection || 'asc') : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
 const { confirmDialog } = useConfirm();
+
+const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
+    sort.value = payload.key || '';
+    direction.value = payload.direction || '';
+};
+
+const handleBulkDelete = async (ids: (string | number)[]) => {
+    if (await confirmDialog('Hapus Restock Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} data restock yang dipilih?`)) {
+        router.post(restockBulkDestroy().url, {
+            _method: 'DELETE',
+            ids: ids
+        }, {
+            onSuccess: () => {
+                // Flash messages handled by server
+            }
+        });
+    }
+};
 
 const settleRestock = async (id: number) => {
     if (await confirmDialog('Lunasi Pembayaran?', 'Apakah Anda yakin ingin melunasi pembayaran restock ini? Sisa hutang akan dibayarkan sepenuhnya.')) {
@@ -129,6 +155,10 @@ const formatStatus = (status: string) => {
                 :columns="columns"
                 v-model:search="search"
                 v-model:perPage="perPage"
+                :sort="sort"
+                :direction="direction as any"
+                @sort-change="handleSortChange"
+                @bulk-delete="handleBulkDelete"
                 search-placeholder="Cari nota..."
                 toolbar-title="Inventory Replenishment"
                 :title="'Restock Logs'"

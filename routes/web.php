@@ -30,19 +30,35 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     Route::middleware('role:superadmin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+        // Master Data
         Route::delete('produk/bulk-destroy', [ProdukController::class, 'bulkDestroy'])->name('produk.bulk-destroy');
         Route::resource('produk', ProdukController::class)->names('produk');
+
+        Route::delete('satuan/bulk-destroy', [SatuanController::class, 'bulkDestroy'])->name('satuan.bulk-destroy');
         Route::resource('satuan', SatuanController::class);
+        Route::post('satuan/quick', QuickCreateSatuanController::class)->name('satuan.quick');
+
+        Route::delete('vendors/bulk-destroy', [VendorController::class, 'bulkDestroy'])->name('vendor.bulk-destroy');
+        Route::resource('vendors', VendorController::class)->names('vendor');
+
+        Route::delete('bom/bulk-destroy', [BOMController::class, 'bulkDestroy'])->name('bom.bulk-destroy');
         Route::resource('bom', BOMController::class);
+
+        // Procurement & Expenses
+        Route::delete('restock/bulk-destroy', [RestockController::class, 'bulkDestroy'])->name('restock.bulk-destroy');
         Route::resource('restock', RestockController::class);
         Route::post('restock/{restock}/settle', [RestockController::class, 'settle'])->name('restock.settle');
+
+        Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
         Route::resource('pengeluaran', PengeluaranController::class);
-        Route::delete('vendors/bulk-destroy', [VendorController::class, 'bulkDestroy'])->name('vendor.bulk-destroy');
-        Route::resource('vendors', VendorController::class)->names('vendor')->parameters(['vendors' => 'vendor']);
+
+        // Production
+        Route::delete('production/bulk-destroy', [ProductionController::class, 'bulkDestroy'])->name('production.bulk-destroy');
+        Route::resource('production', ProductionController::class);
+
+        // Financials & Reports
         Route::get('journal', [JournalController::class, 'index'])->name('journal.index');
         Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
-        Route::resource('production', ProductionController::class);
-        Route::post('satuan/quick', QuickCreateSatuanController::class)->name('satuan.quick');
 
         // Stocks
         Route::get('stock', [StockController::class, 'index'])->name('stock.index');

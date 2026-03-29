@@ -19,15 +19,21 @@ class BOMController extends Controller
      */
     public function index(Request $request): Response|\Illuminate\Http\JsonResponse
     {
-        $query = Bom::with('produk.satuan', 'produk.currentPrice')->latest();
+        $perPage = $request->input('per_page', 10);
+        $sort = $request->input('sort') ?: 'created_at';
+        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
+
+        $query = Bom::with('produk.satuan', 'produk.currentPrice');
 
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('nama', 'like', "%{$search}%")
-                ->orWhere('sku', 'like', "%{$search}%")
-                ->orWhereHas('produk', function ($q) use ($search) {
-                    $q->where('nama', 'like', "%{$search}%");
-                });
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhereHas('produk', function ($pq) use ($search) {
+                      $pq->where('nama', 'like', "%{$search}%");
+                  });
+            });
         }
 
         if ($request->wantsJson()) {
@@ -35,12 +41,13 @@ class BOMController extends Controller
             return response()->json($query->paginate(10));
         }
 
-        $perPage = $request->input('per_page', 10);
-        $boms = $query->paginate($perPage)->withQueryString();
+        $boms = $query->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
 
         return Inertia::render('bom/Index', [
             'boms' => $boms,
-            'filters' => $request->only(['search', 'per_page']),
+            'filters' => $request->only(['search', 'per_page', 'sort', 'direction']),
         ]);
     }
 
@@ -157,5 +164,17 @@ class BOMController extends Controller
         $bom->delete();
 
         return redirect()->route('bom.index')->with('success', 'BOM berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:boms,id',
+        ]);
+
+        Bom::whereIn('id', $request->ids)->delete();
+
+        return to_route('bom.index')->with('success', count($request->ids) . ' BOM berhasil dihapus.');
     }
 }

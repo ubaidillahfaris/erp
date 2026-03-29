@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { debounce } from 'lodash';
 import { Plus, Search, Edit2, Trash2, MoreHorizontal, Ruler, ChevronRight } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { index as satuanIndex, destroy as satuanDestroy } from '@/actions/App/Http/Controllers/SatuanController';
+import { index as satuanIndex, destroy as satuanDestroy, bulkDestroy as satuanBulkDestroy } from '@/actions/App/Http/Controllers/SatuanController';
 import { create as satuanCreate, edit as satuanEdit } from '@/actions/App/Http/Controllers/SatuanController';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,8 @@ const props = defineProps<{
     filters: {
         search?: string;
         per_page?: string;
+        sort?: string;
+        direction?: string;
     };
 }>();
 
@@ -54,24 +56,49 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const perPage = ref(props.filters.per_page || String(props.satuans.per_page));
+const sort = ref(props.filters.sort || '');
+const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'nama_simbol', label: 'Nama & Simbol' },
+    { key: 'nama_simbol', label: 'Nama & Simbol', sortKey: 'nama' },
     { key: 'deskripsi', label: 'Deskripsi' },
 ] as const;
 
 watch(
-    [search, perPage],
-    debounce(([newSearch, newPerPage]) => {
+    [search, perPage, sort, direction],
+    debounce(([newSearch, newPerPage, newSort, newDirection]) => {
         router.get(
             satuanIndex().url,
-            { search: newSearch, per_page: newPerPage },
+            { 
+                search: newSearch || undefined, 
+                per_page: newPerPage,
+                sort: newSort || undefined,
+                direction: newSort ? (newDirection || 'asc') : undefined
+            },
             { preserveState: true, replace: true, preserveScroll: true }
         );
     }, 300)
 );
 
 const { confirmDialog } = useConfirm();
+
+const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
+    sort.value = payload.key || '';
+    direction.value = payload.direction || '';
+};
+
+const handleBulkDelete = async (ids: (string | number)[]) => {
+    if (await confirmDialog('Hapus Satuan Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} satuan yang dipilih?`)) {
+        router.post(satuanBulkDestroy().url, {
+            _method: 'DELETE',
+            ids: ids
+        }, {
+            onSuccess: () => {
+                // Flash messages handled by server
+            }
+        });
+    }
+};
 
 const confirmDelete = async (id: number) => {
     if (await confirmDialog('Hapus Satuan Barang?', 'Apakah Anda yakin ingin menghapus satuan ini? Data yang terkait tidak dapat dikembalikan.')) {
@@ -109,6 +136,10 @@ const confirmDelete = async (id: number) => {
                 :columns="columns"
                 v-model:search="search"
                 v-model:perPage="perPage"
+                :sort="sort"
+                :direction="direction as any"
+                @sort-change="handleSortChange"
+                @bulk-delete="handleBulkDelete"
                 search-placeholder="Cari satuan..."
                 toolbar-title="Daftar Master Satuan"
             >

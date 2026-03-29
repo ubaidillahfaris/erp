@@ -12,22 +12,24 @@ class SatuanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $perPage = request('per_page', 10);
+        $perPage = $request->input('per_page', 10);
+        $sort = $request->input('sort') ?: 'created_at';
+        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         $satuans = Satuan::query()
-            ->when(request('search'), function ($query, $search) {
+            ->when($request->search, function ($query, $search) {
                 $query->where('nama', 'like', "%{$search}%")
                     ->orWhere('simbol', 'like', "%{$search}%");
             })
-            ->latest()
+            ->orderBy($sort, $direction)
             ->paginate($perPage)
             ->withQueryString();
 
         return inertia('satuan/Index', [
             'satuans' => $satuans,
-            'filters' => request()->only(['search', 'per_page']),
+            'filters' => $request->only(['search', 'per_page', 'sort', 'direction']),
         ]);
     }
 
@@ -124,9 +126,41 @@ class SatuanController extends Controller
      */
     public function destroy(Satuan $satuan)
     {
+        if ($satuan->produks()->exists()) {
+            return back()->with('error', 'Satuan tidak bisa dihapus karena sedang digunakan oleh produk.');
+        }
+
         $satuan->delete();
 
         return redirect()->route('satuan.index')
             ->with('success', 'Satuan berhasil dihapus.');
+    }
+
+    public function bulkDestroy(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:satuans,id',
+        ]);
+
+        $deletedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($request->ids as $id) {
+            $satuan = Satuan::find($id);
+            if ($satuan && !$satuan->produks()->exists()) {
+                $satuan->delete();
+                $deletedCount++;
+            } else {
+                $skippedCount++;
+            }
+        }
+
+        $message = "{$deletedCount} satuan berhasil dihapus.";
+        if ($skippedCount > 0) {
+            $message .= " {$skippedCount} satuan dilewati karena sedang digunakan.";
+        }
+
+        return to_route('satuan.index')->with($deletedCount > 0 ? 'success' : 'error', $message);
     }
 }

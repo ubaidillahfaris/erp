@@ -36,6 +36,8 @@ const props = defineProps<{
         start_date: string;
         end_date: string;
         per_page: number;
+        sort?: string;
+        direction?: string;
     };
 }>();
 
@@ -47,24 +49,33 @@ const breadcrumbs: BreadcrumbItem[] = [
 const startDate = ref(props.filters.start_date);
 const endDate = ref(props.filters.end_date);
 const perPage = ref(String(props.filters.per_page || props.journals.per_page));
+const sort = ref(props.filters.sort || '');
+const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'tanggal', label: 'Tanggal' },
+    { key: 'tanggal', label: 'Tanggal', sortKey: 'tanggal' },
     { key: 'category', label: 'Kategori' },
     { key: 'description', label: 'Keterangan' },
     { key: 'via', label: 'Via', align: 'center' },
     { key: 'debit', label: 'Debit (Masuk)', align: 'right' },
     { key: 'kredit', label: 'Kredit (Keluar)', align: 'right' },
-    { key: 'balance', label: 'Saldo', align: 'right' },
+    { key: 'balance', label: 'Saldo', align: 'right', sortKey: 'balance' },
 ] as const;
 
-watch([startDate, endDate, perPage], debounce(([newStart, newEnd, newPerPage]) => {
+watch([startDate, endDate, perPage, sort, direction], debounce(([newStart, newEnd, newPerPage, newSort, newDirection]) => {
     router.get('/journal', {
         start_date: newStart,
         end_date: newEnd,
         per_page: newPerPage,
+        sort: newSort || undefined,
+        direction: newSort ? (newDirection || 'asc') : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 500));
+
+const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
+    sort.value = payload.key || '';
+    direction.value = payload.direction || '';
+};
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -164,8 +175,13 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
             :data="journals"
             :columns="columns"
             v-model:perPage="perPage"
+            :sort="sort"
+            :direction="direction as any"
+            @sort-change="handleSortChange"
             search-placeholder="Cari transaksi..."
             toolbar-title="Entry Transaksi Real-time"
+            :title="'Jurnal Umum'"
+            :total-count="journals.total"
         >
             <template #cell(tanggal)="{ row }">
                 <span class="font-mono text-xs font-bold text-muted-foreground/60">{{ formatDate(row.tanggal) }}</span>
