@@ -10,6 +10,7 @@ import {
     Plus, ChevronRight, MoreHorizontal,
     FileText, PackageOpen, MapPin, Store, Filter
 } from 'lucide-vue-next';
+import PageHeader from '@/components/PageHeader.vue';
 
 // Define layout persistently to prevent Sidebar remounting
 defineOptions({ layout: AppLayout });
@@ -228,16 +229,10 @@ const mapMarkers = computed(() => {
     <div class="flex-1 p-8 overflow-y-auto">
         <div class="flex flex-col gap-8 max-w-6xl mx-auto">
 
-            <!-- Header -->
-            <div class="flex flex-col gap-1">
-                <div
-                    class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
-                    <span>Systems</span>
-                    <ChevronRight class="h-3 w-3" />
-                    <span class="text-foreground/40">Overview</span>
-                </div>
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">Summary Analytics</h1>
-            </div>
+            <PageHeader 
+                title="Summary Analytics" 
+                description="Overview Performa & Operasional Sistem"
+            />
 
             <!-- Metrics -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">

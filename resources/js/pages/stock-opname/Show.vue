@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Calendar, FileText, CheckCircle2, History } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge';
+import PageHeader from '@/components/PageHeader.vue';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -46,27 +47,21 @@ const getStatusVariant = (status: string) => {
 
 <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-10">
-        <!-- Header Section -->
-        <div class="flex items-center justify-between border-b pb-6 border-muted rounded-none">
-            <div class="flex items-center gap-4">
-                <Link href="/stock-opname">
-                    <Button variant="ghost" size="icon" class="rounded-none">
-                        <ArrowLeft class="h-4 w-4" />
-                    </Button>
-                </Link>
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight">Detail Stock Opname</h1>
-                    <p class="text-sm text-muted-foreground mt-1">Hasil perbandingan stok fisik dan stok sistem.</p>
+        <PageHeader 
+            title="Detail Stock Opname" 
+            description="Hasil perbandingan stok fisik dan stok sistem"
+            back-href="/stock-opname"
+        >
+            <template #actions>
+                <div class="flex gap-2">
+                    <Link v-if="opname.status === 'draft'" :href="`/stock-opname/${opname.id}/edit`">
+                        <Button class="rounded-none">
+                            Lanjutkan Draft
+                        </Button>
+                    </Link>
                 </div>
-            </div>
-            <div class="flex gap-2">
-                <Link v-if="opname.status === 'draft'" :href="`/stock-opname/${opname.id}/edit`">
-                    <Button class="rounded-none">
-                        Lanjutkan Draft
-                    </Button>
-                </Link>
-            </div>
-        </div>
+            </template>
+        </PageHeader>
 
         <!-- Vertical Content Stack -->
         <div class="flex flex-col gap-10">

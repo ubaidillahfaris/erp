@@ -8,6 +8,7 @@ import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import PageHeader from '@/components/PageHeader.vue';
 import {
     Table,
     TableBody,
@@ -80,29 +81,26 @@ const getMovementDetails = (movement: any) => {
 
 <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <Link href="/stock" class="hover:bg-muted p-2 rounded-full transition-colors">
-                    <ArrowLeft class="h-6 w-6" />
-                </Link>
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight">Histori Mutasi Stok</h1>
-                    <p class="text-muted-foreground">{{ produk.nama }} ({{ produk.sku }})</p>
+        <PageHeader 
+            title="Histori Mutasi Stok" 
+            :description="`${produk.nama} (${produk.sku})`"
+            back-href="/stock"
+        >
+            <template #actions>
+                <div class="flex items-center gap-6 bg-card border border-border/40 rounded-xl px-6 py-3 shadow-sm">
+                    <div class="text-center border-r border-border/20 pr-6">
+                        <p class="text-[9px] text-muted-foreground/50 uppercase font-black tracking-widest">Saldo Saat Ini</p>
+                        <p class="text-2xl font-bold text-foreground">
+                            {{ parseFloat(produk.stock?.balance || 0).toLocaleString('id-ID') }}
+                        </p>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-[9px] text-muted-foreground/50 uppercase font-black tracking-widest">Satuan</p>
+                        <p class="text-sm font-bold text-muted-foreground/80">{{ produk.satuan?.nama }}</p>
+                    </div>
                 </div>
-            </div>
-            <div class="flex items-center gap-6 bg-card border rounded-lg px-6 py-3 shadow-sm">
-                <div class="text-center border-r pr-6">
-                    <p class="text-xs text-muted-foreground uppercase font-semibold">Saldo Saat Ini</p>
-                    <p class="text-3xl font-black text-primary">
-                        {{ parseFloat(produk.stock?.balance || 0).toLocaleString('id-ID') }}
-                    </p>
-                </div>
-                <div class="text-left">
-                    <p class="text-xs text-muted-foreground uppercase font-semibold">Satuan</p>
-                    <p class="text-lg font-bold">{{ produk.satuan?.nama }}</p>
-                </div>
-            </div>
-        </div>
+            </template>
+        </PageHeader>
 
         <Card class="border-0 rounded-none shadow-none bg-transparent">
             <CardHeader class="px-0 pt-0">

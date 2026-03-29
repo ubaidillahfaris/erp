@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, CheckCircle2, PlayCircle, Info, Beaker, Package } from 'lucide-vue-next';
 import { index } from '@/actions/App/Http/Controllers/ProductionController';
 import { Badge } from '@/components/ui/badge';
+import PageHeader from '@/components/PageHeader.vue';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
     Table,
@@ -55,17 +56,12 @@ const formatDate = (dateString: string) => {
 
 <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <Link :href="index().url" class="hover:bg-muted p-2 rounded-full transition-colors">
-                    <ArrowLeft class="h-6 w-6" />
-                </Link>
-                <div>
-                    <h1 class="text-2xl font-bold tracking-tight">Detail Produksi</h1>
-                    <p class="text-muted-foreground">{{ production.sku }} - {{ formatDate(production.created_at) }}</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2">
+        <PageHeader 
+            title="Production Detail" 
+            :description="`${production.sku} - ${formatDate(production.created_at)}`"
+            back-href="/production"
+        >
+            <template #actions>
                 <Badge :variant="production.status === 'completed' ? 'default' : 'secondary'"
                     class="px-3 py-1 scale-110">
                     <span v-if="production.status === 'completed'" class="flex items-center gap-1.5">
@@ -75,8 +71,8 @@ const formatDate = (dateString: string) => {
                         <PlayCircle class="w-4 h-4" /> Diproses
                     </span>
                 </Badge>
-            </div>
-        </div>
+            </template>
+        </PageHeader>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Side: Header Info & Result -->

@@ -142,7 +142,7 @@ const getStatusStyles = (status: string) => {
     <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
         <PageHeader 
             title="Production Logs" 
-            description="Catatan Batch & Manufaktur" 
+            description="Manajemen Batch & Hasil Manufaktur" 
             back-href="/dashboard"
             :count="productions.total"
         />

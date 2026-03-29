@@ -14,6 +14,7 @@ import {
     DialogFooter, DialogTrigger, DialogDescription 
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import PageHeader from '@/components/PageHeader.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
@@ -128,15 +129,12 @@ const formatCurrency = (value: number) => {
         <!-- ====== MAIN CONTENT: Product Selector ====== -->
         <div class="flex-1 flex flex-col p-8 overflow-hidden gap-8">
             
-            <!-- Header section -->
-            <div class="flex flex-col gap-2">
-                <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
-                    <span>Point Of Sales</span>
-                    <ChevronRight class="h-3 w-3" />
-                    <span class="text-foreground/40">Checkout Live</span>
-                </div>
-                <div class="flex items-center justify-between">
-                    <h1 class="text-3xl font-bold tracking-tight text-foreground">Point of Sale</h1>
+            <PageHeader 
+                title="Point of Sale" 
+                description="Terminal Penjualan & Checkout Kasir"
+                back-href="/dashboard"
+            >
+                <template #actions>
                     <div class="relative w-full max-w-sm">
                         <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
                         <Input 
@@ -145,8 +143,8 @@ const formatCurrency = (value: number) => {
                             class="pl-9 h-10 border-border/40 bg-white shadow-sm focus-visible:ring-accent/10 rounded-lg text-sm"
                         />
                     </div>
-                </div>
-            </div>
+                </template>
+            </PageHeader>
 
             <!-- Product Grid -->
             <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import PageHeader from '@/components/PageHeader.vue';
 
 const props = defineProps<{
     report: {
@@ -73,14 +74,12 @@ const handlePrint = () => {
 
 <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-10">
-        <!-- Header Section -->
-        <div class="flex items-center justify-between border-b pb-6 border-muted rounded-none">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight">Laporan Laba Rugi</h1>
-                <p class="text-sm text-muted-foreground mt-1">Ringkasan performa keuangan periode {{
-                    formatDate(startDate) }} - {{ formatDate(endDate) }}.</p>
-            </div>
-            <div class="flex items-center gap-2">
+        <PageHeader 
+            title="Laporan Laba Rugi" 
+            :description="`Ringkasan Performa Periode ${formatDate(startDate)} - ${formatDate(endDate)}`" 
+            back-href="/dashboard"
+        >
+            <template #actions>
                 <div class="flex items-center gap-2 bg-muted/20 p-1 border border-muted">
                     <Input type="date" v-model="startDate"
                         class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs" />
@@ -91,8 +90,8 @@ const handlePrint = () => {
                 <Button variant="outline" size="sm" class="rounded-none h-10 px-4" @click="handlePrint">
                     Cetak Laporan
                 </Button>
-            </div>
-        </div>
+            </template>
+        </PageHeader>
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

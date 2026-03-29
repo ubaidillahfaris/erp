@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { debounce } from 'lodash';
 import { Plus, Search, Edit2, Trash2, MoreHorizontal, Ruler, ChevronRight } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import PageHeader from '@/components/PageHeader.vue';
 import { index as satuanIndex, destroy as satuanDestroy, bulkDestroy as satuanBulkDestroy } from '@/actions/App/Http/Controllers/SatuanController';
 import { create as satuanCreate, edit as satuanEdit } from '@/actions/App/Http/Controllers/SatuanController';
 import DataTablePagination from '@/components/DataTablePagination.vue';
@@ -111,23 +112,12 @@ const confirmDelete = async (id: number) => {
     <Head title="Satuan Barang" />
 
     <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
-        <!-- ====== PAGE HEADER ====== -->
-        <div class="flex flex-col gap-2 max-w-7xl mx-auto w-full">
-            <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
-                <span>Konfigurasi</span>
-                <ChevronRight class="h-3 w-3" />
-                <span class="text-foreground/40">Satuan Barang</span>
-            </div>
-            <div class="flex items-end justify-between">
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">Unit & Satuan</h1>
-                <Link :href="satuanCreate().url">
-                    <Button class="h-10 px-5 text-xs font-bold rounded-lg bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20 gap-2 transition-all">
-                        <Plus class="h-4 w-4" />
-                        Tambah Satuan
-                    </Button>
-                </Link>
-            </div>
-        </div>
+        <PageHeader 
+            title="Unit & Satuan" 
+            description="Manajemen Master Satuan Barang" 
+            back-href="/dashboard"
+            :count="satuans.total"
+        />
 
         <!-- ====== CONTENT AREA ====== -->
         <div class="max-w-7xl mx-auto w-full">
@@ -143,6 +133,14 @@ const confirmDelete = async (id: number) => {
                 search-placeholder="Cari satuan..."
                 toolbar-title="Daftar Master Satuan"
             >
+                <template #header-actions>
+                    <Link :href="satuanCreate().url">
+                        <Button primary>
+                            <Plus class="h-4 w-4" />
+                            Tambah Satuan
+                        </Button>
+                    </Link>
+                </template>
                 <template #cell(nama_simbol)="{ row }">
                     <div class="flex items-center gap-3">
                         <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">

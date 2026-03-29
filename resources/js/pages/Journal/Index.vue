@@ -3,6 +3,7 @@ import { Head, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Search, Calendar, Landmark, ArrowUpCircle, ArrowDownCircle, Info, Receipt, History } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
+import PageHeader from '@/components/PageHeader.vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -106,27 +107,20 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
 <Head title="Jurnal Umum" />
 
 <div class="px-8 py-10 flex flex-col gap-10 font-sans bg-[#F8F9FA] min-h-[calc(100vh-64px)]">
-    <!-- Header Section -->
-    <div class="flex flex-col gap-2 max-w-7xl mx-auto w-full">
-        <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
-            <span>Financials</span>
-            <ChevronRight class="h-3 w-3" />
-            <span class="text-foreground/40">General Ledger</span>
-        </div>
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">Jurnal Umum</h1>
-                <p class="text-sm text-muted-foreground mt-1">Laporan arus kas masuk (Debit) dan keluar (Kredit).</p>
+    <PageHeader 
+        title="Jurnal Umum" 
+        description="Laporan Arus Kas Masuk (Debit) & Keluar (Kredit)" 
+        back-href="/dashboard"
+        :count="journals.total"
+    >
+        <template #actions>
+            <div class="flex items-center gap-2 bg-white p-1 border border-border/40 rounded-lg shadow-sm">
+                <Input type="date" v-model="startDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
+                <span class="text-xs text-muted-foreground font-bold opacity-30 px-1">s/d</span>
+                <Input type="date" v-model="endDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
             </div>
-            <div class="flex items-center gap-2">
-                 <div class="flex items-center gap-2 bg-white p-1 border border-border/40 rounded-lg shadow-sm">
-                    <Input type="date" v-model="startDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
-                    <span class="text-xs text-muted-foreground font-bold opacity-30 px-1">s/d</span>
-                    <Input type="date" v-model="endDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
-                </div>
-            </div>
-        </div>
-    </div>
+        </template>
+    </PageHeader>
 
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto w-full">

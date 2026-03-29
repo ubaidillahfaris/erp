@@ -96,7 +96,12 @@ const deleteVendor = async (id: number) => {
 
 <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
 
-    <PageHeader title="Vendor" description="Database Rekanan" back-href="/dashboard" />
+    <PageHeader 
+        title="Vendor & Supplier" 
+        description="Database Rekanan & Pemasok" 
+        back-href="/dashboard" 
+        :count="vendors.total" 
+    />
     
     <!-- ====== CONTENT AREA ====== -->
     <div class="max-w-7xl mx-auto w-full">

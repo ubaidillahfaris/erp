@@ -5,7 +5,7 @@ import {
     Plus, Shield, ChevronRight, Check, 
     Trash2, Edit2, Loader2, Info
 } from 'lucide-vue-next';
-import Heading from '@/components/Heading.vue';
+import PageHeader from '@/components/PageHeader.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { Button } from '@/components/ui/button';
@@ -128,17 +128,18 @@ const deleteRole = async (id: number) => {
 
         <SettingsLayout>
             <div class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <Heading
-                        variant="small"
-                        title="Role Management"
-                        description="Define user roles and map them to specific application menus."
-                    />
-                    <Button @click="openCreateDialog">
-                        <Plus class="mr-2 h-4 w-4" />
-                        Tambah Role
-                    </Button>
-                </div>
+                <PageHeader 
+                    title="Role Management" 
+                    description="Definisikan role pengguna dan akses menu mereka"
+                    :count="roles.length"
+                >
+                    <template #actions>
+                        <Button primary @click="openCreateDialog">
+                            <Plus class="h-4 w-4" />
+                            Tambah Role
+                        </Button>
+                    </template>
+                </PageHeader>
 
                 <Alert>
                     <Info class="h-4 w-4" />

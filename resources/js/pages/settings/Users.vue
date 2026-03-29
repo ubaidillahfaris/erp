@@ -5,7 +5,7 @@ import {
     Plus, MoreHorizontal, User as UserIcon, 
     Mail, Calendar, Shield, Trash2, Edit2, Loader2 
 } from 'lucide-vue-next';
-import Heading from '@/components/Heading.vue';
+import PageHeader from '@/components/PageHeader.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { Button } from '@/components/ui/button';
@@ -117,17 +117,18 @@ const deleteUser = async (id: number) => {
 
         <SettingsLayout>
             <div class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <Heading
-                        variant="small"
-                        title="User Management"
-                        description="Manage your application users and their roles."
-                    />
-                    <Button @click="openCreateDialog">
-                        <Plus class="mr-2 h-4 w-4" />
-                        Tambah User
-                    </Button>
-                </div>
+                <PageHeader 
+                    title="User Management" 
+                    description="Kelola pengguna aplikasi dan role mereka" 
+                    :count="users.length"
+                >
+                    <template #actions>
+                        <Button primary @click="openCreateDialog">
+                            <Plus class="h-4 w-4" />
+                            Tambah User
+                        </Button>
+                    </template>
+                </PageHeader>
 
                 <div class="rounded-md border bg-card">
                     <Table>

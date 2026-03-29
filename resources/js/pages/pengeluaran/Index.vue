@@ -3,7 +3,8 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Plus, Search, FileText, ChevronRight, ReceiptText, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { index as pengeluaranIndex, bulkDestroy as pengeluaranBulkDestroy } from '@/actions/App/Http/Controllers/PengeluaranController';
+import PageHeader from '@/components/PageHeader.vue';
+import { index as pengeluaranIndex, bulkDestroy as pengeluaranBulkDestroy, create as pengeluaranCreate } from '@/actions/App/Http/Controllers/PengeluaranController';
 import { useConfirm } from '@/composables/useConfirm';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Button } from '@/components/ui/button';
@@ -102,22 +103,12 @@ const formatDate = (dateString: string) => {
 
     <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
         <!-- ====== PAGE HEADER ====== -->
-        <div class="flex flex-col gap-2 max-w-7xl mx-auto w-full">
-            <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
-                <span>Operational</span>
-                <ChevronRight class="h-3 w-3" />
-                <span class="text-foreground/40">Pengeluaran Lain</span>
-            </div>
-            <div class="flex items-end justify-between">
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">Cash Outflow</h1>
-                <Link href="/pengeluaran/create">
-                    <Button class="h-10 px-5 text-xs font-bold rounded-lg bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20 gap-2 transition-all">
-                        <Plus class="h-4 w-4" />
-                        Catat Expense
-                    </Button>
-                </Link>
-            </div>
-        </div>
+        <PageHeader 
+            title="Cash Outflow" 
+            description="Manajemen Pengeluaran Operasional" 
+            back-href="/dashboard"
+            :count="pengeluarans.total"
+        />
 
         <!-- ====== CONTENT AREA ====== -->
         <div class="max-w-7xl mx-auto w-full">
@@ -135,6 +126,14 @@ const formatDate = (dateString: string) => {
                 :title="'Cash Outflow'"
                 :total-count="pengeluarans.total"
             >
+                <template #header-actions>
+                    <Link :href="pengeluaranCreate().url">
+                        <Button primary>
+                            <Plus class="h-4 w-4" />
+                            Tambah Pengeluaran
+                        </Button>
+                    </Link>
+                </template>
                 <template #cell(detail)="{ row }">
                     <div class="flex items-center gap-4">
                         <div class="h-10 w-10 shrink-0 rounded-xl bg-orange-50 flex items-center justify-center text-orange-400 border border-orange-100/50 transition-colors group-hover:bg-orange-500 group-hover:text-white group-hover:border-transparent">

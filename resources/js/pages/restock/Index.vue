@@ -142,7 +142,7 @@ const formatStatus = (status: string) => {
 
     <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
         <PageHeader 
-            title="Restock Logs" 
+            title="Restock Registry" 
             description="Manajemen Stok & Pembelian" 
             back-href="/dashboard"
             :count="restocks.total"

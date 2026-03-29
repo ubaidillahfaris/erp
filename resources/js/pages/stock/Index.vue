@@ -3,6 +3,7 @@ import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Search, History, Settings2, AlertTriangle, CheckCircle2, Loader2, MoreHorizontal, ShoppingCart, TestTube, ChevronRight, Package, Boxes, Warehouse } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
+import PageHeader from '@/components/PageHeader.vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -164,17 +165,12 @@ const getStockStatus = (produk: any) => {
     <Head title="Inventory & Stock Control" />
 
     <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
-        <!-- ====== PAGE HEADER ====== -->
-        <div class="flex flex-col gap-2 max-w-7xl mx-auto w-full">
-            <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
-                <span>Warehouse</span>
-                <ChevronRight class="h-3 w-3" />
-                <span class="text-foreground/40">Inventory Levels</span>
-            </div>
-            <div class="flex items-end justify-between">
-                <h1 class="text-3xl font-bold tracking-tight text-foreground">Stock Ledger</h1>
-            </div>
-        </div>
+        <PageHeader 
+            title="Stock Ledger" 
+            description="Manajemen Saldo & Inventaris Gudang" 
+            back-href="/dashboard"
+            :count="produks.total"
+        />
 
         <!-- ====== CONTENT AREA ====== -->
         <div class="max-w-7xl mx-auto w-full">
