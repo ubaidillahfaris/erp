@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Price;
 use App\Models\Produk;
+use App\Models\Sale;
 use App\Models\Satuan;
 use App\Models\Stock;
 use App\Models\User;
-use App\Models\Price;
-use App\Models\Sale;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,7 +17,7 @@ class SalesProcessTest extends TestCase
 
     public function test_can_process_sale_and_automate_everything()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $this->actingAs($user);
 
         $satuan = Satuan::create(['nama' => 'pcs', 'simbol' => 'pcs']);
@@ -56,13 +56,13 @@ class SalesProcessTest extends TestCase
                     'qty' => 5,
                     'price' => 2500,
                     'cost' => 1000,
-                ]
+                ],
             ],
         ];
 
         $response = $this->post(route('pos.store'), $payload);
         $response->assertRedirect(route('pos.index'));
-        
+
         // 1. Assert Sale created
         $this->assertDatabaseHas('sales', [
             'total_amount' => 12500,
@@ -92,7 +92,7 @@ class SalesProcessTest extends TestCase
         $this->assertDatabaseHas('journals', [
             'reference_type' => Sale::class,
             'reference_id' => $sale->id,
-            'category' => 'hpp', 
+            'category' => 'hpp',
             'type' => 'kredit',
             'amount' => 5000,
         ]);

@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Bom;
+use App\Models\Price;
 use App\Models\Produk;
 use App\Models\Satuan;
 use App\Models\Stock;
 use App\Models\User;
-use App\Models\Price;
-use App\Models\Bom;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,12 +15,16 @@ class BomSalesDeductionTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $pcs, $gram, $user;
+    protected $pcs;
+
+    protected $gram;
+
+    protected $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
         $this->pcs = Satuan::create(['nama' => 'pcs', 'simbol' => 'pcs']);
         $this->gram = Satuan::create(['nama' => 'gram', 'simbol' => 'g']);

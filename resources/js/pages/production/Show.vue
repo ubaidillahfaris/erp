@@ -111,11 +111,22 @@ const formatDate = (dateString: string) => {
                                 </p>
                             </div>
                         </div>
-                        <div class="pt-4 border-t" v-if="production.status === 'completed'">
-                            <p class="text-xs text-muted-foreground uppercase mb-1">Total Biaya Produksi</p>
+                        <div class="pt-4 border-t" v-if="production.status === 'completed' || production.status === 'in_progress'">
+                            <div class="flex items-center justify-between mb-1">
+                                <p class="text-xs text-muted-foreground uppercase">
+                                    {{ production.is_estimated ? 'Estimasi Biaya' : 'Total Biaya Produksi' }}
+                                </p>
+                                <Badge v-if="production.is_estimated" variant="outline" class="rounded-none text-[10px] bg-orange-50 text-orange-600 border-orange-200 uppercase px-1.5 py-0">Estimasi</Badge>
+                            </div>
                             <p class="text-3xl font-black text-primary">{{ formatCurrency(production.total_cost) }}</p>
-                            <p class="text-xs text-muted-foreground mt-1">HPP per {{ production.produk?.satuan?.nama }}:
-                                {{ formatCurrency(production.total_cost / (production.actual_yield || 1)) }}</p>
+                            <p class="text-xs text-muted-foreground mt-1" v-if="production.status === 'completed'">
+                                HPP per {{ production.produk?.satuan?.nama }}:
+                                {{ formatCurrency(production.total_cost / (production.actual_yield || 1)) }}
+                            </p>
+                            <p class="text-xs text-muted-foreground mt-1" v-else>
+                                Target HPP per {{ production.produk?.satuan?.nama }}:
+                                {{ formatCurrency(production.total_cost / (production.target_yield || 1)) }}
+                            </p>
                         </div>
                     </CardContent>
                 </Card>
@@ -159,7 +170,10 @@ const formatDate = (dateString: string) => {
                                             {{ formatCurrency(item.harga_satuan) }}
                                         </TableCell>
                                         <TableCell class="text-right font-bold text-primary">
-                                            {{ formatCurrency(item.cost) }}
+                                            <div class="flex flex-col items-end">
+                                                <span>{{ formatCurrency(item.cost) }}</span>
+                                                <span v-if="production.is_estimated" class="text-[9px] text-orange-500 font-medium uppercase tracking-tighter">Estimasi</span>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>

@@ -2,10 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Actions\RecordStockMovement;
 use App\Models\Produk;
+use App\Models\Restock;
 use App\Models\Satuan;
 use App\Models\Stock;
-use App\Models\StockOpname;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,7 +17,7 @@ class StockOpnameTest extends TestCase
 
     public function test_can_save_stock_opname_as_draft(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $satuan = Satuan::factory()->create();
         $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
 
@@ -30,13 +31,13 @@ class StockOpnameTest extends TestCase
                     'satuan_id' => $satuan->id,
                     'system_qty' => 10,
                     'physical_qty' => 8,
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $response->assertRedirect(route('stock-opname.index'));
         $this->assertDatabaseHas('stock_opnames', ['status' => 'draft']);
-        
+
         // Stock should NOT change for draft
         $stock = Stock::where('produk_id', $produk->id)->first();
         $this->assertEquals(0, (float) ($stock->balance ?? 0));
@@ -44,12 +45,12 @@ class StockOpnameTest extends TestCase
 
     public function test_completing_stock_opname_creates_adjustments(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $satuan = Satuan::factory()->create();
         $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
-        
+
         // Setup initial stock
-        app(\App\Actions\RecordStockMovement::class)->handle([
+        app(RecordStockMovement::class)->handle([
             'produk_id' => $produk->id,
             'satuan_id' => $satuan->id,
             'type' => 'in',
@@ -68,8 +69,8 @@ class StockOpnameTest extends TestCase
                     'satuan_id' => $satuan->id,
                     'system_qty' => 10,
                     'physical_qty' => 15, // Found more physically
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $response->assertStatus(302);
@@ -84,20 +85,20 @@ class StockOpnameTest extends TestCase
         $stock = Stock::where('produk_id', $produk->id)->first();
         $this->assertNotNull($stock, 'Stock record should exist');
         $this->assertEquals(15, (float) $stock->balance);
-        
+
         // Verify adjustment movement exists
         $this->assertDatabaseHas('stock_movements', [
             'produk_id' => $produk->id,
             'type' => 'in',
             'jumlah' => 5,
-            'reference_type' => 'stock_opname'
+            'reference_type' => 'stock_opname',
         ]);
     }
 
     public function test_can_settle_restock_debt(): void
     {
-        $user = User::factory()->create();
-        $restock = \App\Models\Restock::create([
+        $user = User::factory()->superadmin()->create();
+        $restock = Restock::create([
             'tanggal' => now(),
             'total_biaya' => 100000,
             'total_bayar' => 0,

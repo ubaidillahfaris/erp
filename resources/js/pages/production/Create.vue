@@ -198,8 +198,8 @@ const submit = () => {
                         <div class="mt-4 pt-4 border-t flex flex-col gap-2">
                             <Label for="target_yield">Target Hasil Jadi</Label>
                             <div class="flex items-center gap-2">
-                                <Input id="target_yield" type="number" step="0.01" v-model="form.target_yield"
-                                    class="w-32" />
+                                <Input id="target_yield" type="number" step="any" v-model="form.target_yield"
+                                    class="w-32" lang="en-US" inputmode="decimal" />
                                 <span v-if="targetYieldUnit" class="font-medium">{{ targetYieldUnit }}</span>
                                 <span class="text-sm text-muted-foreground">(Bisa diubah jika hasil produksi berbeda
                                     dari resep standar)</span>

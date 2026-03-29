@@ -2,15 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Actions\RecalculateHpp;
 use App\Models\Bom;
-use App\Models\BomItem;
+use App\Models\Production;
 use App\Models\Produk;
 use App\Models\Satuan;
 use App\Models\SatuanConversion;
 use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ProductionFeatureTest extends TestCase
@@ -18,13 +18,20 @@ class ProductionFeatureTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
-    private Satuan $kg, $gr, $liter, $ml;
+
+    private Satuan $kg;
+
+    private Satuan $gr;
+
+    private Satuan $liter;
+
+    private Satuan $ml;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->superadmin()->create();
 
         // Setup base units
         $this->kg = Satuan::create(['nama' => 'Kilogram', 'simbol' => 'kg', 'is_base' => true]);
@@ -54,14 +61,14 @@ class ProductionFeatureTest extends TestCase
         $baseKopi = Produk::create(['nama' => 'Base Kopi', 'type' => 'intermediate_good', 'satuan_id' => $this->liter->id, 'sku' => '125']);
 
         // 3. Setup BOM (requires 100gr kopi, 500ml air, expecting 400ml yield representing 0.4L)
-        // Cost: (100 * 150) = 15,000 + (500 * 2) = 1,000 => 16,000 total 
+        // Cost: (100 * 150) = 15,000 + (500 * 2) = 1,000 => 16,000 total
         // Expected Yield = 0.4 Liter. Theoretical HPP per Liter = 16,000 / 0.4 = 40,000.
         $bom = Bom::create(['produk_id' => $baseKopi->id, 'expected_yield' => 0.4, 'nama' => 'BOM Base Kopi']);
         $bom->items()->create(['produk_id' => $kopiBubuk->id, 'satuan_id' => $this->gr->id, 'jumlah' => 100]);
         $bom->items()->create(['produk_id' => $air->id, 'satuan_id' => $this->ml->id, 'jumlah' => 500]);
 
         // Ensure price is calculated
-        app(\App\Actions\RecalculateHpp::class)->handle($baseKopi);
+        app(RecalculateHpp::class)->handle($baseKopi);
 
         // Start production
         $response = $this->actingAs($this->user)->post(route('production.store'), [
@@ -72,10 +79,10 @@ class ProductionFeatureTest extends TestCase
             'items' => [
                 ['produk_id' => $kopiBubuk->id, 'satuan_id' => $this->gr->id, 'planned_qty' => 100],
                 ['produk_id' => $air->id, 'satuan_id' => $this->ml->id, 'planned_qty' => 500],
-            ]
+            ],
         ]);
 
-        $production = \App\Models\Production::first();
+        $production = Production::first();
 
         // Complete production using 415ml total actual yield = 0.415 L
         // And we accidentally used 110gr kopi instead of 100gr
@@ -84,7 +91,7 @@ class ProductionFeatureTest extends TestCase
             'items' => [
                 ['id' => $production->items[0]->id, 'produk_id' => $kopiBubuk->id, 'satuan_id' => $this->gr->id, 'actual_qty' => 110],
                 ['id' => $production->items[1]->id, 'produk_id' => $air->id, 'satuan_id' => $this->ml->id, 'actual_qty' => 500],
-            ]
+            ],
         ]);
 
         $completeResponse->assertRedirect(route('production.index'));

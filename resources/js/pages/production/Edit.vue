@@ -82,7 +82,7 @@ const submit = () => {
                                     <div class="flex-1">
                                         <Label>Aktual Terpakai</Label>
                                         <div class="flex items-center gap-2 mt-1">
-                                            <Input type="number" step="any" v-model="item.actual_qty" required />
+                                            <Input type="number" step="any" v-model="item.actual_qty" required lang="en-US" inputmode="decimal" />
                                             <span class="text-sm text-muted-foreground">{{ item._satuan_nama }}</span>
                                         </div>
                                     </div>
@@ -97,7 +97,7 @@ const submit = () => {
                         <div class="flex flex-col gap-2 max-w-sm">
                             <Label for="actual_yield">Berapa {{ props.production.produk?.satuan?.nama }} {{ props.production.produk?.nama }} yang berhasil dibuat?</Label>
                             <div class="flex items-center gap-2 mt-1">
-                                <Input id="actual_yield" type="number" step="any" v-model="form.actual_yield" required class="text-lg font-bold" />
+                                <Input id="actual_yield" type="number" step="any" v-model="form.actual_yield" required class="text-lg font-bold" lang="en-US" inputmode="decimal" />
                                 <span class="text-sm font-medium">{{ props.production.produk?.satuan?.nama }}</span>
                             </div>
                             <p class="text-xs text-muted-foreground">Target resep: {{ props.production.target_yield }} {{ props.production.produk?.satuan?.nama }}</p>

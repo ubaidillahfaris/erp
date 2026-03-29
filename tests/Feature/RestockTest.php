@@ -21,7 +21,7 @@ class RestockTest extends TestCase
     {
         parent::setUp();
 
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->superadmin()->create();
 
         $satuan = Satuan::create([
             'nama' => 'Kilogram',

@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             MenuSeeder::class,
             MenuRoleSeeder::class,
             SatuanConversionSeeder::class,
+            BakeryStoreSeeder::class,
         ]);
 
         User::factory()->create([

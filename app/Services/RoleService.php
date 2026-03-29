@@ -26,7 +26,7 @@ class RoleService
                 ->get();
 
             // Filter menus based on user permissions
-            return $this->filterMenusByPermission($menus, $user);
+            return $this->filterMenusByPermission($menus, $user)->toArray();
         });
     }
 

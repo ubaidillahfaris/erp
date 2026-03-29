@@ -170,8 +170,15 @@ const getStatusVariant = (status: string) => {
                             <TableCell class="px-0 py-4 font-bold text-sm tracking-tight capitalize">{{ production.bom?.nama }}</TableCell>
                             <TableCell class="px-0 py-4 text-center text-sm font-medium">{{ parseFloat(production.target_yield).toLocaleString('id-ID') }}</TableCell>
                             <TableCell class="px-0 py-4 text-center text-sm font-bold">{{ parseFloat(production.actual_yield || 0).toLocaleString('id-ID') }}</TableCell>
-                            <TableCell class="px-0 py-4 text-right text-sm font-bold">
-                                {{ formatCurrency(production.total_cost || 0) }}
+                            <TableCell class="px-0 py-4 text-right">
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="text-sm font-bold tracking-tight text-foreground">
+                                        {{ formatCurrency(production.total_cost || 0) }}
+                                    </span>
+                                    <Badge v-if="production.is_estimated" variant="outline" class="rounded-none text-[9px] px-1.5 py-0 h-4 border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 font-medium uppercase leading-none">
+                                        Estimasi
+                                    </Badge>
+                                </div>
                             </TableCell>
                             <TableCell class="px-0 py-4 text-center">
                                 <Badge :variant="getStatusVariant(production.status)" class="rounded-none text-[10px] px-2 py-0 uppercase">

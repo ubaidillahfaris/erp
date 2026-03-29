@@ -13,7 +13,7 @@ class SatuanConversionTest extends TestCase
 
     public function test_can_update_satuan_with_conversions(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $satuan = Satuan::create([
             'nama' => 'Lusin',
             'simbol' => 'lsn',
@@ -46,7 +46,7 @@ class SatuanConversionTest extends TestCase
 
     public function test_can_create_satuan_with_conversions(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $pcs = Satuan::create([
             'nama' => 'Pieces',
             'simbol' => 'pcs',

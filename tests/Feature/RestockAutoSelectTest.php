@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Price;
 use App\Models\Produk;
+use App\Models\Satuan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -14,13 +16,13 @@ class RestockAutoSelectTest extends TestCase
 
     public function test_restock_create_page_receives_produk_id_prop(): void
     {
-        $user = User::factory()->create();
-        $satuan = \App\Models\Satuan::factory()->create();
+        $user = User::factory()->superadmin()->create();
+        $satuan = Satuan::factory()->create();
         $produk = Produk::factory()->create([
             'type' => 'raw_material',
             'satuan_id' => $satuan->id,
         ]);
-        \App\Models\Price::create([
+        Price::create([
             'produk_id' => $produk->id,
             'satuan_id' => $satuan->id,
             'purchase_price' => 5000,
@@ -42,7 +44,7 @@ class RestockAutoSelectTest extends TestCase
 
     public function test_restock_create_page_has_null_produk_id_prop_by_default(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
 
         $response = $this->actingAs($user)
             ->get(route('restock.create'));

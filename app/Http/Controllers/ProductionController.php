@@ -19,16 +19,38 @@ class ProductionController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Production::with(['produk', 'bom']);
+        $query = Production::with(['produk', 'bom', 'items.produk.currentPrice']);
 
         if ($request->has('search') && !empty($request->search)) {
             $query->where('sku', 'like', "%{$request->search}%");
         }
 
         $perPage = $request->input('per_page', 10);
+        $paginator = $query->latest('tanggal')->latest('id')->paginate($perPage)->withQueryString();
+
+        // Add estimated cost for in-progress productions
+        $paginator->getCollection()->transform(function ($production) {
+            if ($production->status === 'in_progress' && is_null($production->total_cost)) {
+                $estimatedCost = 0.0;
+                foreach ($production->items as $item) {
+                    $basePrice = (float) $item->harga_satuan;
+                    if ($basePrice <= 0) {
+                        $basePrice = (float) ($item->produk->currentPrice->purchase_price ?? 0);
+                    }
+                    $ratio = 1.0;
+                    if ($item->produk && $item->produk->satuan_id !== $item->satuan_id) {
+                        $ratio = app(\App\Services\SatuanService::class)->getConversionRatio($item->produk->satuan_id, $item->satuan_id);
+                    }
+                    $estimatedCost += ($basePrice / ($ratio ?: 1)) * (float) $item->planned_qty;
+                }
+                $production->total_cost = $estimatedCost;
+                $production->is_estimated = true;
+            }
+            return $production;
+        });
 
         return inertia('production/Index', [
-            'productions' => $query->latest('tanggal')->latest('id')->paginate($perPage)->withQueryString(),
+            'productions' => $paginator,
             'filters' => $request->only(['search', 'per_page']),
         ]);
     }
@@ -68,11 +90,16 @@ class ProductionController extends Controller
             $production = Production::create($data);
 
             foreach ($request->items as $item) {
+                // Capture current HPP for estimation
+                $ingredient = Produk::with('currentPrice')->find($item['produk_id']);
+                $currentHpp = $ingredient->currentPrice ? $ingredient->currentPrice->purchase_price : 0;
+
                 $production->items()->create([
                     'produk_id' => $item['produk_id'],
                     'satuan_id' => $item['satuan_id'],
                     'planned_qty' => $item['planned_qty'],
-                    'actual_qty' => 0, // Set later during completion
+                    'actual_qty' => 0,
+                    'harga_satuan' => $currentHpp,
                 ]);
             }
         });
@@ -84,17 +111,32 @@ class ProductionController extends Controller
     {
         $production->load(['produk.satuan', 'bom', 'items.produk.satuan', 'items.satuan', 'items.produk.currentPrice']);
 
+        $estimatedTotal = 0.0;
+
         // Calculate subtotal for each item including conversion
-        $production->items->each(function ($item) {
+        $production->items->each(function ($item) use ($production, &$estimatedTotal) {
+            // Use current price if harga_satuan is not set (for legacy records)
             $basePrice = (float) $item->harga_satuan;
+            if ($basePrice <= 0) {
+                $basePrice = (float) ($item->produk->currentPrice->purchase_price ?? 0);
+            }
             $ratio = 1.0;
 
             if ($item->produk && $item->produk->satuan_id !== $item->satuan_id) {
                 $ratio = app(\App\Services\SatuanService::class)->getConversionRatio($item->produk->satuan_id, $item->satuan_id);
             }
 
-            $item->cost = ($basePrice / ($ratio ?: 1)) * (float) $item->actual_qty;
+            // If in progress, use planned_qty for the "cost" attribute used in UI
+            $qty = ($production->status === 'in_progress' && (float) $item->actual_qty == 0) ? $item->planned_qty : $item->actual_qty;
+            $item->cost = ($basePrice / ($ratio ?: 1)) * (float) $qty;
+
+            $estimatedTotal += $item->cost;
         });
+
+        if ($production->status === 'in_progress' && is_null($production->total_cost)) {
+            $production->total_cost = $estimatedTotal;
+            $production->is_estimated = true;
+        }
 
         return Inertia::render('production/Show', [
             'production' => $production,

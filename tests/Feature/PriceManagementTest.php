@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Price;
 use App\Models\Produk;
+use App\Models\Restock;
 use App\Models\Satuan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,7 +16,7 @@ class PriceManagementTest extends TestCase
 
     public function test_purchase_price_is_automatically_tracked_on_restock(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
         $produk = Produk::create([
             'sku' => 'P001',
@@ -77,7 +78,7 @@ class PriceManagementTest extends TestCase
 
     public function test_can_update_retail_price_for_product(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
         $produk = Produk::create([
             'sku' => 'P001',
@@ -120,7 +121,7 @@ class PriceManagementTest extends TestCase
 
     public function test_can_create_product_with_initial_prices(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
 
         $response = $this->actingAs($user)->post(route('produk.store'), [
@@ -148,7 +149,7 @@ class PriceManagementTest extends TestCase
 
     public function test_can_update_restock_and_track_price(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->superadmin()->create();
         $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
         $produk = Produk::create([
             'sku' => 'PREST',
@@ -159,7 +160,7 @@ class PriceManagementTest extends TestCase
         ]);
 
         // 1. Create restock
-        $restock = \App\Models\Restock::create([
+        $restock = Restock::create([
             'tanggal' => now()->format('Y-m-d'),
             'status_pembayaran' => 'lunas',
             'total_bayar' => 1000,

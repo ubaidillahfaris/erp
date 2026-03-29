@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\RecalculateHpp;
 use App\Models\Bom;
 use App\Models\Price;
 use App\Models\Produk;
@@ -17,7 +18,7 @@ class HppCalculationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->actingAs(User::factory()->create());
+        $this->actingAs(User::factory()->superadmin()->create());
     }
 
     public function test_hpp_calculates_correctly_for_simple_bom()
@@ -56,7 +57,7 @@ class HppCalculationTest extends TestCase
         ]);
 
         // Trigger calculation
-        app(\App\Actions\RecalculateHpp::class)->handle($roti);
+        app(RecalculateHpp::class)->handle($roti);
 
         // Expected HPP: 0.2 * 10000 = 2000
         $this->assertEquals(2000, (float) $roti->currentPrice->purchase_price);
@@ -75,7 +76,7 @@ class HppCalculationTest extends TestCase
         $bomAdonan = Bom::create(['produk_id' => $adonan->id, 'sku' => 'BOM-ADONAN']);
         $bomAdonan->items()->create(['produk_id' => $tepung->id, 'satuan_id' => $kg->id, 'jumlah' => 1]);
 
-        app(\App\Actions\RecalculateHpp::class)->handle($adonan);
+        app(RecalculateHpp::class)->handle($adonan);
         $this->assertEquals(10000, (float) $adonan->currentPrice->purchase_price);
 
         // Finished: Roti (Uses 0.1kg Adonan)
@@ -83,7 +84,7 @@ class HppCalculationTest extends TestCase
         $bomRoti = Bom::create(['produk_id' => $roti->id, 'sku' => 'BOM-ROTI']);
         $bomRoti->items()->create(['produk_id' => $adonan->id, 'satuan_id' => $kg->id, 'jumlah' => 0.1]);
 
-        app(\App\Actions\RecalculateHpp::class)->handle($roti);
+        app(RecalculateHpp::class)->handle($roti);
         $this->assertEquals(1000, (float) $roti->currentPrice->purchase_price);
 
         // ACT: Update Tepung Price to 20000 via a "Restock-like" trigger
@@ -91,7 +92,7 @@ class HppCalculationTest extends TestCase
         $tepung->prices()->create(['satuan_id' => $kg->id, 'purchase_price' => 20000, 'is_current' => true]);
 
         // Manually trigger handle on tepung to simulate cascade (usually triggered in RestockController)
-        app(\App\Actions\RecalculateHpp::class)->handle($tepung);
+        app(RecalculateHpp::class)->handle($tepung);
 
         // ASSERT: Adonan should be 20000, Roti should be 2000
         $this->assertEquals(20000, (float) $adonan->fresh()->currentPrice->purchase_price);
@@ -101,14 +102,14 @@ class HppCalculationTest extends TestCase
     public function test_retail_price_is_preserved_during_hpp_recalculation()
     {
         $kg = Satuan::create(['nama' => 'Kilogram', 'simbol' => 'kg']);
-        
+
         // Raw: Tepung (10000 / kg)
         $tepung = Produk::create(['nama' => 'Tepung', 'type' => 'raw_material', 'satuan_id' => $kg->id]);
         $tepung->prices()->create([
-            'satuan_id' => $kg->id, 
-            'purchase_price' => 10000, 
+            'satuan_id' => $kg->id,
+            'purchase_price' => 10000,
             'retail_price' => 15000,
-            'is_current' => true
+            'is_current' => true,
         ]);
 
         // Finished: Roti (Uses 1kg Tepung)
@@ -117,14 +118,14 @@ class HppCalculationTest extends TestCase
             'satuan_id' => $kg->id,
             'purchase_price' => 5000,
             'retail_price' => 20000, // Pre-existing selling price
-            'is_current' => true
+            'is_current' => true,
         ]);
 
         $bomRoti = Bom::create(['produk_id' => $roti->id, 'sku' => 'BOM-ROTI']);
         $bomRoti->items()->create(['produk_id' => $tepung->id, 'satuan_id' => $kg->id, 'jumlah' => 1]);
 
         // ACT: Trigger recalculation
-        app(\App\Actions\RecalculateHpp::class)->handle($roti);
+        app(RecalculateHpp::class)->handle($roti);
 
         // ASSERT: purchase_price should be 10000, retail_price should STILL be 20000
         $rotiPrice = $roti->fresh()->currentPrice;

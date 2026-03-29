@@ -2,12 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Actions\RecordStockMovement;
 use App\Models\Produk;
+use App\Models\Restock;
 use App\Models\Satuan;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use App\Models\User;
-use App\Models\Restock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,12 +17,13 @@ class StockManagementTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected Satuan $satuan;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
 
         $this->satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
@@ -41,8 +43,8 @@ class StockManagementTest extends TestCase
                     'satuan_id' => $this->satuan->id,
                     'jumlah' => 10,
                     'harga_satuan' => 1000,
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $response->assertRedirect();
@@ -111,7 +113,7 @@ class StockManagementTest extends TestCase
             'total_biaya' => 1000,
         ]);
 
-        app(\App\Actions\RecordStockMovement::class)->handle([
+        app(RecordStockMovement::class)->handle([
             'produk_id' => $produk->id,
             'satuan_id' => $this->satuan->id,
             'type' => 'in',
