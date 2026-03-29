@@ -285,8 +285,12 @@ const handleSortToggle = (column: any) => {
                     <Input
                         v-model="internalSearch"
                         :placeholder="searchPlaceholder"
-                        class="h-9 w-[150px] lg:w-[250px] shadow-sm focus:ring-accent/10 transition-all pl-3"
+                        class="h-9 w-[150px] lg:w-[250px] bg-white border-border/40 shadow-none focus-visible:ring-accent/5 rounded-md transition-all pl-3"
                     />
+                </div>
+                
+                <div v-if="$slots['toolbar-actions']" class="flex items-center gap-2">
+                    <slot name="toolbar-actions"></slot>
                 </div>
             </div>
 
@@ -297,7 +301,7 @@ const handleSortToggle = (column: any) => {
     </div>
 
     <!-- TABLE AREA -->
-    <div class="rounded-md border border-border/60 bg-white overflow-hidden shadow-sm">
+    <div class="rounded-md border border-border/60 bg-white overflow-hidden shadow-none">
         <Table>
             <TableHeader class="bg-muted/30">
                 <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">

@@ -5,7 +5,7 @@ import {
     Plus, Search, Edit2, Trash2, Package,
     MoreHorizontal, ShoppingCart, TestTube,
     History, Boxes, PackageOpen, ChevronRight,
-    Pencil
+    Pencil, Filter
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { index, create, edit, destroy, bulkDestroy } from '@/actions/App/Http/Controllers/ProdukController';
@@ -25,6 +25,7 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { useConfirm } from '@/composables/useConfirm';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import DataTable from '@/components/DataTable.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -135,8 +136,6 @@ const formatCurrency = (value: number) => {
             :columns="columns" 
             v-model:search="search" 
             v-model:perPage="perPage"
-            v-model:activeTab="jenis" 
-            :tabs="tabs" 
             :sort="sort"
             :direction="direction as any"
             @sort-change="handleSortChange"
@@ -145,6 +144,21 @@ const formatCurrency = (value: number) => {
             :title="'Katalog Produk'"
             :total-count="produks.total"
         >
+            <template #toolbar-actions>
+                <Select v-model="jenis">
+                    <SelectTrigger class="h-9 w-[180px] rounded-md border-border/40 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans pl-3">
+                        <div class="flex items-center gap-2">
+                            <Filter class="h-3.5 w-3.5 text-muted-foreground/50" />
+                            <SelectValue placeholder="Jenis Produk" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent class="rounded-xl shadow-xl border-border/40 font-sans">
+                        <SelectItem value="all" class="text-[13px]">Semua Jenis</SelectItem>
+                        <SelectItem value="raw_material" class="text-[13px]">Bahan Baku</SelectItem>
+                        <SelectItem value="finished_good" class="text-[13px]">Barang Jadi</SelectItem>
+                    </SelectContent>
+                </Select>
+            </template>
             <template #header-actions>
                 <Link :href="create().url">
                     <Button primary>

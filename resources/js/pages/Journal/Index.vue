@@ -114,7 +114,7 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
         :count="journals.total"
     >
         <template #actions>
-            <div class="flex items-center gap-2 bg-white p-1 border border-border/40 rounded-lg shadow-sm">
+            <div class="flex items-center gap-2 bg-white p-1 border border-border/40 rounded-md shadow-none">
                 <Input type="date" v-model="startDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
                 <span class="text-xs text-muted-foreground font-bold opacity-30 px-1">s/d</span>
                 <Input type="date" v-model="endDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />

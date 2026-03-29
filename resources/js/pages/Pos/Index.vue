@@ -140,7 +140,7 @@ const formatCurrency = (value: number) => {
                         <Input 
                             v-model="searchQuery"
                             placeholder="Cari nama, SKU, atau barcode..." 
-                            class="pl-9 h-10 border-border/40 bg-white shadow-sm focus-visible:ring-accent/10 rounded-lg text-sm"
+                            class="pl-9 h-10 border-border/40 bg-white shadow-none focus-visible:ring-accent/5 rounded-md text-sm"
                         />
                     </div>
                 </template>

@@ -179,11 +179,11 @@ const formatStatus = (status: string) => {
                             <Input 
                                 v-model="vendor" 
                                 placeholder="Filter vendor..." 
-                                class="pl-9 h-9 rounded-lg w-[160px] border-border/40 bg-white text-[13px] font-medium shadow-none focus:ring-accent/10 transition-all font-sans" 
+                                class="pl-9 h-9 rounded-md border-border/40 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans" 
                             />
                         </div>
                         <Select v-model="status">
-                            <SelectTrigger class="h-9 w-[140px] rounded-lg border-border/40 bg-white text-[13px] font-medium shadow-none focus:ring-accent/10 transition-all font-sans">
+                            <SelectTrigger class="h-9 w-[140px] rounded-md border-border/40 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
                             <SelectContent class="rounded-xl shadow-xl border-border/40 font-sans">
