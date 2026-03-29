@@ -82,7 +82,7 @@
     --popover-foreground: hsl(222 47% 11%);
 
     /* ── Brand Colors ── */
-    --primary: hsl(167 16% 58%);         /* #84A59D Sage Green */
+    --primary: hsl(167 16% 35%);         /* Darker Sage/Teal */
     --primary-foreground: hsl(0 0% 100%);
     --accent: hsl(217 91% 60%);          /* #3B82F6 - Cleaner Bright Blue */
     --accent-foreground: hsl(0 0% 100%);

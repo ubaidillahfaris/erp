@@ -19,6 +19,9 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
+// Persistent Layout Fix
+defineOptions({ layout: AppLayout });
+
 const props = defineProps<{
     journals: {
         data: any[];
@@ -43,7 +46,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const startDate = ref(props.filters.start_date);
 const endDate = ref(props.filters.end_date);
-const perPage = ref(props.filters.per_page);
+const perPage = ref(String(props.filters.per_page || props.journals.per_page));
+
+const columns = [
+    { key: 'tanggal', label: 'Tanggal' },
+    { key: 'category', label: 'Kategori' },
+    { key: 'description', label: 'Keterangan' },
+    { key: 'via', label: 'Via', align: 'center' },
+    { key: 'debit', label: 'Debit (Masuk)', align: 'right' },
+    { key: 'kredit', label: 'Kredit (Keluar)', align: 'right' },
+    { key: 'balance', label: 'Saldo', align: 'right' },
+] as const;
 
 watch([startDate, endDate, perPage], debounce(([newStart, newEnd, newPerPage]) => {
     router.get('/journal', {
@@ -81,134 +94,130 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
 <template>
 <Head title="Jurnal Umum" />
 
-<AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-10">
-        <!-- Header Section -->
-        <div class="flex items-center justify-between border-b pb-6 border-muted rounded-none">
+<div class="px-8 py-10 flex flex-col gap-10 font-sans bg-[#F8F9FA] min-h-[calc(100vh-64px)]">
+    <!-- Header Section -->
+    <div class="flex flex-col gap-2 max-w-7xl mx-auto w-full">
+        <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
+            <span>Financials</span>
+            <ChevronRight class="h-3 w-3" />
+            <span class="text-foreground/40">General Ledger</span>
+        </div>
+        <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Jurnal Umum</h1>
+                <h1 class="text-3xl font-bold tracking-tight text-foreground">Jurnal Umum</h1>
                 <p class="text-sm text-muted-foreground mt-1">Laporan arus kas masuk (Debit) dan keluar (Kredit).</p>
             </div>
             <div class="flex items-center gap-2">
-                 <div class="flex items-center gap-2 bg-muted/20 p-1 border border-muted">
-                    <Input type="date" v-model="startDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs" />
-                    <span class="text-xs text-muted-foreground">s/d</span>
-                    <Input type="date" v-model="endDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs" />
+                 <div class="flex items-center gap-2 bg-white p-1 border border-border/40 rounded-lg shadow-sm">
+                    <Input type="date" v-model="startDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
+                    <span class="text-xs text-muted-foreground font-bold opacity-30 px-1">s/d</span>
+                    <Input type="date" v-model="endDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
                 </div>
             </div>
         </div>
-
-        <!-- Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card class="rounded-none border-muted bg-transparent shadow-none">
-                <CardHeader class="pb-2">
-                    <CardTitle class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center">
-                        <ArrowUpCircle class="mr-2 h-3 w-3 text-green-500" />
-                        Total Pemasukan (Debit)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div class="text-2xl font-bold text-green-600">{{ formatCurrency(totals.debit) }}</div>
-                </CardContent>
-            </Card>
-
-            <Card class="rounded-none border-muted bg-transparent shadow-none">
-                <CardHeader class="pb-2">
-                    <CardTitle class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center">
-                        <ArrowDownCircle class="mr-2 h-3 w-3 text-red-500" />
-                        Total Pengeluaran (Kredit)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div class="text-2xl font-bold text-red-600">{{ formatCurrency(totals.kredit) }}</div>
-                </CardContent>
-            </Card>
-
-            <Card class="rounded-none border-primary/20 bg-primary/5 shadow-none border">
-                <CardHeader class="pb-2">
-                    <CardTitle class="text-xs font-bold uppercase tracking-widest text-primary/60 flex items-center">
-                        <Landmark class="mr-2 h-3 w-3" />
-                        Saldo Akhir Mutasi
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div class="text-2xl font-bold" :class="finalBalance >= 0 ? 'text-primary' : 'text-destructive'">
-                        {{ formatCurrency(finalBalance) }}
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-
-        <!-- Main content -->
-        <div class="flex flex-col gap-6">
-            <div class="flex items-center justify-between border-b pb-4 border-muted">
-                 <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60 italic">Entry Transaksi Real-time</h3>
-            </div>
-
-            <div class="flex flex-col gap-4">
-                <DataTablePagination :paginator="journals" @update:per-page="perPage = $event" class="border-b pb-4 border-muted rounded-none" />
-
-                <Table class="border-none">
-                    <TableHeader>
-                        <TableRow class="hover:bg-transparent border-b border-muted">
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Tanggal</TableHead>
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Kategori</TableHead>
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Keterangan</TableHead>
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50 text-center">Via</TableHead>
-                            <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Debit (Masuk)</TableHead>
-                            <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Kredit (Keluar)</TableHead>
-                            <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Saldo</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="journal in journals.data" :key="journal.id" class="hover:bg-muted/30 border-b border-muted/50 group transition-colors">
-                            <TableCell class="px-0 py-4 font-mono text-xs">{{ formatDate(journal.tanggal) }}</TableCell>
-                            <TableCell class="px-0 py-4">
-                                <Badge variant="outline" class="rounded-none text-[10px] px-2 py-0 font-bold uppercase tracking-tighter opacity-70">
-                                    {{ journal.category }}
-                                </Badge>
-                            </TableCell>
-                            <TableCell class="px-0 py-4">
-                                <div class="flex flex-col gap-0.5">
-                                    <span class="text-sm font-medium">{{ journal.description }}</span>
-                                    <span v-if="journal.reference" class="text-[10px] text-muted-foreground uppercase opacity-50 flex items-center">
-                                        <History class="mr-1 h-3 w-3" />
-                                        Ref: {{ journal.reference_type.split('\\').pop() }} #{{ journal.reference_id }}
-                                    </span>
-                                </div>
-                            </TableCell>
-                            <TableCell class="px-0 py-4 text-center">
-                                <span class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{{ journal.payment_method }}</span>
-                            </TableCell>
-                            <TableCell class="px-0 py-4 text-right">
-                                <span v-if="journal.type === 'debit'" class="text-sm font-bold text-green-600">
-                                    {{ formatCurrency(journal.amount) }}
-                                </span>
-                                <span v-else class="text-sm text-muted-foreground/20">-</span>
-                            </TableCell>
-                            <TableCell class="px-0 py-4 text-right">
-                                <span v-if="journal.type === 'kredit'" class="text-sm font-bold text-red-600">
-                                    {{ formatCurrency(journal.amount) }}
-                                </span>
-                                <span v-else class="text-sm text-muted-foreground/20">-</span>
-                            </TableCell>
-                            <TableCell class="px-0 py-4 text-right">
-                                <span class="text-sm font-bold" :class="Number(journal.balance) >= 0 ? 'text-primary' : 'text-destructive'">
-                                    {{ formatCurrency(journal.balance) }}
-                                </span>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow v-if="journals.data.length === 0">
-                            <TableCell colspan="7" class="h-32 text-center text-xs text-muted-foreground uppercase tracking-widest italic">
-                                Tidak ada catatan transaksi pada periode ini.
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-
-                <DataTablePagination :paginator="journals" @update:per-page="perPage = $event" class="border-t mt-4 pt-4 border-muted rounded-none" />
-            </div>
-        </div>
     </div>
-</AppLayout>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto w-full">
+        <Card class="rounded-xl bg-white shadow-sm border border-border/40">
+            <CardHeader class="pb-2 px-6 pt-6">
+                <CardTitle class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center">
+                    <ArrowUpCircle class="mr-2 h-3.5 w-3.5 text-green-500" />
+                    Total Pemasukan (Debit)
+                </CardTitle>
+            </CardHeader>
+            <CardContent class="px-6 pb-6">
+                <div class="text-2xl font-black text-green-600 tracking-tighter">{{ formatCurrency(totals.debit) }}</div>
+            </CardContent>
+        </Card>
+
+        <Card class="rounded-xl bg-white shadow-sm border border-border/40">
+            <CardHeader class="pb-2 px-6 pt-6">
+                <CardTitle class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center">
+                    <ArrowDownCircle class="mr-2 h-3.5 w-3.5 text-red-500" />
+                    Total Pengeluaran (Kredit)
+                </CardTitle>
+            </CardHeader>
+            <CardContent class="px-6 pb-6">
+                <div class="text-2xl font-black text-red-600 tracking-tighter">{{ formatCurrency(totals.kredit) }}</div>
+            </CardContent>
+        </Card>
+
+        <Card class="rounded-xl bg-accent text-white shadow-lg shadow-accent/20 border-none">
+            <CardHeader class="pb-2 px-6 pt-6">
+                <CardTitle class="text-[10px] font-bold uppercase tracking-widest text-white/60 flex items-center">
+                    <Landmark class="mr-2 h-3.5 w-3.5" />
+                    Saldo Akhir Mutasi
+                </CardTitle>
+            </CardHeader>
+            <CardContent class="px-6 pb-6">
+                <div class="text-2xl font-black tracking-tighter">
+                    {{ formatCurrency(finalBalance) }}
+                </div>
+            </CardContent>
+        </Card>
+    </div>
+
+    <!-- Main Ledger -->
+    <div class="max-w-7xl mx-auto w-full">
+        <DataTable
+            :data="journals"
+            :columns="columns"
+            v-model:perPage="perPage"
+            search-placeholder="Cari transaksi..."
+            toolbar-title="Entry Transaksi Real-time"
+        >
+            <template #cell(tanggal)="{ row }">
+                <span class="font-mono text-xs font-bold text-muted-foreground/60">{{ formatDate(row.tanggal) }}</span>
+            </template>
+
+            <template #cell(category)="{ row }">
+                <Badge variant="outline" class="rounded-md text-[10px] px-2 py-0.5 font-bold uppercase tracking-tighter border-border/40 text-muted-foreground/60 shadow-none">
+                    {{ row.category }}
+                </Badge>
+            </template>
+
+            <template #cell(description)="{ row }">
+                <div class="flex flex-col gap-0.5">
+                    <span class="text-sm font-bold text-foreground">{{ row.description }}</span>
+                    <span v-if="row.reference" class="text-[10px] text-muted-foreground uppercase opacity-50 flex items-center font-bold tracking-tight">
+                        <History class="mr-1 h-3 w-3" />
+                        Ref: {{ row.reference_type.split('\\').pop() }} #{{ row.reference_id }}
+                    </span>
+                </div>
+            </template>
+
+            <template #cell(via)="{ row }">
+                <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">{{ row.payment_method }}</span>
+            </template>
+
+            <template #cell(debit)="{ row }">
+                <span v-if="row.type === 'debit'" class="text-sm font-black text-green-600 tabular-nums">
+                    {{ formatCurrency(row.amount) }}
+                </span>
+                <span v-else class="text-sm text-muted-foreground/10 font-bold italic text-[10px]">--</span>
+            </template>
+
+            <template #cell(kredit)="{ row }">
+                <span v-if="row.type === 'kredit'" class="text-sm font-black text-red-600 tabular-nums">
+                    {{ formatCurrency(row.amount) }}
+                </span>
+                <span v-else class="text-sm text-muted-foreground/10 font-bold italic text-[10px]">--</span>
+            </template>
+
+            <template #cell(balance)="{ row }">
+                <span class="text-sm font-black tabular-nums" :class="Number(row.balance) >= 0 ? 'text-foreground' : 'text-destructive'">
+                    {{ formatCurrency(row.balance) }}
+                </span>
+            </template>
+
+            <template #empty>
+                <div class="h-48 flex flex-col items-center justify-center gap-3 opacity-20">
+                    <Receipt class="h-10 w-10 text-muted-foreground" />
+                    <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tidak ada catatan transaksi</p>
+                </div>
+            </template>
+        </DataTable>
+    </div>
+</div>
 </template>

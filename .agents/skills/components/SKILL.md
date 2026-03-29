@@ -39,3 +39,59 @@ const markers = [
 - Always wrap the `<Map />` in a container with a defined height.
 - Use `z-0` on the map container if it conflicts with overlapping UI like headers or dropdowns.
 - For dynamic data, the component handles state re-rendering via Vue hooks.
+
+## Standard Page Layout
+
+The project uses a standardized high-density layout pattern for all main data pages. This pattern consists of a `PageHeader` (for identity and primary actions) and a `DataTable` (for data visualization and filtering).
+
+### Usage
+
+```vue
+<script setup lang="ts">
+import PageHeader from '@/components/PageHeader.vue';
+import DataTable from '@/components/DataTable.vue';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-vue-next';
+
+// ... logic ...
+</script>
+
+<template>
+    <Head title="Modul Name" />
+
+    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+        <!-- Identity -->
+        <PageHeader 
+            title="Kelola Data" 
+            description="Manajemen informasi utama" 
+            back-href="/dashboard"
+            :count="data.total"
+        />
+
+        <!-- Main Content Area & Primary Actions -->
+        <div class="max-w-7xl mx-auto w-full">
+            <DataTable
+                :data="data"
+                :columns="columns"
+                v-model:search="search"
+                v-model:perPage="perPage"
+                search-placeholder="Cari data..."
+                title="Daftar Informasi"
+                :total-count="data.total"
+            >
+                <template #header-actions>
+                    <Button primary>
+                        <Plus class="h-4 w-4" />
+                        Tambah Baru
+                    </Button>
+                </template>
+                <!-- Slots for cells and actions -->
+            </DataTable>
+        </div>
+    </div>
+</template>
+```
+
+### Key Components
+- **PageHeader**: Controls the page title, back navigation, and global record counts. It provides context for the current view.
+- **DataTable**: Now handles the primary page actions via the `#header-actions` slot (Top Row), in addition to tabs, search, and pagination. This keeps actionable items within the context of the data they affect.

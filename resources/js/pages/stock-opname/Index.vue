@@ -1,25 +1,18 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Plus, Eye, Search, Trash2, Edit2, MoreHorizontal, ClipboardList } from 'lucide-vue-next';
+import { Plus, Eye, Search, Trash2, Edit2, MoreHorizontal, ClipboardList, ChevronRight } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import DataTablePagination from '@/components/DataTablePagination.vue';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import DataTable from '@/components/DataTable.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import { useConfirm } from '@/composables/useConfirm';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+// Persistent Layout Fix
+defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
     opnames: {
@@ -39,11 +32,18 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Stock Opname', href: '#' },
+    { title: 'Stock Opname', href: '/stock-opname' },
 ];
 
 const search = ref(props.filters.search || '');
 const perPage = ref(props.filters.per_page || String(props.opnames.per_page));
+
+const columns = [
+    { key: 'date', label: 'Tanggal' },
+    { key: 'info', label: 'Keterangan' },
+    { key: 'status', label: 'Status', align: 'center' },
+    { key: 'items', label: 'Jumlah Barang', align: 'center' },
+] as const;
 
 watch([search, perPage], debounce(([newSearch, newPerPage]) => {
     router.get('/stock-opname', {
@@ -51,8 +51,6 @@ watch([search, perPage], debounce(([newSearch, newPerPage]) => {
         per_page: newPerPage
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
-
-import { useConfirm } from '@/composables/useConfirm';
 
 const { confirmDialog } = useConfirm();
 
@@ -70,11 +68,11 @@ const formatDate = (dateString: string) => {
     }).format(new Date(dateString));
 };
 
-const getStatusVariant = (status: string) => {
+const getStatusStyles = (status: string) => {
     switch (status) {
-        case 'completed': return 'default';
-        case 'draft': return 'secondary';
-        default: return 'outline';
+        case 'completed': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+        case 'draft': return 'bg-secondary/40 text-muted-foreground/60 border-transparent';
+        default: return 'bg-muted/50 text-muted-foreground/40 border-transparent';
     }
 };
 
@@ -84,110 +82,109 @@ const formatStatus = (status: string) => {
 </script>
 
 <template>
-<Head title="Stock Opname" />
+    <Head title="Stock Opname" />
 
-<AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-10">
-        <!-- Header Section -->
-        <div class="flex items-center justify-between border-b pb-6 border-muted rounded-none">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight">Stock Opname</h1>
-                <p class="text-sm text-muted-foreground mt-1">Sesuaikan stok fisik dengan stok sistem secara berkala.</p>
-            </div>
-            <Link href="/stock-opname/create">
-                <Button class="rounded-none">
-                    <Plus class="mr-2 h-4 w-4" />
-                    Mulai Opname Baru
-                </Button>
-            </Link>
-        </div>
+    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+        <PageHeader 
+            title="Stock Opname" 
+            description="Audit Stok & Penyesuaian" 
+            back-href="/dashboard"
+            :count="opnames.total"
+        />
 
-        <!-- content -->
-        <div class="flex flex-col gap-6">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b pb-4 border-muted">
-                 <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Riwayat Opname</h3>
-                <div class="flex items-center gap-4">
-                     <div class="relative w-full max-w-sm">
-                        <Search class="absolute left-0 top-3 h-4 w-4 text-muted-foreground/40" />
-                        <Input 
-                            v-model="search" 
-                            placeholder="Cari keterangan..." 
-                            class="pl-7 rounded-none border-t-0 border-x-0 border-b border-muted bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-primary transition-colors h-10" 
-                        />
+        <!-- ====== CONTENT AREA ====== -->
+        <div class="max-w-7xl mx-auto w-full">
+            <DataTable
+                :data="opnames"
+                :columns="columns"
+                v-model:search="search"
+                v-model:perPage="perPage"
+                search-placeholder="Cari keterangan..."
+                toolbar-title="Riwayat Opname"
+                :title="'Stock Opname'"
+                :total-count="opnames.total"
+            >
+                <template #header-actions>
+                    <Link href="/stock-opname/create">
+                        <Button primary>
+                            <Plus class="h-4 w-4" />
+                            Mulai Opname Baru
+                        </Button>
+                    </Link>
+                </template>
+                <template #cell(date)="{ row }">
+                    <div class="flex items-center gap-4">
+                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                            <ClipboardList class="h-5 w-5" />
+                        </div>
+                        <span class="text-[14px] font-bold text-foreground capitalize tabular-nums">{{ formatDate(row.tanggal) }}</span>
                     </div>
-                </div>
-            </div>
+                </template>
 
-            <div class="flex flex-col gap-4">
-                <DataTablePagination :paginator="opnames" v-model:perPage="perPage" class="border-b pb-4 border-muted rounded-none" />
+                <template #cell(info)="{ row }">
+                    <p class="text-[13px] text-muted-foreground/70 max-w-[200px] line-clamp-1 leading-relaxed tracking-tight">{{ row.keterangan || '-' }}</p>
+                </template>
 
-                <Table class="border-none">
-                    <TableHeader>
-                        <TableRow class="hover:bg-transparent border-b border-muted">
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Tanggal</TableHead>
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Keterangan</TableHead>
-                            <TableHead class="h-12 px-0 text-center text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Status</TableHead>
-                            <TableHead class="h-12 px-0 text-center text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Jumlah Barang</TableHead>
-                            <TableHead class="h-12 px-0 w-[80px] text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        <TableRow v-for="opname in opnames.data" :key="opname.id" class="hover:bg-muted/30 border-b border-muted/50 group transition-colors">
-                            <TableCell class="px-0 py-4 font-medium text-sm">{{ formatDate(opname.tanggal) }}</TableCell>
-                            <TableCell class="px-0 py-4 text-sm">{{ opname.keterangan || '-' }}</TableCell>
-                            <TableCell class="px-0 py-4 text-center">
-                                <Badge :variant="getStatusVariant(opname.status)" class="rounded-none text-[10px] px-2 py-0">
-                                    {{ formatStatus(opname.status) }}
-                                </Badge>
-                            </TableCell>
-                            <TableCell class="px-0 py-4 text-center text-sm font-medium">{{ opname.items_count }} <span class="text-[10px] text-muted-foreground uppercase">BARANG</span></TableCell>
-                            <TableCell class="px-0 py-4 text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger as-child>
-                                        <Button variant="ghost" size="icon" class="h-8 w-8 rounded-none">
-                                            <MoreHorizontal class="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" class="rounded-none">
-                                        <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Aksi Cepat</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
+                <template #cell(status)="{ row }">
+                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
+                        {{ formatStatus(row.status) }}
+                    </Badge>
+                </template>
 
-                                        <Link :href="`/stock-opname/${opname.id}`">
-                                            <DropdownMenuItem class="cursor-pointer rounded-none">
-                                                <Eye class="mr-2 h-4 w-4" />
-                                                <span>Lihat Detail</span>
-                                            </DropdownMenuItem>
-                                        </Link>
+                <template #cell(items)="{ row }">
+                    <div class="flex flex-col items-center">
+                        <span class="text-[14px] font-bold text-foreground tabular-nums">{{ row.items_count }}</span>
+                        <span class="text-[9px] font-black uppercase tracking-tighter text-muted-foreground/30">SKUs Audited</span>
+                    </div>
+                </template>
 
-                                        <Link v-if="opname.status === 'draft'" :href="`/stock-opname/${opname.id}/edit`">
-                                            <DropdownMenuItem class="cursor-pointer rounded-none">
-                                                <Edit2 class="mr-2 h-4 w-4" />
-                                                <span>Lanjutkan Draft</span>
-                                            </DropdownMenuItem>
-                                        </Link>
+                <template #actions="{ row }">
+                    <div class="flex items-center justify-end gap-1 px-2">
+                        <Link :href="`/stock-opname/${row.id}`">
+                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                <Eye class="h-4 w-4" />
+                            </button>
+                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                    <MoreHorizontal class="h-4 w-4" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-lg border-border/40 font-sans">
+                                <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-2 py-1.5 text-center text-xs">Aksi Cepat</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
 
-                                        <DropdownMenuItem
-                                            v-if="opname.status === 'draft'"
-                                            class="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive rounded-none"
-                                            @click="deleteOpname(opname.id)">
-                                            <Trash2 class="mr-2 h-4 w-4" />
-                                            <span>Hapus Draft</span>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow v-if="opnames.data.length === 0">
-                            <TableCell colspan="5" class="h-32 text-center text-xs text-muted-foreground uppercase tracking-widest">
-                                Belum ada data stock opname.
-                            </TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
+                                <Link :href="`/stock-opname/${row.id}`">
+                                    <DropdownMenuItem class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
+                                        <Eye class="h-3.5 w-3.5 text-muted-foreground/60" /> Lihat Detail
+                                    </DropdownMenuItem>
+                                </Link>
 
-                <DataTablePagination :paginator="opnames" v-model:perPage="perPage" class="border-t mt-4 pt-4 border-muted rounded-none" />
-            </div>
+                                <Link v-if="row.status === 'draft'" :href="`/stock-opname/${row.id}/edit`">
+                                    <DropdownMenuItem class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
+                                        <Edit2 class="h-3.5 w-3.5 text-muted-foreground/60" /> Lanjutkan Draft
+                                    </DropdownMenuItem>
+                                </Link>
+
+                                <DropdownMenuItem
+                                    v-if="row.status === 'draft'"
+                                    class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5 font-medium"
+                                    @click="deleteOpname(row.id)">
+                                    <Trash2 class="h-3.5 w-3.5" /> Hapus Draft
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </template>
+
+                <template #empty>
+                    <div class="flex flex-col items-center gap-3 opacity-20 py-12">
+                        <ClipboardList class="h-10 w-10 text-muted-foreground" />
+                        <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Belum ada riwayat opname</p>
+                    </div>
+                </template>
+            </DataTable>
         </div>
     </div>
-</AppLayout>
 </template>
