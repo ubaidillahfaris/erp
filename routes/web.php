@@ -30,12 +30,14 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     Route::middleware('role:superadmin')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+        Route::delete('produk/bulk-destroy', [ProdukController::class, 'bulkDestroy'])->name('produk.bulk-destroy');
         Route::resource('produk', ProdukController::class)->names('produk');
         Route::resource('satuan', SatuanController::class);
         Route::resource('bom', BOMController::class);
         Route::resource('restock', RestockController::class);
         Route::post('restock/{restock}/settle', [RestockController::class, 'settle'])->name('restock.settle');
         Route::resource('pengeluaran', PengeluaranController::class);
+        Route::delete('vendors/bulk-destroy', [VendorController::class, 'bulkDestroy'])->name('vendor.bulk-destroy');
         Route::resource('vendors', VendorController::class)->names('vendor')->parameters(['vendors' => 'vendor']);
         Route::get('journal', [JournalController::class, 'index'])->name('journal.index');
         Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');

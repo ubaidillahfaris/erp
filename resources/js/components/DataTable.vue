@@ -1,8 +1,26 @@
 <script setup lang="ts">
-import { Search, ChevronDown, ChevronRight, MoreHorizontal, Filter, Grid, List, ArrowUpDown } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { 
+    getCoreRowModel, 
+    getExpandedRowModel,
+    getSortedRowModel, // Added
+    useVueTable, 
+    type ColumnDef,
+    type SortingState, // Added
+} from '@tanstack/vue-table';
+import { 
+    ChevronDown, 
+    ChevronRight, 
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown,
+    Trash2, // Added
+    X // Added
+} from 'lucide-vue-next';
+import { computed, ref, watch } from 'vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
+import DataTableTabs from '@/components/DataTableTabs.vue';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -11,8 +29,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
+// Removed Checkbox import
 
 interface Column {
     readonly key: string;
@@ -21,6 +38,7 @@ interface Column {
     readonly width?: string;
     readonly class?: string;
     readonly sortable?: boolean;
+    readonly sortKey?: string; // Added
 }
 
 interface Tab {
@@ -46,12 +64,14 @@ const props = withDefaults(defineProps<{
     tabs?: readonly Tab[];
     activeTab?: string;
     perPage?: string;
+    sort?: string;
+    direction?: 'asc' | 'desc';
     expandable?: boolean;
     rowIdKey?: string;
     toolbarTitle?: string;
     showSelection?: boolean;
 }>(), {
-    searchPlaceholder: 'Search...',
+    searchPlaceholder: 'Filter...',
     rowIdKey: 'id',
     expandable: false,
     showSelection: true,
@@ -62,11 +82,19 @@ const emit = defineEmits<{
     (e: 'update:activeTab', value: string): void;
     (e: 'update:perPage', value: string): void;
     (e: 'rowClick', row: any): void;
+    (e: 'bulkDelete', selectedIds: (string | number)[]): void;
+    (e: 'sortChange', payload: { key: string, direction: 'asc' | 'desc' | null }): void;
 }>();
 
+// --- STATE SYNC ---
 const internalSearch = computed({
     get: () => props.search || '',
     set: (val) => emit('update:search', val),
+});
+
+const internalActiveTab = computed({
+    get: () => props.activeTab || '',
+    set: (val) => emit('update:activeTab', val),
 });
 
 const internalPerPage = computed({
@@ -74,220 +102,330 @@ const internalPerPage = computed({
     set: (val) => emit('update:perPage', val),
 });
 
-const expandedRows = ref<Set<any>>(new Set());
+// --- TANSTACK TABLE ---
+const sorting = ref<SortingState>(
+    props.sort ? [{ id: props.sort, desc: props.direction === 'desc' }] : []
+);
+const rowSelection = ref({});
 
-const toggleRow = (id: any) => {
-    if (expandedRows.value.has(id)) {
-        expandedRows.value.delete(id);
-    } else {
-        expandedRows.value.add(id);
+// Watch sorting state and emit
+watch(sorting, (newSorting) => {
+    if (newSorting.length > 0) {
+        const { id, desc } = newSorting[0];
+        // Find the column to see if it has a sortKey
+        const column = table.getColumn(id);
+        const sortKey = (column?.columnDef.meta as any)?.sortKey || id;
+        
+        if (sortKey !== props.sort || (desc ? 'desc' : 'asc') !== props.direction) {
+            emit('sortChange', { key: sortKey, direction: desc ? 'desc' : 'asc' });
+        }
+    } else if (props.sort) {
+        emit('sortChange', { key: '', direction: null });
     }
+}, { deep: true });
+
+// Sync props back to sorting
+watch(() => [props.sort, props.direction], ([newSort, newDir]) => {
+    // Find the column ID that matches this sort key
+    const column = tableColumns.value.find(c => 
+        (c.meta as any)?.sortKey === newSort || c.id === newSort
+    );
+    
+    const targetId = column?.id || (newSort as string);
+    const targetDesc = newDir === 'desc';
+
+    const currentSort = sorting.value[0]?.id;
+    const currentDesc = sorting.value[0]?.desc;
+
+    if (targetId !== currentSort || targetDesc !== currentDesc) {
+        sorting.value = targetId ? [{ id: targetId, desc: targetDesc }] : [];
+    }
+});
+
+const tableColumns = computed<ColumnDef<any>[]>(() => {
+    const cols: ColumnDef<any>[] = [];
+
+    // Selection Column
+    if (props.showSelection) {
+        cols.push({
+            id: 'select',
+            header: () => null,
+            cell: () => null,
+            size: 40,
+            enableHiding: false,
+            enableSorting: false,
+        });
+    }
+
+    // Expand Toggle Column
+    if (props.expandable) {
+        cols.push({
+            id: 'expand',
+            header: () => null,
+            cell: () => null,
+            size: 40,
+            enableHiding: false,
+            enableSorting: false,
+        });
+    }
+
+    // Data Columns
+    props.columns.forEach(col => {
+        cols.push({
+            id: col.key,
+            accessorKey: col.key,
+            header: col.label,
+            enableSorting: col.sortable !== false,
+            meta: {
+                align: col.align,
+                width: col.width,
+                class: col.class,
+                sortable: col.sortable,
+                sortKey: col.sortKey, // Added
+            }
+        });
+    });
+
+    // Actions Column (Always at the end)
+    cols.push({
+        id: 'actions',
+        header: () => null,
+        cell: () => null,
+        size: 80,
+        enableHiding: false,
+        enableSorting: false,
+    });
+
+    return cols;
+});
+
+const table = useVueTable({
+    get data() { return props.data.data },
+    get columns() { return tableColumns.value },
+    getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getRowId: (row) => row[props.rowIdKey],
+    manualPagination: true,
+    manualSorting: true,
+    state: {
+        get sorting() { return sorting.value },
+        get rowSelection() { return rowSelection.value },
+    },
+    onSortingChange: (updater) => {
+        sorting.value = typeof updater === 'function' ? updater(sorting.value) : updater;
+    },
+    onRowSelectionChange: (updater) => {
+        rowSelection.value = typeof updater === 'function' ? updater(rowSelection.value) : updater;
+    },
+});
+
+// --- HELPER ---
+const selectedRowsCount = computed(() => table.getFilteredSelectedRowModel().rows.length);
+
+const handleBulkDelete = () => {
+    const selectedIds = table.getFilteredSelectedRowModel().rows.map(row => row.id);
+    emit('bulkDelete', selectedIds);
 };
 
-const handleTabClick = (value: string) => {
-    emit('update:activeTab', value);
+const clearSelection = () => {
+    rowSelection.value = {};
+};
+
+const handleSortToggle = (column: any) => {
+    if (!column.getCanSort()) return;
+    const current = column.getIsSorted();
+    if (!current) {
+        column.toggleSorting(false); // Set to ASC
+    } else if (current === 'asc') {
+        column.toggleSorting(true); // Set to DESC
+    } else {
+        column.clearSorting(); // Back to NEUTRAL
+    }
 };
 </script>
 
 <template>
-<div class="flex flex-col gap-0 bg-white border border-border/40 rounded-sm overflow-hidden font-sans">
+<div class="w-full space-y-4">
+    <!-- TABS (Optional) -->
+    <DataTableTabs v-if="tabs && tabs.length > 0" v-model:activeTab="internalActiveTab" :tabs="tabs" />
 
-
-    <!-- ====== ROW 2: TABS NAVIGATION ====== -->
-    <div v-if="tabs && tabs.length > 0" class="px-8 border-b border-border/10">
-        <div class="flex items-center gap-8 h-12 overflow-x-auto no-scrollbar">
-            <button v-for="tab in tabs" :key="tab.value" @click="handleTabClick(tab.value)" type="button" :class="[
-                'relative h-12 text-[13px] font-semibold tracking-wider cursor-pointer transition-all flex items-center gap-2 whitespace-nowrap px-1 group',
-                activeTab === tab.value
-                    ? 'text-foreground'
-                    : 'text-muted-foreground/40 hover:text-foreground'
-            ]">
-                {{ tab.label }}
-                <span v-if="tab.count !== undefined" class="text-[10px] font-bold opacity-60 ml-0.5">
-                    {{ tab.count }}
-                </span>
-                <!-- Active Indicator -->
-                <div v-if="activeTab === tab.value"
-                    class="absolute bottom-0 left-0 right-0 h-0.5 bg-accent rounded-t-full transition-all"></div>
-            </button>
-        </div>
-    </div>
-
-    <!-- ====== ROW 3: TOOLBAR (SEARCH & FILTERS) ====== -->
-    <div class="px-8 py-4 flex items-center justify-between border-b border-border/10 bg-white">
-        <div class="flex items-center gap-4 flex-1">
-            <div
-                class="flex items-center border border-border/40 rounded-sm bg-white h-9 px-3 gap-2 group focus-within:ring-2 focus-within:ring-accent/10 transition-all">
-                <Grid class="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-accent transition-colors" />
-                <span class="text-[12px] font-bold text-muted-foreground/60">View</span>
-                <ChevronDown class="h-3 w-3 text-muted-foreground/30" />
+    <!-- TOOLBAR (Standard vs Selection) -->
+    <div class="h-10 flex items-center justify-between gap-4">
+        <!-- Bulkl/Selection Toolbar -->
+        <div v-if="selectedRowsCount > 0" class="flex-1 flex items-center justify-between px-3 bg-accent/5 border border-accent/20 rounded-md h-full animate-in fade-in slide-in-from-top-1 duration-200">
+            <div class="flex items-center gap-4">
+                <Button variant="ghost" size="sm" class="h-7 w-7 p-0 hover:bg-accent/10" @click="clearSelection">
+                    <X class="h-4 w-4" />
+                </Button>
+                <p class="text-sm font-semibold text-accent leading-none">
+                    {{ selectedRowsCount }} items selected
+                </p>
             </div>
-
-            <div class="h-9 w-px bg-border/20 mx-1"></div>
-
+            
             <div class="flex items-center gap-2">
-                <button
-                    class="h-9 px-3 flex items-center gap-2 border border-border/40 rounded-sm bg-white text-[12px] font-bold text-muted-foreground hover:bg-secondary/50 transition-all">
-                    <Filter class="h-3.5 w-3.5 text-muted-foreground/30" />
-                    All
-                    <ChevronDown class="h-3 w-3 text-muted-foreground/30" />
-                </button>
+                <slot name="bulk-actions" :selected-ids="table.getFilteredSelectedRowModel().rows.map(r => r.id)">
+                    <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        class="h-8 gap-2 px-3 text-xs font-bold uppercase tracking-wider"
+                        @click="handleBulkDelete"
+                    >
+                        <Trash2 class="h-3.5 w-3.5" />
+                        Hapus
+                    </Button>
+                </slot>
+            </div>
+        </div>
 
+        <!-- Standard Toolbar -->
+        <template v-else>
+            <div class="flex items-center gap-2">
                 <div class="relative group">
-                    <Search
-                        class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/30 transition-colors group-focus-within:text-accent" />
-                    <Input v-model="internalSearch" :placeholder="searchPlaceholder"
-                        class="pl-9 h-9 rounded-sm w-[240px] border-border/40 bg-white text-[12px] font-medium shadow-none focus:ring-accent/10 transition-all" />
+                    <Input
+                        v-model="internalSearch"
+                        :placeholder="searchPlaceholder"
+                        class="h-9 w-[150px] lg:w-[250px] shadow-sm focus:ring-accent/10 transition-all pl-3"
+                    />
                 </div>
             </div>
-        </div>
 
-        <!-- <div class="flex items-center gap-3">
-            <slot name="toolbar-actions"></slot>
-            <div class="flex items-center bg-secondary/30 p-1 rounded-sm gap-1 border border-border/10">
-                <button class="p-1.5 rounded-md bg-white shadow-sm text-accent">
-                    <Grid class="h-3.5 w-3.5" />
-                </button>
-                <button class="p-1.5 rounded-md text-muted-foreground/40 hover:text-foreground transition-all">
-                    <List class="h-3.5 w-3.5" />
-                </button>
+            <div class="flex items-center gap-2">
+                <slot name="header-actions"></slot>
             </div>
-        </div> -->
+        </template>
     </div>
 
-    <!-- ====== TABLE CONTAINER ====== -->
-    <div class="overflow-hidden">
-        <Table class="border-collapse">
-            <TableHeader class="bg-[#F9FAFB] border-b border-border/10 no-hover">
-                <TableRow class="hover:bg-transparent border-none">
-                    <!-- Selection Checkbox -->
-                    <TableHead v-if="showSelection" class="h-10 w-[60px] pl-8">
-                        <Checkbox />
-                    </TableHead>
+    <!-- TABLE AREA -->
+    <div class="rounded-md border border-border/60 bg-white overflow-hidden shadow-sm">
+        <Table>
+            <TableHeader class="bg-muted/30">
+                <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+                    <template v-for="header in headerGroup.headers" :key="header.id">
+                        <!-- Selection Header -->
+                        <TableHead v-if="header.column.id === 'select'" class="w-[40px] px-4 align-middle">
+                            <input 
+                                type="checkbox"
+                                :checked="table.getIsAllPageRowsSelected()"
+                                :indeterminate="table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()"
+                                @change="table.toggleAllPageRowsSelected(($event.target as HTMLInputElement).checked)"
+                                class="h-4 w-4 rounded border-border/40 text-accent accent-accent focus:ring-accent/20 cursor-pointer transition-all bg-white"
+                            />
+                        </TableHead>
 
-                    <!-- Expand Toggle Column -->
-                    <TableHead v-if="expandable" class="h-10 w-[40px]"></TableHead>
+                        <!-- Expand Header -->
+                        <TableHead v-else-if="header.column.id === 'expand'" class="w-[40px]"></TableHead>
 
-                    <!-- Dynamic Columns -->
-                    <TableHead v-for="col in columns" :key="col.key" :class="[
-                        'h-10 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/40 px-4',
-                        col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left',
-                        col.class
-                    ]" :style="{ width: col.width }">
-                        <div class="flex items-center gap-1.5 text-black/60"
-                            :class="col.align === 'center' ? 'justify-center' : col.align === 'right' ? 'justify-end' : 'justify-start'">
-                            {{ col.label }}
-                            <ArrowUpDown v-if="col.sortable !== false" class="h-2.5 w-2.5 opacity-30" />
-                        </div>
-                    </TableHead>
+                        <!-- Actions Header -->
+                        <TableHead v-else-if="header.column.id === 'actions'" class="w-[80px] px-4 text-right"></TableHead>
 
-                    <!-- Actions Column Slot -->
-                    <TableHead v-if="$slots.actions" class="h-10 w-[80px] px-8 text-right"></TableHead>
+                        <!-- Data Headers -->
+                        <TableHead 
+                            v-else
+                            @click="handleSortToggle(header.column)"
+                            :class="[
+                                'px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/70 h-11 select-none',
+                                header.column.getCanSort() ? 'cursor-pointer hover:bg-muted/50 transition-colors group/head' : '',
+                                (header.column.columnDef.meta as any)?.align === 'center' ? 'text-center' : (header.column.columnDef.meta as any)?.align === 'right' ? 'text-right' : 'text-left',
+                                (header.column.columnDef.meta as any)?.class
+                            ]"
+                            :style="{ width: (header.column.columnDef.meta as any)?.width }"
+                        >
+                            <div class="flex items-center gap-2"
+                                :class="(header.column.columnDef.meta as any)?.align === 'center' ? 'justify-center' : (header.column.columnDef.meta as any)?.align === 'right' ? 'justify-end' : 'justify-start'">
+                                {{ header.column.columnDef.header }}
+                                
+                                <template v-if="header.column.getCanSort()">
+                                    <div class="flex items-center">
+                                        <ArrowUp v-if="header.column.getIsSorted() === 'asc'" class="h-3.5 w-3.5 text-accent animate-in fade-in zoom-in-50 duration-300" />
+                                        <ArrowDown v-else-if="header.column.getIsSorted() === 'desc'" class="h-3.5 w-3.5 text-accent animate-in fade-in zoom-in-50 duration-300" />
+                                        <ArrowUpDown v-else class="h-3.5 w-3.5 opacity-20 group-hover/head:opacity-60 transition-opacity" />
+                                    </div>
+                                </template>
+                            </div>
+                        </TableHead>
+                    </template>
                 </TableRow>
             </TableHeader>
 
             <TableBody>
-                <template v-for="row in data.data" :key="row[rowIdKey]">
-                    <TableRow :class="[
-                        'group transition-all duration-200 border-border/10 last:border-0 hover:bg-accent/[0.02]',
-                        expandedRows.has(row[rowIdKey]) ? 'bg-accent/[0.02] border-b-0' : ''
-                    ]" @click="emit('rowClick', row)">
-                        <!-- Selection Checkbox -->
-                        <TableCell v-if="showSelection" class="pl-8 py-4 align-middle">
-                            <Checkbox @click.stop />
-                        </TableCell>
+                <template v-if="table.getRowModel().rows?.length">
+                    <template v-for="row in table.getRowModel().rows" :key="row.id">
+                        <TableRow 
+                            :data-state="row.getIsSelected() && 'selected'"
+                            class="group transition-colors data-[state=selected]:bg-accent/[0.03] hover:bg-muted/20"
+                            @click="emit('rowClick', row.original)"
+                        >
+                            <template v-for="cell in row.getVisibleCells()" :key="cell.id">
+                                <!-- Selection Cell -->
+                                <TableCell v-if="cell.column.id === 'select'" class="px-4 py-3 align-middle">
+                                    <input 
+                                        type="checkbox"
+                                        :checked="row.getIsSelected()" 
+                                        @change="row.toggleSelected(($event.target as HTMLInputElement).checked)"
+                                        @click.stop
+                                        class="h-4 w-4 rounded border-border/40 text-accent accent-accent focus:ring-accent/20 cursor-pointer transition-all bg-white"
+                                    />
+                                </TableCell>
 
-                        <!-- Expand Toggle -->
-                        <TableCell v-if="expandable" class="p-0 pl-1 w-[40px] align-middle">
-                            <button @click.stop="toggleRow(row[rowIdKey])"
-                                class="h-6 w-6 rounded-md flex items-center justify-center transition-all hover:bg-white hover:shadow-sm">
-                                <ChevronRight :class="[
-                                    'h-3.5 w-3.5 text-muted-foreground/30 transition-transform duration-300',
-                                    expandedRows.has(row[rowIdKey]) ? 'rotate-90 text-accent' : ''
-                                ]" />
-                            </button>
-                        </TableCell>
+                                <!-- Expand Cell -->
+                                <TableCell v-else-if="cell.column.id === 'expand'" class="p-0 pl-1 w-[40px] align-middle">
+                                    <button @click.stop="row.toggleExpanded()" class="h-8 w-8 rounded-md flex items-center justify-center hover:bg-muted transition-all">
+                                        <ChevronRight :class="['h-4 w-4 text-muted-foreground/40 transition-transform duration-300', row.getIsExpanded() ? 'rotate-90 text-accent' : '']" />
+                                    </button>
+                                </TableCell>
 
-                        <!-- Cells -->
-                        <TableCell v-for="col in columns" :key="col.key" :class="[
-                            'py-4 px-4 align-middle',
-                            col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left',
-                            col.class
-                        ]">
-                            <slot :name="`cell(${col.key})`" :row="row" :column="col">
-                                <span class="text-[13px] font-bold text-foreground">{{ row[col.key] }}</span>
-                            </slot>
-                        </TableCell>
+                                <!-- Actions Cell -->
+                                <TableCell v-else-if="cell.column.id === 'actions'" class="px-4 py-3 text-right align-middle">
+                                    <div v-if="$slots.actions" @click.stop>
+                                        <slot name="actions" :row="row.original"></slot>
+                                    </div>
+                                </TableCell>
 
-                        <!-- Actions -->
-                        <TableCell v-if="$slots.actions" class="px-8 py-4 text-right align-middle">
-                            <div class="opacity-0 group-hover:opacity-100 transition-opacity flex justify-end">
-                                <slot name="actions" :row="row"></slot>
-                            </div>
-                        </TableCell>
-                    </TableRow>
+                                <!-- Data Cell -->
+                                <TableCell 
+                                    v-else
+                                    :class="[
+                                        'px-4 py-3 align-middle text-sm font-medium text-foreground/80',
+                                        (cell.column.columnDef.meta as any)?.align === 'center' ? 'text-center' : (cell.column.columnDef.meta as any)?.align === 'right' ? 'text-right' : 'text-left',
+                                        (cell.column.columnDef.meta as any)?.class
+                                    ]"
+                                >
+                                    <slot :name="`cell(${cell.column.id})`" :row="row.original" :column="cell.column.columnDef">
+                                        {{ row.original[cell.column.id] }}
+                                    </slot>
+                                </TableCell>
+                            </template>
+                        </TableRow>
 
-                    <!-- Expandable Content -->
-                    <TableRow v-if="expandable && expandedRows.has(row[rowIdKey])"
-                        class="hover:bg-transparent bg-accent/[0.01] border-border/10">
-                        <TableCell
-                            :colspan="columns.length + (expandable ? 1 : 0) + ($slots.actions ? 1 : 0) + (showSelection ? 1 : 0)"
-                            class="p-0 border-b border-border/10">
-                            <div class="px-20 py-8 animate-in slide-in-from-top-2 duration-300">
-                                <div class="relative pl-8 border-l border-border/40 space-y-8">
-                                    <slot name="expanded" :row="row"></slot>
+                        <!-- Expandable Content -->
+                        <TableRow v-if="row.getIsExpanded()">
+                            <TableCell :colspan="row.getVisibleCells().length" class="p-0 border-t bg-muted/5 tracking-normal">
+                                <div class="px-12 py-6 animate-in slide-in-from-top-1 duration-300">
+                                    <slot name="expanded" :row="row.original"></slot>
                                 </div>
-                            </div>
+                            </TableCell>
+                        </TableRow>
+                    </template>
+                </template>
+
+                <template v-else>
+                    <TableRow>
+                        <TableCell :colspan="tableColumns.length" class="h-32 text-center text-muted-foreground/40 text-sm italic py-12">
+                            <slot name="empty">No results found.</slot>
                         </TableCell>
                     </TableRow>
                 </template>
-
-                <!-- Empty State -->
-                <TableRow v-if="data.data.length === 0">
-                    <TableCell
-                        :colspan="columns.length + (expandable ? 1 : 0) + ($slots.actions ? 1 : 0) + (showSelection ? 1 : 0)"
-                        class="px-10 py-24 text-center">
-                        <slot name="empty">
-                            <div class="flex flex-col items-center gap-3 opacity-20">
-                                <div class="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
-                                    <Grid class="h-6 w-6" />
-                                </div>
-                                <h3 class="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground mt-2">
-                                    Data tidak
-                                    ditemukan</h3>
-                            </div>
-                        </slot>
-                    </TableCell>
-                </TableRow>
             </TableBody>
         </Table>
-    </div>
 
-    <!-- ====== PAGINATION ====== -->
-    <div class="px-8 py-6 border-t border-border/10 bg-[#FAFAFB]">
-        <DataTablePagination :paginator="data" v-model:perPage="internalPerPage" />
+        <!-- PAGINATION -->
+        <DataTablePagination 
+            :paginator="data" 
+            v-model:perPage="internalPerPage" 
+            :selectedCount="selectedRowsCount"
+            class="border-t bg-muted/10"
+        />
     </div>
 </div>
 </template>
-
-<style scoped>
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-</style>
-
-<style scoped>
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-</style>

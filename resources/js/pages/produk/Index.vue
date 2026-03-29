@@ -8,7 +8,7 @@ import {
     Pencil
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import { index, create, edit, destroy } from '@/actions/App/Http/Controllers/ProdukController';
+import { index, create, edit, destroy, bulkDestroy } from '@/actions/App/Http/Controllers/ProdukController';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,8 @@ const props = defineProps<{
         search?: string;
         jenis?: string;
         per_page?: string;
+        sort?: string;
+        direction?: string;
     };
 }>();
 
@@ -58,12 +60,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 const search = ref(props.filters.search || '');
 const jenis = ref(props.filters.jenis || 'all');
 const perPage = ref(props.filters.per_page || String(props.produks.per_page));
+const sort = ref(props.filters.sort || 'created_at');
+const direction = ref(props.filters.direction || 'desc');
 
 const columns = [
-    { key: 'item', label: 'Item Details' },
-    { key: 'identity', label: 'Identity' },
-    { key: 'price', label: 'Price', align: 'right' },
-    { key: 'stock', label: 'Stock', align: 'center' },
+    { key: 'item', label: 'Item Details', sortKey: 'nama' },
+    { key: 'identity', label: 'Identity', sortKey: 'sku' },
+    { key: 'price', label: 'Price', align: 'right', sortable: false }, // Price sorting requires complex joins, disabling for now
+    { key: 'stock', label: 'Stock', align: 'center', sortKey: 'stok' },
 ] as const;
 
 const tabs = [
@@ -72,11 +76,13 @@ const tabs = [
     { value: 'finished_good', label: 'Barang Jadi' },
 ];
 
-watch([search, jenis, perPage], debounce(([newSearch, newJenis, newPerPage]) => {
+watch([search, jenis, perPage, sort, direction], debounce(([newSearch, newJenis, newPerPage, newSort, newDirection]) => {
     router.get(index().url, {
-        search: newSearch,
+        search: newSearch || undefined,
         jenis: newJenis === 'all' ? undefined : newJenis,
-        per_page: newPerPage
+        per_page: newPerPage,
+        sort: newSort || undefined,
+        direction: newSort ? (newDirection || 'asc') : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
@@ -86,6 +92,24 @@ const deleteProduk = async (id: number) => {
     if (await confirmDialog('Apakah Anda yakin?', 'Apakah Anda yakin ingin menghapus produk ini? Semua data terkait mungkin ikut terhapus.')) {
         router.delete(destroy({ id }).url);
     }
+};
+
+const handleBulkDelete = async (ids: (string | number)[]) => {
+    if (await confirmDialog('Hapus Produk Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} produk yang dipilih?`)) {
+        router.post(bulkDestroy().url, {
+            _method: 'DELETE',
+            ids: ids
+        }, {
+            onSuccess: () => {
+                // Flash messages handled by server
+            }
+        });
+    }
+};
+
+const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
+    sort.value = payload.key || '';
+    direction.value = payload.direction || '';
 };
 
 const formatCurrency = (value: number) => {
@@ -106,9 +130,21 @@ const formatCurrency = (value: number) => {
 
     <!-- ====== CONTENT AREA ====== -->
     <div class="max-w-7xl mx-auto w-full">
-        <DataTable :data="produks" :columns="columns" v-model:search="search" v-model:perPage="perPage"
-            v-model:activeTab="jenis" :tabs="tabs" search-placeholder="Cari nama, SKU..." :title="'Katalog Produk'"
-            :total-count="produks.total">
+        <DataTable 
+            :data="produks" 
+            :columns="columns" 
+            v-model:search="search" 
+            v-model:perPage="perPage"
+            v-model:activeTab="jenis" 
+            :tabs="tabs" 
+            :sort="sort"
+            :direction="direction as any"
+            @sort-change="handleSortChange"
+            @bulk-delete="handleBulkDelete"
+            search-placeholder="Cari nama, SKU..." 
+            :title="'Katalog Produk'"
+            :total-count="produks.total"
+        >
             <template #header-actions>
                 <Link :href="create().url">
                     <Button primary>

@@ -1,7 +1,16 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+    Select, 
+    SelectContent, 
+    SelectGroup, 
+    SelectItem, 
+    SelectTrigger, 
+    SelectValue 
+} from '@/components/ui/select';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-vue-next';
 
 const props = defineProps<{
     paginator: {
@@ -12,75 +21,110 @@ const props = defineProps<{
         total: number;
     };
     perPageOptions?: number[];
+    selectedCount?: number;
 }>();
 
 const emit = defineEmits<{
-    (e: 'update:perPage', value: string): void
+    (e: 'update:perPage', value: string): void;
 }>();
 
-const defaultOptions = [10, 25, 50, 100];
-const options = props.perPageOptions || defaultOptions;
+const perPage = computed({
+    get: () => String(props.paginator.per_page),
+    set: (val) => emit('update:perPage', val),
+});
 
-const onPerPageChange = (value: any) => {
-    emit('update:perPage', String(value));
-};
+const currentPage = computed({
+    get: () => props.paginator.current_page,
+    set: (page) => {
+        const link = props.paginator.links.find(l => l.label === String(page));
+        if (link && link.url) {
+            router.get(link.url, {}, { preserveState: true, preserveScroll: true });
+        } else {
+            const url = new URL(window.location.href);
+            url.searchParams.set('page', String(page));
+            router.get(url.toString(), {}, { preserveState: true, preserveScroll: true });
+        }
+    }
+});
+
+const options = props.perPageOptions || [10, 25, 50, 100];
 </script>
 
 <template>
-<div v-if="paginator.total > 0" class="flex flex-col sm:flex-row items-center justify-between gap-6">
-    <div class="flex items-center gap-6 text-xs text-muted-foreground w-full sm:w-auto">
-        <div class="flex flex-col">
-            <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 mb-0.5">Page Progress</span>
-            <span class="font-black text-foreground">
-                {{ paginator.current_page }} <span class="text-muted-foreground/30 mx-1">/</span> {{ paginator.last_page }}
-            </span>
-        </div>
-        
-        <div class="h-8 w-px bg-border/40 mx-2" />
+<div v-if="paginator.total > 0" class="flex items-center justify-between px-4 py-3">
+    <!-- Row Selection/Total Info -->
+    <div class="flex-1 text-sm text-muted-foreground font-medium">
+        <template v-if="selectedCount !== undefined && selectedCount > 0">
+            {{ selectedCount }} of {{ paginator.total }} row(s) selected.
+        </template>
+        <template v-else>
+            Total {{ paginator.total }} record(s).
+        </template>
+    </div>
 
-        <div class="flex flex-col gap-1.5">
-            <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">Showing</span>
-            <Select :model-value="String(paginator.per_page)" @update:model-value="onPerPageChange">
-                <SelectTrigger class="h-9 w-[70px] rounded-xl border-border/40 bg-muted/20 text-xs font-black shadow-none ring-0 focus:ring-0">
-                    <SelectValue :placeholder="String(paginator.per_page)" />
+    <!-- Navigation Bar -->
+    <div class="flex items-center space-x-6 lg:space-x-8">
+        <!-- Rows per page -->
+        <div class="flex items-center space-x-2">
+            <p class="text-sm font-medium">Rows per page</p>
+            <Select v-model="perPage">
+                <SelectTrigger class="h-8 w-[70px] border-border/40">
+                    <SelectValue :placeholder="perPage" />
                 </SelectTrigger>
-                <SelectContent class="rounded-xl">
+                <SelectContent side="top" class="min-w-[70px]">
                     <SelectGroup>
-                        <SelectItem v-for="opt in options" :key="opt" :value="String(opt)" class="rounded-lg">
+                        <SelectItem v-for="opt in options" :key="opt" :value="String(opt)">
                             {{ opt }}
                         </SelectItem>
                     </SelectGroup>
                 </SelectContent>
             </Select>
         </div>
-        
-        <div class="ml-auto sm:ml-4 flex flex-col items-end">
-            <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30 mb-0.5">Total Records</span>
-            <span class="font-black text-foreground tabular-nums">{{ paginator.total }}</span>
-        </div>
-    </div>
 
-    <div v-if="paginator.last_page > 1" class="flex items-center justify-center gap-1.5 bg-muted/30 p-1.5 rounded-2xl border border-border/20">
-        <template v-for="(link, index) in paginator.links" :key="index">
-            <Button v-if="link.url" 
-                :variant="link.active ? 'default' : 'ghost'" 
-                size="sm" 
-                as-child
-                :class="[
-                    'h-9 min-w-9 rounded-xl text-xs font-black transition-all duration-300',
-                    link.active 
-                        ? 'bg-accent text-white shadow-lg shadow-accent/25 hover:bg-accent/90' 
-                        : 'text-muted-foreground/50 hover:bg-white hover:text-accent hover:shadow-sm'
-                ]"
+        <!-- Page info -->
+        <div class="flex w-[100px] items-center justify-center text-sm font-medium text-foreground/80">
+            Page {{ paginator.current_page }} of {{ paginator.last_page }}
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center space-x-2">
+            <Button
+                variant="outline"
+                class="hidden h-8 w-8 p-0 lg:flex border-border/40"
+                :disabled="paginator.current_page === 1"
+                @click="currentPage = 1"
             >
-                <Link :href="link.url" preserve-scroll preserve-state>
-                    <span v-html="link.label" />
-                </Link>
+                <span class="sr-only">Go to first page</span>
+                <ChevronsLeft class="h-4 w-4" />
             </Button>
-            <Button v-else variant="ghost" size="sm" disabled class="h-9 min-w-9 rounded-xl text-xs text-muted-foreground/20 italic">
-                <span v-html="link.label" />
+            <Button
+                variant="outline"
+                class="h-8 w-8 p-0 border-border/40"
+                :disabled="paginator.current_page === 1"
+                @click="currentPage = paginator.current_page - 1"
+            >
+                <span class="sr-only">Go to previous page</span>
+                <ChevronLeft class="h-4 w-4" />
             </Button>
-        </template>
+            <Button
+                variant="outline"
+                class="h-8 w-8 p-0 border-border/40"
+                :disabled="paginator.current_page === paginator.last_page"
+                @click="currentPage = paginator.current_page + 1"
+            >
+                <span class="sr-only">Go to next page</span>
+                <ChevronRight class="h-4 w-4" />
+            </Button>
+            <Button
+                variant="outline"
+                class="hidden h-8 w-8 p-0 lg:flex border-border/40"
+                :disabled="paginator.current_page === paginator.last_page"
+                @click="currentPage = paginator.last_page"
+            >
+                <span class="sr-only">Go to last page</span>
+                <ChevronsRight class="h-4 w-4" />
+            </Button>
+        </div>
     </div>
 </div>
 </template>

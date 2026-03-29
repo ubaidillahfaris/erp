@@ -14,17 +14,21 @@ class VendorController extends Controller
      */
     public function index(Request $request): Response
     {
+        $perPage = $request->input('per_page', 10);
+        $sort = $request->input('sort') ?: 'created_at';
+        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
+
         $vendors = Vendor::query()
             ->when($request->search, function ($query, $search) {
                 $query->where('nama', 'like', "%{$search}%");
             })
-            ->latest()
-            ->paginate(10)
+            ->orderBy($sort, $direction)
+            ->paginate($perPage)
             ->withQueryString();
 
         return Inertia::render('Vendor/Index', [
             'vendors' => $vendors,
-            'filters' => $request->only(['search']),
+            'filters' => $request->only(['search', 'per_page', 'sort', 'direction']),
         ]);
     }
 
@@ -95,5 +99,33 @@ class VendorController extends Controller
         $vendor->delete();
 
         return back()->with('success', 'Vendor berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:vendors,id',
+        ]);
+
+        $deletedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($request->ids as $id) {
+            $vendor = Vendor::find($id);
+            if ($vendor && !$vendor->restocks()->exists()) {
+                $vendor->delete();
+                $deletedCount++;
+            } else {
+                $skippedCount++;
+            }
+        }
+
+        $message = "{$deletedCount} vendor berhasil dihapus.";
+        if ($skippedCount > 0) {
+            $message .= " {$skippedCount} vendor dilewati karena memiliki riwayat.";
+        }
+
+        return to_route('vendor.index')->with($deletedCount > 0 ? 'success' : 'error', $message);
     }
 }

@@ -16,13 +16,15 @@ class ProdukController extends Controller
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
         $jenis = $request->input('jenis');
+        $sort = $request->input('sort') ?: 'created_at';
+        $direction = strtolower($request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
         if ($request->filled('search')) {
             $produks = Produk::search($search)
                 ->when($request->filled('jenis') && $jenis !== 'all', function ($query) use ($jenis) {
                     $query->where('type', $jenis);
                 })
-                ->query(fn ($q) => $q->with(['satuan', 'currentPrice'])->latest())
+                ->query(fn ($q) => $q->with(['satuan', 'currentPrice'])->orderBy($sort, $direction))
                 ->paginate($perPage);
         } else {
             $produks = Produk::query()
@@ -30,13 +32,13 @@ class ProdukController extends Controller
                     $query->where('type', $jenis);
                 })
                 ->with(['satuan', 'currentPrice'])
-                ->latest()
+                ->orderBy($sort, $direction)
                 ->paginate($perPage);
         }
 
         return Inertia::render('produk/Index', [
             'produks' => $produks->withQueryString(),
-            'filters' => $request->only(['search', 'jenis', 'per_page']),
+            'filters' => $request->only(['search', 'jenis', 'per_page', 'sort', 'direction']),
         ]);
     }
 
@@ -133,5 +135,18 @@ class ProdukController extends Controller
 
         return redirect()->route('produk.index')
             ->with('success', 'Produk berhasil dihapus.');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:produks,id',
+        ]);
+
+        Produk::whereIn('id', $request->ids)->delete();
+
+        return redirect()->route('produk.index')
+            ->with('success', count($request->ids) . ' produk berhasil dihapus.');
     }
 }

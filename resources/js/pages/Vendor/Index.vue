@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, router, Link } from '@inertiajs/vue3';
+import { index, bulkDestroy, destroy } from '@/actions/App/Http/Controllers/VendorController';
 import debounce from 'lodash/debounce';
 import { Plus, Search, Edit2, Trash2, MoreHorizontal, Building2, Phone, Mail, MapPin, Info, ChevronRight, Map as MapIcon } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
@@ -37,6 +38,8 @@ const props = defineProps<{
     filters: {
         search?: string;
         per_page?: string;
+        sort?: string;
+        direction?: string;
     };
 }>();
 
@@ -46,26 +49,44 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const search = ref(props.filters.search || '');
-const perPage = ref(String(props.vendors.per_page));
+const perPage = ref(props.filters.per_page || String(props.vendors.per_page));
+const sort = ref(props.filters.sort || 'created_at');
+const direction = ref(props.filters.direction || 'desc');
 
 const columns = [
-    { key: 'profil', label: 'Profil Vendor' },
-    { key: 'kontak', label: 'Kontak & Alamat' },
-    { key: 'info', label: 'Info Tambahan' },
+    { key: 'profil', label: 'Profil Vendor', sortKey: 'nama' },
+    { key: 'kontak', label: 'Kontak & Alamat', sortable: false },
+    { key: 'info', label: 'Info Tambahan', sortKey: 'keterangan' },
 ];
 
-watch([search, perPage], debounce(([newSearch, newPerPage]) => {
-    router.get('/vendors', {
-        search: newSearch,
-        per_page: newPerPage
+watch([search, perPage, sort, direction], debounce(([newSearch, newPerPage, newSort, newDirection]) => {
+    router.get(index().url, {
+        search: newSearch || undefined,
+        per_page: newPerPage,
+        sort: newSort || undefined,
+        direction: newSort ? (newDirection || 'asc') : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
+
+const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
+    sort.value = payload.key || '';
+    direction.value = payload.direction || '';
+};
+
+const handleBulkDelete = async (ids: (string | number)[]) => {
+    if (await confirmDialog('Hapus Vendor Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} vendor yang dipilih? Data yang memiliki riwayat pembelian akan dilewati.`)) {
+        router.post(bulkDestroy().url, {
+            _method: 'DELETE',
+            ids: ids
+        });
+    }
+};
 
 const { confirmDialog } = useConfirm();
 
 const deleteVendor = async (id: number) => {
     if (await confirmDialog('Hapus Vendor?', 'Apakah Anda yakin ingin menghapus vendor ini? Data pemasok yang terhapus tidak bisa dikembalikan.')) {
-        router.delete(`/vendors/${id}`);
+        router.delete(destroy({ vendor: id }).url);
     }
 };
 </script>
@@ -79,9 +100,20 @@ const deleteVendor = async (id: number) => {
     
     <!-- ====== CONTENT AREA ====== -->
     <div class="max-w-7xl mx-auto w-full">
-        <DataTable :data="vendors" :columns="columns" v-model:search="search" v-model:perPage="perPage"
-            search-placeholder="Cari vendor..." toolbar-title="Database Rekanan" :title="'Vendor & Supplier'"
-            :total-count="vendors.total">
+        <DataTable 
+            :data="vendors" 
+            :columns="columns" 
+            v-model:search="search" 
+            v-model:perPage="perPage"
+            search-placeholder="Cari vendor..." 
+            toolbar-title="Database Rekanan" 
+            :title="'Vendor & Supplier'"
+            :sort="sort"
+            :direction="direction as any"
+            @sort-change="handleSortChange"
+            @bulk-delete="handleBulkDelete"
+            :total-count="vendors.total"
+        >
             <template #header-actions>
                 <Link href="/vendors/create">
                     <Button primary>
