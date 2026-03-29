@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BOMController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PosController;
@@ -27,9 +28,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // Admin-only Access
     Route::middleware('role:superadmin')->group(function () {
-        Route::get('/dashboard', function () {
-            return inertia('Dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::resource('produk', ProdukController::class)->names('produk');
         Route::resource('satuan', SatuanController::class);

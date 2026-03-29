@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { debounce } from 'lodash';
-import { Plus, Search, Edit2, Trash2, MoreHorizontal } from 'lucide-vue-next';
+import { Plus, Search, Edit2, Trash2, MoreHorizontal, Ruler, ChevronRight } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { index as satuanIndex, destroy as satuanDestroy } from '@/actions/App/Http/Controllers/SatuanController';
 import { create as satuanCreate, edit as satuanEdit } from '@/actions/App/Http/Controllers/SatuanController';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,6 +19,10 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import { useConfirm } from '@/composables/useConfirm';
+
+// Persistent Layout Fix
+defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
     satuans: {
@@ -44,7 +47,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Satuan Barang', href: '#' },
+    { title: 'Satuan Barang', href: satuanIndex().url },
 ];
 
 const search = ref(props.filters.search || '');
@@ -61,104 +64,121 @@ watch(
     }, 300)
 );
 
-const confirmDelete = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus satuan ini?')) {
+const { confirmDialog } = useConfirm();
+
+const confirmDelete = async (id: number) => {
+    if (await confirmDialog('Hapus Satuan Barang?', 'Apakah Anda yakin ingin menghapus satuan ini? Data yang terkait tidak dapat dikembalikan.')) {
         router.delete(satuanDestroy(id).url);
     }
 };
 </script>
 
 <template>
-<Head title="Satuan Barang" />
+    <Head title="Satuan Barang" />
 
-<AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-10">
-        <!-- Header Section -->
-        <div class="flex items-center justify-between border-b pb-6 border-muted rounded-none">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight">Satuan Barang</h1>
-                <p class="text-sm text-muted-foreground mt-1">Kelola satuan (unit) barang seperti pcs, kg, dus, dll.</p>
+    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)]">
+        <!-- ====== PAGE HEADER ====== -->
+        <div class="flex flex-col gap-2 max-w-7xl mx-auto w-full">
+            <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
+                <span>Konfigurasi</span>
+                <ChevronRight class="h-3 w-3" />
+                <span class="text-foreground/40">Satuan Barang</span>
             </div>
-            <Link :href="satuanCreate().url">
-                <Button class="rounded-none">
-                    <Plus class="mr-2 h-4 w-4" />
-                    Tambah Satuan
-                </Button>
-            </Link>
+            <div class="flex items-end justify-between">
+                <h1 class="text-3xl font-bold tracking-tight text-foreground">Unit & Satuan</h1>
+                <Link :href="satuanCreate().url">
+                    <Button class="h-10 px-5 text-xs font-bold rounded-lg bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20 gap-2 transition-all">
+                        <Plus class="h-4 w-4" />
+                        Tambah Satuan
+                    </Button>
+                </Link>
+            </div>
         </div>
 
-        <!-- content -->
-        <div class="flex flex-col gap-6">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b pb-4 border-muted">
-                 <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Daftar Satuan</h3>
-                <div class="flex items-center gap-4 w-full max-w-sm">
-                    <div class="relative w-full">
-                        <Search class="absolute left-0 top-3 h-4 w-4 text-muted-foreground/40" />
+        <!-- ====== CONTENT AREA ====== -->
+        <div class="max-w-7xl mx-auto w-full flex flex-col gap-6">
+            
+            <!-- Table Toolbar -->
+            <div class="flex items-center justify-between border-b border-border/40 pb-px h-12">
+                <div class="flex items-center gap-8 h-full">
+                     <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Daftar Master Satuan</h3>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
                         <Input 
                             v-model="search" 
                             placeholder="Cari satuan..." 
-                            class="pl-7 rounded-none border-t-0 border-x-0 border-b border-muted bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-primary transition-colors h-10" 
+                            class="pl-9 h-9 rounded-lg w-[240px] border-border/40 bg-white text-[13px] font-medium shadow-none focus:ring-accent/10 transition-all" 
                         />
                     </div>
                 </div>
             </div>
 
-            <div class="flex flex-col gap-4">
-                <DataTablePagination :paginator="satuans" v-model:perPage="perPage" class="border-b pb-4 border-muted rounded-none" />
-
-                <Table class="border-none">
-                    <TableHeader>
-                        <TableRow class="hover:bg-transparent border-b border-muted">
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Nama Satuan</TableHead>
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Simbol</TableHead>
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Deskripsi</TableHead>
-                            <TableHead class="h-12 px-0 w-[80px] text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Aksi</TableHead>
+            <!-- Table Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-border/40 overflow-hidden">
+                <Table>
+                    <TableHeader class="bg-muted/5">
+                        <TableRow class="hover:bg-transparent border-none">
+                            <TableHead class="h-11 px-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Nama & Simbol</TableHead>
+                            <TableHead class="h-11 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Deskripsi</TableHead>
+                            <TableHead class="h-11 px-6 w-[80px] text-right"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="satuan in satuans.data" :key="satuan.id" class="hover:bg-muted/30 border-b border-muted/50 group transition-colors">
-                            <TableCell class="px-0 py-4 font-bold text-sm tracking-tight capitalize">{{ satuan.nama }}</TableCell>
-                            <TableCell class="px-0 py-4 text-sm font-mono uppercase text-muted-foreground">{{ satuan.simbol }}</TableCell>
-                            <TableCell class="px-0 py-4 text-sm">{{ satuan.deskripsi || '-' }}</TableCell>
-                            <TableCell class="px-0 py-4 text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger as-child>
-                                        <Button variant="ghost" size="icon" class="h-8 w-8 rounded-none">
-                                            <MoreHorizontal class="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" class="rounded-none">
-                                        <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Aksi Cepat</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-
-                                        <Link :href="satuanEdit(satuan.id).url">
-                                            <DropdownMenuItem class="cursor-pointer rounded-none">
-                                                <Edit2 class="mr-2 h-4 w-4" />
-                                                <span>Edit Satuan</span>
+                        <TableRow v-for="satuan in satuans.data" :key="satuan.id" class="group transition-all duration-200 border-border/10 last:border-0 hover:bg-secondary/10">
+                            <TableCell class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                                        <Ruler class="h-4 w-4" />
+                                    </div>
+                                    <div class="min-w-0 pr-4">
+                                        <p class="text-[14px] font-bold text-foreground capitalize">{{ satuan.nama }}</p>
+                                        <p class="text-[10px] font-mono font-bold text-muted-foreground/40 uppercase tracking-widest mt-0.5">{{ satuan.simbol }}</p>
+                                    </div>
+                                </div>
+                            </TableCell>
+                            <TableCell class="px-4 py-4">
+                                <span class="text-[13px] text-muted-foreground/60">{{ satuan.deskripsi || 'Tidak ada deskripsi' }}</span>
+                            </TableCell>
+                            <TableCell class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-1">
+                                    <Link :href="satuanEdit(satuan.id).url">
+                                        <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                            <ChevronRight class="h-4 w-4" />
+                                        </button>
+                                    </Link>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger as-child>
+                                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                                <MoreHorizontal class="h-4 w-4" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-44 shadow-lg border-border/40">
+                                            <DropdownMenuItem @click="confirmDelete(satuan.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5">
+                                                <Trash2 class="h-3.5 w-3.5" /> Hapus Satuan
                                             </DropdownMenuItem>
-                                        </Link>
-
-                                        <DropdownMenuItem
-                                            class="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive rounded-none"
-                                            @click="confirmDelete(satuan.id)">
-                                            <Trash2 class="mr-2 h-4 w-4" />
-                                            <span>Hapus Satuan</span>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="satuans.data.length === 0">
-                            <TableCell colspan="4" class="h-32 text-center text-xs text-muted-foreground uppercase tracking-widest">
-                                Tidak ada data satuan.
+                            <TableCell colspan="3" class="px-10 py-24 text-center">
+                                <div class="flex flex-col items-center gap-3 opacity-20">
+                                    <Ruler class="h-10 w-10 text-muted-foreground" />
+                                    <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Belum ada satuan</p>
+                                </div>
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
+            </div>
 
-                <DataTablePagination :paginator="satuans" v-model:perPage="perPage" class="border-t mt-4 pt-4 border-muted rounded-none" />
+            <!-- Pagination -->
+            <div class="px-2">
+                <DataTablePagination :paginator="satuans" v-model:perPage="perPage" />
             </div>
         </div>
     </div>
-</AppLayout>
 </template>

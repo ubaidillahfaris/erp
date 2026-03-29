@@ -52,8 +52,12 @@ watch([search, perPage], debounce(([newSearch, newPerPage]) => {
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
-const deleteOpname = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus data opname ini?')) {
+import { useConfirm } from '@/composables/useConfirm';
+
+const { confirmDialog } = useConfirm();
+
+const deleteOpname = async (id: number) => {
+    if (await confirmDialog('Hapus Data Opname?', 'Apakah Anda yakin ingin menghapus data opname ini? Data yang terhapus tidak dapat dikembalikan.')) {
         router.delete(`/stock-opname/${id}`);
     }
 };

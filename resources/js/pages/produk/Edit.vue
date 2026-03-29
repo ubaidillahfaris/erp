@@ -56,6 +56,8 @@ const submit = () => {
     form.put(updateAction({ id: props.produk.id }).url);
 };
 
+import { toast } from 'vue-sonner';
+
 const handleCreateSatuan = async (nama: string, onCreated?: (id: number) => void) => {
     try {
         const simbol = nama.substring(0, 3).toLowerCase();
@@ -72,9 +74,11 @@ const handleCreateSatuan = async (nama: string, onCreated?: (id: number) => void
         } else {
             form.satuan_id = newSatuan.id.toString();
         }
+        
+        toast.success(`Satuan ${nama} berhasil ditambahkan`);
     } catch (error) {
         console.error('Gagal menambah satuan:', error);
-        alert('Gagal menambah satuan. Mungkin nama/simbol sudah ada.');
+        toast.error('Gagal menambah satuan. Mungkin nama/simbol sudah ada.');
     }
 };
 </script>

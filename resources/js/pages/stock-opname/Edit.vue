@@ -93,17 +93,22 @@ watch(searchTerm, debounce((value) => {
     );
 }, 300));
 
+import { useConfirm } from '@/composables/useConfirm';
+
+const { confirmDialog } = useConfirm();
+
 const calculateDiff = (item: any) => {
     return (item.physical_qty || 0) - (item.system_qty || 0);
 };
 
-const submit = (status: 'draft' | 'completed') => {
+const submit = async (status: 'draft' | 'completed') => {
     form.status = status;
+    const msgTitle = status === 'completed' ? 'Selesaikan Opname?' : 'Simpan Draft?';
     const msg = status === 'completed' 
-        ? 'Apakah Anda yakin ingin menyelesaikan opname ini? Stok sistem akan disesuaikan otomatis.' 
-        : 'Simpan perubahan draft?';
+        ? 'Apakah Anda yakin ingin menyelesaikan opname ini? Stok sistem akan disesuaikan otomatis tanpa dapat dibatalkan.' 
+        : 'Simpan perubahan pada draft opname ini?';
         
-    if (confirm(msg)) {
+    if (await confirmDialog(msgTitle, msg)) {
         // Transform items_map to items array for backend
         form.transform((data) => ({
             ...data,

@@ -74,6 +74,8 @@ const onBahanSelected = (item: any, selectedProdukId: string) => {
     }
 };
 
+import { toast } from 'vue-sonner';
+
 const handleCreateSatuan = async (nama: string, callback?: (id: number) => void) => {
     try {
         const simbol = nama.substring(0, 3).toLowerCase();
@@ -88,9 +90,10 @@ const handleCreateSatuan = async (nama: string, callback?: (id: number) => void)
         if (callback) {
             callback(newSatuan.id);
         }
+        toast.success(`Satuan ${nama} berhasil ditambahkan`);
     } catch (error) {
         console.error('Gagal menambah satuan:', error);
-        alert('Gagal menambah satuan. Mungkin nama/simbol sudah ada.');
+        toast.error('Gagal menambah satuan. Mungkin nama/simbol sudah ada.');
     }
 };
 

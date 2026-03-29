@@ -3,7 +3,7 @@ import { Head, useForm, router } from '@inertiajs/vue3';
 import { 
     Search, ShoppingCart, Plus, Minus, 
     CreditCard, Banknote, QrCode, X, 
-    Package, History, Landmark
+    Package, History, Landmark, ChevronRight 
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { toast } from 'vue-sonner';
@@ -17,6 +17,8 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
+// Persistent Layout Fix
+defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
     produks: any[];
@@ -68,7 +70,7 @@ const updateQty = (index: number, delta: number) => {
 };
 
 const totalAmount = computed(() => {
-    return cart.value.reduce((total, item) => total + (item.qty * item.price), 0);
+    return cart.value.reduce((total, item) => total + (item.qty * (item.price || 0)), 0);
 });
 
 const form = useForm({
@@ -101,9 +103,10 @@ const handleCheckout = () => {
         onSuccess: () => {
             cart.value = [];
             isCheckoutOpen.value = false;
+            toast.success('Transaksi berhasil disimpan!');
         },
         onError: () => {
-            toast.error('Gagal memproses transaksi. Silakan periksa kembali input Anda.');
+            toast.error('Gagal memproses transaksi.');
         },
     });
 };
@@ -113,267 +116,251 @@ const formatCurrency = (value: number) => {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
-    }).format(value);
+    }).format(value || 0);
 };
 </script>
 
 <template>
-<Head title="POS Penjualan" />
+    <Head title="POS Penjualan" />
 
-<AppLayout :breadcrumbs="breadcrumbs">
-    <div class="flex h-[calc(100vh-64px)] overflow-hidden">
-        <!-- Main Product Area -->
-        <div class="flex-1 flex flex-col p-6 overflow-hidden">
-            <div class="flex items-center justify-between mb-6">
-                <div class="relative w-full max-w-md">
-                    <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                        v-model="searchQuery"
-                        placeholder="Cari produk (Nama, SKU, atau Barcode)..." 
-                        class="pl-10 h-11 border-muted bg-background shadow-none focus-visible:ring-1"
-                    />
+    <div class="flex h-[calc(100vh-64px)] overflow-hidden bg-[#F8F9FA]">
+        
+        <!-- ====== MAIN CONTENT: Product Selector ====== -->
+        <div class="flex-1 flex flex-col p-8 overflow-hidden gap-8">
+            
+            <!-- Header section -->
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
+                    <span>Point Of Sales</span>
+                    <ChevronRight class="h-3 w-3" />
+                    <span class="text-foreground/40">Checkout Live</span>
                 </div>
-                <div class="flex items-center gap-2">
-                    <Button variant="outline" size="icon" class="rounded-none shadow-none" title="History (Coming Soon)">
-                        <History class="h-4 w-4" />
-                    </Button>
+                <div class="flex items-center justify-between">
+                    <h1 class="text-3xl font-bold tracking-tight text-foreground">Point of Sale</h1>
+                    <div class="relative w-full max-w-sm">
+                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                        <Input 
+                            v-model="searchQuery"
+                            placeholder="Cari nama, SKU, atau barcode..." 
+                            class="pl-9 h-10 border-border/40 bg-white shadow-sm focus-visible:ring-accent/10 rounded-lg text-sm"
+                        />
+                    </div>
                 </div>
             </div>
 
+            <!-- Product Grid -->
             <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 h-fit pb-10">
                     <div 
                         v-for="produk in filteredProduks" 
                         :key="produk.id"
                         @click="addToCart(produk)"
-                        class="group cursor-pointer border border-muted bg-card hover:border-primary/50 transition-all p-4 flex flex-col gap-3 h-full relative"
+                        class="group cursor-pointer bg-white border border-border/40 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-accent/30 transition-all flex flex-col gap-4"
                     >
-                        <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Badge variant="secondary" class="bg-primary/10 text-primary border-none text-[10px] uppercase font-bold tracking-tighter shadow-none">
-                                <Plus class="h-3 w-3 mr-1" /> Tambah
-                            </Badge>
-                        </div>
-                        
-                        <div class="aspect-square bg-muted/30 flex items-center justify-center border border-muted/50 overflow-hidden">
-                            <Package class="h-10 w-10 text-muted-foreground/20" />
+                        <div class="aspect-square bg-[#F8F9FA] rounded-lg flex items-center justify-center border border-border/10 overflow-hidden relative group-hover:bg-accent/5 transition-colors">
+                            <Package class="h-10 w-10 text-muted-foreground/10 group-hover:text-accent/20 transition-all" />
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-accent/5 backdrop-blur-[1px]">
+                                <div class="bg-accent text-white h-8 w-8 rounded-full flex items-center justify-center shadow-lg">
+                                    <Plus class="h-4 w-4" />
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="flex flex-col gap-1">
-                            <h3 class="text-sm font-bold truncate group-hover:text-primary transition-colors">{{ produk.nama }}</h3>
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs text-muted-foreground">{{ produk.base_unit }}</span>
-                                <span class="text-[10px] font-mono text-muted-foreground/60">{{ produk.sku || '-' }}</span>
+                        <div class="flex flex-col gap-1.5 px-0.5">
+                            <div class="flex items-start justify-between gap-2">
+                                <h3 class="text-[13px] font-bold text-foreground leading-tight truncate">{{ produk.nama }}</h3>
                             </div>
-                            <div class="mt-2 text-base font-black text-primary">{{ formatCurrency(produk.price) }}</div>
-                            <div class="mt-1 flex items-center justify-between text-[10px]">
-                                <span class="uppercase tracking-widest text-muted-foreground/40 font-bold">Stok: {{ produk.stock }}</span>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] font-bold font-mono text-muted-foreground/30 uppercase">#{{ produk.sku || '--' }}</span>
+                                <span class="text-[10px] text-muted-foreground/40 italic">In Stock: {{ produk.stok }}</span>
                             </div>
+                            <div class="mt-2 text-md font-bold text-foreground tabular-nums">{{ formatCurrency(produk.price) }}</div>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="filteredProduks.length === 0" class="h-full flex flex-col items-center justify-center text-muted-foreground py-20 grayscale opacity-30">
-                    <Search class="h-16 w-16 mb-4" />
-                    <p class="text-xs uppercase tracking-widest font-bold font-mono">Produk tidak ditemukan</p>
+                <div v-if="filteredProduks.length === 0" class="h-full flex flex-col items-center justify-center py-20 opacity-20">
+                    <Search class="h-12 w-12 mb-4" />
+                    <p class="text-[11px] font-bold uppercase tracking-widest text-center">Produk tidak ditemukan</p>
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar Cart -->
-        <div class="w-[400px] border-l border-muted bg-muted/5 flex flex-col h-full shadow-2xl">
-            <div class="p-6 border-b border-muted bg-card">
-                <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-lg font-bold flex items-center">
-                        <ShoppingCart class="mr-2 h-5 w-5 text-primary" />
-                        Keranjang
+        <!-- ====== SIDEBAR: Cart ====== -->
+        <div class="w-[420px] bg-white border-l border-border/40 flex flex-col h-full shadow-sm">
+            
+            <div class="p-8 border-b border-border/20 flex items-center justify-between">
+                <div class="flex flex-col gap-1">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <ShoppingCart class="h-5 w-5 text-accent" />
+                        Live Order
                     </h2>
-                    <Badge variant="secondary" class="rounded-none shadow-none">{{ cart.length }} items</Badge>
+                    <p class="text-[11px] font-medium text-muted-foreground italic">Current session tracking enabled</p>
                 </div>
-                <p class="text-xs text-muted-foreground italic">Klik produk untuk menambah pesanan.</p>
+                <Badge variant="secondary" class="h-6 rounded-md px-2 bg-muted/30 text-muted-foreground font-bold tabular-nums">
+                    {{ cart.length }} line items
+                </Badge>
             </div>
 
-            <!-- Cart Items -->
-            <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 custom-scrollbar">
+            <!-- Items List -->
+            <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 custom-scrollbar">
                 <div 
                     v-for="(item, index) in cart" 
                     :key="index"
-                    class="bg-card border border-muted p-3 flex flex-col gap-2 group animate-in slide-in-from-right-4 duration-200"
+                    class="bg-white border border-border/20 p-4 rounded-xl flex flex-col gap-3 group animate-in slide-in-from-right-2 duration-300"
                 >
                     <div class="flex items-start justify-between">
-                        <div class="flex flex-col gap-0.5">
-                            <span class="text-sm font-bold truncate w-48">{{ item.nama }}</span>
-                            <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-tight">{{ formatCurrency(item.price) }} / {{ item.base_unit }}</span>
+                        <div class="flex flex-col gap-0.5 min-w-0 pr-4">
+                            <span class="text-[13px] font-bold text-foreground truncate">{{ item.nama }}</span>
+                            <span class="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tight">{{ formatCurrency(item.price) }} / {{ item.base_unit || 'PCS' }}</span>
                         </div>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            class="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10 -mt-1 -mr-1"
+                        <button 
+                            class="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/20 hover:bg-destructive/10 hover:text-destructive transition-all -mt-1 -mr-1"
                             @click="removeFromCart(index)"
                         >
-                            <X class="h-3 w-3" />
-                        </Button>
+                            <X class="h-3.5 w-3.5" />
+                        </button>
                     </div>
 
-                    <div class="flex items-center justify-between mt-auto">
-                        <div class="flex items-center border border-muted bg-muted/20">
-                            <Button variant="ghost" size="icon" class="h-7 w-7 rounded-none" @click="updateQty(index, -1)">
+                    <div class="flex items-center justify-between mt-1">
+                        <div class="flex items-center bg-secondary/50 rounded-lg p-0.5">
+                            <button @click="updateQty(index, -1)" class="h-7 w-7 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-muted-foreground transition-all">
                                 <Minus class="h-3 w-3" />
-                            </Button>
-                            <span class="w-10 text-center text-xs font-bold font-mono">{{ item.qty }}</span>
-                            <Button variant="ghost" size="icon" class="h-7 w-7 rounded-none font-bold" @click="updateQty(index, 1)">
+                            </button>
+                            <span class="w-10 text-center text-[12px] font-bold tabular-nums">{{ item.qty }}</span>
+                            <button @click="updateQty(index, 1)" class="h-7 w-7 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-muted-foreground transition-all">
                                 <Plus class="h-3 w-3" />
-                            </Button>
+                            </button>
                         </div>
-                        <div class="text-sm font-black text-right">
-                            {{ formatCurrency(item.qty * item.price) }}
-                        </div>
+                        <span class="text-[14px] font-bold text-foreground tabular-nums">
+                            {{ formatCurrency(item.qty * (item.price || 0)) }}
+                        </span>
                     </div>
                 </div>
 
-                <div v-if="cart.length === 0" class="h-full flex flex-col items-center justify-center py-20 opacity-20 text-muted-foreground pointer-events-none">
-                    <ShoppingCart class="h-12 w-12 mb-4" />
-                    <p class="text-[10px] uppercase font-bold tracking-widest text-center italic">Belum ada item pesanan.</p>
+                <div v-if="cart.length === 0" class="h-full flex flex-col items-center justify-center py-20 opacity-20 text-muted-foreground">
+                    <div class="h-16 w-16 border-2 border-dashed border-muted-foreground rounded-full flex items-center justify-center mb-4">
+                        <ShoppingCart class="h-6 w-6" />
+                    </div>
+                    <p class="text-[11px] font-bold font-mono italic uppercase tracking-widest text-center">Keranjang masih kosong</p>
                 </div>
             </div>
 
-            <!-- Total & Checkout -->
-            <div class="p-6 bg-card border-t-2 border-primary/20 space-y-4 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-                <div class="space-y-2">
-                    <div class="flex justify-between text-xs text-muted-foreground uppercase font-bold tracking-wider">
-                        <span>Subtotal</span>
-                        <span>{{ formatCurrency(totalAmount) }}</span>
+            <!-- Totals & Checkout -->
+            <div class="p-8 border-t border-border/20 bg-secondary/5 flex flex-col gap-6">
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between items-center px-1">
+                        <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Subtotal Order</span>
+                        <span class="text-[13px] font-bold text-foreground tabular-nums">{{ formatCurrency(totalAmount) }}</span>
                     </div>
-                    <div class="flex justify-between text-sm text-primary font-bold border-t border-muted pt-2 uppercase tracking-widest text-lg">
-                        <span>Total Akhir</span>
-                        <span>{{ formatCurrency(totalAmount) }}</span>
+                    <div class="h-px bg-border/20 mx-1" />
+                    <div class="flex justify-between items-center px-1 py-1">
+                        <span class="text-xs font-bold text-foreground uppercase tracking-[0.1em]">Total Invoice</span>
+                        <span class="text-2xl font-bold text-accent tabular-nums">{{ formatCurrency(totalAmount) }}</span>
                     </div>
                 </div>
 
                 <Dialog :open="isCheckoutOpen" @update:open="isCheckoutOpen = $event">
                     <DialogTrigger as-child>
                         <Button 
-                            class="w-full h-14 text-lg font-black tracking-widest uppercase bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-30 disabled:grayscale transition-all rounded-none shadow-lg"
+                            class="w-full h-14 text-sm font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white disabled:opacity-30 rounded-xl shadow-lg shadow-accent/20 transition-all font-mono"
                             :disabled="cart.length === 0 || totalAmount <= 0"
                         >
                             Bayar Sekarang
                         </Button>
                     </DialogTrigger>
-                    <DialogContent class="max-w-[98vw] min-w-[40rem] rounded-none border-none p-0 overflow-hidden shadow-2xl">
-                        <DialogHeader class="p-6 bg-primary text-primary-foreground">
-                            <DialogTitle class="text-2xl font-black uppercase tracking-widest">Selesaikan Pembayaran</DialogTitle>
-                            <DialogDescription class="text-primary-foreground/60">Pilih metode pembayaran dan lengkapi detail transaksi.</DialogDescription>
+                    <DialogContent class="max-w-2xl rounded-2xl border-none p-0 overflow-hidden shadow-2xl">
+                        <DialogHeader class="p-8 bg-accent text-white">
+                            <div class="flex flex-col gap-1">
+                                <DialogTitle class="text-2xl font-bold uppercase tracking-widest">Selesaikan Pembayaran</DialogTitle>
+                                <DialogDescription class="text-white/60">Pilih metode pembayaran dan konfirmasi transaksi.</DialogDescription>
+                            </div>
                         </DialogHeader>
                         
-                        <div class="p-10 grid grid-cols-1 md:grid-cols-2 gap-16">
-                            <!-- Left Column: Summary & Method -->
-                            <div class="space-y-6">
-                                <div class="p-8 bg-muted/30 border border-muted text-center space-y-2">
-                                    <span class="text-xs uppercase font-bold tracking-widest text-muted-foreground">Total Tagihan</span>
-                                    <div class="text-5xl font-black text-primary">{{ formatCurrency(totalAmount) }}</div>
-                                </div>
+                        <div class="p-10 flex flex-col gap-10 bg-white">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                <!-- Summary & Method -->
+                                <div class="flex flex-col gap-6">
+                                    <div class="p-8 bg-[#F8F9FA] border border-border/40 rounded-xl text-center flex flex-col gap-1 translate-y-0 hover:-translate-y-1 transition-transform">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-50">Total Tagihan</span>
+                                        <div class="text-4xl font-bold text-accent tabular-nums">{{ formatCurrency(totalAmount) }}</div>
+                                    </div>
 
-                                <div class="space-y-4">
-                                    <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-50 italic">Metode Pembayaran</h4>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div 
-                                            @click="form.payment_method = 'cash'"
-                                            class="cursor-pointer border-2 p-4 text-center space-y-2 transition-all"
-                                            :class="form.payment_method === 'cash' ? 'border-primary bg-primary/5 text-primary' : 'border-muted hover:border-muted-foreground/30'"
-                                        >
-                                            <Banknote class="mx-auto h-6 w-6" />
-                                            <span class="text-xs font-black uppercase tracking-tight">Tunai</span>
-                                        </div>
-                                        <div 
-                                            @click="form.payment_method = 'qris'"
-                                            class="cursor-pointer border-2 p-4 text-center space-y-2 transition-all"
-                                            :class="form.payment_method === 'qris' ? 'border-primary bg-primary/5 text-primary' : 'border-muted hover:border-muted-foreground/30'"
-                                        >
-                                            <QrCode class="mx-auto h-6 w-6" />
-                                            <span class="text-xs font-black uppercase tracking-tight">QRIS</span>
-                                        </div>
-                                        <div 
-                                            @click="form.payment_method = 'transfer'"
-                                            class="cursor-pointer border-2 p-4 text-center space-y-2 transition-all"
-                                            :class="form.payment_method === 'transfer' ? 'border-primary bg-primary/5 text-primary' : 'border-muted hover:border-muted-foreground/30'"
-                                        >
-                                            <CreditCard class="mx-auto h-6 w-6" />
-                                            <span class="text-xs font-black uppercase tracking-tight">Transfer</span>
-                                        </div>
-                                        <div 
-                                            @click="form.payment_method = 'credit'"
-                                            class="cursor-pointer border-2 p-4 text-center space-y-2 transition-all"
-                                            :class="form.payment_method === 'credit' ? 'border-primary bg-primary/5 text-primary' : 'border-muted hover:border-muted-foreground/30'"
-                                        >
-                                            <Landmark class="mx-auto h-6 w-6" />
-                                            <span class="text-xs font-black uppercase tracking-tight">Piutang</span>
+                                    <div class="flex flex-col gap-3">
+                                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Metode Pembayaran</h4>
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <button 
+                                                v-for="method in [
+                                                    { id: 'cash', label: 'Tunai', icon: Banknote },
+                                                    { id: 'qris', label: 'QRIS', icon: QrCode },
+                                                    { id: 'transfer', label: 'Transfer', icon: CreditCard },
+                                                    { id: 'credit', label: 'Piutang', icon: Landmark }
+                                                ]"
+                                                :key="method.id"
+                                                @click="form.payment_method = method.id"
+                                                class="flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2"
+                                                :class="form.payment_method === method.id ? 'border-accent bg-accent/5 text-accent' : 'border-border/30 hover:border-border/60 hover:bg-secondary/20 text-muted-foreground'"
+                                            >
+                                                <component :is="method.icon" class="h-6 w-6" />
+                                                <span class="text-[11px] font-bold uppercase tracking-tight">{{ method.label }}</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Right Column: Cash Handling & Notes -->
-                            <div class="space-y-6 flex flex-col justify-between">
-                                <div v-if="form.payment_method === 'cash'" class="space-y-4 animate-in fade-in zoom-in duration-200">
-                                    <div class="space-y-6">
-                                        <div class="space-y-2">
-                                            <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-50 italic">Uang Diterima</label>
+                                <!-- Input Details -->
+                                <div class="flex flex-col gap-6">
+                                    <div v-if="form.payment_method === 'cash'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                        <div class="flex flex-col gap-2">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Uang Diterima</label>
                                             <div class="relative">
-                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-muted-foreground">Rp</span>
+                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-muted-foreground/40">Rp</span>
                                                 <Input 
                                                     v-model.number="form.received_amount"
                                                     type="number"
-                                                    class="pl-12 h-16 text-3xl font-black border-primary/20 bg-primary/5 focus-visible:ring-primary rounded-none shadow-none"
+                                                    class="pl-12 h-14 text-2xl font-bold border-border/40 bg-[#F8F9FA] focus:border-accent/30 rounded-xl shadow-none"
                                                 />
                                             </div>
                                         </div>
-                                        <div class="space-y-2">
-                                            <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-50 italic">Kembalian</label>
-                                            <div class="h-16 flex items-center justify-end px-4 border border-muted bg-muted/10 text-3xl font-black text-destructive">
+                                        <div class="flex flex-col gap-2">
+                                            <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Kembalian</label>
+                                            <div class="h-14 flex items-center justify-end px-6 border border-border/40 bg-secondary/20 rounded-xl text-2xl font-bold text-destructive tabular-nums">
                                                 {{ formatCurrency(changeAmount) }}
                                             </div>
                                         </div>
+                                        <div class="flex flex-wrap gap-2 mt-1">
+                                            <button 
+                                                v-for="cash in [10000, 20000, 50000, 100000]" 
+                                                :key="cash"
+                                                @click="form.received_amount = cash"
+                                                class="px-3 py-1.5 rounded-lg border border-border/40 text-[10px] font-bold hover:bg-muted transition-all"
+                                            >
+                                                {{ cash / 1000 }}K
+                                            </button>
+                                            <button @click="form.received_amount = totalAmount" class="px-3 py-1.5 rounded-lg border border-accent/20 bg-accent/5 text-accent text-[10px] font-bold hover:bg-accent/10 transition-all">
+                                                Uang Pas
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="flex flex-wrap gap-2">
-                                        <Button 
-                                            v-for="cash in [10000, 20000, 50000, 100000]" 
-                                            :key="cash"
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            class="rounded-none text-[10px] uppercase font-bold tracking-tighter shadow-none h-8 px-3"
-                                            @click="form.received_amount = cash"
-                                        >
-                                            {{ formatCurrency(cash) }}
-                                        </Button>
-                                        <Button 
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            class="rounded-none text-[10px] uppercase font-bold tracking-tighter shadow-none h-8 px-3 border-primary/20 text-primary"
-                                            @click="form.received_amount = totalAmount"
-                                        >
-                                            Uang Pas
-                                        </Button>
-                                    </div>
-                                </div>
 
-                                <div class="space-y-2 flex-1 flex flex-col">
-                                    <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground opacity-50 italic">Catatan</label>
-                                    <textarea 
-                                        v-model="form.notes"
-                                        class="w-full h-full min-h-[100px] border border-muted bg-muted/10 p-3 text-sm focus:outline-none focus:border-primary/50 transition-colors resize-none"
-                                        placeholder="Opsional (Contoh: No Meja, Nama Pelanggan)..."
-                                    ></textarea>
+                                    <div class="flex flex-col gap-2 flex-1">
+                                        <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Catatan Transaksi</label>
+                                        <textarea 
+                                            v-model="form.notes"
+                                            class="w-full flex-1 min-h-[100px] border border-border/40 bg-[#F8F9FA] rounded-xl p-4 text-sm focus:outline-none focus:border-accent/30 transition-all resize-none font-medium"
+                                            placeholder="Opsional: Nama meja, ID member..."
+                                        ></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <DialogFooter class="p-6 bg-muted/20 border-t border-muted">
-                            <Button variant="ghost" @click="isCheckoutOpen = false" class="rounded-none uppercase tracking-widest font-bold">Batal</Button>
+                        <DialogFooter class="p-8 bg-secondary/10 border-t border-border/20 flex items-center justify-end gap-3">
+                            <Button variant="ghost" @click="isCheckoutOpen = false" class="text-xs font-bold uppercase tracking-widest rounded-lg">Kembali</Button>
                             <Button 
                                 :disabled="form.processing"
                                 @click="handleCheckout" 
-                                class="rounded-none px-10 h-11 uppercase tracking-widest font-black"
+                                class="h-12 px-10 text-xs font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white rounded-lg shadow-lg shadow-accent/10"
                             >
                                 Konfirmasi & Simpan
                             </Button>
@@ -383,8 +370,23 @@ const formatCurrency = (value: number) => {
             </div>
         </div>
     </div>
-</AppLayout>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+</style>
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar {

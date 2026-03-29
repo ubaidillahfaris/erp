@@ -106,8 +106,12 @@ const submit = () => {
     }
 };
 
-const deleteRole = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus role ini?')) {
+import { useConfirm } from '@/composables/useConfirm';
+
+const { confirmDialog } = useConfirm();
+
+const deleteRole = async (id: number) => {
+    if (await confirmDialog('Hapus Role?', 'Apakah Anda yakin ingin menghapus role ini? User dengan role ini mungkin akan kehilangan hak aksesnya.')) {
         form.delete(destroyRoleRoute(id).url, {
             onSuccess: () => toast.success('Role berhasil dihapus'),
             onError: (err: Record<string, any>) => {

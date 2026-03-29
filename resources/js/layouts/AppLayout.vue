@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/app/AppSidebarLayout.vue';
+import GlobalConfirmDialog from '@/components/GlobalConfirmDialog.vue';
 import type { BreadcrumbItem } from '@/types';
 
 type Props = {
@@ -15,4 +16,5 @@ withDefaults(defineProps<Props>(), {
     <AppLayout :breadcrumbs="breadcrumbs">
         <slot />
     </AppLayout>
+    <GlobalConfirmDialog />
 </template>

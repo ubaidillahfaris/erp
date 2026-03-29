@@ -98,8 +98,12 @@ const submit = () => {
     }
 };
 
-const deleteUser = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus user ini?')) {
+import { useConfirm } from '@/composables/useConfirm';
+
+const { confirmDialog } = useConfirm();
+
+const deleteUser = async (id: number) => {
+    if (await confirmDialog('Hapus User?', 'Apakah Anda yakin ingin menghapus user ini? Akses loginnya akan segera dicabut.')) {
         form.delete(destroyUserRoute(id).url, {
             onSuccess: () => toast.success('User berhasil dihapus'),
         });

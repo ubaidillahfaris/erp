@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Plus, Eye, Search, Filter, Trash2, Edit2, MoreHorizontal, Check } from 'lucide-vue-next';
+import { Plus, Search, Filter, Trash2, Edit2, MoreHorizontal, Check, ChevronRight, ShoppingCart, History } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,6 +19,10 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+import { useConfirm } from '@/composables/useConfirm';
+
+// Persistent Layout Fix
+defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
     restocks: {
@@ -42,7 +44,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Restock / Belanja', href: '#' },
+    { title: 'Restock Registry', href: '/restock' },
 ];
 
 const search = ref(props.filters.search || '');
@@ -59,16 +61,18 @@ watch([search, vendor, status, perPage], debounce(([newSearch, newVendor, newSta
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
-const settleRestock = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin melunasi pembayaran restock ini?')) {
+const { confirmDialog } = useConfirm();
+
+const settleRestock = async (id: number) => {
+    if (await confirmDialog('Lunasi Pembayaran?', 'Apakah Anda yakin ingin melunasi pembayaran restock ini? Sisa hutang akan dibayarkan sepenuhnya.')) {
         router.post(`/restock/${id}/settle`, {}, {
             preserveScroll: true
         });
     }
 };
 
-const deleteRestock = (id: number) => {
-    if (confirm('Apakah Anda yakin ingin menghapus data restock ini? (Akan mengurangi stok dan membatalkan laporan pengeluaran).')) {
+const deleteRestock = async (id: number) => {
+    if (await confirmDialog('Hapus Data Restock?', 'Apakah Anda yakin ingin menghapus data restock ini? (Akan mengurangi stok produk dan membatalkan laporan pengeluaran keuangan).')) {
         router.delete(`/restock/${id}`);
     }
 };
@@ -78,7 +82,7 @@ const formatCurrency = (value: number) => {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
-    }).format(value);
+    }).format(value || 0);
 };
 
 const formatDate = (dateString: string) => {
@@ -89,50 +93,76 @@ const formatDate = (dateString: string) => {
     }).format(new Date(dateString));
 };
 
-const getStatusVariant = (status: string) => {
+const getStatusStyles = (status: string) => {
     switch (status) {
-        case 'lunas': return 'default';
-        case 'hutang': return 'destructive';
-        case 'bayar_berkala': return 'outline';
-        default: return 'secondary';
+        case 'lunas':
+            return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+        case 'hutang':
+            return 'bg-destructive/5 text-destructive border-destructive/10';
+        case 'bayar_berkala':
+            return 'bg-orange-50 text-orange-600 border-orange-100';
+        default:
+            return 'bg-secondary/40 text-muted-foreground/60 border-transparent';
     }
 };
 
 const formatStatus = (status: string) => {
-    return status.replace('_', ' ').toUpperCase();
+    if (status === 'bayar_berkala') return 'Bertahap';
+    return status.toUpperCase();
 };
 </script>
 
 <template>
-<Head title="Restock / Belanja" />
+    <Head title="Restock & Inventory" />
 
-<AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-10">
-        <!-- Header Section -->
-        <div class="flex items-center justify-between border-b pb-6 border-muted rounded-none">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight">Restock / Belanja</h1>
-                <p class="text-sm text-muted-foreground mt-1">Catat transaksi belanja barang (kulakan) dari vendor.</p>
+    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)]">
+        <!-- ====== PAGE HEADER ====== -->
+        <div class="flex flex-col gap-2 max-w-7xl mx-auto w-full">
+            <div class="flex items-center gap-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/20 w-fit px-2 py-0.5 rounded">
+                <span>Supply Chain</span>
+                <ChevronRight class="h-3 w-3" />
+                <span class="text-foreground/40">Restock History</span>
             </div>
-            <Link href="/restock/create">
-                <Button class="rounded-none">
-                    <Plus class="mr-2 h-4 w-4" />
-                    Catat Belanja Baru
-                </Button>
-            </Link>
+            <div class="flex items-end justify-between">
+                <h1 class="text-3xl font-bold tracking-tight text-foreground">Restock Logs</h1>
+                <Link href="/restock/create">
+                    <Button class="h-10 px-5 text-xs font-bold rounded-lg bg-accent text-white hover:bg-accent/90 shadow-md shadow-accent/20 gap-2 transition-all">
+                        <Plus class="h-4 w-4" />
+                        Catat Belanja Baru
+                    </Button>
+                </Link>
+            </div>
         </div>
 
-        <!-- content -->
-        <div class="flex flex-col gap-6">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b pb-4 border-muted">
-                 <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">Riwayat Restock</h3>
-                <div class="flex items-center gap-4 w-full max-w-2xl">
-                    <div class="w-[180px]">
+        <!-- ====== CONTENT AREA ====== -->
+        <div class="max-w-7xl mx-auto w-full flex flex-col gap-6">
+            
+            <!-- Table Toolbar & Filters -->
+            <div class="flex flex-col gap-4 border-b border-border/40 pb-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Inventory Replenishment</h3>
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                            <Input 
+                                v-model="search" 
+                                placeholder="Cari nota..." 
+                                class="pl-9 h-9 rounded-lg w-[200px] border-border/40 bg-white text-[13px] font-medium shadow-none focus:ring-accent/10 transition-all" 
+                            />
+                        </div>
+                        <div class="relative">
+                            <Filter class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                            <Input 
+                                v-model="vendor" 
+                                placeholder="Filter vendor..." 
+                                class="pl-9 h-9 rounded-lg w-[200px] border-border/40 bg-white text-[13px] font-medium shadow-none focus:ring-accent/10 transition-all" 
+                            />
+                        </div>
                         <Select v-model="status">
-                            <SelectTrigger class="rounded-none border-t-0 border-x-0 border-b border-muted bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-primary transition-colors h-10">
+                            <SelectTrigger class="h-9 w-[160px] rounded-lg border-border/40 bg-white text-[13px] font-medium shadow-none focus:ring-accent/10 transition-all">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
-                            <SelectContent class="rounded-none">
+                            <SelectContent class="rounded-xl shadow-xl border-border/40">
                                 <SelectItem value="semua">Semua Status</SelectItem>
                                 <SelectItem value="lunas">Lunas</SelectItem>
                                 <SelectItem value="hutang">Hutang</SelectItem>
@@ -140,104 +170,97 @@ const formatStatus = (status: string) => {
                             </SelectContent>
                         </Select>
                     </div>
-
-                    <div class="relative flex-1">
-                        <Search class="absolute left-0 top-3 h-4 w-4 text-muted-foreground/40" />
-                        <Input 
-                            v-model="search" 
-                            placeholder="Cari nota..." 
-                            class="pl-7 rounded-none border-t-0 border-x-0 border-b border-muted bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-primary transition-colors h-10" 
-                        />
-                    </div>
-                    
-                    <div class="relative flex-1">
-                        <Filter class="absolute left-0 top-3 h-4 w-4 text-muted-foreground/40" />
-                        <Input 
-                            v-model="vendor" 
-                            placeholder="Filter vendor..." 
-                            class="pl-7 rounded-none border-t-0 border-x-0 border-b border-muted bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-primary transition-colors h-10" 
-                        />
-                    </div>
                 </div>
             </div>
 
-            <div class="flex flex-col gap-4">
-                <DataTablePagination :paginator="restocks" v-model:perPage="perPage" class="border-b pb-4 border-muted rounded-none" />
-
-                <Table class="border-none">
-                    <TableHeader>
-                        <TableRow class="hover:bg-transparent border-b border-muted">
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Tanggal</TableHead>
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Vendor / Supplier</TableHead>
-                            <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Keterangan</TableHead>
-                            <TableHead class="h-12 px-0 text-center text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Status</TableHead>
-                            <TableHead class="h-12 px-0 text-center text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Jenis Item</TableHead>
-                            <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Total Biaya</TableHead>
-                            <TableHead class="h-12 px-0 w-[80px] text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Aksi</TableHead>
+            <!-- Table Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-border/40 overflow-hidden">
+                <Table>
+                    <TableHeader class="bg-muted/5">
+                        <TableRow class="hover:bg-transparent border-none">
+                            <TableHead class="h-11 px-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Timestamp & Vendor</TableHead>
+                            <TableHead class="h-11 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40">Keterangan</TableHead>
+                            <TableHead class="h-11 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 text-center">Items</TableHead>
+                            <TableHead class="h-11 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 text-right">Total Biaya</TableHead>
+                            <TableHead class="h-11 px-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 text-center">Status</TableHead>
+                            <TableHead class="h-11 px-6 w-[80px] text-right"></TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="restock in restocks.data" :key="restock.id" class="hover:bg-muted/30 border-b border-muted/50 group transition-colors">
-                            <TableCell class="px-0 py-4 font-medium text-sm">{{ formatDate(restock.tanggal) }}</TableCell>
-                            <TableCell class="px-0 py-4">
-                                <span v-if="restock.vendor" class="font-medium text-primary text-sm">{{ restock.vendor.nama }}</span>
-                                <span v-else class="text-muted-foreground italic text-xs">-</span>
+                        <TableRow v-for="restock in restocks.data" :key="restock.id" class="group transition-all duration-200 border-border/10 last:border-0 hover:bg-secondary/10">
+                            <TableCell class="px-6 py-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                                        <History class="h-5 w-5" />
+                                    </div>
+                                    <div class="min-w-0 pr-4">
+                                        <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ restock.vendor?.nama || 'Direct Purchase' }}</p>
+                                        <p class="text-[11px] font-medium text-muted-foreground/50 mt-0.5">{{ formatDate(restock.tanggal) }}</p>
+                                    </div>
+                                </div>
                             </TableCell>
-                            <TableCell class="px-0 py-4 text-sm">{{ restock.keterangan || '-' }}</TableCell>
-                            <TableCell class="px-0 py-4 text-center">
-                                <Badge :variant="getStatusVariant(restock.status_pembayaran)" class="rounded-none text-[10px] px-2 py-0">
+                            <TableCell class="px-4 py-4">
+                                <p class="text-[13px] text-muted-foreground/70 max-w-[200px] line-clamp-2 leading-relaxed">{{ restock.keterangan || 'No internal notes' }}</p>
+                            </TableCell>
+                            <TableCell class="px-4 py-4 text-center">
+                                <span class="text-[11px] font-bold font-mono px-2 py-0.5 bg-muted rounded uppercase tracking-tighter">{{ restock.items_count }} Types</span>
+                            </TableCell>
+                            <TableCell class="px-4 py-4 text-right">
+                                <span class="text-[15px] font-bold text-foreground tabular-nums">
+                                    {{ formatCurrency(restock.total_biaya) }}
+                                </span>
+                            </TableCell>
+                            <TableCell class="px-4 py-4 text-center">
+                                <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(restock.status_pembayaran)">
                                     {{ formatStatus(restock.status_pembayaran) }}
                                 </Badge>
                             </TableCell>
-                            <TableCell class="px-0 py-4 text-center text-sm font-medium">{{ restock.items_count }} <span class="text-[10px] text-muted-foreground uppercase">JENIS</span></TableCell>
-                            <TableCell class="px-0 py-4 text-right text-sm font-bold">{{ formatCurrency(restock.total_biaya) }}</TableCell>
-                            <TableCell class="px-0 py-4 text-right">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger as-child>
-                                        <Button variant="ghost" size="icon" class="h-8 w-8 rounded-none">
-                                            <MoreHorizontal class="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" class="rounded-none">
-                                        <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Aksi Cepat</DropdownMenuLabel>
-                                        <DropdownMenuSeparator />
-
-                                        <Link :href="`/restock/${restock.id}/edit`">
-                                            <DropdownMenuItem class="cursor-pointer rounded-none">
-                                                <Edit2 class="mr-2 h-4 w-4" />
-                                                <span>Edit Belanja</span>
+                            <TableCell class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-1">
+                                    <Link :href="`/restock/${restock.id}/edit`">
+                                        <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                            <ChevronRight class="h-4 w-4" />
+                                        </button>
+                                    </Link>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger as-child>
+                                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                                <MoreHorizontal class="h-4 w-4" />
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-lg border-border/40">
+                                            <DropdownMenuItem @click="router.get(`/restock/${restock.id}/edit`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
+                                                <Edit2 class="h-3.5 w-3.5 text-muted-foreground/60" /> Edit Detail
                                             </DropdownMenuItem>
-                                        </Link>
-
-                                        <DropdownMenuItem
-                                            v-if="restock.status_pembayaran !== 'lunas'"
-                                            class="cursor-pointer text-primary focus:bg-primary/10 focus:text-primary rounded-none"
-                                            @click="settleRestock(restock.id)">
-                                            <Check class="mr-2 h-4 w-4" />
-                                            <span>Pelunasan</span>
-                                        </DropdownMenuItem>
-
-                                        <DropdownMenuItem
-                                            class="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive rounded-none"
-                                            @click="deleteRestock(restock.id)">
-                                            <Trash2 class="mr-2 h-4 w-4" />
-                                            <span>Hapus Data</span>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                            
+                                            <DropdownMenuItem v-if="restock.status_pembayaran !== 'lunas'" @click="settleRestock(restock.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50">
+                                                <Check class="h-3.5 w-3.5" /> Pelunasan
+                                            </DropdownMenuItem>
+                                            
+                                            <DropdownMenuItem @click="deleteRestock(restock.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5 font-medium">
+                                                <Trash2 class="h-3.5 w-3.5" /> Hapus Data
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="restocks.data.length === 0">
-                            <TableCell colspan="6" class="h-32 text-center text-xs text-muted-foreground uppercase tracking-widest">
-                                Belum ada data restock.
+                            <TableCell colspan="6" class="px-10 py-24 text-center">
+                                <div class="flex flex-col items-center gap-3 opacity-20">
+                                    <ShoppingCart class="h-10 w-10 text-muted-foreground" />
+                                    <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Belum ada riwayat belanja</p>
+                                </div>
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
+            </div>
 
-                <DataTablePagination :paginator="restocks" v-model:perPage="perPage" class="border-t mt-4 pt-4 border-muted rounded-none" />
+            <!-- Pagination -->
+            <div class="px-2">
+                <DataTablePagination :paginator="restocks" v-model:perPage="perPage" />
             </div>
         </div>
     </div>
-</AppLayout>
 </template>
