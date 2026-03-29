@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use Database\Factories\ProdukFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Scout\Searchable;
 
 class Produk extends Model
 {
-    /** @use HasFactory<\Database\Factories\ProdukFactory> */
+    /** @use HasFactory<ProdukFactory> */
     use HasFactory, Searchable;
 
     protected $fillable = [
@@ -24,6 +27,22 @@ class Produk extends Model
         'type',
         'track_stock',
     ];
+
+    /**
+     * Get the indexable data array for the model.
+     *
+     * @return array<string, mixed>
+     */
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => (int) $this->id,
+            'sku' => $this->sku,
+            'nama' => $this->nama,
+            'kategori' => $this->kategori,
+            'type' => $this->type,
+        ];
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -50,7 +69,7 @@ class Produk extends Model
     /**
      * Get the BOM recipe for the product.
      */
-    public function bom(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function bom(): HasOne
     {
         return $this->hasOne(Bom::class, 'produk_id');
     }
@@ -58,7 +77,7 @@ class Produk extends Model
     /**
      * Get all prices for the product.
      */
-    public function prices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function prices(): HasMany
     {
         return $this->hasMany(Price::class, 'produk_id');
     }
@@ -66,7 +85,7 @@ class Produk extends Model
     /**
      * Get the current price for the product.
      */
-    public function currentPrice(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function currentPrice(): HasOne
     {
         return $this->hasOne(Price::class, 'produk_id')->where('is_current', true);
     }
@@ -74,7 +93,7 @@ class Produk extends Model
     /**
      * Get all stock movements for the product.
      */
-    public function stockMovements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class, 'produk_id');
     }
@@ -82,7 +101,7 @@ class Produk extends Model
     /**
      * Get the stock summary for the product.
      */
-    public function stock(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function stock(): HasOne
     {
         return $this->hasOne(Stock::class, 'produk_id');
     }

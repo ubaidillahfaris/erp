@@ -97,7 +97,7 @@ const handleTabClick = (value: string) => {
     <div v-if="tabs && tabs.length > 0" class="px-8 border-b border-border/10">
         <div class="flex items-center gap-8 h-12 overflow-x-auto no-scrollbar">
             <button v-for="tab in tabs" :key="tab.value" @click="handleTabClick(tab.value)" type="button" :class="[
-                'relative h-12 text-[13px] font-bold transition-all flex items-center gap-2 whitespace-nowrap px-1 group',
+                'relative h-12 text-[13px] font-semibold tracking-wider cursor-pointer transition-all flex items-center gap-2 whitespace-nowrap px-1 group',
                 activeTab === tab.value
                     ? 'text-foreground'
                     : 'text-muted-foreground/40 hover:text-foreground'
@@ -114,10 +114,10 @@ const handleTabClick = (value: string) => {
     </div>
 
     <!-- ====== ROW 3: TOOLBAR (SEARCH & FILTERS) ====== -->
-    <div class="px-8 py-4 flex items-center justify-between border-b border-border/10 bg-[#FAFAFB]">
+    <div class="px-8 py-4 flex items-center justify-between border-b border-border/10 bg-white">
         <div class="flex items-center gap-4 flex-1">
             <div
-                class="flex items-center border border-border/40 rounded-lg bg-white h-9 px-3 gap-2 group focus-within:ring-2 focus-within:ring-accent/10 transition-all">
+                class="flex items-center border border-border/40 rounded-sm bg-white h-9 px-3 gap-2 group focus-within:ring-2 focus-within:ring-accent/10 transition-all">
                 <Grid class="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-accent transition-colors" />
                 <span class="text-[12px] font-bold text-muted-foreground/60">View</span>
                 <ChevronDown class="h-3 w-3 text-muted-foreground/30" />
@@ -127,7 +127,7 @@ const handleTabClick = (value: string) => {
 
             <div class="flex items-center gap-2">
                 <button
-                    class="h-9 px-3 flex items-center gap-2 border border-border/40 rounded-lg bg-white text-[12px] font-bold text-muted-foreground hover:bg-secondary/50 transition-all">
+                    class="h-9 px-3 flex items-center gap-2 border border-border/40 rounded-sm bg-white text-[12px] font-bold text-muted-foreground hover:bg-secondary/50 transition-all">
                     <Filter class="h-3.5 w-3.5 text-muted-foreground/30" />
                     All
                     <ChevronDown class="h-3 w-3 text-muted-foreground/30" />
@@ -137,14 +137,14 @@ const handleTabClick = (value: string) => {
                     <Search
                         class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/30 transition-colors group-focus-within:text-accent" />
                     <Input v-model="internalSearch" :placeholder="searchPlaceholder"
-                        class="pl-9 h-9 rounded-lg w-[240px] border-border/40 bg-white text-[12px] font-medium shadow-none focus:ring-accent/10 transition-all" />
+                        class="pl-9 h-9 rounded-sm w-[240px] border-border/40 bg-white text-[12px] font-medium shadow-none focus:ring-accent/10 transition-all" />
                 </div>
             </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <!-- <div class="flex items-center gap-3">
             <slot name="toolbar-actions"></slot>
-            <div class="flex items-center bg-secondary/30 p-1 rounded-lg gap-1 border border-border/10">
+            <div class="flex items-center bg-secondary/30 p-1 rounded-sm gap-1 border border-border/10">
                 <button class="p-1.5 rounded-md bg-white shadow-sm text-accent">
                     <Grid class="h-3.5 w-3.5" />
                 </button>
@@ -152,7 +152,7 @@ const handleTabClick = (value: string) => {
                     <List class="h-3.5 w-3.5" />
                 </button>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <!-- ====== TABLE CONTAINER ====== -->
@@ -174,7 +174,7 @@ const handleTabClick = (value: string) => {
                         col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left',
                         col.class
                     ]" :style="{ width: col.width }">
-                        <div class="flex items-center gap-1.5"
+                        <div class="flex items-center gap-1.5 text-black/60"
                             :class="col.align === 'center' ? 'justify-center' : col.align === 'right' ? 'justify-end' : 'justify-start'">
                             {{ col.label }}
                             <ArrowUpDown v-if="col.sortable !== false" class="h-2.5 w-2.5 opacity-30" />

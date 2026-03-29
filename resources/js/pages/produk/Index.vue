@@ -4,7 +4,8 @@ import debounce from 'lodash/debounce';
 import {
     Plus, Search, Edit2, Trash2, Package,
     MoreHorizontal, ShoppingCart, TestTube,
-    History, Boxes, PackageOpen, ChevronRight
+    History, Boxes, PackageOpen, ChevronRight,
+    Pencil
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { index, create, edit, destroy } from '@/actions/App/Http/Controllers/ProdukController';
@@ -27,6 +28,7 @@ import { useConfirm } from '@/composables/useConfirm';
 
 import DataTable from '@/components/DataTable.vue';
 import PageHeader from '@/components/PageHeader.vue';
+import produk from '@/routes/produk';
 
 // Persistent Layout Fix
 defineOptions({ layout: AppLayout });
@@ -99,7 +101,8 @@ const formatCurrency = (value: number) => {
 <Head title="Katalog Produk" />
 
 <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
-    <PageHeader title="Katalog Produk" description="Manajemen Stok & Harga" back-href="/dashboard" :count="produks.total" />
+    <PageHeader title="Katalog Produk" description="Manajemen Stok & Harga" back-href="/dashboard"
+        :count="produks.total" />
 
     <!-- ====== CONTENT AREA ====== -->
     <div class="max-w-7xl mx-auto w-full">
@@ -157,21 +160,19 @@ const formatCurrency = (value: number) => {
 
             <template #actions="{ row }">
                 <div class="flex items-center justify-end gap-1">
-                    <Link :href="edit({ id: row.id }).url">
-                        <button
-                            class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
-                            <ChevronRight class="h-4 w-4" />
-                        </button>
-                    </Link>
+
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
                             <button
-                                class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                class="h-8 w-8 flex items-center justify-center rounded-lg text-black/80 hover:bg-secondary hover:text-foreground transition-all">
                                 <MoreHorizontal class="h-4 w-4" />
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end"
                             class="rounded-xl p-1.5 w-44 shadow-lg border-border/40 font-sans">
+                            <DropdownMenuItem @click="router.visit(produk.edit(row.id))">
+                                <Pencil class="h-3.5 w-3.5" /> Edit
+                            </DropdownMenuItem>
                             <DropdownMenuItem @click="router.visit(`/stock/${row.id}`)"
                                 class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px]">
                                 <History class="h-3.5 w-3.5" /> Lihat Riwayat

@@ -13,20 +13,29 @@ class ProdukController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Produk::query();
-
-        if ($request->has('search') && !empty($request->search)) {
-            $query = Produk::search($request->search);
-        }
-
-        if ($request->filled('jenis') && $request->jenis !== 'all') {
-            $query->where('type', $request->jenis);
-        }
-
         $perPage = $request->input('per_page', 10);
+        $search = $request->input('search');
+        $jenis = $request->input('jenis');
+
+        if ($request->filled('search')) {
+            $produks = Produk::search($search)
+                ->when($request->filled('jenis') && $jenis !== 'all', function ($query) use ($jenis) {
+                    $query->where('type', $jenis);
+                })
+                ->query(fn ($q) => $q->with(['satuan', 'currentPrice'])->latest())
+                ->paginate($perPage);
+        } else {
+            $produks = Produk::query()
+                ->when($request->filled('jenis') && $jenis !== 'all', function ($query) use ($jenis) {
+                    $query->where('type', $jenis);
+                })
+                ->with(['satuan', 'currentPrice'])
+                ->latest()
+                ->paginate($perPage);
+        }
 
         return Inertia::render('produk/Index', [
-            'produks' => $query->with(['satuan', 'currentPrice'])->latest()->paginate($perPage)->withQueryString(),
+            'produks' => $produks->withQueryString(),
             'filters' => $request->only(['search', 'jenis', 'per_page']),
         ]);
     }
