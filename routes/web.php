@@ -25,60 +25,63 @@ Route::inertia('/', 'Welcome', [
 ])->name('home');
 
 Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
-    // POS (Point of Sale) - Accessible by both superadmin and cashier
-    Route::get('pos', [PosController::class, 'index'])->name('pos.index');
-    Route::post('pos', [PosController::class, 'store'])->name('pos.store');
+    // Accessible by anyone with 'view dashboard' permission
+    Route::middleware('permission:view dashboard')->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Admin-only Access
-    Route::middleware('role:superadmin')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // 0. POINT OF SALE (make sales)
+    Route::middleware('permission:make sales')->group(function () {
+        Route::get('pos', [PosController::class, 'index'])->name('pos.index');
+        Route::post('pos', [PosController::class, 'store'])->name('pos.store');
+    });
 
-        // Master Data
+    // 1. PRODUCT & MANUFACTURING (manage products)
+    Route::middleware('permission:manage products')->group(function () {
         Route::delete('produk/bulk-destroy', [ProdukController::class, 'bulkDestroy'])->name('produk.bulk-destroy');
         Route::resource('produk', ProdukController::class)->names('produk');
 
         Route::delete('satuan/bulk-destroy', [SatuanController::class, 'bulkDestroy'])->name('satuan.bulk-destroy');
         Route::resource('satuan', SatuanController::class);
         Route::post('satuan/quick', QuickCreateSatuanController::class)->name('satuan.quick');
-        Route::post('vendor/quick', QuickCreateVendorController::class)->name('vendor.quick');
-
-
-        Route::delete('vendors/bulk-destroy', [VendorController::class, 'bulkDestroy'])->name('vendor.bulk-destroy');
-        Route::resource('vendors', VendorController::class)->names('vendor');
 
         Route::delete('bom/bulk-destroy', [BOMController::class, 'bulkDestroy'])->name('bom.bulk-destroy');
         Route::resource('bom', BOMController::class);
 
-        // Procurement & Expenses
+        Route::delete('production/bulk-destroy', [ProductionController::class, 'bulkDestroy'])->name('production.bulk-destroy');
+        Route::resource('production', ProductionController::class);
+    });
+
+    // 2. VENDOR MANAGEMENT (manage vendors)
+    Route::middleware('permission:manage vendors')->group(function () {
+        Route::delete('vendors/bulk-destroy', [VendorController::class, 'bulkDestroy'])->name('vendor.bulk-destroy');
+        Route::resource('vendors', VendorController::class)->names('vendor');
+        Route::post('vendor/quick', QuickCreateVendorController::class)->name('vendor.quick');
+    });
+
+    // 3. PROCUREMENT & STOCK (manage stock)
+    Route::middleware('permission:manage stock')->group(function () {
         Route::delete('restock/bulk-destroy', [RestockController::class, 'bulkDestroy'])->name('restock.bulk-destroy');
         Route::resource('restock', RestockController::class);
         Route::post('restock/{restock}/settle', [RestockController::class, 'settle'])->name('restock.settle');
 
-        // Purchasing (Formal Procurement with Attachments & Finalization)
-        Route::resource('purchasing', PurchaseController::class)->parameters([
-            'purchasing' => 'purchase'
-        ]);
+        // Purchasing (Formal Procurement)
+        Route::resource('purchasing', PurchaseController::class)->parameters(['purchasing' => 'purchase']);
         Route::post('purchasing/{purchase}/finalize', [PurchaseController::class, 'finalize'])->name('purchasing.finalize');
-
-
         Route::delete('purchasing-attachment/{purchaseAttachment}', [PurchaseController::class, 'destroyAttachment'])->name('purchasing.attachment.destroy');
-
-        Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
-        Route::resource('pengeluaran', PengeluaranController::class);
-
-        // Production
-        Route::delete('production/bulk-destroy', [ProductionController::class, 'bulkDestroy'])->name('production.bulk-destroy');
-        Route::resource('production', ProductionController::class);
-
-        // Financials & Reports
-        Route::get('journal', [JournalController::class, 'index'])->name('journal.index');
-        Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
 
         // Stocks
         Route::get('stock', [StockController::class, 'index'])->name('stock.index');
         Route::get('stock/{produk}', [StockController::class, 'show'])->name('stock.show');
         Route::post('stock/adjustment', [StockController::class, 'adjustment'])->name('stock.adjustment');
         Route::resource('stock-opname', StockOpnameController::class);
+    });
+
+    // 4. FINANCIALS & EXPENSES (view reports)
+    Route::middleware('permission:view reports')->group(function () {
+        Route::get('journal', [JournalController::class, 'index'])->name('journal.index');
+        Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
+        
+        Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
+        Route::resource('pengeluaran', PengeluaranController::class);
     });
 });
 

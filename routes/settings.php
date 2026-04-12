@@ -26,9 +26,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
         ->name('two-factor.show');
 
-    // Management Routes (Superadmin Only)
-    Route::middleware('role:superadmin')->group(function () {
+    // Management Routes (Admin Permissions)
+    Route::middleware('permission:manage users')->group(function () {
         Route::resource('settings/users', \App\Http\Controllers\Settings\UserController::class)->names('users');
+    });
+
+    Route::middleware('permission:manage roles')->group(function () {
         Route::resource('settings/roles', \App\Http\Controllers\Settings\RoleController::class)->names('roles');
     });
 });

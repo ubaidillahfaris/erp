@@ -69,9 +69,10 @@ class RoleService
      */
     public function clearAllMenuCaches(): void
     {
-        // If using a driver that supports tags, we could use Cache::tags(['menus'])->flush();
-        // For simplicity here, we might just rely on the day-long expiration or
-        // implement a more granular invalidation if needed.
+        // Surgical clear for all users since user count is low (5 users found in audit)
+        User::all()->each(function (User $user) {
+            $this->clearMenuCache($user);
+        });
     }
 
     /**
