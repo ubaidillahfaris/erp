@@ -59,6 +59,20 @@ class FinalizePurchase
                     $this->recalculateHpp->handle($item->produk);
                 }
             }
+
+            // 6. Record Financial Journal (only for purchase type)
+            if ($purchase->transaction_type === 'purchase' && (float) $purchase->total_biaya > 0) {
+                \App\Models\Journal::create([
+                    'tanggal' => $purchase->tanggal->format('Y-m-d'),
+                    'type' => 'kredit',
+                    'amount' => $purchase->total_biaya,
+                    'category' => 'persediaan',
+                    'payment_method' => 'hutang',
+                    'reference_type' => \App\Models\Purchase::class,
+                    'reference_id' => $purchase->id,
+                    'description' => "Pembelian (Auto-Journal): " . ($purchase->keterangan ?? "Inbound #{$purchase->id}"),
+                ]);
+            }
         });
     }
 
