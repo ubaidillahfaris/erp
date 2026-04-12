@@ -4,15 +4,14 @@ import { ArrowLeft, CheckCircle2, ChevronRight, Download, Edit2, FileIcon, FileT
 import { index, edit, finalize } from '@/actions/App/Http/Controllers/PurchaseController';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import {
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+    TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import { useConfirm } from '@/composables/useConfirm';
@@ -84,7 +83,7 @@ const handleFinalize = async () => {
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto w-full">
             <div class="flex items-center gap-4">
                 <Link :href="index().url">
-                    <Button variant="ghost" size="icon" class="bg-white hover:bg-slate-100 shadow-sm border border-slate-200">
+                    <Button variant="ghost" size="icon" class="bg-white hover:bg-slate-100 shadow-none border border-slate-200">
                         <ArrowLeft class="h-4 w-4" />
                     </Button>
                 </Link>
@@ -136,7 +135,7 @@ const handleFinalize = async () => {
                             </p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-100 border-t border-input">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-slate-100 border-t border-slate-200">
                         <div class="bg-white p-5 flex flex-col gap-2">
                             <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                                 <Store class="h-4 w-4" /> Vendor Pengirim
@@ -161,10 +160,10 @@ const handleFinalize = async () => {
 
                 <!-- ITEMS TABLE -->
                 <Card class="border-slate-200 bg-white overflow-hidden">
-                    <CardHeader class="border-b border-input bg-slate-50 py-4">
-                        <CardTitle>Rincian Barang</CardTitle>
-                    </CardHeader>
-                    <CardContent class="p-0">
+                    <div class="border-b border-slate-100 px-6 py-4">
+                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Rincian Barang</h3>
+                    </div>
+                    <div class="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow class="bg-slate-50">
@@ -200,7 +199,7 @@ const handleFinalize = async () => {
                                 </TableRow>
                             </TableBody>
                         </Table>
-                    </CardContent>
+                    </div>
                 </Card>
             </div>
 
@@ -208,7 +207,7 @@ const handleFinalize = async () => {
             <div class="lg:col-span-4 flex flex-col gap-6">
                 <!-- Signature Audit Trail -->
                 <Card class="border-slate-200 bg-white" v-if="purchase.status === 'finalized'">
-                    <CardContent class="p-0">
+                    <div class="p-0">
                         <div class="bg-emerald-500 text-white p-5 flex flex-col gap-2 relative overflow-hidden">
                             <CheckCircle2 class="absolute -right-4 -bottom-4 h-24 w-24 text-emerald-600/30 rotate-12" />
                             <h3 class="font-bold flex items-center gap-2 z-10"><CheckCircle2 class="h-5 w-5" /> Dokumen Disahkan</h3>
@@ -228,26 +227,26 @@ const handleFinalize = async () => {
                                 <span class="font-mono text-xs bg-slate-100 p-1 rounded max-w-fit">{{ purchase.signature_log.ip_address || '-' }}</span>
                             </div>
                         </div>
-                    </CardContent>
+                    </div>
                 </Card>
                 
                 <!-- If Draft, show warning instead -->
-                <Card class="border border-amber-200 shadow-sm bg-amber-50" v-else>
-                    <CardContent class="p-5 flex gap-3 text-amber-800">
+                <Card class="border border-amber-200 shadow-none bg-amber-50" v-else>
+                    <div class="p-5 flex gap-3 text-amber-800">
                         <Info class="h-5 w-5 shrink-0 mt-0.5 text-amber-600" />
                         <div class="flex flex-col gap-1">
                             <span class="font-bold text-sm">Status Draft Aktif</span>
                             <span class="text-xs">Barang belum masuk ke stok gudang logistik dan total aset belum dihitung. Segera periksa kebenaran dokumen lalu klik tombol "Finalisasi".</span>
                         </div>
-                    </CardContent>
+                    </div>
                 </Card>
 
                 <!-- Attachments -->
                 <Card class="border-slate-200 bg-white">
-                    <CardHeader class="border-b border-input bg-slate-50 py-4">
-                        <CardTitle class="text-sm">Dokumen Terlampir</CardTitle>
-                    </CardHeader>
-                    <CardContent class="p-5">
+                    <div class="border-b border-slate-100 px-6 py-4">
+                        <h3 class="text-sm text-sm font-semibold text-slate-900 leading-none">Dokumen Terlampir</h3>
+                    </div>
+                    <div class="p-5">
                         <div v-if="purchase.attachments?.length > 0" class="flex flex-col gap-3">
                             <a 
                                 v-for="att in purchase.attachments" 
@@ -265,11 +264,11 @@ const handleFinalize = async () => {
                                 </div>
                             </a>
                         </div>
-                        <div v-else class="text-sm text-center py-6 text-muted-foreground italic border-2 border-dashed border-input rounded-lg">
+                        <div v-else class="text-sm text-center py-6 text-muted-foreground italic border-2 border-dashed border-slate-200 rounded-lg">
                             <FileIcon class="h-6 w-6 mx-auto mb-2 opacity-50" />
                             Tidak ada lampiran.
                         </div>
-                    </CardContent>
+                    </div>
                 </Card>
             </div>
         </div>

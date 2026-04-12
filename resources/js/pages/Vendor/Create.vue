@@ -65,7 +65,7 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
                 <form @submit.prevent="submit" class="p-6 flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
                         <Label for="nama" class="text-sm font-medium text-foreground px-0.5">Nama Vendor / Supplier</Label>
-                        <Input id="nama" v-model="form.nama" required placeholder="Nama Perusahaan" class="h-10 rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.nama" />
+                        <Input id="nama" v-model="form.nama" required placeholder="Nama Perusahaan" class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.nama" />
                         <div v-if="form.errors.nama" class="text-xs text-destructive flex items-center gap-1 mt-1">
                             ⚠️ {{ form.errors.nama }}
                         </div>
@@ -73,26 +73,26 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
 
                     <div class="flex flex-col gap-2">
                         <Label for="alamat" class="text-sm font-medium text-foreground px-0.5">Alamat Lengkap</Label>
-                        <Textarea id="alamat" v-model="form.alamat" rows="2" placeholder="Alamat Operasional..." class="rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" :aria-invalid="!!form.errors.alamat" />
+                        <Textarea id="alamat" v-model="form.alamat" rows="2" placeholder="Alamat Operasional..." class="rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" :aria-invalid="!!form.errors.alamat" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <Label for="telepon" class="text-sm font-medium text-foreground px-0.5">Telepon</Label>
-                            <Input id="telepon" v-model="form.telepon" placeholder="Nomor Telepon" class="h-10 rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.telepon" />
+                            <Input id="telepon" v-model="form.telepon" placeholder="Nomor Telepon" class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.telepon" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <Label for="email" class="text-sm font-medium text-foreground px-0.5">Email</Label>
-                            <Input id="email" v-model="form.email" type="email" placeholder="Email (Opsional)" class="h-10 rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.email" />
+                            <Input id="email" v-model="form.email" type="email" placeholder="Email (Opsional)" class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.email" />
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-2">
                         <Label for="keterangan" class="text-sm font-medium text-foreground px-0.5">Keterangan</Label>
-                        <Textarea id="keterangan" v-model="form.keterangan" rows="2" placeholder="Catatan tambahan..." class="rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" />
+                        <Textarea id="keterangan" v-model="form.keterangan" rows="2" placeholder="Catatan tambahan..." class="rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" />
                     </div>
 
-                    <div class="mt-4 pt-5 border-t border-input">
+                    <div class="mt-4 pt-5 border-t border-slate-200">
                         <Button type="submit" :disabled="form.processing" class="w-full h-10 text-sm font-semibold bg-slate-900 text-white rounded-lg gap-2 hover:bg-slate-800 transition-colors">
                             <Save class="h-4 w-4" />
                             Simpan Data Vendor
@@ -110,7 +110,7 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
                     class="px-1"
                 />
 
-                <div class="h-[550px] w-full rounded-md overflow-hidden border border-input shadow-none relative z-0">
+                <div class="h-[550px] w-full rounded-xl overflow-hidden border border-slate-200 shadow-none relative z-0">
                     <Map 
                         :center="[-6.200000, 106.816666]" 
                         :zoom="13" 

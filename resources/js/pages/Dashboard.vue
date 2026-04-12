@@ -160,7 +160,7 @@ const metricCards = computed(() => [
         </div>
         <div class="flex items-center gap-2">
             <Link v-for="action in quickActions" :key="action.label" :href="action.href"
-                class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-md transition-all text-xs font-semibold text-slate-600"
+                class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl transition-all text-xs font-semibold text-slate-600"
             >
                 <component :is="action.icon" class="h-3.5 w-3.5" :class="action.color.split(' ')[0]" />
                 {{ action.label }}
@@ -218,7 +218,7 @@ const metricCards = computed(() => [
                             :key="intv"
                             @click="updateInterval(intv)"
                             :class="[
-                                'px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider transition-all',
+                                'px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider transition-all',
                                 current_interval === intv
                                     ? 'bg-white text-slate-900 border border-slate-200'
                                     : 'text-slate-400 hover:text-slate-600'
@@ -254,14 +254,14 @@ const metricCards = computed(() => [
             <div class="bg-white border border-slate-200 rounded-xl overflow-hidden flex-1">
                 <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <div class="p-1.5 bg-blue-50 rounded-md">
+                        <div class="p-1.5 bg-blue-50 rounded-xl">
                             <Store class="h-3.5 w-3.5 text-blue-600" />
                         </div>
                         <p class="text-xs font-bold text-slate-900">Vendor Map</p>
                     </div>
                     <button
                         @click="showVendors = !showVendors"
-                        :class="['text-xs font-bold px-2.5 py-1 rounded-md border transition-all',
+                        :class="['text-xs font-bold px-2.5 py-1 rounded-xl border transition-all',
                             showVendors ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-500 border-slate-200'
                         ]"
                     >{{ showVendors ? 'Aktif' : 'Nonaktif' }}</button>
@@ -341,7 +341,7 @@ const metricCards = computed(() => [
                             <p class="text-xs text-slate-400 mt-1">Mulai dari menu POS untuk mencatat penjualan</p>
                         </div>
                         <Link href="/pos">
-                            <button class="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-md hover:bg-blue-700 transition-colors">
+                            <button class="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors">
                                 Buka POS →
                             </button>
                         </Link>

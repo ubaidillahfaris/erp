@@ -7,7 +7,7 @@ import { ref, watch } from 'vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import PageHeader from '@/components/PageHeader.vue';
 import {
     Table,
@@ -15,8 +15,7 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+    TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
@@ -56,8 +55,7 @@ const formatDate = (dateString: string) => {
         month: '2-digit',
         year: '2-digit',
         hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date(dateString));
+        minute: '2-digit' }).format(new Date(dateString));
 };
 
 const getMovementDetails = (movement: any) => {
@@ -87,8 +85,8 @@ const getMovementDetails = (movement: any) => {
             back-href="/stock"
         >
             <template #actions>
-                <div class="flex items-center gap-6 bg-card border border-input rounded-xl px-6 py-3 shadow-sm">
-                    <div class="text-center border-r border-input pr-6">
+                <div class="flex items-center gap-6 bg-white border border-slate-200 rounded-xl px-6 py-3 shadow-none">
+                    <div class="text-center border-r border-slate-200 pr-6">
                         <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Saldo Saat Ini</p>
                         <p class="text-2xl font-bold text-foreground">
                             {{ parseFloat(produk.stock?.balance || 0).toLocaleString('id-ID') }}
@@ -102,16 +100,16 @@ const getMovementDetails = (movement: any) => {
             </template>
         </PageHeader>
 
-        <Card class="border-0 rounded-none shadow-none bg-transparent">
-            <CardHeader class="px-0 pt-0">
-                <CardTitle>Histori Pergerakan</CardTitle>
-                <CardDescription>Daftar lengkap transaksi masuk dan keluar untuk produk ini.</CardDescription>
-            </CardHeader>
-            <CardContent class="px-0">
-                <div class="rounded-lg border bg-card shadow-sm overflow-hidden">
+        <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <h3 class="text-sm font-semibold text-slate-900 leading-none">Histori Pergerakan</h3>
+                <p class="text-xs text-slate-400 mt-1">Daftar lengkap transaksi masuk dan keluar untuk produk ini.</p>
+            </div>
+            <div class="px-0">
+                <div class="rounded-xl border border-slate-200 bg-white shadow-none shadow-none overflow-hidden">
                     <!-- Top Pagination -->
                     <DataTablePagination :paginator="movements" v-model:perPage="perPage"
-                        class="border-b bg-card px-4 pt-4" />
+                        class="border-b bg-white px-4 pt-4" />
 
                     <Table>
                         <TableHeader>
@@ -171,7 +169,7 @@ const getMovementDetails = (movement: any) => {
 
                 <!-- Bottom Pagination -->
                 <DataTablePagination :paginator="movements" v-model:perPage="perPage" class="mt-4" />
-            </CardContent>
+            </div>
         </Card>
     </div>
 </AppLayout>

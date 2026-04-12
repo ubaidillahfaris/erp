@@ -4,15 +4,14 @@ import { ArrowLeft, CheckCircle2, PlayCircle, Info, Beaker, Package } from 'luci
 import { index } from '@/actions/App/Http/Controllers/ProductionController';
 import { Badge } from '@/components/ui/badge';
 import PageHeader from '@/components/PageHeader.vue';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import {
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+    TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
@@ -46,8 +45,7 @@ const formatDate = (dateString: string) => {
         month: '2-digit',
         year: '2-digit',
         hour: '2-digit',
-        minute: '2-digit',
-    }).format(new Date(dateString));
+        minute: '2-digit' }).format(new Date(dateString));
 };
 </script>
 
@@ -78,12 +76,12 @@ const formatDate = (dateString: string) => {
             <!-- Left Side: Header Info & Result -->
             <div class="lg:col-span-1 space-y-6">
                 <Card>
-                    <CardHeader>
-                        <CardTitle class="text-sm font-medium flex items-center gap-2 text-muted-foreground uppercase">
+                    <div>
+                        <h3 class="text-sm font-medium flex items-center gap-2 text-muted-foreground uppercase text-sm font-semibold text-slate-900 leading-none">
                             <Package class="w-4 h-4" /> Informasi Hasil Produksi
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent class="space-y-4">
+                        </h3>
+                    </div>
+                    <div class="space-y-4">
                         <div>
                             <p class="text-sm text-muted-foreground">Barang Yang Dibuat</p>
                             <p class="text-lg font-bold">{{ production.produk?.nama }}</p>
@@ -124,21 +122,21 @@ const formatDate = (dateString: string) => {
                                 {{ formatCurrency(production.total_cost / (production.target_yield || 1)) }}
                             </p>
                         </div>
-                    </CardContent>
+                    </div>
                 </Card>
             </div>
 
             <!-- Right Side: Ingredient Usage -->
             <div class="lg:col-span-2">
                 <Card class="h-full">
-                    <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
+                    <div>
+                        <h3 class="flex items-center gap-2 text-sm font-semibold text-slate-900 leading-none">
                             <Beaker class="w-5 h-5 text-orange-500" /> Pemakaian Bahan Baku
-                        </CardTitle>
-                        <CardDescription>Rincian bahan baku yang digunakan dalam batch produksi ini.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div class="rounded-md border">
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">Rincian bahan baku yang digunakan dalam batch produksi ini.</p>
+                    </div>
+                    <div>
+                        <div class="rounded-xl border border-slate-200">
                             <Table>
                                 <TableHeader>
                                     <TableRow class="bg-muted/50">
@@ -181,7 +179,7 @@ const formatDate = (dateString: string) => {
                             <p>Harga satuan diambil dari harga beli bahan baku saat produksi diproses. Subtotal adalah
                                 realisasi biaya untuk item tersebut.</p>
                         </div>
-                    </CardContent>
+                    </div>
                 </Card>
             </div>
         </div>

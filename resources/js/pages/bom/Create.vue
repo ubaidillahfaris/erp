@@ -7,7 +7,7 @@ import { index as bomIndex, store } from '@/actions/App/Http/Controllers/BOMCont
 import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
 import CreatableSelect from '@/components/CreatableSelect.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -16,8 +16,7 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+    TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
@@ -81,8 +80,7 @@ const handleCreateSatuan = async (nama: string, callback?: (id: number) => void)
         const simbol = nama.substring(0, 3).toLowerCase();
         const response = await axios.post(quickSatuanAction().url, {
             nama,
-            simbol,
-        });
+            simbol });
 
         const newSatuan = response.data.satuan;
         localSatuans.value.push(newSatuan);
@@ -162,26 +160,26 @@ const submit = () => {
 <Head title="Buat BOM Baru" />
 
 <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-6">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <div class="flex items-center gap-4">
             <Link :href="bomIndex.url()">
-                <Button variant="ghost" size="icon">
+                <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
             </Link>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Buat BOM Baru</h1>
-                <p class="text-muted-foreground">Tentukan resep produksi untuk barang jadi.</p>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Buat BOM Baru</h1>
+                <p class="text-sm text-slate-400 mt-0.5">Tentukan resep produksi untuk barang jadi.</p>
             </div>
         </div>
 
         <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <Card class="border-0 rounded-none shadow-none bg-transparent">
-                <CardHeader class="px-0">
-                    <CardTitle>Informasi Utama</CardTitle>
-                    <CardDescription>Pilih produk hasil akhir dan beri nama resep.</CardDescription>
-                </CardHeader>
-                <CardContent class="px-0 space-y-4">
+            <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
+                <div class="px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-900 leading-none">Informasi Utama</h3>
+                    <p class="text-xs text-slate-400 mt-1">Pilih produk hasil akhir dan beri nama resep.</p>
+                </div>
+                <div class="px-0 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <CreatableSelect v-model="form.produk_id" :options="produks"
@@ -218,7 +216,7 @@ const submit = () => {
 
                         <div class="flex items-center space-x-2 py-4 border-t border-muted/50 mt-4">
                             <input id="auto_deduct_on_sale" type="checkbox" v-model="form.auto_deduct_on_sale"
-                                class="size-4 rounded border-input accent-primary transition-all cursor-pointer" />
+                                class="size-4 rounded border-slate-200 accent-primary transition-all cursor-pointer" />
                             <div class="grid gap-1.5 leading-none">
                                 <label for="auto_deduct_on_sale"
                                     class="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
@@ -230,21 +228,21 @@ const submit = () => {
                             </div>
                         </div>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
-            <Card class="border-0 rounded-none shadow-none bg-transparent">
-                <CardHeader class="px-0 flex flex-row items-center justify-between">
+            <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
+                <div class="px-0 flex flex-row items-center justify-between">
                     <div class="space-y-1">
-                        <CardTitle>Bahan Baku & Komposisi</CardTitle>
-                        <CardDescription>Daftar bahan baku yang dibutuhkan untuk 1 unit barang jadi.</CardDescription>
+                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Bahan Baku & Komposisi</h3>
+                        <p class="text-xs text-slate-400 mt-1">Daftar bahan baku yang dibutuhkan untuk 1 unit barang jadi.</p>
                     </div>
                     <Button type="button" variant="outline" size="sm" @click="addItem">
                         <Plus class="mr-2 h-4 w-4" />
                         Tambah Bahan
                     </Button>
-                </CardHeader>
-                <CardContent class="px-0">
+                </div>
+                <div class="p-6">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -283,11 +281,11 @@ const submit = () => {
                         </TableBody>
                     </Table>
                     <p v-if="form.errors.items" class="text-sm text-destructive mt-2">{{ form.errors.items }}</p>
-                </CardContent>
+                </div>
             </Card>
 
-            <Card class="border-0 rounded-none shadow-none bg-muted/20 mt-4">
-                <CardContent class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <Card class="border border-slate-200 rounded-xl bg-white mt-4">
+                <div class="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <span class="text-sm text-muted-foreground block">Total Modal Resep:</span>
                         <span class="text-lg font-semibold">{{ formatCurrency(totalEstimatedCost) }}</span>
@@ -298,7 +296,7 @@ const submit = () => {
                         <span class="text-2xl font-bold text-primary">{{ formatCurrency(totalEstimatedCost /
                             (form.expected_yield || 1)) }}</span>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             <div class="flex justify-end gap-3 py-6 border-t mt-4">

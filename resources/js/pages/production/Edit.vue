@@ -4,7 +4,7 @@ import { ArrowLeft, CheckCircle } from 'lucide-vue-next';
 import { update, index } from '@/actions/App/Http/Controllers/ProductionController';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -34,8 +34,7 @@ const form = useForm({
         // For display
         _produk_nama: item.produk?.nama,
         _satuan_nama: item.satuan ? item.satuan.nama : item.produk?.satuan?.nama
-    })),
-});
+    })) });
 
 const submit = () => {
     form.put(update({ production: props.production.id }).url);
@@ -46,30 +45,30 @@ const submit = () => {
 <Head title="Selesaikan Produksi" />
 
 <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-6">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <div class="flex items-center gap-4">
             <Link :href="index().url">
-                <Button variant="ghost" size="icon">
+                <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
             </Link>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Selesaikan Produksi</h1>
-                <p class="text-muted-foreground">{{ props.production.sku }} - {{ props.production.bom?.nama }}</p>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Selesaikan Produksi</h1>
+                <p class="text-sm text-slate-400 mt-0.5">{{ props.production.sku }} - {{ props.production.bom?.nama }}</p>
             </div>
         </div>
 
-        <Card class="border-0 rounded-none shadow-none bg-transparent">
-            <CardHeader class="px-0">
-                <CardTitle>Input Aktual Lapangan</CardTitle>
-                <CardDescription>
+        <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
+            <div class="px-6 py-4 border-b border-slate-100">
+                <h3 class="text-sm font-semibold text-slate-900 leading-none">Input Aktual Lapangan</h3>
+                <p class="text-xs text-slate-400 mt-1">
                     Masukkan jumlah bahan baku yang riil terpakai dan jumlah hasil jadi sebenarnya (Actual Yield).
-                </CardDescription>
-            </CardHeader>
-            <CardContent class="px-0">
+                </p>
+            </div>
+            <div class="p-6">
                 <form @submit.prevent="submit" class="flex flex-col gap-8">
                     
-                    <div class="border rounded-md p-4 bg-card">
+                    <div class="border rounded-xl p-4 bg-white">
                         <h3 class="font-semibold mb-4 text-lg border-b pb-2">Bahan Baku (Actual vs Planned)</h3>
                         <div class="flex flex-col gap-4">
                             <div v-for="(item, index) in form.items" :key="index" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
@@ -92,7 +91,7 @@ const submit = () => {
                         </div>
                     </div>
 
-                    <div class="border rounded-md p-4 bg-primary/5 border-primary/20">
+                    <div class="border rounded-xl p-4 bg-primary/5 border-primary/20">
                         <h3 class="font-semibold mb-4 text-lg border-b pb-2">Hasil Aktual (Actual Yield)</h3>
                         <div class="flex flex-col gap-2 max-w-sm">
                             <Label for="actual_yield">Berapa {{ props.production.produk?.satuan?.nama }} {{ props.production.produk?.nama }} yang berhasil dibuat?</Label>
@@ -113,7 +112,7 @@ const submit = () => {
                         </Button>
                     </div>
                 </form>
-            </CardContent>
+            </div>
         </Card>
     </div>
 </AppLayout>

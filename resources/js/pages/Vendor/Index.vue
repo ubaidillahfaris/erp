@@ -94,7 +94,7 @@ const deleteVendor = async (id: number) => {
 <template>
 <Head title="Vendor" />
 
-<div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+<div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
 
     <PageHeader 
         title="Vendor & Supplier" 
@@ -180,7 +180,7 @@ const deleteVendor = async (id: number) => {
                                 <MoreHorizontal class="h-4 w-4" />
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input">
+                        <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-slate-200">
                             <DropdownMenuLabel
                                 class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5">
                                 Opsi Vendor</DropdownMenuLabel>

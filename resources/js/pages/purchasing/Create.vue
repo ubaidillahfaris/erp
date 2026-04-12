@@ -13,17 +13,15 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+    SelectValue } from '@/components/ui/select';
 import {
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    TableRow } from '@/components/ui/table';
+import { Card } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import FileDropzone from '@/components/FileDropzone.vue';
 import QuickVendorModal from '@/components/QuickVendorModal.vue';
@@ -132,7 +130,7 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
 <Head title="Catat Inbound Baru" />
 
 <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         
         <QuickVendorModal 
             v-model:open="isQuickVendorOpen" 
@@ -141,12 +139,12 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
 
         <div class="flex items-center gap-4">
             <Link :href="index().url">
-                <Button variant="ghost" size="icon" class="bg-white hover:bg-slate-100 shadow-sm border border-slate-200">
+                <Button variant="ghost" size="icon" class="bg-white hover:bg-slate-100 shadow-none border border-slate-200">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
             </Link>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Catat Inbound Baru</h1>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Catat Inbound Baru</h1>
                 <p class="text-muted-foreground mt-1">Buat dokumen penerimaan barang untuk memperbarui stok gudang.</p>
             </div>
         </div>
@@ -154,11 +152,11 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
         <form @submit.prevent="submit" class="flex flex-col gap-6 max-w-7xl">
             <!-- HEADER DAFTAR -->
             <Card class="border-slate-200">
-                <CardHeader class="border-b border-input bg-slate-50">
-                    <CardTitle>Metadata Transaksi</CardTitle>
-                    <CardDescription>Pilih tipe transaksi dan profil rekanan.</CardDescription>
-                </CardHeader>
-                <CardContent class="p-6 space-y-6">
+                <div class="border-b border-slate-200 bg-slate-50">
+                    <h3 class="text-sm font-semibold text-slate-900 leading-none">Metadata Transaksi</h3>
+                    <p class="text-xs text-slate-400 mt-1">Pilih tipe transaksi dan profil rekanan.</p>
+                </div>
+                <div class="p-6 space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="flex flex-col gap-2">
                             <Label for="transaction_type">Tipe Transaksi</Label>
@@ -212,21 +210,21 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                         <Textarea id="keterangan" v-model="form.keterangan" placeholder="Catatan transaksi..." rows="2" class="resize-none" />
                         <p v-if="form.errors.keterangan" class="text-sm text-destructive">{{ form.errors.keterangan }}</p>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 <!-- ITEMS TABLE (Span 2) -->
                 <Card class="border-slate-200 lg:col-span-2 overflow-hidden">
-                    <CardHeader class="border-b border-input bg-slate-50 flex flex-row items-center justify-between py-4">
+                    <div class="border-b border-slate-200 bg-slate-50 flex flex-row items-center justify-between py-4">
                         <div class="space-y-1">
-                            <CardTitle>Daftar Barang Masuk</CardTitle>
+                            <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Barang Masuk</h3>
                         </div>
                         <Button type="button" variant="outline" size="sm" @click="addItem" :disabled="!!props.produkId && form.items.length === 1 && !form.items[0].produk_id">
                             <Plus class="mr-2 h-4 w-4" /> Tambah Baris
                         </Button>
-                    </CardHeader>
-                    <CardContent class="p-0">
+                    </div>
+                    <div class="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow class="bg-slate-50">
@@ -295,16 +293,16 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                             <span class="text-muted-foreground mr-2 font-medium">Estimasi Subtotal:</span>
                             <span class="text-lg font-bold text-foreground tracking-tight">{{ formatCurrency(totalBiaya) }}</span>
                         </div>
-                    </CardContent>
+                    </div>
                 </Card>
 
                 <!-- ATTACHMENTS (Span 1) -->
                 <Card class="border-slate-200">
-                    <CardHeader class="border-b border-input bg-slate-50 py-4">
-                        <CardTitle>Lampiran Pendukung</CardTitle>
-                        <CardDescription>Upload foto nota atau invoice.</CardDescription>
-                    </CardHeader>
-                    <CardContent class="p-6">
+                    <div class="border-b border-slate-200 bg-slate-50 py-4">
+                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Lampiran Pendukung</h3>
+                        <p class="text-xs text-slate-400 mt-1">Upload foto nota atau invoice.</p>
+                    </div>
+                    <div class="p-6">
                         <FileDropzone 
                             v-model="form.attachments"
                             :max-size-m-b="20"
@@ -312,13 +310,13 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                             @error="(msg) => $toast?.error?.(msg)"
                         />
                         <p v-if="form.errors.attachments" class="text-xs text-destructive mt-2">{{ form.errors.attachments }}</p>
-                    </CardContent>
+                    </div>
                 </Card>
             </div>
 
             <div class="flex justify-end gap-4 py-4 mb-20">
                 <Link :href="index().url">
-                    <Button variant="outline" type="button" class="h-11 px-8 border-input">Batal</Button>
+                    <Button variant="outline" type="button" class="h-11 px-8 border-slate-200">Batal</Button>
                 </Link>
                 <Button type="submit" :disabled="form.processing" class="h-11 px-8 gap-2 bg-primary">
                     <Save class="h-4 w-4" />

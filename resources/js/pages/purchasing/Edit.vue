@@ -13,17 +13,15 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+    SelectValue } from '@/components/ui/select';
 import {
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+    TableRow } from '@/components/ui/table';
+import { Card } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import FileDropzone from '@/components/FileDropzone.vue';
 import QuickVendorModal from '@/components/QuickVendorModal.vue';
@@ -143,7 +141,7 @@ const deleteExistingAttachment = async (id: string, name: string) => {
 <Head title="Edit Draft Inbound" />
 
 <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         
         <QuickVendorModal 
             v-model:open="isQuickVendorOpen" 
@@ -152,12 +150,12 @@ const deleteExistingAttachment = async (id: string, name: string) => {
 
         <div class="flex items-center gap-4">
             <Link :href="index().url">
-                <Button variant="ghost" size="icon" class="bg-white hover:bg-slate-100 shadow-sm border border-slate-200">
+                <Button variant="ghost" size="icon" class="bg-white hover:bg-slate-100 shadow-none border border-slate-200">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
             </Link>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Edit Draft Inbound</h1>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Edit Draft Inbound</h1>
                 <p class="text-muted-foreground mt-1">Perbarui dokumen transaksi yang belum di finalisasi.</p>
             </div>
         </div>
@@ -165,11 +163,11 @@ const deleteExistingAttachment = async (id: string, name: string) => {
         <form @submit.prevent="submit" class="flex flex-col gap-6 max-w-7xl">
             <!-- HEADER DAFTAR -->
             <Card class="border-slate-200">
-                <CardHeader class="border-b border-input bg-slate-50">
-                    <CardTitle>Metadata Transaksi</CardTitle>
-                    <CardDescription>Pilih tipe transaksi dan profil rekanan.</CardDescription>
-                </CardHeader>
-                <CardContent class="p-6 space-y-6">
+                <div class="border-b border-slate-200 bg-slate-50">
+                    <h3 class="text-sm font-semibold text-slate-900 leading-none">Metadata Transaksi</h3>
+                    <p class="text-xs text-slate-400 mt-1">Pilih tipe transaksi dan profil rekanan.</p>
+                </div>
+                <div class="p-6 space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="flex flex-col gap-2">
                             <Label for="transaction_type">Tipe Transaksi</Label>
@@ -222,21 +220,21 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                         <Textarea id="keterangan" v-model="form.keterangan" placeholder="Catatan transaksi..." rows="2" class="resize-none" />
                         <p v-if="form.errors.keterangan" class="text-sm text-destructive">{{ form.errors.keterangan }}</p>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 <!-- ITEMS TABLE (Span 2) -->
                 <Card class="border-slate-200 lg:col-span-2 overflow-hidden">
-                    <CardHeader class="border-b border-input bg-slate-50 flex flex-row items-center justify-between py-4">
+                    <div class="border-b border-slate-200 bg-slate-50 flex flex-row items-center justify-between py-4">
                         <div class="space-y-1">
-                            <CardTitle>Daftar Barang Masuk</CardTitle>
+                            <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Barang Masuk</h3>
                         </div>
                         <Button type="button" variant="outline" size="sm" @click="addItem">
                             <Plus class="mr-2 h-4 w-4" /> Tambah Baris
                         </Button>
-                    </CardHeader>
-                    <CardContent class="p-0">
+                    </div>
+                    <div class="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow class="bg-slate-50">
@@ -304,21 +302,21 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                             <span class="text-muted-foreground mr-2 font-medium">Estimasi Subtotal:</span>
                             <span class="text-lg font-bold text-foreground tracking-tight">{{ formatCurrency(totalBiaya) }}</span>
                         </div>
-                    </CardContent>
+                    </div>
                 </Card>
 
                 <!-- ATTACHMENTS (Span 1) -->
                 <div class="flex flex-col gap-6">
                     <Card class="border-slate-200">
-                        <CardHeader class="border-b border-input bg-slate-50 py-4">
-                            <CardTitle>Existing Lampiran</CardTitle>
-                        </CardHeader>
-                        <CardContent class="p-6">
+                        <div class="border-b border-slate-200 bg-slate-50 py-4">
+                            <h3 class="text-sm font-semibold text-slate-900 leading-none">Existing Lampiran</h3>
+                        </div>
+                        <div class="p-6">
                             <div class="flex flex-col gap-2" v-if="purchase.attachments?.length > 0">
                                 <div 
                                     v-for="att in purchase.attachments" 
                                     :key="att.id"
-                                    class="flex items-center justify-between p-3 border border-slate-200 rounded-md bg-white group"
+                                    class="flex items-center justify-between p-3 border border-slate-200 rounded-xl bg-white group"
                                 >
                                     <div class="flex items-center gap-3 overflow-hidden">
                                         <div class="h-10 w-10 shrink-0 bg-secondary rounded flex items-center justify-center">
@@ -341,14 +339,14 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                             <div v-else class="text-sm text-muted-foreground italic text-center py-4">
                                 Tidak ada lampiran sebelumnya
                             </div>
-                        </CardContent>
+                        </div>
                     </Card>
 
                     <Card class="border-slate-200">
-                        <CardHeader class="border-b border-input bg-slate-50 py-4">
-                            <CardTitle>Tambah Lampiran Baru</CardTitle>
-                        </CardHeader>
-                        <CardContent class="p-6">
+                        <div class="border-b border-slate-200 bg-slate-50 py-4">
+                            <h3 class="text-sm font-semibold text-slate-900 leading-none">Tambah Lampiran Baru</h3>
+                        </div>
+                        <div class="p-6">
                             <FileDropzone 
                                 v-model="form.attachments"
                                 :max-size-m-b="20"
@@ -356,14 +354,14 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                                 @error="(msg) => $toast?.error?.(msg)"
                             />
                             <p v-if="form.errors.attachments" class="text-xs text-destructive mt-2">{{ form.errors.attachments }}</p>
-                        </CardContent>
+                        </div>
                     </Card>
                 </div>
             </div>
 
             <div class="flex justify-end gap-4 py-4 mb-20">
                 <Link :href="index().url">
-                    <Button variant="outline" type="button" class="h-11 px-8 border-input">Batal</Button>
+                    <Button variant="outline" type="button" class="h-11 px-8 border-slate-200">Batal</Button>
                 </Link>
                 <Button type="submit" :disabled="form.processing" class="h-11 px-8 gap-2 bg-primary">
                     <Save class="h-4 w-4" />

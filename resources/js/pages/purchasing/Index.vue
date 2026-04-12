@@ -83,7 +83,7 @@ const typeThemes: Record<string, string> = {
 <template>
 <Head title="Purchasing Inbound" />
 
-<div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+<div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
     
     <PageHeader 
         title="Pembelian & Inbound" 

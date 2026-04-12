@@ -98,7 +98,7 @@ const formatCurrency = (value: number) => {
 <template>
     <Head title="Bill of Materials" />
 
-    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <PageHeader 
             title="Recipes & BOM" 
             description="Master Formula & Komposisi Produksi" 
@@ -156,7 +156,7 @@ const formatCurrency = (value: number) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all" :class="row.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-muted/50 text-muted-foreground border-transparent'">
+                    <Badge variant="secondary" class="h-5 px-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all" :class="row.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-muted/50 text-muted-foreground border-transparent'">
                         {{ row.is_active ? 'Production Ready' : 'Draft' }}
                     </Badge>
                 </template>
@@ -174,7 +174,7 @@ const formatCurrency = (value: number) => {
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input font-sans">
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-slate-200 font-sans">
                                 <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">BOM Ops</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem @click="deleteBom(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5 font-medium">

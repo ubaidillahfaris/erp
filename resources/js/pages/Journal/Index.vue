@@ -7,7 +7,7 @@ import PageHeader from '@/components/PageHeader.vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Table,
@@ -15,8 +15,7 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+    TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
@@ -88,8 +87,7 @@ const formatCurrency = (value: number) => {
 
 const formatDate = (date: string) => {
     return new Intl.DateTimeFormat('id-ID', {
-        dateStyle: 'medium',
-    }).format(new Date(date));
+        dateStyle: 'medium' }).format(new Date(date));
 };
 
 const totals = computed(() => {
@@ -106,7 +104,7 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
 <template>
 <Head title="Jurnal Umum" />
 
-<div class="px-8 py-10 flex flex-col gap-10 font-sans bg-slate-50 min-h-[calc(100vh-64px)]">
+<div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
     <PageHeader 
         title="Jurnal Umum" 
         description="Laporan Arus Kas Masuk (Debit) & Keluar (Kredit)" 
@@ -114,7 +112,7 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
         :count="journals.total"
     >
         <template #actions>
-            <div class="flex items-center gap-2 bg-white p-1 border border-input rounded-md shadow-none ">
+            <div class="flex items-center gap-2 bg-white p-1 border border-slate-200 rounded-xl shadow-none ">
                 <Input type="date" v-model="startDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
                 <span class="text-xs text-muted-foreground font-bold opacity-30 px-1">s/d</span>
                 <Input type="date" v-model="endDate" class="h-8 w-36 border-none bg-transparent shadow-none focus-visible:ring-0 text-xs font-semibold" />
@@ -124,42 +122,42 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
 
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto w-full">
-        <Card class="rounded-xl bg-white shadow-sm border border-input">
-            <CardHeader class="pb-2 px-6 pt-6">
-                <CardTitle class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center">
+        <Card class="rounded-xl bg-white shadow-none border border-slate-200">
+            <div class="pb-2 px-6 pt-6">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center text-sm font-semibold text-slate-900 leading-none">
                     <ArrowUpCircle class="mr-2 h-3.5 w-3.5 text-green-500" />
                     Total Pemasukan (Debit)
-                </CardTitle>
-            </CardHeader>
-            <CardContent class="px-6 pb-6">
+                </h3>
+            </div>
+            <div class="px-6 pb-6">
                 <div class="text-2xl font-black text-green-600 tracking-tighter">{{ formatCurrency(totals.debit) }}</div>
-            </CardContent>
+            </div>
         </Card>
 
-        <Card class="rounded-xl bg-white shadow-sm border border-input">
-            <CardHeader class="pb-2 px-6 pt-6">
-                <CardTitle class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center">
+        <Card class="rounded-xl bg-white shadow-none border border-slate-200">
+            <div class="pb-2 px-6 pt-6">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center text-sm font-semibold text-slate-900 leading-none">
                     <ArrowDownCircle class="mr-2 h-3.5 w-3.5 text-red-500" />
                     Total Pengeluaran (Kredit)
-                </CardTitle>
-            </CardHeader>
-            <CardContent class="px-6 pb-6">
+                </h3>
+            </div>
+            <div class="px-6 pb-6">
                 <div class="text-2xl font-black text-red-600 tracking-tighter">{{ formatCurrency(totals.kredit) }}</div>
-            </CardContent>
+            </div>
         </Card>
 
         <Card class="rounded-xl bg-accent text-white shadow-none shadow-accent/20 border-none">
-            <CardHeader class="pb-2 px-6 pt-6">
-                <CardTitle class="text-xs font-bold uppercase tracking-widest text-white/60 flex items-center">
+            <div class="pb-2 px-6 pt-6">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-white/60 flex items-center text-sm font-semibold text-slate-900 leading-none">
                     <Landmark class="mr-2 h-3.5 w-3.5" />
                     Saldo Akhir Mutasi
-                </CardTitle>
-            </CardHeader>
-            <CardContent class="px-6 pb-6">
+                </h3>
+            </div>
+            <div class="px-6 pb-6">
                 <div class="text-2xl font-black tracking-tighter">
                     {{ formatCurrency(finalBalance) }}
                 </div>
-            </CardContent>
+            </div>
         </Card>
     </div>
 
@@ -182,7 +180,7 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
             </template>
 
             <template #cell(category)="{ row }">
-                <Badge variant="outline" class="rounded-md text-xs px-2 py-0.5 font-bold uppercase tracking-tighter border-input text-muted-foreground shadow-none ">
+                <Badge variant="outline" class="rounded-xl text-xs px-2 py-0.5 font-bold uppercase tracking-tighter border-slate-200 text-muted-foreground shadow-none ">
                     {{ row.category }}
                 </Badge>
             </template>

@@ -164,7 +164,7 @@ const getStockStatus = (produk: any) => {
 <template>
     <Head title="Inventory & Stock Control" />
 
-    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <PageHeader 
             title="Stock Ledger" 
             description="Manajemen Saldo & Inventaris Gudang" 
@@ -199,7 +199,7 @@ const getStockStatus = (produk: any) => {
                 </template>
 
                 <template #cell(type)="{ row }">
-                    <Badge variant="outline" class="h-5 px-1.5 rounded text-xs font-bold uppercase tracking-widest border-input text-muted-foreground shadow-none ">
+                    <Badge variant="outline" class="h-5 px-1.5 rounded text-xs font-bold uppercase tracking-widest border-slate-200 text-muted-foreground shadow-none ">
                         {{ row.type?.replace('_', ' ') }}
                     </Badge>
                 </template>
@@ -214,7 +214,7 @@ const getStockStatus = (produk: any) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-2 rounded-md text-xs font-bold uppercase tracking-widest transition-all gap-1.5" :class="getStockStatus(row).styles">
+                    <Badge variant="secondary" class="h-5 px-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all gap-1.5" :class="getStockStatus(row).styles">
                         <component :is="getStockStatus(row).icon" class="h-3 w-3" />
                         {{ getStockStatus(row).label }}
                     </Badge>
@@ -233,7 +233,7 @@ const getStockStatus = (produk: any) => {
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input font-sans">
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-slate-200 font-sans">
                                 <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">Inventory Ops</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
 
@@ -266,7 +266,7 @@ const getStockStatus = (produk: any) => {
     <!-- Adjustment Dialog -->
     <Dialog :open="isAdjustmentOpen" @update:open="isAdjustmentOpen = $event">
         <DialogContent class="max-w-md rounded-xl p-0 overflow-hidden border-none shadow-none ">
-            <DialogHeader class="bg-muted/10 px-6 py-5 border-b border-input">
+            <DialogHeader class="bg-muted/10 px-6 py-5 border-b border-slate-200">
                 <DialogTitle class="text-[16px] font-bold flex items-center gap-2">
                     <Settings2 class="h-4 w-4 text-accent" />
                     Penyesuaian Stok Ledger
@@ -276,9 +276,9 @@ const getStockStatus = (produk: any) => {
                 </DialogDescription>
             </DialogHeader>
 
-            <div class="p-6 flex flex-col gap-6">
+            <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
                 <!-- Status Comparison -->
-                <div class="grid grid-cols-2 gap-px bg-border/20 rounded-xl overflow-hidden border border-input">
+                <div class="grid grid-cols-2 gap-px bg-border/20 rounded-xl overflow-hidden border border-slate-200">
                     <div class="bg-white p-4">
                         <span class="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-1">Stok System</span>
                         <div class="flex items-baseline gap-1.5">
@@ -303,7 +303,7 @@ const getStockStatus = (produk: any) => {
                     <div class="flex flex-col gap-1.5">
                         <Label class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Satuan Hitung</Label>
                         <Select v-model="adjustmentForm.satuan_id">
-                            <SelectTrigger class="h-11 rounded-xl border-input bg-secondary/20 font-medium text-[13px] shadow-none ">
+                            <SelectTrigger class="h-11 rounded-xl border-slate-200 bg-secondary/20 font-medium text-[13px] shadow-none ">
                                 <SelectValue placeholder="Pilih Satuan" />
                             </SelectTrigger>
                             <SelectContent class="rounded-xl shadow-none ">
@@ -334,13 +334,13 @@ const getStockStatus = (produk: any) => {
                         <Textarea 
                             v-model="adjustmentForm.keterangan"
                             placeholder="Contoh: Barang rusak, selisih hitung gudang..." 
-                            class="min-h-[80px] rounded-xl border-input bg-white text-[13px] h-20 resize-none shadow-none focus:ring-accent/10" 
+                            class="min-h-[80px] rounded-xl border-slate-200 bg-white text-[13px] h-20 resize-none shadow-none focus:ring-accent/10" 
                         />
                     </div>
                 </div>
             </div>
 
-            <div class="bg-muted/5 px-6 py-5 flex items-center justify-between border-t border-input transition-all" :class="adjustmentForm.processing ? 'opacity-50 grayscale' : ''">
+            <div class="bg-muted/5 px-6 py-5 flex items-center justify-between border-t border-slate-200 transition-all" :class="adjustmentForm.processing ? 'opacity-50 grayscale' : ''">
                 <Button variant="ghost" @click="isAdjustmentOpen = false" class="text-muted-foreground hover:bg-secondary rounded-xl px-5 text-xs font-bold uppercase tracking-widest">
                     Batal
                 </Button>

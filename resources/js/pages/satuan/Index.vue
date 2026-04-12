@@ -111,7 +111,7 @@ const confirmDelete = async (id: number) => {
 <template>
     <Head title="Satuan Barang" />
 
-    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <PageHeader 
             title="Unit & Satuan" 
             description="Manajemen Master Satuan Barang" 
@@ -170,7 +170,7 @@ const confirmDelete = async (id: number) => {
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-44 shadow-none border-input font-sans">
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-44 shadow-none border-slate-200 font-sans">
                                 <DropdownMenuItem @click="confirmDelete(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5">
                                     <Trash2 class="h-3.5 w-3.5" /> Hapus Satuan
                                 </DropdownMenuItem>

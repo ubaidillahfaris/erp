@@ -140,7 +140,7 @@ const formatStatus = (status: string) => {
 <template>
     <Head title="Restock & Inventory" />
 
-    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <PageHeader 
             title="Restock Registry" 
             description="Manajemen Stok & Pembelian" 
@@ -179,14 +179,14 @@ const formatStatus = (status: string) => {
                             <Input 
                                 v-model="vendor" 
                                 placeholder="Filter vendor..." 
-                                class="pl-9 h-9 rounded-md border-input bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans" 
+                                class="pl-9 h-9 rounded-xl border-slate-200 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans" 
                             />
                         </div>
                         <Select v-model="status">
-                            <SelectTrigger class="h-9 w-[140px] rounded-md border-input bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans">
+                            <SelectTrigger class="h-9 w-[140px] rounded-xl border-slate-200 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
-                            <SelectContent class="rounded-xl shadow-none border-input font-sans">
+                            <SelectContent class="rounded-xl shadow-none border-slate-200 font-sans">
                                 <SelectItem value="semua">Semua Status</SelectItem>
                                 <SelectItem value="lunas">Lunas</SelectItem>
                                 <SelectItem value="hutang">Hutang</SelectItem>
@@ -223,7 +223,7 @@ const formatStatus = (status: string) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status_pembayaran)">
+                    <Badge variant="secondary" class="h-5 px-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status_pembayaran)">
                         {{ formatStatus(row.status_pembayaran) }}
                     </Badge>
                 </template>
@@ -241,7 +241,7 @@ const formatStatus = (status: string) => {
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input font-sans">
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-slate-200 font-sans">
                                 <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">Procurement Ops</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem @click="router.get(`/restock/${row.id}/edit`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">

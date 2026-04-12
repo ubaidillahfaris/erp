@@ -4,7 +4,7 @@ import debounce from 'lodash/debounce';
 import { Calendar, TrendingUp, TrendingDown, Minus, Info, Receipt, Landmark, PieChart } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Table,
@@ -12,8 +12,7 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+    TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import PageHeader from '@/components/PageHeader.vue';
@@ -46,8 +45,7 @@ const endDate = ref(props.filters.end_date);
 watch([startDate, endDate], debounce(([newStart, newEnd]) => {
     router.get('/profit-loss', {
         start_date: newStart,
-        end_date: newEnd,
-    }, { preserveState: true, replace: true, preserveScroll: true });
+        end_date: newEnd }, { preserveState: true, replace: true, preserveScroll: true });
 }, 500));
 
 const formatCurrency = (value: number) => {
@@ -60,8 +58,7 @@ const formatCurrency = (value: number) => {
 
 const formatDate = (date: string) => {
     return new Intl.DateTimeFormat('id-ID', {
-        dateStyle: 'medium',
-    }).format(new Date(date));
+        dateStyle: 'medium' }).format(new Date(date));
 };
 
 const handlePrint = () => {
@@ -95,50 +92,47 @@ const handlePrint = () => {
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card class="rounded-none border-muted bg-transparent shadow-none ">
-                <CardHeader class="pb-2">
-                    <CardTitle
-                        class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center">
+            <Card class="border border-slate-200 rounded-xl bg-white shadow-none ">
+                <div class="pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center text-sm font-semibold text-slate-900 leading-none">
                         Gross Profit
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
+                    </h3>
+                </div>
+                <div>
                     <div class="text-2xl font-bold">{{ formatCurrency(summary.gross_profit) }}</div>
-                </CardContent>
+                </div>
             </Card>
 
-            <Card class="rounded-none border-primary/20 bg-primary/5 shadow-none border">
-                <CardHeader class="pb-2">
-                    <CardTitle
-                        class="text-xs font-bold uppercase tracking-widest text-primary flex items-center">
+            <Card class="rounded-xl border-primary/20 bg-primary/5 shadow-none border">
+                <div class="pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-primary flex items-center text-sm font-semibold text-slate-900 leading-none">
                         Net Profit (Laba Bersih)
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
+                    </h3>
+                </div>
+                <div>
                     <div class="text-2xl font-bold text-primary">
                         {{ formatCurrency(summary.net_profit) }}
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
-            <Card class="rounded-none border-muted bg-transparent shadow-none ">
-                <CardHeader class="pb-2">
-                    <CardTitle
-                        class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center">
+            <Card class="border border-slate-200 rounded-xl bg-white shadow-none ">
+                <div class="pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center text-sm font-semibold text-slate-900 leading-none">
                         Profit Margin
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
+                    </h3>
+                </div>
+                <div>
                     <div class="text-2xl font-bold" :class="summary.margin >= 0 ? 'text-green-600' : 'text-red-600'">
                         {{ summary.margin.toFixed(2) }}%
                     </div>
-                </CardContent>
+                </div>
             </Card>
         </div>
 
         <!-- Profit & Loss Statement -->
         <div
-            class=" border border-muted p-8 bg-card shadow-sm mx-auto w-full print:border-none print:shadow-none print:p-0">
+            class=" border border-muted p-8 bg-white shadow-none mx-auto w-full print:border-none print:shadow-none print:p-0">
             <div class="text-center mb-10">
                 <h2 class="text-xl font-bold uppercase tracking-widest">Laporan Laba Rugi</h2>
                 <p class="text-xs text-muted-foreground uppercase mt-1">Periode: {{ formatDate(startDate) }} sampai {{

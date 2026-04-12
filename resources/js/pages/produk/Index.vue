@@ -125,7 +125,7 @@ const formatCurrency = (value: number) => {
 <template>
 <Head title="Katalog Produk" />
 
-<div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+<div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
     <PageHeader title="Katalog Produk" description="Manajemen Stok & Harga" back-href="/dashboard"
         :count="produks.total" />
 
@@ -146,13 +146,13 @@ const formatCurrency = (value: number) => {
         >
             <template #toolbar-actions>
                 <Select v-model="jenis">
-                    <SelectTrigger class="h-9 w-[180px] rounded-md border-input bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans pl-3">
+                    <SelectTrigger class="h-9 w-[180px] rounded-xl border-slate-200 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans pl-3">
                         <div class="flex items-center gap-2">
                             <Filter class="h-3.5 w-3.5 text-muted-foreground" />
                             <SelectValue placeholder="Jenis Produk" />
                         </div>
                     </SelectTrigger>
-                    <SelectContent class="rounded-xl shadow-none border-input font-sans">
+                    <SelectContent class="rounded-xl shadow-none border-slate-200 font-sans">
                         <SelectItem value="all" class="text-[13px]">Semua Jenis</SelectItem>
                         <SelectItem value="raw_material" class="text-[13px]">Bahan Baku</SelectItem>
                         <SelectItem value="finished_good" class="text-[13px]">Barang Jadi</SelectItem>
@@ -219,7 +219,7 @@ const formatCurrency = (value: number) => {
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end"
-                            class="rounded-xl p-1.5 w-44 shadow-none border-input font-sans">
+                            class="rounded-xl p-1.5 w-44 shadow-none border-slate-200 font-sans">
                             <DropdownMenuItem @click="router.visit(produk.edit(row.id))">
                                 <Pencil class="h-3.5 w-3.5" /> Edit
                             </DropdownMenuItem>

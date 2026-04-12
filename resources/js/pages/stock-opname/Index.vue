@@ -85,7 +85,7 @@ const formatStatus = (status: string) => {
 <template>
     <Head title="Stock Opname" />
 
-    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <PageHeader 
             title="Stock Opname" 
             description="Audit Stok & Penyesuaian" 
@@ -127,7 +127,7 @@ const formatStatus = (status: string) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
+                    <Badge variant="secondary" class="h-5 px-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
                         {{ formatStatus(row.status) }}
                     </Badge>
                 </template>
@@ -152,7 +152,7 @@ const formatStatus = (status: string) => {
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input font-sans">
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-slate-200 font-sans">
                                 <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">Aksi Cepat</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
 

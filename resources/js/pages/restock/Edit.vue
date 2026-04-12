@@ -13,8 +13,7 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+    TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
@@ -123,20 +122,20 @@ const sisaPembayaran = computed(() => {
 <Head title="Edit Restock" />
 
 <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="p-6 flex flex-col gap-6">
+    <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <div class="flex items-center gap-4">
             <Link :href="restockIndex.url()">
-                <Button variant="ghost" size="icon">
+                <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
             </Link>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Edit Restock</h1>
-                <p class="text-muted-foreground">Ubah detail transaksi pengadaan bahan baku.</p>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">Edit Restock</h1>
+                <p class="text-sm text-slate-400 mt-0.5">Ubah detail transaksi pengadaan bahan baku.</p>
             </div>
         </div>
 
-        <div v-if="Object.keys(form.errors).length > 0" class="p-4 bg-destructive/10 border border-destructive/20 rounded-md text-destructive">
+        <div v-if="Object.keys(form.errors).length > 0" class="p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive">
             <p class="font-medium">Ada kesalahan pada form:</p>
             <ul class="list-disc list-inside text-sm">
                 <li v-for="(error, key) in form.errors" :key="key">{{ error }}</li>
@@ -145,12 +144,12 @@ const sisaPembayaran = computed(() => {
 
         <form @submit.prevent="submit" class="flex flex-col gap-6">
             <!-- Info Transaksi -->
-            <Card class="border-0 rounded-none shadow-none bg-transparent">
-                <CardHeader class="px-0">
-                    <CardTitle>Informasi Transaksi</CardTitle>
-                    <CardDescription>Ubah tanggal pengadaan dan keterangan jika diperlukan.</CardDescription>
-                </CardHeader>
-                <CardContent class="px-0 space-y-4">
+            <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
+                <div class="px-6 py-4 border-b border-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-900 leading-none">Informasi Transaksi</h3>
+                    <p class="text-xs text-slate-400 mt-1">Ubah tanggal pengadaan dan keterangan jika diperlukan.</p>
+                </div>
+                <div class="px-0 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="space-y-2">
                             <Label for="tanggal">Tanggal Pembelian</Label>
@@ -198,22 +197,22 @@ const sisaPembayaran = computed(() => {
                             </p>
                         </div>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             <!-- Daftar Barang -->
-            <Card class="border-0 rounded-none shadow-none bg-transparent">
-                <CardHeader class="px-0 flex flex-row items-center justify-between">
+            <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
+                <div class="px-0 flex flex-row items-center justify-between">
                     <div class="space-y-1">
-                        <CardTitle>Daftar Bahan Baku Dibeli</CardTitle>
-                        <CardDescription>Sesuaikan daftar bahan baku, jumlah, atau harganya.</CardDescription>
+                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Bahan Baku Dibeli</h3>
+                        <p class="text-xs text-slate-400 mt-1">Sesuaikan daftar bahan baku, jumlah, atau harganya.</p>
                     </div>
                     <Button type="button" variant="outline" size="sm" @click="addItem">
                         <Plus class="mr-2 h-4 w-4" />
                         Tambah Baris
                     </Button>
-                </CardHeader>
-                <CardContent class="px-0">
+                </div>
+                <div class="p-6">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -274,22 +273,22 @@ const sisaPembayaran = computed(() => {
                             </TableRow>
                         </TableBody>
                     </Table>
-                </CardContent>
+                </div>
             </Card>
 
             <!-- Biaya Tambahan / Penyesuaian -->
-            <Card class="border-0 rounded-none shadow-none bg-transparent pt-4 border-t">
-                <CardHeader class="px-0 flex flex-row items-center justify-between">
+            <Card class="border border-slate-200 rounded-xl bg-white">
+                <div class="px-0 flex flex-row items-center justify-between">
                     <div class="space-y-1">
-                        <CardTitle>Biaya Tambahan / Penyesuaian</CardTitle>
-                        <CardDescription>Tambahkan biaya lain (ongkir, packing) atau diskon.</CardDescription>
+                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Biaya Tambahan / Penyesuaian</h3>
+                        <p class="text-xs text-slate-400 mt-1">Tambahkan biaya lain (ongkir, packing) atau diskon.</p>
                     </div>
                     <Button type="button" variant="outline" size="sm" @click="addAdjustment">
                         <Plus class="mr-2 h-4 w-4" />
                         Tambah Biaya
                     </Button>
-                </CardHeader>
-                <CardContent class="px-0">
+                </div>
+                <div class="p-6">
                     <Table v-if="form.biaya_tambahan.length > 0">
                         <TableHeader>
                             <TableRow>
@@ -316,15 +315,15 @@ const sisaPembayaran = computed(() => {
                             </TableRow>
                         </TableBody>
                     </Table>
-                    <div v-else class="text-center py-6 bg-muted/30 rounded-md border border-dashed">
+                    <div v-else class="text-center py-6 bg-muted/30 rounded-xl border border-dashed">
                         <p class="text-sm text-muted-foreground">Belum ada biaya tambahan (ongkir/diskon).</p>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             <!-- Ringkasan Total -->
-            <Card class="border-0 rounded-none shadow-none bg-muted/20">
-                <CardContent class="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <Card class="border border-slate-200 rounded-xl bg-white">
+                <div class="p-6 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="flex flex-col gap-1">
                         <span class="text-sm text-muted-foreground">Status Pembayaran: <span class="font-medium text-foreground uppercase">{{ form.status_pembayaran.replace('_', ' ') }}</span></span>
                         <span v-if="form.status_pembayaran !== 'lunas'" class="text-sm text-muted-foreground italic">
@@ -335,7 +334,7 @@ const sisaPembayaran = computed(() => {
                         <span class="text-sm text-muted-foreground mr-4">Total Keseluruhan:</span>
                         <span class="text-2xl font-bold">{{ formatCurrency(totalBiaya) }}</span>
                     </div>
-                </CardContent>
+                </div>
             </Card>
 
             <div class="flex justify-end gap-3 py-6 border-t mt-4">

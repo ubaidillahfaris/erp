@@ -149,7 +149,7 @@ const deleteRole = async (id: number) => {
                     </AlertDescription>
                 </Alert>
 
-                <div class="rounded-md border bg-card">
+                <div class="rounded-xl border border-slate-200 bg-white shadow-none">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -219,7 +219,7 @@ const deleteRole = async (id: number) => {
 
                         <div class="space-y-4">
                             <Label>Akses Menu (Permission Matrix)</Label>
-                            <div class="rounded-md border p-4 space-y-4">
+                            <div class="rounded-xl border border-slate-200 p-4 space-y-4">
                                 <div v-for="menu in menus" :key="menu.id" class="space-y-3">
                                     <div class="flex items-center space-x-2">
                                         <input 
@@ -227,7 +227,7 @@ const deleteRole = async (id: number) => {
                                             :id="'menu-' + menu.id" 
                                             :checked="isChecked(menu.id)"
                                             @change="(e) => toggleMenu(menu.id, (e.target as HTMLInputElement).checked)"
-                                            class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary"
+                                            class="h-4 w-4 rounded border-slate-200 bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary"
                                         />
                                         <label 
                                             :for="'menu-' + menu.id"
@@ -245,7 +245,7 @@ const deleteRole = async (id: number) => {
                                                 :id="'menu-' + child.id" 
                                                 :checked="isChecked(child.id)"
                                                 @change="(e) => toggleMenu(child.id, (e.target as HTMLInputElement).checked)"
-                                                class="h-4 w-4 rounded border-input bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary"
+                                                class="h-4 w-4 rounded border-slate-200 bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary"
                                             />
                                             <label 
                                                 :for="'menu-' + child.id"

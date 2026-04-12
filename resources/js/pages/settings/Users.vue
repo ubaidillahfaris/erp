@@ -130,7 +130,7 @@ const deleteUser = async (id: number) => {
                     </template>
                 </PageHeader>
 
-                <div class="rounded-md border bg-card">
+                <div class="rounded-xl border border-slate-200 bg-white shadow-none">
                     <Table>
                         <TableHeader>
                             <TableRow>
