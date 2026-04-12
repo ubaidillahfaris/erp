@@ -16,7 +16,13 @@ class RoleService
         $cacheKey = 'user_menus_'.$user->id;
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($user) {
-            // Fetch all active root menus with their active children
+            // 1. Get IDs of menus assigned to any of the user's roles
+            $authorizedMenuIds = \DB::table('menu_role')
+                ->whereIn('role_id', $user->roles->pluck('id'))
+                ->pluck('menu_id')
+                ->toArray();
+
+            // 2. Fetch all active root menus with their active children
             $menus = Menu::with(['children' => function ($query) {
                 $query->active()->orderBy('order_priority');
             }])
@@ -25,8 +31,8 @@ class RoleService
                 ->orderBy('order_priority')
                 ->get();
 
-            // Filter menus based on user permissions
-            return $this->filterMenusByPermission($menus, $user)->toArray();
+            // 3. Filter menus based on authorized list and user permissions
+            return $this->filterMenusByStatus($menus, $user, $authorizedMenuIds)->toArray();
         });
     }
 
@@ -69,6 +75,9 @@ class RoleService
      */
     public function clearAllMenuCaches(): void
     {
+        // Clear global Spatie permission cache
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
         // Surgical clear for all users since user count is low (5 users found in audit)
         User::all()->each(function (User $user) {
             $this->clearMenuCache($user);
@@ -76,28 +85,24 @@ class RoleService
     }
 
     /**
-     * Recursively filter menus and their children by user permissions.
+     * Recursively filter menus and their children by authorized IDs and user permissions.
      */
-    protected function filterMenusByPermission($menus, User $user)
+    protected function filterMenusByStatus($menus, User $user, array $authorizedMenuIds)
     {
-        return $menus->filter(function ($menu) use ($user) {
-            // Superadmin always has access to all menus
-            if ($user->hasRole('superadmin')) {
-                return true;
+        return $menus->filter(function ($menu) use ($user, $authorizedMenuIds) {
+            // 1. Check if the menu ID is explicitly assigned to the user's roles
+            if (! in_array($menu->id, $authorizedMenuIds)) {
+                return false;
             }
 
-            // If menu has a permission name, check if user has it
+            // 2. Secondary check: If menu has a permission name, verify user has it
             if ($menu->permission_name && ! $user->can($menu->permission_name)) {
                 return false;
             }
 
-            // If it's a parent, also filter its children
+            // 3. If it's a parent, also filter its children
             if ($menu->children->isNotEmpty()) {
-                $menu->setRelation('children', $this->filterMenusByPermission($menu->children, $user));
-
-                // If all children were filtered out and the parent itself has no route/action,
-                // we might want to hide the parent too.
-                // But for now, we'll keep it if it passes its own permission check.
+                $menu->setRelation('children', $this->filterMenusByStatus($menu->children, $user, $authorizedMenuIds));
             }
 
             return true;

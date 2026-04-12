@@ -63,6 +63,12 @@ class UserController extends Controller
 
         $user->syncRoles([$request->role]);
 
+        // Clear authorizaton cache (Spatie)
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+
+        // Clear dynamic menu cache for this user
+        app(\App\Services\RoleService::class)->clearMenuCache($user);
+
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
     }
 

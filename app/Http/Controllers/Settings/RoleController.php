@@ -22,12 +22,11 @@ class RoleController extends Controller
     public function index(): Response
     {
         return Inertia::render('settings/Roles', [
-            'roles' => Role::with('permissions')->get()->map(fn ($role) => [
+            'roles' => Role::with(['permissions', 'menus'])->get()->map(fn ($role) => [
                 'id' => $role->id,
                 'name' => $role->name,
                 'permissions' => $role->permissions->pluck('name'),
-                'menu_ids' => Menu::whereIn('permission_name', $role->permissions->pluck('name'))
-                    ->pluck('id'),
+                'menu_ids' => $role->menus->pluck('id'),
             ]),
             'menus' => Menu::with('children')->root()->active()->orderBy('order_priority')->get(),
         ]);
