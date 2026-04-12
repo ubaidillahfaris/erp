@@ -16,13 +16,13 @@ class RoleService
         $cacheKey = 'user_menus_'.$user->id;
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($user) {
-            // 1. Get IDs of menus assigned to any of the user's roles
-            $authorizedMenuIds = \DB::table('menu_role')
-                ->whereIn('role_id', $user->roles->pluck('id'))
-                ->pluck('menu_id')
-                ->toArray();
+            // 0. Ensure user roles are loaded for reliable checking
+            if (!$user->relationLoaded('roles')) {
+                $user->load('roles');
+            }
 
-            // 2. Fetch all active root menus with their active children
+            // 1. TOP-LEVEL BYPASS: Superadmin sees everything, no questions asked.
+            // Safety first - ensure owner always has their tools.
             $menus = Menu::with(['children' => function ($query) {
                 $query->active()->orderBy('order_priority');
             }])
@@ -30,6 +30,16 @@ class RoleService
                 ->active()
                 ->orderBy('order_priority')
                 ->get();
+
+            if ($user->hasRole('superadmin')) {
+                return $menus->toArray();
+            }
+
+            // 2. FOR OTHER ROLES: Get explicit IDs of assigned menus
+            $authorizedMenuIds = \DB::table('menu_role')
+                ->whereIn('role_id', $user->roles->pluck('id'))
+                ->pluck('menu_id')
+                ->toArray();
 
             // 3. Filter menus based on authorized list and user permissions
             return $this->filterMenusByStatus($menus, $user, $authorizedMenuIds)->toArray();
@@ -90,6 +100,11 @@ class RoleService
     protected function filterMenusByStatus($menus, User $user, array $authorizedMenuIds)
     {
         return $menus->filter(function ($menu) use ($user, $authorizedMenuIds) {
+            // Superadmin always has access to all menus (Safety first!)
+            if ($user->hasRole('superadmin')) {
+                return true;
+            }
+
             // 1. Check if the menu ID is explicitly assigned to the user's roles
             if (! in_array($menu->id, $authorizedMenuIds)) {
                 return false;
