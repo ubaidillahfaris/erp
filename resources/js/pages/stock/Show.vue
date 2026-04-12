@@ -105,7 +105,7 @@ const getMovementDetails = (movement: any) => {
                 <h3 class="text-sm font-semibold text-slate-900 leading-none">Histori Pergerakan</h3>
                 <p class="text-xs text-slate-400 mt-1">Daftar lengkap transaksi masuk dan keluar untuk produk ini.</p>
             </div>
-            <div class="px-0">
+            <div class="p-6">
                 <div class="rounded-xl border border-slate-200 bg-white shadow-none shadow-none overflow-hidden">
                     <!-- Top Pagination -->
                     <DataTablePagination :paginator="movements" v-model:perPage="perPage"

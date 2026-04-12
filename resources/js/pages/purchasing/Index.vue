@@ -172,7 +172,7 @@ const typeThemes: Record<string, string> = {
 
             <template #cell(tanda)="{ row }">
                 <div class="flex flex-col gap-1 items-start">
-                    <span class="text-sm font-bold">{{ formatCurrency(row.total_amount) }}</span>
+                    <span class="text-sm font-bold">{{ formatCurrency(row.total_biaya) }}</span>
                     <Badge v-if="row.status === 'finalized'" variant="secondary" class="bg-emerald-50 text-emerald-700 border-none">
                         Finalized
                     </Badge>

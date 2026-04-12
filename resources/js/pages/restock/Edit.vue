@@ -149,7 +149,7 @@ const sisaPembayaran = computed(() => {
                     <h3 class="text-sm font-semibold text-slate-900 leading-none">Informasi Transaksi</h3>
                     <p class="text-xs text-slate-400 mt-1">Ubah tanggal pengadaan dan keterangan jika diperlukan.</p>
                 </div>
-                <div class="px-0 space-y-4">
+                <div class="p-6 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="space-y-2">
                             <Label for="tanggal">Tanggal Pembelian</Label>
@@ -202,7 +202,7 @@ const sisaPembayaran = computed(() => {
 
             <!-- Daftar Barang -->
             <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
-                <div class="px-0 flex flex-row items-center justify-between">
+                <div class="px-6 py-4 border-b border-slate-100 flex flex-row items-center justify-between">
                     <div class="space-y-1">
                         <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Bahan Baku Dibeli</h3>
                         <p class="text-xs text-slate-400 mt-1">Sesuaikan daftar bahan baku, jumlah, atau harganya.</p>
@@ -278,7 +278,7 @@ const sisaPembayaran = computed(() => {
 
             <!-- Biaya Tambahan / Penyesuaian -->
             <Card class="border border-slate-200 rounded-xl bg-white">
-                <div class="px-0 flex flex-row items-center justify-between">
+                <div class="px-6 py-4 border-b border-slate-100 flex flex-row items-center justify-between">
                     <div class="space-y-1">
                         <h3 class="text-sm font-semibold text-slate-900 leading-none">Biaya Tambahan / Penyesuaian</h3>
                         <p class="text-xs text-slate-400 mt-1">Tambahkan biaya lain (ongkir, packing) atau diskon.</p>

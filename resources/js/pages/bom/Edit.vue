@@ -200,7 +200,7 @@ const submit = () => {
                     <h3 class="text-sm font-semibold text-slate-900 leading-none">Informasi Utama</h3>
                     <p class="text-xs text-slate-400 mt-1">Pilih produk hasil akhir dan beri nama resep.</p>
                 </div>
-                <div class="px-0 space-y-4">
+                <div class="p-6 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <CreatableSelect v-model="form.produk_id" :options="produks"
@@ -259,7 +259,7 @@ const submit = () => {
             </Card>
 
             <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
-                <div class="px-0 flex flex-row items-center justify-between">
+                <div class="px-6 py-4 border-b border-slate-100 flex flex-row items-center justify-between">
                     <div class="space-y-1">
                         <h3 class="text-sm font-semibold text-slate-900 leading-none">Bahan Baku & Komposisi</h3>
                         <p class="text-xs text-slate-400 mt-1">Daftar bahan baku yang dibutuhkan untuk 1 unit barang jadi.

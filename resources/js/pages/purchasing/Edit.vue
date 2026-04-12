@@ -163,7 +163,7 @@ const deleteExistingAttachment = async (id: string, name: string) => {
         <form @submit.prevent="submit" class="flex flex-col gap-6 max-w-7xl">
             <!-- HEADER DAFTAR -->
             <Card class="border-slate-200">
-                <div class="border-b border-slate-200 bg-slate-50">
+                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
                     <h3 class="text-sm font-semibold text-slate-900 leading-none">Metadata Transaksi</h3>
                     <p class="text-xs text-slate-400 mt-1">Pilih tipe transaksi dan profil rekanan.</p>
                 </div>
@@ -226,7 +226,7 @@ const deleteExistingAttachment = async (id: string, name: string) => {
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 <!-- ITEMS TABLE (Span 2) -->
                 <Card class="border-slate-200 lg:col-span-2 overflow-hidden">
-                    <div class="border-b border-slate-200 bg-slate-50 flex flex-row items-center justify-between py-4">
+                    <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex flex-row items-center justify-between">
                         <div class="space-y-1">
                             <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Barang Masuk</h3>
                         </div>
@@ -308,7 +308,7 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                 <!-- ATTACHMENTS (Span 1) -->
                 <div class="flex flex-col gap-6">
                     <Card class="border-slate-200">
-                        <div class="border-b border-slate-200 bg-slate-50 py-4">
+                        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
                             <h3 class="text-sm font-semibold text-slate-900 leading-none">Existing Lampiran</h3>
                         </div>
                         <div class="p-6">
@@ -343,7 +343,7 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                     </Card>
 
                     <Card class="border-slate-200">
-                        <div class="border-b border-slate-200 bg-slate-50 py-4">
+                        <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
                             <h3 class="text-sm font-semibold text-slate-900 leading-none">Tambah Lampiran Baru</h3>
                         </div>
                         <div class="p-6">
