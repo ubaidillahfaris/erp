@@ -164,7 +164,7 @@ const getStockStatus = (produk: any) => {
 <template>
     <Head title="Inventory & Stock Control" />
 
-    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
         <PageHeader 
             title="Stock Ledger" 
             description="Manajemen Saldo & Inventaris Gudang" 
@@ -173,7 +173,7 @@ const getStockStatus = (produk: any) => {
         />
 
         <!-- ====== CONTENT AREA ====== -->
-        <div class="max-w-7xl mx-auto w-full">
+        <div class="w-full max-w-7xl mx-auto">
             <DataTable
                 :data="produks"
                 :columns="columns"
@@ -184,22 +184,22 @@ const getStockStatus = (produk: any) => {
             >
                 <template #cell(product)="{ row }">
                     <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                             <Package class="h-5 w-5" />
                         </div>
                         <div class="min-w-0 pr-4">
                             <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.nama }}</p>
                             <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-[10px] font-mono font-bold text-muted-foreground/40 uppercase tracking-widest">{{ row.sku }}</span>
-                                <span class="text-[10px] text-muted-foreground/20 italic">•</span>
-                                <span class="text-[11px] font-medium text-muted-foreground/50 lowercase">{{ row.satuan?.nama }}</span>
+                                <span class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest">{{ row.sku }}</span>
+                                <span class="text-xs text-muted-foreground italic">•</span>
+                                <span class="text-xs font-medium text-muted-foreground lowercase">{{ row.satuan?.nama }}</span>
                             </div>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(type)="{ row }">
-                    <Badge variant="outline" class="h-5 px-1.5 rounded text-[9px] font-bold uppercase tracking-widest border-border/40 text-muted-foreground/60 shadow-none">
+                    <Badge variant="outline" class="h-5 px-1.5 rounded text-xs font-bold uppercase tracking-widest border-input text-muted-foreground shadow-none ">
                         {{ row.type?.replace('_', ' ') }}
                     </Badge>
                 </template>
@@ -209,12 +209,12 @@ const getStockStatus = (produk: any) => {
                         <span class="text-[18px] font-bold tabular-nums tracking-tighter" :class="parseFloat(row.stock?.balance || 0) <= row.stok_minimal ? 'text-destructive' : 'text-foreground'">
                             {{ parseFloat(row.stock?.balance || 0).toLocaleString('id-ID') }}
                         </span>
-                        <span class="text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/30">Min. {{ row.stok_minimal }}</span>
+                        <span class="text-xs font-bold uppercase tracking-tighter text-muted-foreground">Min. {{ row.stok_minimal }}</span>
                     </div>
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-2 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all gap-1.5" :class="getStockStatus(row).styles">
+                    <Badge variant="secondary" class="h-5 px-2 rounded-md text-xs font-bold uppercase tracking-widest transition-all gap-1.5" :class="getStockStatus(row).styles">
                         <component :is="getStockStatus(row).icon" class="h-3 w-3" />
                         {{ getStockStatus(row).label }}
                     </Badge>
@@ -223,26 +223,26 @@ const getStockStatus = (produk: any) => {
                 <template #actions="{ row }">
                     <div class="flex items-center justify-end gap-1 px-2">
                         <Link :href="`/stock/${row.id}`">
-                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                 <History class="h-4 w-4" />
                             </button>
                         </Link>
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-lg border-border/40 font-sans">
-                                <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-2 py-1.5 text-center text-xs">Inventory Ops</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input font-sans">
+                                <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">Inventory Ops</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
 
                                 <DropdownMenuItem @click="router.get(`/restock/create?produk_id=${row.id}`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
-                                    <ShoppingCart class="h-3.5 w-3.5 text-muted-foreground/60" /> Restock Belanja
+                                    <ShoppingCart class="h-3.5 w-3.5 text-muted-foreground" /> Restock Belanja
                                 </DropdownMenuItem>
 
                                 <DropdownMenuItem v-if="row.type !== 'finished_good'" @click="router.get(`/production/create?produk_id=${row.id}`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
-                                    <TestTube class="h-3.5 w-3.5 text-muted-foreground/60" /> Gunakan Produksi
+                                    <TestTube class="h-3.5 w-3.5 text-muted-foreground" /> Gunakan Produksi
                                 </DropdownMenuItem>
 
                                 <DropdownMenuItem @click="openAdjustment(row)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-accent">
@@ -265,8 +265,8 @@ const getStockStatus = (produk: any) => {
 
     <!-- Adjustment Dialog -->
     <Dialog :open="isAdjustmentOpen" @update:open="isAdjustmentOpen = $event">
-        <DialogContent class="max-w-md rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
-            <DialogHeader class="bg-muted/10 px-6 py-5 border-b border-border/40">
+        <DialogContent class="max-w-md rounded-xl p-0 overflow-hidden border-none shadow-none ">
+            <DialogHeader class="bg-muted/10 px-6 py-5 border-b border-input">
                 <DialogTitle class="text-[16px] font-bold flex items-center gap-2">
                     <Settings2 class="h-4 w-4 text-accent" />
                     Penyesuaian Stok Ledger
@@ -278,21 +278,21 @@ const getStockStatus = (produk: any) => {
 
             <div class="p-6 flex flex-col gap-6">
                 <!-- Status Comparison -->
-                <div class="grid grid-cols-2 gap-px bg-border/20 rounded-xl overflow-hidden border border-border/40">
+                <div class="grid grid-cols-2 gap-px bg-border/20 rounded-xl overflow-hidden border border-input">
                     <div class="bg-white p-4">
-                        <span class="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 block mb-1">Stok System</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-1">Stok System</span>
                         <div class="flex items-baseline gap-1.5">
                             <span class="text-xl font-bold font-mono tracking-tighter">{{ systemQtySelectedUnit.toLocaleString('id-ID') }}</span>
-                            <span class="text-[10px] font-medium text-muted-foreground uppercase">{{ satuans.find(s => String(s.id) === String(adjustmentForm.satuan_id))?.nama }}</span>
+                            <span class="text-xs font-medium text-muted-foreground uppercase">{{ satuans.find(s => String(s.id) === String(adjustmentForm.satuan_id))?.nama }}</span>
                         </div>
                     </div>
                     <div class="bg-white p-4">
-                        <span class="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 block mb-1">Variance (Diff)</span>
+                        <span class="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-1">Variance (Diff)</span>
                         <div class="flex items-center gap-2">
-                            <span class="text-xl font-bold font-mono tracking-tighter" :class="delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-destructive' : 'text-muted-foreground/40'">
+                            <span class="text-xl font-bold font-mono tracking-tighter" :class="delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-destructive' : 'text-muted-foreground'">
                                 {{ delta > 0 ? '+' : '' }}{{ delta.toLocaleString('id-ID') }}
                             </span>
-                            <Badge v-if="delta !== 0" :variant="delta > 0 ? 'secondary' : 'destructive'" class="h-4 px-1 rounded text-[8px] font-bold uppercase transition-all" :class="delta > 0 ? 'bg-emerald-50 text-emerald-600 border-none' : ''">
+                            <Badge v-if="delta !== 0" :variant="delta > 0 ? 'secondary' : 'destructive'" class="h-4 px-1 rounded text-xs font-bold uppercase transition-all" :class="delta > 0 ? 'bg-emerald-50 text-emerald-600 border-none' : ''">
                                 {{ delta > 0 ? 'GAINED' : 'LOST' }}
                             </Badge>
                         </div>
@@ -301,12 +301,12 @@ const getStockStatus = (produk: any) => {
 
                 <div class="flex flex-col gap-5">
                     <div class="flex flex-col gap-1.5">
-                        <Label class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Satuan Hitung</Label>
+                        <Label class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Satuan Hitung</Label>
                         <Select v-model="adjustmentForm.satuan_id">
-                            <SelectTrigger class="h-11 rounded-xl border-border/40 bg-secondary/20 font-medium text-[13px] shadow-none">
+                            <SelectTrigger class="h-11 rounded-xl border-input bg-secondary/20 font-medium text-[13px] shadow-none ">
                                 <SelectValue placeholder="Pilih Satuan" />
                             </SelectTrigger>
-                            <SelectContent class="rounded-xl shadow-xl">
+                            <SelectContent class="rounded-xl shadow-none ">
                                 <SelectItem v-for="s in satuans" :key="s.id" :value="String(s.id)" class="rounded-lg">
                                     {{ s.nama }}
                                 </SelectItem>
@@ -315,7 +315,7 @@ const getStockStatus = (produk: any) => {
                     </div>
 
                     <div class="flex flex-col gap-1.5">
-                        <Label class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Kuantitas Fisik Riil</Label>
+                        <Label class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Kuantitas Fisik Riil</Label>
                         <div class="relative group">
                              <Input 
                                 type="number" 
@@ -323,28 +323,28 @@ const getStockStatus = (produk: any) => {
                                 v-model="adjustmentForm.physical_qty" 
                                 class="h-14 text-2xl font-black font-mono tracking-tighter rounded-xl border-accent/20 bg-accent/[0.02] focus:ring-accent/10 pr-16 transition-all" 
                             />
-                            <div class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-accent uppercase tracking-widest opacity-40 group-focus-within:opacity-100 transition-opacity">
+                            <div class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-accent uppercase tracking-widest opacity-40 group-focus-within:opacity-100 transition-opacity">
                                 Units
                             </div>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-1.5 pt-1">
-                        <Label class="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Catatan Opname</Label>
+                        <Label class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Catatan Opname</Label>
                         <Textarea 
                             v-model="adjustmentForm.keterangan"
                             placeholder="Contoh: Barang rusak, selisih hitung gudang..." 
-                            class="min-h-[80px] rounded-xl border-border/40 bg-white text-[13px] h-20 resize-none shadow-none focus:ring-accent/10" 
+                            class="min-h-[80px] rounded-xl border-input bg-white text-[13px] h-20 resize-none shadow-none focus:ring-accent/10" 
                         />
                     </div>
                 </div>
             </div>
 
-            <div class="bg-muted/5 px-6 py-5 flex items-center justify-between border-t border-border/40 transition-all" :class="adjustmentForm.processing ? 'opacity-50 grayscale' : ''">
+            <div class="bg-muted/5 px-6 py-5 flex items-center justify-between border-t border-input transition-all" :class="adjustmentForm.processing ? 'opacity-50 grayscale' : ''">
                 <Button variant="ghost" @click="isAdjustmentOpen = false" class="text-muted-foreground hover:bg-secondary rounded-xl px-5 text-xs font-bold uppercase tracking-widest">
                     Batal
                 </Button>
-                <Button @click="submitAdjustment" :disabled="adjustmentForm.processing" class="bg-accent hover:bg-accent/90 text-white rounded-xl h-11 px-6 text-xs font-bold uppercase tracking-widest shadow-lg shadow-accent/20 gap-2">
+                <Button @click="submitAdjustment" :disabled="adjustmentForm.processing" class="bg-accent hover:bg-accent/90 text-white rounded-xl h-11 px-6 text-xs font-bold uppercase tracking-widest shadow-none shadow-accent/20 gap-2">
                     <Loader2 v-if="adjustmentForm.processing" class="h-3.5 w-3.5 animate-spin" />
                     Commit Update
                 </Button>

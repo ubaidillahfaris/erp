@@ -111,7 +111,7 @@ const confirmDelete = async (id: number) => {
 <template>
     <Head title="Satuan Barang" />
 
-    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
         <PageHeader 
             title="Unit & Satuan" 
             description="Manajemen Master Satuan Barang" 
@@ -120,7 +120,7 @@ const confirmDelete = async (id: number) => {
         />
 
         <!-- ====== CONTENT AREA ====== -->
-        <div class="max-w-7xl mx-auto w-full">
+        <div class="w-full max-w-7xl mx-auto">
             <DataTable
                 :data="satuans"
                 :columns="columns"
@@ -143,34 +143,34 @@ const confirmDelete = async (id: number) => {
                 </template>
                 <template #cell(nama_simbol)="{ row }">
                     <div class="flex items-center gap-3">
-                        <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                        <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                             <Ruler class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
                             <p class="text-[14px] font-bold text-foreground capitalize">{{ row.nama }}</p>
-                            <p class="text-[10px] font-mono font-bold text-muted-foreground/40 uppercase tracking-widest mt-0.5">{{ row.simbol }}</p>
+                            <p class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{{ row.simbol }}</p>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(deskripsi)="{ row }">
-                    <span class="text-[13px] text-muted-foreground/60">{{ row.deskripsi || 'Tidak ada deskripsi' }}</span>
+                    <span class="text-[13px] text-muted-foreground">{{ row.deskripsi || 'Tidak ada deskripsi' }}</span>
                 </template>
 
                 <template #actions="{ row }">
                     <div class="flex items-center justify-end gap-1 px-2">
                         <Link :href="satuanEdit(row.id).url">
-                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                 <ChevronRight class="h-4 w-4" />
                             </button>
                         </Link>
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-44 shadow-lg border-border/40 font-sans">
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-44 shadow-none border-input font-sans">
                                 <DropdownMenuItem @click="confirmDelete(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5">
                                     <Trash2 class="h-3.5 w-3.5" /> Hapus Satuan
                                 </DropdownMenuItem>

@@ -35,7 +35,7 @@ const emit = defineEmits<{
 
     <!-- Action: Simpan & Tambah Lagi -->
     <Button v-if="showAddAnother" type="button" :disabled="processing" @click="$emit('saveAndAddAnother')"
-        variant="outline" class="min-w-[160px] border-primary text-primary hover:bg-primary/5 shadow-none">
+        variant="outline" class="min-w-[160px] border-primary text-primary hover:bg-primary/5 shadow-none ">
         <template v-if="processing">
             <Loader2 class="mr-2 h-4 w-4 animate-spin" />
             Proses...

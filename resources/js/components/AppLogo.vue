@@ -10,15 +10,17 @@ withDefaults(defineProps<{
 
 <template>
     <div
-        class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
+        class="flex aspect-square size-8 items-center justify-center rounded-md bg-blue-600 text-white shadow-none "
         :class="{ 'size-full rounded-none bg-transparent text-current': isIconOnly }"
     >
         <AppLogoIcon 
             class="fill-current" 
-            :class="isIconOnly ? 'size-full' : 'size-5 text-white dark:text-black'" 
+            :class="isIconOnly ? 'size-full' : 'size-5'" 
         />
     </div>
     <div v-if="!isIconOnly" class="ml-1 grid flex-1 text-left text-sm">
-        <span class="mb-0.5 truncate leading-tight font-semibold">Martous</span>
+        <span class="mb-0.5 truncate leading-tight font-extrabold tracking-tight">
+            Warung<span class="text-blue-600">.ERP</span>
+        </span>
     </div>
 </template>

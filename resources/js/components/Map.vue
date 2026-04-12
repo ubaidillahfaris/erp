@@ -134,14 +134,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="w-full h-full min-h-[400px] rounded-md overflow-hidden border border-border/40 relative z-0 bg-[#fdfdfd]">
+    <div class="w-full h-full min-h-[400px] rounded-md overflow-hidden border border-input relative z-0 bg-[#fdfdfd]">
         <div ref="mapContainer" class="w-full h-full"></div>
         
         <!-- Locate Me Button -->
         <button 
             @click="locateUser"
             type="button"
-            class="absolute bottom-6 right-3 z-[1000] bg-white text-slate-500 p-2.5 rounded-full border border-slate-200 shadow-lg hover:bg-slate-50 hover:text-primary transition-all active:scale-95 disabled:opacity-50 group"
+            class="absolute bottom-6 right-3 z-[1000] bg-white text-slate-500 p-2.5 rounded-full border border-slate-200 shadow-none hover:bg-slate-50 hover:text-primary transition-all active:scale-95 disabled:opacity-50 group"
             :disabled="isLocating"
         >
             <svg 

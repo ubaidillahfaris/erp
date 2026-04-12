@@ -98,7 +98,7 @@ const formatCurrency = (value: number) => {
 <template>
     <Head title="Bill of Materials" />
 
-    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
         <PageHeader 
             title="Recipes & BOM" 
             description="Master Formula & Komposisi Produksi" 
@@ -107,7 +107,7 @@ const formatCurrency = (value: number) => {
         />
 
         <!-- ====== CONTENT AREA ====== -->
-        <div class="max-w-7xl mx-auto w-full">
+        <div class="w-full max-w-7xl mx-auto">
             <DataTable
                 :data="boms"
                 :columns="columns"
@@ -132,12 +132,12 @@ const formatCurrency = (value: number) => {
                 </template>
                 <template #cell(reference)="{ row }">
                     <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                             <BookOpen class="h-5 w-5" />
                         </div>
                         <div class="min-w-0 pr-4">
                             <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.produk.nama }}</p>
-                            <p class="text-[10px] font-mono font-bold text-muted-foreground/40 uppercase tracking-widest mt-0.5">Ref: {{ row.sku }}</p>
+                            <p class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Ref: {{ row.sku }}</p>
                         </div>
                     </div>
                 </template>
@@ -145,7 +145,7 @@ const formatCurrency = (value: number) => {
                 <template #cell(info)="{ row }">
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[13px] font-semibold text-foreground/80">{{ row.nama || 'Unnamed recipe' }}</span>
-                        <span class="text-[11px] text-muted-foreground italic tracking-tight opacity-60">Target Item SKU: {{ row.produk.sku }}</span>
+                        <span class="text-xs text-muted-foreground italic tracking-tight opacity-60">Target Item SKU: {{ row.produk.sku }}</span>
                     </div>
                 </template>
 
@@ -156,7 +156,7 @@ const formatCurrency = (value: number) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all" :class="row.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-muted/50 text-muted-foreground/40 border-transparent'">
+                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all" :class="row.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-muted/50 text-muted-foreground border-transparent'">
                         {{ row.is_active ? 'Production Ready' : 'Draft' }}
                     </Badge>
                 </template>
@@ -164,18 +164,18 @@ const formatCurrency = (value: number) => {
                 <template #actions="{ row }">
                     <div class="flex items-center justify-end gap-1 px-2">
                         <Link :href="edit.url({ bom: row.id.toString() })">
-                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                 <ChevronRight class="h-4 w-4" />
                             </button>
                         </Link>
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-lg border-border/40 font-sans">
-                                <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-2 py-1.5 text-center text-xs">BOM Ops</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input font-sans">
+                                <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">BOM Ops</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem @click="deleteBom(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5 font-medium">
                                     <Trash2 class="h-3.5 w-3.5" /> Hapus Resep

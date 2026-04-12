@@ -125,12 +125,12 @@ const formatCurrency = (value: number) => {
 <template>
 <Head title="Katalog Produk" />
 
-<div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+<div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
     <PageHeader title="Katalog Produk" description="Manajemen Stok & Harga" back-href="/dashboard"
         :count="produks.total" />
 
     <!-- ====== CONTENT AREA ====== -->
-    <div class="max-w-7xl mx-auto w-full">
+    <div class="w-full max-w-7xl mx-auto">
         <DataTable 
             :data="produks" 
             :columns="columns" 
@@ -146,13 +146,13 @@ const formatCurrency = (value: number) => {
         >
             <template #toolbar-actions>
                 <Select v-model="jenis">
-                    <SelectTrigger class="h-9 w-[180px] rounded-md border-border/40 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans pl-3">
+                    <SelectTrigger class="h-9 w-[180px] rounded-md border-input bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans pl-3">
                         <div class="flex items-center gap-2">
-                            <Filter class="h-3.5 w-3.5 text-muted-foreground/50" />
+                            <Filter class="h-3.5 w-3.5 text-muted-foreground" />
                             <SelectValue placeholder="Jenis Produk" />
                         </div>
                     </SelectTrigger>
-                    <SelectContent class="rounded-xl shadow-xl border-border/40 font-sans">
+                    <SelectContent class="rounded-xl shadow-none border-input font-sans">
                         <SelectItem value="all" class="text-[13px]">Semua Jenis</SelectItem>
                         <SelectItem value="raw_material" class="text-[13px]">Bahan Baku</SelectItem>
                         <SelectItem value="finished_good" class="text-[13px]">Barang Jadi</SelectItem>
@@ -170,13 +170,13 @@ const formatCurrency = (value: number) => {
             <template #cell(item)="{ row }">
                 <div class="flex items-center gap-3">
                     <div
-                        class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                        class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                         <Package v-if="row.type === 'finished_good'" class="h-4 w-4" />
                         <Boxes v-else class="h-4 w-4" />
                     </div>
                     <div class="min-w-0 pr-4">
                         <p class="text-[13px] font-bold text-foreground truncate max-w-[200px]">{{ row.nama }}</p>
-                        <p class="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-tighter mt-0.5">{{
+                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-tighter mt-0.5">{{
                             row.type?.replace('_', ' ') }}</p>
                     </div>
                 </div>
@@ -184,8 +184,8 @@ const formatCurrency = (value: number) => {
 
             <template #cell(identity)="{ row }">
                 <div class="flex flex-col gap-0.5">
-                    <span class="text-[11px] font-mono font-bold text-foreground/70">#{{ row.sku || '--' }}</span>
-                    <span class="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest italic">{{
+                    <span class="text-xs font-mono font-bold text-foreground/70">#{{ row.sku || '--' }}</span>
+                    <span class="text-xs font-bold text-muted-foreground uppercase tracking-widest italic">{{
                         (row.kategori || 'Inventory') }}</span>
                 </div>
             </template>
@@ -203,7 +203,7 @@ const formatCurrency = (value: number) => {
                         : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                 ]">
                     <span class="text-[12px] font-bold tabular-nums leading-none">{{ row.stok }}</span>
-                    <span class="text-[8px] font-bold uppercase opacity-60 leading-none">{{ row.unit?.simbol || 'pcs'
+                    <span class="text-xs font-bold uppercase opacity-60 leading-none">{{ row.unit?.simbol || 'pcs'
                     }}</span>
                 </div>
             </template>
@@ -219,7 +219,7 @@ const formatCurrency = (value: number) => {
                             </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end"
-                            class="rounded-xl p-1.5 w-44 shadow-lg border-border/40 font-sans">
+                            class="rounded-xl p-1.5 w-44 shadow-none border-input font-sans">
                             <DropdownMenuItem @click="router.visit(produk.edit(row.id))">
                                 <Pencil class="h-3.5 w-3.5" /> Edit
                             </DropdownMenuItem>

@@ -67,22 +67,22 @@ const getStatusVariant = (status: string) => {
         <div class="flex flex-col gap-10">
             <!-- 1. Ringkasan -->
             <section class="space-y-6">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">1. Ringkasan</h3>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">1. Ringkasan</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="space-y-1">
-                        <div class="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">TANGGAL</div>
+                        <div class="text-xs font-bold text-muted-foreground uppercase tracking-widest">TANGGAL</div>
                         <div class="text-sm font-medium">{{ formatDate(opname.tanggal) }}</div>
                     </div>
                     <div class="space-y-1">
-                        <div class="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">STATUS</div>
+                        <div class="text-xs font-bold text-muted-foreground uppercase tracking-widest">STATUS</div>
                         <div>
-                            <Badge :variant="getStatusVariant(opname.status)" class="rounded-none text-[10px] px-2 py-0">
+                            <Badge :variant="getStatusVariant(opname.status)" class="rounded-none text-xs px-2 py-0">
                                 {{ opname.status.toUpperCase() }}
                             </Badge>
                         </div>
                     </div>
                     <div class="space-y-1">
-                        <div class="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">KETERANGAN</div>
+                        <div class="text-xs font-bold text-muted-foreground uppercase tracking-widest">KETERANGAN</div>
                         <div class="text-sm font-medium">{{ opname.keterangan || '-' }}</div>
                     </div>
                 </div>
@@ -90,33 +90,33 @@ const getStatusVariant = (status: string) => {
 
             <!-- 2. Daftar Perbandingan Stok -->
             <section class="space-y-6">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">2. Daftar Perbandingan Stok</h3>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">2. Daftar Perbandingan Stok</h3>
                 <div class="overflow-x-auto">
                     <Table class="rounded-none border-none">
                         <TableHeader>
                             <TableRow class="hover:bg-transparent border-b border-muted">
-                                <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Barang</TableHead>
-                                <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Stok Sistem</TableHead>
-                                <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Stok Fisik</TableHead>
-                                <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">Selisih</TableHead>
+                                <TableHead class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground">Barang</TableHead>
+                                <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">Stok Sistem</TableHead>
+                                <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">Stok Fisik</TableHead>
+                                <TableHead class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">Selisih</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <TableRow v-for="item in opname.items" :key="item.id" class="hover:bg-muted/30 border-b border-muted/50 group transition-colors">
                                 <TableCell class="px-0 py-4">
                                     <div class="font-bold text-sm tracking-tight capitalize">{{ item.produk?.nama }}</div>
-                                    <div class="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-tighter mt-0.5">{{ item.produk?.sku }}</div>
+                                    <div class="text-xs font-mono text-muted-foreground uppercase tracking-tighter mt-0.5">{{ item.produk?.sku }}</div>
                                 </TableCell>
                                 <TableCell class="px-0 py-4 text-right text-sm font-medium">
-                                    {{ parseFloat(item.system_qty) }} <span class="text-[10px] text-muted-foreground uppercase">{{ item.satuan?.nama }}</span>
+                                    {{ parseFloat(item.system_qty) }} <span class="text-xs text-muted-foreground uppercase">{{ item.satuan?.nama }}</span>
                                 </TableCell>
                                 <TableCell class="px-0 py-4 text-right text-sm font-medium">
-                                    {{ parseFloat(item.physical_qty) }} <span class="text-[10px] text-muted-foreground uppercase">{{ item.satuan?.nama }}</span>
+                                    {{ parseFloat(item.physical_qty) }} <span class="text-xs text-muted-foreground uppercase">{{ item.satuan?.nama }}</span>
                                 </TableCell>
                                 <TableCell class="px-0 py-4 text-right">
                                     <div 
                                         class="text-sm font-bold"
-                                        :class="parseFloat(item.physical_qty) - parseFloat(item.system_qty) === 0 ? 'text-muted-foreground/40' : (parseFloat(item.physical_qty) - parseFloat(item.system_qty) > 0 ? 'text-primary' : 'text-destructive')"
+                                        :class="parseFloat(item.physical_qty) - parseFloat(item.system_qty) === 0 ? 'text-muted-foreground' : (parseFloat(item.physical_qty) - parseFloat(item.system_qty) > 0 ? 'text-primary' : 'text-destructive')"
                                     >
                                         <span v-if="parseFloat(item.physical_qty) - parseFloat(item.system_qty) > 0">+</span>
                                         {{ parseFloat(item.physical_qty) - parseFloat(item.system_qty) }}

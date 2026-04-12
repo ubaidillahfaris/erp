@@ -87,16 +87,16 @@ const getMovementDetails = (movement: any) => {
             back-href="/stock"
         >
             <template #actions>
-                <div class="flex items-center gap-6 bg-card border border-border/40 rounded-xl px-6 py-3 shadow-sm">
-                    <div class="text-center border-r border-border/20 pr-6">
-                        <p class="text-[9px] text-muted-foreground/50 uppercase font-black tracking-widest">Saldo Saat Ini</p>
+                <div class="flex items-center gap-6 bg-card border border-input rounded-xl px-6 py-3 shadow-sm">
+                    <div class="text-center border-r border-input pr-6">
+                        <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Saldo Saat Ini</p>
                         <p class="text-2xl font-bold text-foreground">
                             {{ parseFloat(produk.stock?.balance || 0).toLocaleString('id-ID') }}
                         </p>
                     </div>
                     <div class="text-left">
-                        <p class="text-[9px] text-muted-foreground/50 uppercase font-black tracking-widest">Satuan</p>
-                        <p class="text-sm font-bold text-muted-foreground/80">{{ produk.satuan?.nama }}</p>
+                        <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Satuan</p>
+                        <p class="text-sm font-bold text-muted-foreground">{{ produk.satuan?.nama }}</p>
                     </div>
                 </div>
             </template>
@@ -131,7 +131,7 @@ const getMovementDetails = (movement: any) => {
                                 <TableCell>
                                     <div class="flex flex-col gap-1">
                                         <Badge variant="secondary"
-                                            :class="['w-fit font-bold uppercase text-[10px] tracking-tight px-1.5 py-0', getMovementDetails(m).color]">
+                                            :class="['w-fit font-bold uppercase text-xs tracking-tight px-1.5 py-0', getMovementDetails(m).color]">
                                             {{ getMovementDetails(m).label }}
                                         </Badge>
                                     </div>

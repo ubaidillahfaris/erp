@@ -109,7 +109,17 @@ class MenuSeeder extends Seeder
 
         // Transaksi Group
         Menu::create([
-            'name' => 'Restock',
+            'name' => 'Purchasing Inbound',
+            'route_name' => 'purchasing.index',
+            'path' => '/purchasing',
+            'icon' => 'PackageOpen',
+            'permission_name' => 'manage stock', // Asumsi menggunakan scope yg sama dengan restock
+            'group_name' => 'Transaksi',
+            'order_priority' => 19,
+        ]);
+
+        Menu::create([
+            'name' => 'Restock (Legacy)',
             'route_name' => 'restock.index',
             'path' => '/restock',
             'icon' => 'ShoppingBag',

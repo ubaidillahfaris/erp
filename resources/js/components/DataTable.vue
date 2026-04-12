@@ -250,8 +250,8 @@ const handleSortToggle = (column: any) => {
     <!-- TABS (Optional) -->
     <DataTableTabs v-if="tabs && tabs.length > 0" v-model:activeTab="internalActiveTab" :tabs="tabs" />
 
-    <!-- TOOLBAR (Standard vs Selection) -->
-    <div class="h-10 flex items-center justify-between gap-4">
+    <!-- TOOLBAR -->
+    <div class="h-10 flex items-center justify-between gap-3">
         <!-- Bulkl/Selection Toolbar -->
         <div v-if="selectedRowsCount > 0" class="flex-1 flex items-center justify-between px-3 bg-accent/5 border border-accent/20 rounded-md h-full animate-in fade-in slide-in-from-top-1 duration-200">
             <div class="flex items-center gap-4">
@@ -285,7 +285,7 @@ const handleSortToggle = (column: any) => {
                     <Input
                         v-model="internalSearch"
                         :placeholder="searchPlaceholder"
-                        class="h-9 w-[150px] lg:w-[250px] bg-white border-border/40 shadow-none focus-visible:ring-accent/5 rounded-md transition-all pl-3"
+                        class="h-9 w-[150px] lg:w-[250px] bg-white border-input shadow-none focus-visible:ring-accent/5 rounded-md transition-all pl-3"
                     />
                 </div>
                 
@@ -301,9 +301,9 @@ const handleSortToggle = (column: any) => {
     </div>
 
     <!-- TABLE AREA -->
-    <div class="rounded-md border border-border/60 bg-white overflow-hidden shadow-none">
+    <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
         <Table>
-            <TableHeader class="bg-muted/30">
+            <TableHeader class="bg-slate-50 border-b border-slate-200">
                 <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
                     <template v-for="header in headerGroup.headers" :key="header.id">
                         <!-- Selection Header -->
@@ -313,7 +313,7 @@ const handleSortToggle = (column: any) => {
                                 :checked="table.getIsAllPageRowsSelected()"
                                 :indeterminate="table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()"
                                 @change="table.toggleAllPageRowsSelected(($event.target as HTMLInputElement).checked)"
-                                class="h-4 w-4 rounded border-border/40 text-accent accent-accent focus:ring-accent/20 cursor-pointer transition-all bg-white"
+                                class="h-4 w-4 rounded border-input text-accent accent-accent focus:ring-accent/20 cursor-pointer transition-all bg-white"
                             />
                         </TableHead>
 
@@ -328,7 +328,7 @@ const handleSortToggle = (column: any) => {
                             v-else
                             @click="handleSortToggle(header.column)"
                             :class="[
-                                'px-4 text-xs font-bold uppercase tracking-wider text-muted-foreground/70 h-11 select-none',
+                                'px-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 h-10 select-none',
                                 header.column.getCanSort() ? 'cursor-pointer hover:bg-muted/50 transition-colors group/head' : '',
                                 (header.column.columnDef.meta as any)?.align === 'center' ? 'text-center' : (header.column.columnDef.meta as any)?.align === 'right' ? 'text-right' : 'text-left',
                                 (header.column.columnDef.meta as any)?.class
@@ -368,14 +368,14 @@ const handleSortToggle = (column: any) => {
                                         :checked="row.getIsSelected()" 
                                         @change="row.toggleSelected(($event.target as HTMLInputElement).checked)"
                                         @click.stop
-                                        class="h-4 w-4 rounded border-border/40 text-accent accent-accent focus:ring-accent/20 cursor-pointer transition-all bg-white"
+                                        class="h-4 w-4 rounded border-input text-accent accent-accent focus:ring-accent/20 cursor-pointer transition-all bg-white"
                                     />
                                 </TableCell>
 
                                 <!-- Expand Cell -->
                                 <TableCell v-else-if="cell.column.id === 'expand'" class="p-0 pl-1 w-[40px] align-middle">
                                     <button @click.stop="row.toggleExpanded()" class="h-8 w-8 rounded-md flex items-center justify-center hover:bg-muted transition-all">
-                                        <ChevronRight :class="['h-4 w-4 text-muted-foreground/40 transition-transform duration-300', row.getIsExpanded() ? 'rotate-90 text-accent' : '']" />
+                                        <ChevronRight :class="['h-4 w-4 text-muted-foreground transition-transform duration-300', row.getIsExpanded() ? 'rotate-90 text-accent' : '']" />
                                     </button>
                                 </TableCell>
 
@@ -390,7 +390,7 @@ const handleSortToggle = (column: any) => {
                                 <TableCell 
                                     v-else
                                     :class="[
-                                        'px-4 py-3 align-middle text-sm font-medium text-foreground/80',
+                                        'px-4 py-3.5 align-middle text-sm font-medium text-slate-700',
                                         (cell.column.columnDef.meta as any)?.align === 'center' ? 'text-center' : (cell.column.columnDef.meta as any)?.align === 'right' ? 'text-right' : 'text-left',
                                         (cell.column.columnDef.meta as any)?.class
                                     ]"
@@ -415,7 +415,7 @@ const handleSortToggle = (column: any) => {
 
                 <template v-else>
                     <TableRow>
-                        <TableCell :colspan="tableColumns.length" class="h-32 text-center text-muted-foreground/40 text-sm italic py-12">
+                        <TableCell :colspan="tableColumns.length" class="h-32 text-center text-muted-foreground text-sm italic py-12">
                             <slot name="empty">No results found.</slot>
                         </TableCell>
                     </TableRow>

@@ -19,6 +19,9 @@ import {
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import {
+    NavigationMenu as NavRoot,
+} from '@/components/ui/navigation-menu';
+import {
     Sheet,
     SheetContent,
     SheetHeader,
@@ -35,7 +38,7 @@ import UserMenuContent from '@/components/UserMenuContent.vue';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { getInitials } from '@/composables/useInitials';
 import { toUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
+import { dashboard, home } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
@@ -77,7 +80,7 @@ const rightNavItems: NavItem[] = [
 
 <template>
     <div>
-        <div class="border-b border-sidebar-border/80">
+        <div class="border-b border-sidebar-border/80 font-['Plus_Jakarta_Sans',sans-serif]">
             <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
@@ -95,10 +98,15 @@ const rightNavItems: NavItem[] = [
                             <SheetTitle class="sr-only"
                                 >Navigation Menu</SheetTitle
                             >
-                            <SheetHeader class="flex justify-start text-left">
-                                <AppLogoIcon
-                                    class="size-6 fill-current text-black dark:text-white"
-                                />
+                            <SheetHeader class="flex justify-start text-left mb-6">
+                                <Link :href="home()" class="flex items-center gap-2">
+                                    <AppLogoIcon
+                                        class="h-8 w-8 rounded-lg bg-blue-600 p-1.5 text-white shadow-none "
+                                    />
+                                    <span class="text-xl font-black tracking-tight text-slate-900 dark:text-white">
+                                        Warung<span class="text-blue-600">.ERP</span>
+                                    </span>
+                                </Link>
                             </SheetHeader>
                             <div
                                 class="flex h-full flex-1 flex-col justify-between space-y-4 py-6"
@@ -271,7 +279,7 @@ const rightNavItems: NavItem[] = [
 
         <div
             v-if="props.breadcrumbs.length > 1"
-            class="flex w-full border-b border-sidebar-border/70"
+            class="flex w-full border-b border-sidebar-border/70 font-['Plus_Jakarta_Sans',sans-serif]"
         >
             <div
                 class="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl"

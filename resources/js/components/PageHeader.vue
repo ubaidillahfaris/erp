@@ -14,32 +14,30 @@ defineProps<Props>();
 </script>
 
 <template>
-<div class="flex flex-col gap-2 max-w-7xl mx-auto w-full">
-    <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-1.5">
-            <Button v-if="backHref" variant="ghost" size="icon-sm" as-child
-                class="text-muted-foreground hover:text-foreground hover:bg-transparent -ml-2.5">
-                <Link :href="backHref">
-                    <ChevronLeft class="h-4 w-4" />
-                </Link>
-            </Button>
-            <div class="flex flex-col">
-                <div class="flex items-center gap-3">
-                    <h1 class="text-2xl font-semibold tracking-tight text-foreground leading-none">{{ title }}</h1>
-                    <div v-if="count !== undefined"
-                        class="h-6 px-2 rounded-sm bg-primary/10 border border-primary/20 text-primary font-bold text-[11px] flex items-center justify-center transition-all animate-in zoom-in-50 duration-300">
-                        {{ count }}
-                    </div>
+<div class="flex items-center justify-between max-w-7xl mx-auto w-full">
+    <div class="flex items-center gap-3">
+        <Button v-if="backHref" variant="outline" size="icon" as-child
+            class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 shrink-0">
+            <Link :href="backHref">
+                <ChevronLeft class="h-4 w-4" />
+            </Link>
+        </Button>
+        <div>
+            <div class="flex items-center gap-2.5">
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 leading-none">{{ title }}</h1>
+                <div v-if="count !== undefined"
+                    class="h-5 px-2 rounded-sm bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center">
+                    {{ count }}
                 </div>
-                <p v-if="description" class="text-[11px]  text-muted-foreground/40 mt-1 tracking-[0.1em]">
-                    {{ description }}
-                </p>
             </div>
+            <p v-if="description" class="text-xs text-slate-400 font-medium mt-1">
+                {{ description }}
+            </p>
         </div>
+    </div>
 
-        <div class="flex items-center gap-3">
-            <slot name="actions"></slot>
-        </div>
+    <div class="flex items-center gap-2">
+        <slot name="actions"></slot>
     </div>
 </div>
 </template>

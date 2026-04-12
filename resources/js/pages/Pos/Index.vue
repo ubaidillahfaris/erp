@@ -136,11 +136,11 @@ const formatCurrency = (value: number) => {
             >
                 <template #actions>
                     <div class="relative w-full max-w-sm">
-                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                         <Input 
                             v-model="searchQuery"
                             placeholder="Cari nama, SKU, atau barcode..." 
-                            class="pl-9 h-10 border-border/40 bg-white shadow-none focus-visible:ring-accent/5 rounded-md text-sm"
+                            class="pl-9 h-10 border-input bg-white shadow-none focus-visible:ring-accent/5 rounded-md text-sm"
                         />
                     </div>
                 </template>
@@ -153,12 +153,12 @@ const formatCurrency = (value: number) => {
                         v-for="produk in filteredProduks" 
                         :key="produk.id"
                         @click="addToCart(produk)"
-                        class="group cursor-pointer bg-white border border-border/40 p-4 rounded-xl shadow-sm hover:shadow-md hover:border-accent/30 transition-all flex flex-col gap-4"
+                        class="group cursor-pointer bg-white border border-input p-4 rounded-xl shadow-sm hover:shadow-none hover:border-accent/30 transition-all flex flex-col gap-4"
                     >
-                        <div class="aspect-square bg-[#F8F9FA] rounded-lg flex items-center justify-center border border-border/10 overflow-hidden relative group-hover:bg-accent/5 transition-colors">
-                            <Package class="h-10 w-10 text-muted-foreground/10 group-hover:text-accent/20 transition-all" />
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-accent/5 backdrop-blur-[1px]">
-                                <div class="bg-accent text-white h-8 w-8 rounded-full flex items-center justify-center shadow-lg">
+                        <div class="aspect-square bg-[#F8F9FA] rounded-lg flex items-center justify-center border border-input overflow-hidden relative group-hover:bg-accent/5 transition-colors">
+                            <Package class="h-10 w-10 text-muted-foreground group-hover:text-accent transition-all" />
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-accent/5-[1px]">
+                                <div class="bg-accent text-white h-8 w-8 rounded-full flex items-center justify-center shadow-none ">
                                     <Plus class="h-4 w-4" />
                                 </div>
                             </div>
@@ -169,8 +169,8 @@ const formatCurrency = (value: number) => {
                                 <h3 class="text-[13px] font-bold text-foreground leading-tight truncate">{{ produk.nama }}</h3>
                             </div>
                             <div class="flex items-center gap-1.5">
-                                <span class="text-[10px] font-bold font-mono text-muted-foreground/30 uppercase">#{{ produk.sku || '--' }}</span>
-                                <span class="text-[10px] text-muted-foreground/40 italic">In Stock: {{ produk.stok }}</span>
+                                <span class="text-xs font-bold font-mono text-muted-foreground uppercase">#{{ produk.sku || '--' }}</span>
+                                <span class="text-xs text-muted-foreground italic">In Stock: {{ produk.stok }}</span>
                             </div>
                             <div class="mt-2 text-md font-bold text-foreground tabular-nums">{{ formatCurrency(produk.price) }}</div>
                         </div>
@@ -179,21 +179,21 @@ const formatCurrency = (value: number) => {
 
                 <div v-if="filteredProduks.length === 0" class="h-full flex flex-col items-center justify-center py-20 opacity-20">
                     <Search class="h-12 w-12 mb-4" />
-                    <p class="text-[11px] font-bold uppercase tracking-widest text-center">Produk tidak ditemukan</p>
+                    <p class="text-xs font-bold uppercase tracking-widest text-center">Produk tidak ditemukan</p>
                 </div>
             </div>
         </div>
 
         <!-- ====== SIDEBAR: Cart ====== -->
-        <div class="w-[420px] bg-white border-l border-border/40 flex flex-col h-full shadow-sm">
+        <div class="w-[420px] bg-white border-l border-input flex flex-col h-full shadow-sm">
             
-            <div class="p-8 border-b border-border/20 flex items-center justify-between">
+            <div class="p-8 border-b border-input flex items-center justify-between">
                 <div class="flex flex-col gap-1">
                     <h2 class="text-xl font-bold flex items-center gap-2">
                         <ShoppingCart class="h-5 w-5 text-accent" />
                         Live Order
                     </h2>
-                    <p class="text-[11px] font-medium text-muted-foreground italic">Current session tracking enabled</p>
+                    <p class="text-xs font-medium text-muted-foreground italic">Current session tracking enabled</p>
                 </div>
                 <Badge variant="secondary" class="h-6 rounded-md px-2 bg-muted/30 text-muted-foreground font-bold tabular-nums">
                     {{ cart.length }} line items
@@ -205,15 +205,15 @@ const formatCurrency = (value: number) => {
                 <div 
                     v-for="(item, index) in cart" 
                     :key="index"
-                    class="bg-white border border-border/20 p-4 rounded-xl flex flex-col gap-3 group animate-in slide-in-from-right-2 duration-300"
+                    class="bg-white border border-input p-4 rounded-xl flex flex-col gap-3 group animate-in slide-in-from-right-2 duration-300"
                 >
                     <div class="flex items-start justify-between">
                         <div class="flex flex-col gap-0.5 min-w-0 pr-4">
                             <span class="text-[13px] font-bold text-foreground truncate">{{ item.nama }}</span>
-                            <span class="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tight">{{ formatCurrency(item.price) }} / {{ item.base_unit || 'PCS' }}</span>
+                            <span class="text-xs font-bold text-muted-foreground uppercase tracking-tight">{{ formatCurrency(item.price) }} / {{ item.base_unit || 'PCS' }}</span>
                         </div>
                         <button 
-                            class="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground/20 hover:bg-destructive/10 hover:text-destructive transition-all -mt-1 -mr-1"
+                            class="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all -mt-1 -mr-1"
                             @click="removeFromCart(index)"
                         >
                             <X class="h-3.5 w-3.5" />
@@ -240,15 +240,15 @@ const formatCurrency = (value: number) => {
                     <div class="h-16 w-16 border-2 border-dashed border-muted-foreground rounded-full flex items-center justify-center mb-4">
                         <ShoppingCart class="h-6 w-6" />
                     </div>
-                    <p class="text-[11px] font-bold font-mono italic uppercase tracking-widest text-center">Keranjang masih kosong</p>
+                    <p class="text-xs font-bold font-mono italic uppercase tracking-widest text-center">Keranjang masih kosong</p>
                 </div>
             </div>
 
             <!-- Totals & Checkout -->
-            <div class="p-8 border-t border-border/20 bg-secondary/5 flex flex-col gap-6">
+            <div class="p-8 border-t border-input bg-secondary/5 flex flex-col gap-6">
                 <div class="flex flex-col gap-3">
                     <div class="flex justify-between items-center px-1">
-                        <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Subtotal Order</span>
+                        <span class="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Subtotal Order</span>
                         <span class="text-[13px] font-bold text-foreground tabular-nums">{{ formatCurrency(totalAmount) }}</span>
                     </div>
                     <div class="h-px bg-border/20 mx-1" />
@@ -261,13 +261,13 @@ const formatCurrency = (value: number) => {
                 <Dialog :open="isCheckoutOpen" @update:open="isCheckoutOpen = $event">
                     <DialogTrigger as-child>
                         <Button 
-                            class="w-full h-14 text-sm font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white disabled:opacity-30 rounded-xl shadow-lg shadow-accent/20 transition-all font-mono"
+                            class="w-full h-14 text-sm font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white disabled:opacity-30 rounded-xl shadow-none shadow-accent/20 transition-all font-mono"
                             :disabled="cart.length === 0 || totalAmount <= 0"
                         >
                             Bayar Sekarang
                         </Button>
                     </DialogTrigger>
-                    <DialogContent class="max-w-2xl rounded-2xl border-none p-0 overflow-hidden shadow-2xl">
+                    <DialogContent class="max-w-2xl rounded-xl border-none p-0 overflow-hidden shadow-none ">
                         <DialogHeader class="p-8 bg-accent text-white">
                             <div class="flex flex-col gap-1">
                                 <DialogTitle class="text-2xl font-bold uppercase tracking-widest">Selesaikan Pembayaran</DialogTitle>
@@ -279,13 +279,13 @@ const formatCurrency = (value: number) => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 <!-- Summary & Method -->
                                 <div class="flex flex-col gap-6">
-                                    <div class="p-8 bg-[#F8F9FA] border border-border/40 rounded-xl text-center flex flex-col gap-1 translate-y-0 hover:-translate-y-1 transition-transform">
-                                        <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-50">Total Tagihan</span>
+                                    <div class="p-8 bg-[#F8F9FA] border border-input rounded-xl text-center flex flex-col gap-1 translate-y-0 hover:-translate-y-1 transition-transform">
+                                        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground opacity-50">Total Tagihan</span>
                                         <div class="text-4xl font-bold text-accent tabular-nums">{{ formatCurrency(totalAmount) }}</div>
                                     </div>
 
                                     <div class="flex flex-col gap-3">
-                                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Metode Pembayaran</h4>
+                                        <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Metode Pembayaran</h4>
                                         <div class="grid grid-cols-2 gap-3">
                                             <button 
                                                 v-for="method in [
@@ -297,10 +297,10 @@ const formatCurrency = (value: number) => {
                                                 :key="method.id"
                                                 @click="form.payment_method = method.id"
                                                 class="flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2"
-                                                :class="form.payment_method === method.id ? 'border-accent bg-accent/5 text-accent' : 'border-border/30 hover:border-border/60 hover:bg-secondary/20 text-muted-foreground'"
+                                                :class="form.payment_method === method.id ? 'border-accent bg-accent/5 text-accent' : 'border-input hover:border-input hover:bg-secondary/20 text-muted-foreground'"
                                             >
                                                 <component :is="method.icon" class="h-6 w-6" />
-                                                <span class="text-[11px] font-bold uppercase tracking-tight">{{ method.label }}</span>
+                                                <span class="text-xs font-bold uppercase tracking-tight">{{ method.label }}</span>
                                             </button>
                                         </div>
                                     </div>
@@ -310,19 +310,19 @@ const formatCurrency = (value: number) => {
                                 <div class="flex flex-col gap-6">
                                     <div v-if="form.payment_method === 'cash'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                         <div class="flex flex-col gap-2">
-                                            <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Uang Diterima</label>
+                                            <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Uang Diterima</label>
                                             <div class="relative">
-                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-muted-foreground/40">Rp</span>
+                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-muted-foreground">Rp</span>
                                                 <Input 
                                                     v-model.number="form.received_amount"
                                                     type="number"
-                                                    class="pl-12 h-14 text-2xl font-bold border-border/40 bg-[#F8F9FA] focus:border-accent/30 rounded-xl shadow-none"
+                                                    class="pl-12 h-14 text-2xl font-bold border-input bg-[#F8F9FA] focus:border-accent/30 rounded-xl shadow-none "
                                                 />
                                             </div>
                                         </div>
                                         <div class="flex flex-col gap-2">
-                                            <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Kembalian</label>
-                                            <div class="h-14 flex items-center justify-end px-6 border border-border/40 bg-secondary/20 rounded-xl text-2xl font-bold text-destructive tabular-nums">
+                                            <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Kembalian</label>
+                                            <div class="h-14 flex items-center justify-end px-6 border border-input bg-secondary/20 rounded-xl text-2xl font-bold text-destructive tabular-nums">
                                                 {{ formatCurrency(changeAmount) }}
                                             </div>
                                         </div>
@@ -331,21 +331,21 @@ const formatCurrency = (value: number) => {
                                                 v-for="cash in [10000, 20000, 50000, 100000]" 
                                                 :key="cash"
                                                 @click="form.received_amount = cash"
-                                                class="px-3 py-1.5 rounded-lg border border-border/40 text-[10px] font-bold hover:bg-muted transition-all"
+                                                class="px-3 py-1.5 rounded-lg border border-input text-xs font-bold hover:bg-muted transition-all"
                                             >
                                                 {{ cash / 1000 }}K
                                             </button>
-                                            <button @click="form.received_amount = totalAmount" class="px-3 py-1.5 rounded-lg border border-accent/20 bg-accent/5 text-accent text-[10px] font-bold hover:bg-accent/10 transition-all">
+                                            <button @click="form.received_amount = totalAmount" class="px-3 py-1.5 rounded-lg border border-accent/20 bg-accent/5 text-accent text-xs font-bold hover:bg-accent/10 transition-all">
                                                 Uang Pas
                                             </button>
                                         </div>
                                     </div>
 
                                     <div class="flex flex-col gap-2 flex-1">
-                                        <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-1">Catatan Transaksi</label>
+                                        <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Catatan Transaksi</label>
                                         <textarea 
                                             v-model="form.notes"
-                                            class="w-full flex-1 min-h-[100px] border border-border/40 bg-[#F8F9FA] rounded-xl p-4 text-sm focus:outline-none focus:border-accent/30 transition-all resize-none font-medium"
+                                            class="w-full flex-1 min-h-[100px] border border-input bg-[#F8F9FA] rounded-xl p-4 text-sm focus:outline-none focus:border-accent/30 transition-all resize-none font-medium"
                                             placeholder="Opsional: Nama meja, ID member..."
                                         ></textarea>
                                     </div>
@@ -353,12 +353,12 @@ const formatCurrency = (value: number) => {
                             </div>
                         </div>
 
-                        <DialogFooter class="p-8 bg-secondary/10 border-t border-border/20 flex items-center justify-end gap-3">
+                        <DialogFooter class="p-8 bg-secondary/10 border-t border-input flex items-center justify-end gap-3">
                             <Button variant="ghost" @click="isCheckoutOpen = false" class="text-xs font-bold uppercase tracking-widest rounded-lg">Kembali</Button>
                             <Button 
                                 :disabled="form.processing"
                                 @click="handleCheckout" 
-                                class="h-12 px-10 text-xs font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white rounded-lg shadow-lg shadow-accent/10"
+                                class="h-12 px-10 text-xs font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white rounded-lg shadow-none shadow-accent/10"
                             >
                                 Konfirmasi & Simpan
                             </Button>

@@ -68,7 +68,7 @@ const options = props.perPageOptions || [10, 25, 50, 100];
         <div class="flex items-center space-x-2">
             <p class="text-sm font-medium">Rows per page</p>
             <Select v-model="perPage">
-                <SelectTrigger class="h-8 w-[70px] border-border/40">
+                <SelectTrigger class="h-8 w-[70px] border-input">
                     <SelectValue :placeholder="perPage" />
                 </SelectTrigger>
                 <SelectContent side="top" class="min-w-[70px]">
@@ -90,7 +90,7 @@ const options = props.perPageOptions || [10, 25, 50, 100];
         <div class="flex items-center space-x-2">
             <Button
                 variant="outline"
-                class="hidden h-8 w-8 p-0 lg:flex border-border/40"
+                class="hidden h-8 w-8 p-0 lg:flex border-input"
                 :disabled="paginator.current_page === 1"
                 @click="currentPage = 1"
             >
@@ -99,7 +99,7 @@ const options = props.perPageOptions || [10, 25, 50, 100];
             </Button>
             <Button
                 variant="outline"
-                class="h-8 w-8 p-0 border-border/40"
+                class="h-8 w-8 p-0 border-input"
                 :disabled="paginator.current_page === 1"
                 @click="currentPage = paginator.current_page - 1"
             >
@@ -108,7 +108,7 @@ const options = props.perPageOptions || [10, 25, 50, 100];
             </Button>
             <Button
                 variant="outline"
-                class="h-8 w-8 p-0 border-border/40"
+                class="h-8 w-8 p-0 border-input"
                 :disabled="paginator.current_page === paginator.last_page"
                 @click="currentPage = paginator.current_page + 1"
             >
@@ -117,7 +117,7 @@ const options = props.perPageOptions || [10, 25, 50, 100];
             </Button>
             <Button
                 variant="outline"
-                class="hidden h-8 w-8 p-0 lg:flex border-border/40"
+                class="hidden h-8 w-8 p-0 lg:flex border-input"
                 :disabled="paginator.current_page === paginator.last_page"
                 @click="currentPage = paginator.last_page"
             >

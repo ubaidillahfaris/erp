@@ -49,7 +49,7 @@ onMounted(() => {
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
         >
-            <div v-if="isLoading" class="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-2xl">
+            <div v-if="isLoading" class="fixed inset-0 z-[100] flex items-center justify-center bg-background">
                 <div class="flex flex-col items-center gap-8 animate-in fade-in zoom-in duration-700">
                     <!-- Premium Logo Container -->
                     <div class="group relative">
@@ -57,7 +57,7 @@ onMounted(() => {
                         <div class="absolute -inset-4 rounded-full border border-primary/20 animate-[spin_4s_linear_infinite]" />
                         <div class="absolute -inset-4 rounded-full border border-primary/10 animate-[spin_6s_linear_reverse_infinite]" />
                         
-                        <div class="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-primary shadow-2xl shadow-primary/20 ring-1 ring-white/20 transition-transform duration-500 group-hover:scale-110">
+                        <div class="relative flex h-20 w-20 items-center justify-center rounded-xl bg-primary transition-transform duration-500">
                             <AppLogo :is-icon-only="true" class="h-10 w-10 text-primary-foreground" />
                         </div>
                     </div>
@@ -68,7 +68,7 @@ onMounted(() => {
                             <Loader2 class="h-4 w-4 text-primary animate-spin" />
                             <span class="text-sm font-semibold tracking-wide text-primary uppercase">Initializing Systems</span>
                         </div>
-                        <p class="text-xs text-muted-foreground font-medium opacity-50">Menyiapkan Dashboard Martous...</p>
+                        <p class="text-xs text-muted-foreground font-medium">Menyiapkan Dashboard Martous...</p>
                     </div>
                 </div>
             </div>

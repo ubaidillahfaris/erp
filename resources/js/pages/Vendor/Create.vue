@@ -44,7 +44,7 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
 <template>
     <Head title="Tambah Vendor" />
 
-    <div class="px-8 py-10 flex flex-col gap-8 bg-[#FDFDFD] min-h-[calc(100vh-64px)] overflow-y-auto">
+    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] overflow-y-auto">
         <!-- ====== PAGE HEADER ====== -->
         <PageHeader 
             title="Tambah Vendor" 
@@ -56,42 +56,44 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
         <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             
             <!-- LEFT: FORM -->
-            <div class="lg:col-span-5 bg-white rounded-md border border-border/60 h-fit">
+            <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200">
                 <SectionHeader 
                     title="Profil Data Vendor" 
-                    class="p-5 border-b border-border/40" 
+                    class="px-5 py-4 border-b border-slate-100" 
                 />
                 
-                <form @submit.prevent="submit" class="p-6 flex flex-col gap-5">
+                <form @submit.prevent="submit" class="p-6 flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
-                        <Label class="text-[12px] font-medium text-foreground px-0.5">Nama Vendor / Supplier</Label>
-                        <Input v-model="form.nama" required placeholder="Nama Perusahaan" class="h-10 rounded-md border-border/40 shadow-none focus-visible:ring-1 focus-visible:ring-primary/50" />
-                        <div v-if="form.errors.nama" class="text-xs text-destructive">{{ form.errors.nama }}</div>
+                        <Label for="nama" class="text-sm font-medium text-foreground px-0.5">Nama Vendor / Supplier</Label>
+                        <Input id="nama" v-model="form.nama" required placeholder="Nama Perusahaan" class="h-10 rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.nama" />
+                        <div v-if="form.errors.nama" class="text-xs text-destructive flex items-center gap-1 mt-1">
+                            ⚠️ {{ form.errors.nama }}
+                        </div>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <Label class="text-[12px] font-medium text-foreground px-0.5">Alamat Lengkap</Label>
-                        <Textarea v-model="form.alamat" rows="2" placeholder="Alamat Operasional..." class="rounded-md border-border/40 shadow-none focus-visible:ring-1 focus-visible:ring-primary/50 resize-none p-3" />
+                        <Label for="alamat" class="text-sm font-medium text-foreground px-0.5">Alamat Lengkap</Label>
+                        <Textarea id="alamat" v-model="form.alamat" rows="2" placeholder="Alamat Operasional..." class="rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" :aria-invalid="!!form.errors.alamat" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <Label class="text-[12px] font-medium text-foreground px-0.5">Telepon</Label>
-                            <Input v-model="form.telepon" placeholder="Nomor Telepon" class="h-10 rounded-md border-border/40 shadow-none focus-visible:ring-1 focus-visible:ring-primary/50" />
+                            <Label for="telepon" class="text-sm font-medium text-foreground px-0.5">Telepon</Label>
+                            <Input id="telepon" v-model="form.telepon" placeholder="Nomor Telepon" class="h-10 rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.telepon" />
                         </div>
                         <div class="flex flex-col gap-2">
-                            <Label class="text-[12px] font-medium text-foreground px-0.5">Email</Label>
-                            <Input v-model="form.email" type="email" placeholder="Email (Opsional)" class="h-10 rounded-md border-border/40 shadow-none focus-visible:ring-1 focus-visible:ring-primary/50" />
+                            <Label for="email" class="text-sm font-medium text-foreground px-0.5">Email</Label>
+                            <Input id="email" v-model="form.email" type="email" placeholder="Email (Opsional)" class="h-10 rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.email" />
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <Label class="text-[12px] font-medium text-foreground px-0.5">Keterangan</Label>
-                        <Textarea v-model="form.keterangan" rows="2" placeholder="Catatan tambahan..." class="rounded-md border-border/40 shadow-none focus-visible:ring-1 focus-visible:ring-primary/50 resize-none p-3" />
+                        <Label for="keterangan" class="text-sm font-medium text-foreground px-0.5">Keterangan</Label>
+                        <Textarea id="keterangan" v-model="form.keterangan" rows="2" placeholder="Catatan tambahan..." class="rounded-md border-input shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" />
                     </div>
 
-                    <div class="mt-4 pt-5 border-t border-border/40">
-                        <Button type="submit" :disabled="form.processing" class="w-full h-11 text-[13px] font-medium bg-primary text-white rounded-md shadow-none gap-2 hover:bg-primary/90 transition-all border-none">
+                    <div class="mt-4 pt-5 border-t border-input">
+                        <Button type="submit" :disabled="form.processing" class="w-full h-10 text-sm font-semibold bg-slate-900 text-white rounded-lg gap-2 hover:bg-slate-800 transition-colors">
                             <Save class="h-4 w-4" />
                             Simpan Data Vendor
                         </Button>
@@ -108,7 +110,7 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
                     class="px-1"
                 />
 
-                <div class="h-[550px] w-full rounded-md overflow-hidden border border-border/40 shadow-none relative z-0">
+                <div class="h-[550px] w-full rounded-md overflow-hidden border border-input shadow-none relative z-0">
                     <Map 
                         :center="[-6.200000, 106.816666]" 
                         :zoom="13" 

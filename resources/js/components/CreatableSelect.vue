@@ -137,7 +137,7 @@ const handleCreate = () => {
 
         <ComboboxPortal>
             <ComboboxContent
-                class="z-50 w-[var(--reka-combobox-anchor-width)] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
+                class="z-50 w-[var(--reka-combobox-anchor-width)] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
                 position="popper" :side-offset="5">
                 <ComboboxViewport class="p-1 max-h-60 overflow-y-auto" @scroll="handleScroll">
                     <ComboboxGroup v-if="props.options.length > 0">

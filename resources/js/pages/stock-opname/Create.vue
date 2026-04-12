@@ -144,7 +144,7 @@ const totalDiscrepancies = computed(() => {
         <div class="flex flex-col gap-10">
             <!-- 1. Informasi Umum -->
             <section class="space-y-6">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">1. Informasi Umum</h3>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">1. Informasi Umum</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-2">
                         <Label for="tanggal" class="text-xs font-medium">TANGGAL OPNAME</Label>
@@ -170,11 +170,11 @@ const totalDiscrepancies = computed(() => {
             <!-- 2. Daftar Barang -->
             <section class="space-y-6">
                 <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground/60">2. Daftar Barang
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">2. Daftar Barang
                     </h3>
                     <div class="relative w-full max-w-sm">
-                        <Search v-if="!isSearching" class="absolute left-0 top-3 h-4 w-4 text-muted-foreground/40" />
-                        <Loader2 v-else class="absolute left-0 top-3 h-4 w-4 text-muted-foreground/40 animate-spin" />
+                        <Search v-if="!isSearching" class="absolute left-0 top-3 h-4 w-4 text-muted-foreground" />
+                        <Loader2 v-else class="absolute left-0 top-3 h-4 w-4 text-muted-foreground animate-spin" />
                         <Input v-model="searchTerm" placeholder="Cari barang..."
                             class="pl-7 rounded-none border-t-0 border-x-0 border-b border-muted bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-primary transition-colors h-10" />
                     </div>
@@ -185,16 +185,16 @@ const totalDiscrepancies = computed(() => {
                         <TableHeader>
                             <TableRow class="hover:bg-transparent border-b border-muted">
                                 <TableHead
-                                    class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground/50">
+                                    class="h-12 px-0 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     Barang</TableHead>
                                 <TableHead
-                                    class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">
+                                    class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     Stok Sistem</TableHead>
                                 <TableHead
-                                    class="h-12 px-0 w-[160px] text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">
+                                    class="h-12 px-0 w-[160px] text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     Stok Fisik</TableHead>
                                 <TableHead
-                                    class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground/50">
+                                    class="h-12 px-0 text-right text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                     Selisih</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -204,12 +204,12 @@ const totalDiscrepancies = computed(() => {
                                 <TableCell class="px-0 py-4">
                                     <div class="font-bold text-sm tracking-tight capitalize">{{ produk.nama }}</div>
                                     <div
-                                        class="text-[10px] font-mono text-muted-foreground/60 uppercase tracking-tighter mt-0.5">
+                                        class="text-xs font-mono text-muted-foreground uppercase tracking-tighter mt-0.5">
                                         {{ produk.sku }}</div>
                                 </TableCell>
                                 <TableCell class="px-0 py-4 text-right text-sm font-medium">
                                     {{ form.items_map[produk.id]?.system_qty }} <span
-                                        class="text-[10px] text-muted-foreground uppercase">{{ produk.satuan?.nama
+                                        class="text-xs text-muted-foreground uppercase">{{ produk.satuan?.nama
                                         }}</span>
                                 </TableCell>
                                 <TableCell class="px-0 py-4 text-right">
@@ -218,13 +218,13 @@ const totalDiscrepancies = computed(() => {
                                             v-model="form.items_map[produk.id].physical_qty" type="number" step="any"
                                             class="w-24 text-right h-8 rounded-none border-muted focus-visible:ring-0 focus-visible:border-primary bg-transparent text-sm p-1" />
                                         <span
-                                            class="text-[10px] font-bold text-muted-foreground w-8 text-left uppercase">{{
+                                            class="text-xs font-bold text-muted-foreground w-8 text-left uppercase">{{
                                             produk.satuan?.simbol }}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell class="px-0 py-4 text-right">
                                     <div v-if="form.items_map[produk.id]" class="text-sm font-bold"
-                                        :class="calculateDiff(form.items_map[produk.id]) === 0 ? 'text-muted-foreground/40' : (calculateDiff(form.items_map[produk.id]) > 0 ? 'text-primary' : 'text-destructive')">
+                                        :class="calculateDiff(form.items_map[produk.id]) === 0 ? 'text-muted-foreground' : (calculateDiff(form.items_map[produk.id]) > 0 ? 'text-primary' : 'text-destructive')">
                                         <span v-if="calculateDiff(form.items_map[produk.id]) > 0">+</span>
                                         {{ calculateDiff(form.items_map[produk.id]) }}
                                     </div>

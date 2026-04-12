@@ -95,10 +95,10 @@ const handlePrint = () => {
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card class="rounded-none border-muted bg-transparent shadow-none">
+            <Card class="rounded-none border-muted bg-transparent shadow-none ">
                 <CardHeader class="pb-2">
                     <CardTitle
-                        class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center">
+                        class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center">
                         Gross Profit
                     </CardTitle>
                 </CardHeader>
@@ -110,7 +110,7 @@ const handlePrint = () => {
             <Card class="rounded-none border-primary/20 bg-primary/5 shadow-none border">
                 <CardHeader class="pb-2">
                     <CardTitle
-                        class="text-[10px] font-bold uppercase tracking-widest text-primary/60 flex items-center">
+                        class="text-xs font-bold uppercase tracking-widest text-primary flex items-center">
                         Net Profit (Laba Bersih)
                     </CardTitle>
                 </CardHeader>
@@ -121,10 +121,10 @@ const handlePrint = () => {
                 </CardContent>
             </Card>
 
-            <Card class="rounded-none border-muted bg-transparent shadow-none">
+            <Card class="rounded-none border-muted bg-transparent shadow-none ">
                 <CardHeader class="pb-2">
                     <CardTitle
-                        class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 flex items-center">
+                        class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center">
                         Profit Margin
                     </CardTitle>
                 </CardHeader>
@@ -222,7 +222,7 @@ const handlePrint = () => {
                 </div>
             </div>
 
-            <div class="mt-16 text-[10px] text-muted-foreground text-center italic border-t pt-4 border-muted">
+            <div class="mt-16 text-xs text-muted-foreground text-center italic border-t pt-4 border-muted">
                 Laporan dihasilkan secara otomatis oleh sistem pada {{ new Date().toLocaleString('id-ID') }}
             </div>
         </div>

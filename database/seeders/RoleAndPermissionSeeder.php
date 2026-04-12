@@ -45,23 +45,6 @@ class RoleAndPermissionSeeder extends Seeder
             'manage products', // Minimal access to see items
         ]);
 
-        // Assign roles to existing users or create default ones
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@mail.com'],
-            [
-                'name' => 'Super Admin',
-                'password' => bcrypt('password'),
-            ]
-        );
-        $admin->assignRole($superAdminRole);
-
-        $cashier = User::firstOrCreate(
-            ['email' => 'cashier@mail.com'],
-            [
-                'name' => 'Kasir Utama',
-                'password' => bcrypt('password'),
-            ]
-        );
-        $cashier->assignRole($cashierRole);
+        // Roles and permissions only
     }
 }

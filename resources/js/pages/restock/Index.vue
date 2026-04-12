@@ -127,7 +127,7 @@ const getStatusStyles = (status: string) => {
         case 'bayar_berkala':
             return 'bg-orange-50 text-orange-600 border-orange-100';
         default:
-            return 'bg-secondary/40 text-muted-foreground/60 border-transparent';
+            return 'bg-secondary/40 text-muted-foreground border-transparent';
     }
 };
 
@@ -140,7 +140,7 @@ const formatStatus = (status: string) => {
 <template>
     <Head title="Restock & Inventory" />
 
-    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
         <PageHeader 
             title="Restock Registry" 
             description="Manajemen Stok & Pembelian" 
@@ -149,7 +149,7 @@ const formatStatus = (status: string) => {
         />
 
         <!-- ====== CONTENT AREA ====== -->
-        <div class="max-w-7xl mx-auto w-full">
+        <div class="w-full max-w-7xl mx-auto">
             <DataTable
                 :data="restocks"
                 :columns="columns"
@@ -175,18 +175,18 @@ const formatStatus = (status: string) => {
                 <template #toolbar-actions>
                     <div class="flex items-center gap-3">
                         <div class="relative group">
-                            <Filter class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40 transition-colors group-focus-within:text-accent" />
+                            <Filter class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground transition-colors group-focus-within:text-accent" />
                             <Input 
                                 v-model="vendor" 
                                 placeholder="Filter vendor..." 
-                                class="pl-9 h-9 rounded-md border-border/40 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans" 
+                                class="pl-9 h-9 rounded-md border-input bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans" 
                             />
                         </div>
                         <Select v-model="status">
-                            <SelectTrigger class="h-9 w-[140px] rounded-md border-border/40 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans">
+                            <SelectTrigger class="h-9 w-[140px] rounded-md border-input bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans">
                                 <SelectValue placeholder="Status" />
                             </SelectTrigger>
-                            <SelectContent class="rounded-xl shadow-xl border-border/40 font-sans">
+                            <SelectContent class="rounded-xl shadow-none border-input font-sans">
                                 <SelectItem value="semua">Semua Status</SelectItem>
                                 <SelectItem value="lunas">Lunas</SelectItem>
                                 <SelectItem value="hutang">Hutang</SelectItem>
@@ -198,22 +198,22 @@ const formatStatus = (status: string) => {
 
                 <template #cell(vendor)="{ row }">
                     <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                             <History class="h-5 w-5" />
                         </div>
                         <div class="min-w-0 pr-4">
                             <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.vendor?.nama || 'Direct Purchase' }}</p>
-                            <p class="text-[11px] font-medium text-muted-foreground/50 mt-0.5">{{ formatDate(row.tanggal) }}</p>
+                            <p class="text-xs font-medium text-muted-foreground mt-0.5">{{ formatDate(row.tanggal) }}</p>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(info)="{ row }">
-                    <p class="text-[13px] text-muted-foreground/70 max-w-[200px] line-clamp-2 leading-relaxed tracking-tight">{{ row.keterangan || 'No internal notes' }}</p>
+                    <p class="text-[13px] text-muted-foreground max-w-[200px] line-clamp-2 leading-relaxed tracking-tight">{{ row.keterangan || 'No internal notes' }}</p>
                 </template>
 
                 <template #cell(items)="{ row }">
-                    <span class="text-[11px] font-bold font-mono px-2 py-0.5 bg-muted rounded uppercase tracking-tighter text-muted-foreground/60">{{ row.items_count }} Types</span>
+                    <span class="text-xs font-bold font-mono px-2 py-0.5 bg-muted rounded uppercase tracking-tighter text-muted-foreground">{{ row.items_count }} Types</span>
                 </template>
 
                 <template #cell(cost)="{ row }">
@@ -223,7 +223,7 @@ const formatStatus = (status: string) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status_pembayaran)">
+                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status_pembayaran)">
                         {{ formatStatus(row.status_pembayaran) }}
                     </Badge>
                 </template>
@@ -231,21 +231,21 @@ const formatStatus = (status: string) => {
                 <template #actions="{ row }">
                     <div class="flex items-center justify-end gap-1 px-2">
                         <Link :href="`/restock/${row.id}/edit`">
-                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                 <ChevronRight class="h-4 w-4" />
                             </button>
                         </Link>
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-lg border-border/40 font-sans">
-                                <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-2 py-1.5 text-center text-xs">Procurement Ops</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input font-sans">
+                                <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">Procurement Ops</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem @click="router.get(`/restock/${row.id}/edit`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
-                                    <Edit2 class="h-3.5 w-3.5 text-muted-foreground/60" /> Edit Detail
+                                    <Edit2 class="h-3.5 w-3.5 text-muted-foreground" /> Edit Detail
                                 </DropdownMenuItem>
                                 
                                 <DropdownMenuItem v-if="row.status_pembayaran !== 'lunas'" @click="settleRestock(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50">

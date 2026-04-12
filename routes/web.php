@@ -9,6 +9,9 @@ use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfitLossController;
 use App\Http\Controllers\QuickCreateSatuanController;
+use App\Http\Controllers\QuickCreateVendorController;
+use App\Http\Controllers\PurchaseController;
+
 use App\Http\Controllers\RestockController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\StockController;
@@ -37,6 +40,8 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::delete('satuan/bulk-destroy', [SatuanController::class, 'bulkDestroy'])->name('satuan.bulk-destroy');
         Route::resource('satuan', SatuanController::class);
         Route::post('satuan/quick', QuickCreateSatuanController::class)->name('satuan.quick');
+        Route::post('vendor/quick', QuickCreateVendorController::class)->name('vendor.quick');
+
 
         Route::delete('vendors/bulk-destroy', [VendorController::class, 'bulkDestroy'])->name('vendor.bulk-destroy');
         Route::resource('vendors', VendorController::class)->names('vendor');
@@ -48,6 +53,15 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::delete('restock/bulk-destroy', [RestockController::class, 'bulkDestroy'])->name('restock.bulk-destroy');
         Route::resource('restock', RestockController::class);
         Route::post('restock/{restock}/settle', [RestockController::class, 'settle'])->name('restock.settle');
+
+        // Purchasing (Formal Procurement with Attachments & Finalization)
+        Route::resource('purchasing', PurchaseController::class)->parameters([
+            'purchasing' => 'purchase'
+        ]);
+        Route::post('purchasing/{purchase}/finalize', [PurchaseController::class, 'finalize'])->name('purchasing.finalize');
+
+
+        Route::delete('purchasing-attachment/{purchaseAttachment}', [PurchaseController::class, 'destroyAttachment'])->name('purchasing.attachment.destroy');
 
         Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
         Route::resource('pengeluaran', PengeluaranController::class);

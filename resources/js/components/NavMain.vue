@@ -22,7 +22,7 @@ const { isCurrentUrl } = useCurrentUrl();
     <SidebarGroup class="px-3 py-1">
         <SidebarGroupLabel
             v-if="title"
-            class="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 select-none"
+            class="px-2 mb-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground select-none"
         >
             {{ title }}
         </SidebarGroupLabel>
@@ -37,7 +37,7 @@ const { isCurrentUrl } = useCurrentUrl();
                     <Link :href="item.href" class="flex items-center gap-2.5 w-full">
                         <component
                             :is="item.icon"
-                            class="h-3.5 w-3.5 shrink-0 text-muted-foreground/60 transition-colors group-data-[active=true]:text-foreground"
+                            class="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-data-[active=true]:text-foreground"
                         />
                         <span class="text-[13px] font-medium text-muted-foreground group-data-[active=true]:text-foreground group-data-[active=true]:font-bold">
                             {{ item.title }}

@@ -99,6 +99,14 @@ class Produk extends Model
     }
 
     /**
+     * Get the price statistics for the product.
+     */
+    public function priceStats(): HasMany
+    {
+        return $this->hasMany(ProductPriceStat::class, 'produk_id');
+    }
+
+    /**
      * Get the stock summary for the product.
      */
     public function stock(): HasOne

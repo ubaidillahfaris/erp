@@ -111,7 +111,7 @@ const handleCreateSatuan = async (nama: string) => {
                         <div class="flex flex-col gap-2">
                             <Label for="sku">SKU (Stock Keeping Unit)</Label>
                             <Input id="sku" v-model="form.sku" placeholder="Kosongkan untuk auto-generate" />
-                            <p class="text-[10px] text-muted-foreground italic">*Contoh auto: IND-0001</p>
+                            <p class="text-xs text-muted-foreground italic">*Contoh auto: IND-0001</p>
                             <InputError :message="form.errors.sku" />
                         </div>
                         <div class="flex flex-col gap-2">

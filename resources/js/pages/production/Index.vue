@@ -123,7 +123,7 @@ const formatStatus = (status: string) => {
 const getStatusStyles = (status: string) => {
     switch (status) {
         case 'draft':
-            return 'bg-secondary/40 text-muted-foreground/60 border-transparent';
+            return 'bg-secondary/40 text-muted-foreground border-transparent';
         case 'in_progress':
             return 'bg-blue-50 text-blue-600 border-blue-100';
         case 'completed':
@@ -131,7 +131,7 @@ const getStatusStyles = (status: string) => {
         case 'cancelled':
             return 'bg-destructive/5 text-destructive border-destructive/10';
         default:
-            return 'bg-muted/50 text-muted-foreground/40 border-transparent';
+            return 'bg-muted/50 text-muted-foreground border-transparent';
     }
 };
 </script>
@@ -139,7 +139,7 @@ const getStatusStyles = (status: string) => {
 <template>
     <Head title="Production Registry" />
 
-    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
         <PageHeader 
             title="Production Logs" 
             description="Manajemen Batch & Hasil Manufaktur" 
@@ -148,7 +148,7 @@ const getStatusStyles = (status: string) => {
         />
 
         <!-- ====== CONTENT AREA ====== -->
-        <div class="max-w-7xl mx-auto w-full">
+        <div class="w-full max-w-7xl mx-auto">
             <DataTable
                 :data="productions"
                 :columns="columns"
@@ -173,15 +173,15 @@ const getStatusStyles = (status: string) => {
                 </template>
                 <template #cell(batch)="{ row }">
                     <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                             <Boxes class="h-5 w-5" />
                         </div>
                         <div class="min-w-0 pr-4">
                             <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.bom?.nama }}</p>
                             <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-[10px] font-mono font-bold text-muted-foreground/40 uppercase tracking-widest">{{ row.sku }}</span>
-                                <span class="text-[10px] text-muted-foreground/20 italic">•</span>
-                                <span class="text-[11px] font-medium text-muted-foreground/50">{{ formatDate(row.tanggal) }}</span>
+                                <span class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest">{{ row.sku }}</span>
+                                <span class="text-xs text-muted-foreground italic">•</span>
+                                <span class="text-xs font-medium text-muted-foreground">{{ formatDate(row.tanggal) }}</span>
                             </div>
                         </div>
                     </div>
@@ -191,9 +191,9 @@ const getStatusStyles = (status: string) => {
                     <div class="flex flex-col items-center">
                         <span class="text-[13px] font-bold text-foreground">
                             {{ parseFloat(row.actual_yield || 0).toLocaleString('id-ID') }}
-                            <span class="text-muted-foreground/40 font-medium">/ {{ parseFloat(row.target_yield).toLocaleString('id-ID') }}</span>
+                            <span class="text-muted-foreground font-medium">/ {{ parseFloat(row.target_yield).toLocaleString('id-ID') }}</span>
                         </span>
-                        <span class="text-[9px] font-bold uppercase tracking-tighter text-muted-foreground/30">Unit Yielded</span>
+                        <span class="text-xs font-bold uppercase tracking-tighter text-muted-foreground">Unit Yielded</span>
                     </div>
                 </template>
 
@@ -202,12 +202,12 @@ const getStatusStyles = (status: string) => {
                         <span class="text-[14px] font-bold text-foreground tabular-nums">
                             {{ formatCurrency(row.total_cost || 0) }}
                         </span>
-                        <Badge v-if="row.is_estimated" class="h-4 px-1 rounded text-[8px] font-bold uppercase bg-orange-50 text-orange-500 border-none shadow-none">Estimasi</Badge>
+                        <Badge v-if="row.is_estimated" class="h-4 px-1 rounded text-xs font-bold uppercase bg-orange-50 text-orange-500 border-none shadow-none ">Estimasi</Badge>
                     </div>
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
+                    <Badge variant="secondary" class="h-5 px-1.5 rounded-md text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
                         {{ formatStatus(row.status) }}
                     </Badge>
                 </template>
@@ -215,18 +215,18 @@ const getStatusStyles = (status: string) => {
                 <template #actions="{ row }">
                     <div class="flex items-center justify-end gap-1 px-2">
                         <Link :href="show({ production: row.id }).url">
-                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                            <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                 <Eye class="h-4 w-4" />
                             </button>
                         </Link>
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
-                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                     <MoreHorizontal class="h-4 w-4" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-lg border-border/40 font-sans">
-                                <DropdownMenuLabel class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-2 py-1.5 text-center text-xs">Batch Ops</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input font-sans">
+                                <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">Batch Ops</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
 
                                 <DropdownMenuItem v-if="row.status === 'in_progress'" @click="router.get(edit({ production: row.id }).url)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50">
@@ -234,7 +234,7 @@ const getStatusStyles = (status: string) => {
                                 </DropdownMenuItem>
 
                                 <DropdownMenuItem @click="handleClone(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
-                                    <RotateCcw class="h-3.5 w-3.5 text-muted-foreground/60" /> Duplikat Produksi
+                                    <RotateCcw class="h-3.5 w-3.5 text-muted-foreground" /> Duplikat Produksi
                                 </DropdownMenuItem>
                                 
                                 <DropdownMenuItem v-if="row.status === 'draft'" @click="deleteProduction(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-destructive focus:text-destructive focus:bg-destructive/5">

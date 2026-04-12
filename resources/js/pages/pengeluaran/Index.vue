@@ -101,7 +101,7 @@ const formatDate = (dateString: string) => {
 <template>
     <Head title="Pengeluaran Lain-lain" />
 
-    <div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+    <div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
         <!-- ====== PAGE HEADER ====== -->
         <PageHeader 
             title="Cash Outflow" 
@@ -111,7 +111,7 @@ const formatDate = (dateString: string) => {
         />
 
         <!-- ====== CONTENT AREA ====== -->
-        <div class="max-w-7xl mx-auto w-full">
+        <div class="w-full max-w-7xl mx-auto">
             <DataTable
                 :data="pengeluarans"
                 :columns="columns"
@@ -141,7 +141,7 @@ const formatDate = (dateString: string) => {
                         </div>
                         <div class="min-w-0 pr-4">
                             <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.nama_pengeluaran }}</p>
-                            <p class="text-[11px] text-muted-foreground/60 line-clamp-1 mt-0.5">{{ row.keterangan || 'No internal notes' }}</p>
+                            <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">{{ row.keterangan || 'No internal notes' }}</p>
                         </div>
                     </div>
                 </template>
@@ -149,9 +149,9 @@ const formatDate = (dateString: string) => {
                 <template #cell(kategori)="{ row }">
                     <div class="flex flex-col gap-1">
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-secondary text-muted-foreground rounded uppercase tracking-tighter">{{ row.jenis_pengeluaran }}</span>
+                            <span class="text-xs font-bold font-mono px-1.5 py-0.5 bg-secondary text-muted-foreground rounded uppercase tracking-tighter">{{ row.jenis_pengeluaran }}</span>
                         </div>
-                        <span class="text-[11px] font-medium text-muted-foreground/50">{{ formatDate(row.tanggal) }}</span>
+                        <span class="text-xs font-medium text-muted-foreground">{{ formatDate(row.tanggal) }}</span>
                     </div>
                 </template>
 

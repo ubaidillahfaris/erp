@@ -112,7 +112,7 @@ const formatDate = (dateString: string) => {
                                 <p class="text-xs text-muted-foreground uppercase">
                                     {{ production.is_estimated ? 'Estimasi Biaya' : 'Total Biaya Produksi' }}
                                 </p>
-                                <Badge v-if="production.is_estimated" variant="outline" class="rounded-none text-[10px] bg-orange-50 text-orange-600 border-orange-200 uppercase px-1.5 py-0">Estimasi</Badge>
+                                <Badge v-if="production.is_estimated" variant="outline" class="rounded-none text-xs bg-orange-50 text-orange-600 border-orange-200 uppercase px-1.5 py-0">Estimasi</Badge>
                             </div>
                             <p class="text-3xl font-black text-primary">{{ formatCurrency(production.total_cost) }}</p>
                             <p class="text-xs text-muted-foreground mt-1" v-if="production.status === 'completed'">
@@ -168,7 +168,7 @@ const formatDate = (dateString: string) => {
                                         <TableCell class="text-right font-bold text-primary">
                                             <div class="flex flex-col items-end">
                                                 <span>{{ formatCurrency(item.cost) }}</span>
-                                                <span v-if="production.is_estimated" class="text-[9px] text-orange-500 font-medium uppercase tracking-tighter">Estimasi</span>
+                                                <span v-if="production.is_estimated" class="text-xs text-orange-500 font-medium uppercase tracking-tighter">Estimasi</span>
                                             </div>
                                         </TableCell>
                                     </TableRow>

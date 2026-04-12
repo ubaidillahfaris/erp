@@ -163,10 +163,10 @@ const deleteRole = async (id: number) => {
                                 <TableCell class="font-medium">{{ role.name }}</TableCell>
                                 <TableCell>
                                     <div class="flex flex-wrap gap-1">
-                                        <Badge v-for="menuId in role.menu_ids.slice(0, 5)" :key="menuId" variant="outline" class="text-[10px]">
+                                        <Badge v-for="menuId in role.menu_ids.slice(0, 5)" :key="menuId" variant="outline" class="text-xs">
                                             {{ menus.find(m => m.id === menuId)?.name || 'Menu #' + menuId }}
                                         </Badge>
-                                        <Badge v-if="role.menu_ids.length > 5" variant="outline" class="text-[10px]">
+                                        <Badge v-if="role.menu_ids.length > 5" variant="outline" class="text-xs">
                                             +{{ role.menu_ids.length - 5 }} lainnya
                                         </Badge>
                                     </div>

@@ -94,7 +94,7 @@ const deleteVendor = async (id: number) => {
 <template>
 <Head title="Vendor" />
 
-<div class="px-8 py-10 flex flex-col gap-8 bg-[#F8F9FA] min-h-[calc(100vh-64px)] font-sans">
+<div class="px-6 py-8 flex flex-col gap-6 bg-slate-50 min-h-[calc(100vh-64px)] font-sans">
 
     <PageHeader 
         title="Vendor & Supplier" 
@@ -104,7 +104,7 @@ const deleteVendor = async (id: number) => {
     />
     
     <!-- ====== CONTENT AREA ====== -->
-    <div class="max-w-7xl mx-auto w-full">
+    <div class="w-full max-w-7xl mx-auto">
         <DataTable 
             :data="vendors" 
             :columns="columns" 
@@ -130,13 +130,13 @@ const deleteVendor = async (id: number) => {
             <template #cell(profil)="{ row }">
                 <div class="flex items-center gap-4">
                     <div
-                        class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground/40 transition-colors group-hover:bg-accent group-hover:text-white">
+                        class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                         <Building2 class="h-5 w-5" />
                     </div>
                     <div class="min-w-0 pr-4">
                         <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.nama }}</p>
                         <p v-if="row.email"
-                            class="text-[11px] text-muted-foreground/60 flex items-center gap-1.5 mt-0.5">
+                            class="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
                             <Mail class="h-3 w-3" /> {{ row.email }}
                         </p>
                     </div>
@@ -146,13 +146,13 @@ const deleteVendor = async (id: number) => {
             <template #cell(kontak)="{ row }">
                 <div class="flex flex-col gap-1">
                     <div v-if="row.telepon"
-                        class="flex items-center text-[11px] font-semibold text-muted-foreground/80">
-                        <Phone class="mr-2 h-3.5 w-3.5 text-accent/50" />
+                        class="flex items-center text-xs font-semibold text-muted-foreground">
+                        <Phone class="mr-2 h-3.5 w-3.5 text-accent" />
                         {{ row.telepon }}
                     </div>
                     <div v-if="row.alamat"
-                        class="flex items-start text-[11px] text-muted-foreground/60 max-w-[200px] leading-relaxed">
-                        <MapPin class="mr-2 h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground/30" />
+                        class="flex items-start text-xs text-muted-foreground max-w-[200px] leading-relaxed">
+                        <MapPin class="mr-2 h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground" />
                         <span class="line-clamp-2">{{ row.alamat }}</span>
                     </div>
                 </div>
@@ -160,11 +160,11 @@ const deleteVendor = async (id: number) => {
 
             <template #cell(info)="{ row }">
                 <div v-if="row.keterangan"
-                    class="flex items-start text-[11px] text-muted-foreground/50 italic leading-snug max-w-[180px]">
-                    <Info class="mr-2 h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground/20" />
+                    class="flex items-start text-xs text-muted-foreground italic leading-snug max-w-[180px]">
+                    <Info class="mr-2 h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground" />
                     <span class="line-clamp-2">{{ row.keterangan }}</span>
                 </div>
-                <span v-else class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/20 italic">No
+                <span v-else class="text-xs font-bold uppercase tracking-widest text-muted-foreground italic">No
                     notes</span>
             </template>
 
@@ -176,19 +176,19 @@ const deleteVendor = async (id: number) => {
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
                             <button
-                                class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground/30 hover:bg-secondary hover:text-foreground transition-all">
+                                class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
                                 <MoreHorizontal class="h-4 w-4" />
                             </button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-lg border-border/40">
+                        <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-48 shadow-none border-input">
                             <DropdownMenuLabel
-                                class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 px-2 py-1.5">
+                                class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5">
                                 Opsi Vendor</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem as-child>
                                 <Link :href="`/vendors/${row.id}/edit`"
                                     class="flex items-center w-full rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
-                                    <Edit2 class="h-3.5 w-3.5 text-muted-foreground/60" /> Edit Detail
+                                    <Edit2 class="h-3.5 w-3.5 text-muted-foreground" /> Edit Detail
                                 </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="deleteVendor(row.id)"

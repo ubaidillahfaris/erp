@@ -4,7 +4,8 @@ import {
     LayoutGrid, Package, Ruler, ShoppingCart, ShoppingBag,
     FileText, ReceiptText, PieChart, PackageOpen, Boxes,
     ClipboardList, Building2, Landmark, Users, ShieldCheck,
-    Search, Zap, ChevronsUpDown, Settings, LifeBuoy, Bell
+    Search, Zap, ChevronsUpDown, Settings, LifeBuoy, Bell,
+    Store
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
@@ -53,20 +54,22 @@ const groupedMenus = computed(() => {
 </script>
 
 <template>
-<Sidebar collapsible="icon" class="border-r border-sidebar-border bg-white shadow-none">
+<Sidebar collapsible="icon" class="border-r border-sidebar-border bg-white shadow-none font-['Plus_Jakarta_Sans',sans-serif]">
 
     <!-- ── HEADER: Logo ── -->
     <SidebarHeader class="px-5 pt-8 pb-6">
-        <Link href="/dashboard" class="flex items-center gap-3 group">
-            <div class="h-8 w-8 shrink-0 rounded-lg bg-foreground flex items-center justify-center text-white shadow-md">
-                <Zap class="h-4 w-4 fill-current" />
+        <Link href="/dashboard" class="flex items-center gap-3 group transition-transform active:scale-95">
+            <div class="h-9 w-9 shrink-0 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-none ">
+                <Store class="h-5 w-5" />
             </div>
-            <span class="text-xl font-black tracking-tight text-foreground group-data-[collapsible=icon]:hidden">Plan</span>
+            <span class="text-xl font-black tracking-tighter text-slate-900 group-data-[collapsible=icon]:hidden dark:text-white">
+                Warung<span class="text-blue-600">.ERP</span>
+            </span>
         </Link>
     </SidebarHeader>
 
     <!-- ── NAV ITEMS ── -->
-    <SidebarContent class="py-2 gap-0 overflow-x-hidden">
+    <SidebarContent class="py-2 gap-0 overflow-x-hidden px-2">
         <template v-for="(items, groupName) in groupedMenus" :key="groupName">
             <NavMain :title="String(groupName)" :items="items" />
         </template>
@@ -77,19 +80,19 @@ const groupedMenus = computed(() => {
         <!-- System Nav -->
         <SidebarMenu class="px-2 mb-4">
             <SidebarMenuItem>
-                <SidebarMenuButton as-child class="h-9 px-3 rounded-lg hover:bg-muted text-muted-foreground transition-all">
+                <SidebarMenuButton as-child class="h-10 px-3 rounded-xl hover:bg-slate-50 text-slate-500 transition-all dark:hover:bg-slate-800">
                     <Link href="/settings" class="flex items-center gap-3">
                         <Settings class="h-4 w-4 shrink-0" />
-                        <span class="text-[13px] font-medium group-data-[collapsible=icon]:hidden">Settings</span>
+                        <span class="text-[13px] font-bold group-data-[collapsible=icon]:hidden uppercase tracking-wider">Settings</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton as-child class="h-9 px-3 rounded-lg hover:bg-muted text-muted-foreground transition-all">
+                <SidebarMenuButton as-child class="h-10 px-3 rounded-xl hover:bg-slate-50 text-slate-500 transition-all dark:hover:bg-slate-800">
                     <Link href="/support" class="flex items-center gap-3">
                         <LifeBuoy class="h-4 w-4 shrink-0" />
-                        <span class="text-[13px] font-medium group-data-[collapsible=icon]:hidden">Help & Support</span>
-                        <div class="ml-auto flex h-5 w-5 items-center justify-center rounded-md bg-accent text-[10px] font-black text-white group-data-[collapsible=icon]:hidden">8</div>
+                        <span class="text-[13px] font-bold group-data-[collapsible=icon]:hidden uppercase tracking-wider">Support</span>
+                        <div class="ml-auto flex h-5 w-5 items-center justify-center rounded-md bg-blue-600 text-xs font-black text-white group-data-[collapsible=icon]:hidden shadow-none ">8</div>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>

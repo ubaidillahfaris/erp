@@ -27,11 +27,11 @@ const emit = defineEmits<{
                     'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
                     activeTab === tab.value
                         ? 'bg-background text-foreground shadow-sm'
-                        : 'hover:bg-background/50 hover:text-foreground'
+                        : 'hover:bg-background hover:text-foreground'
                 ]"
             >
                 {{ tab.label }}
-                <span v-if="tab.count !== undefined" class="ml-1.5 rounded-full bg-muted-foreground/10 px-1.5 py-0.5 text-[10px] font-bold">
+                <span v-if="tab.count !== undefined" class="ml-1.5 rounded-full bg-muted-foreground/10 px-1.5 py-0.5 text-xs font-bold">
                     {{ tab.count }}
                 </span>
             </button>

@@ -215,7 +215,7 @@ const submit = () => {
                             <Label for="sku">SKU Resep BOM</Label>
                             <Input id="sku" v-model="form.sku" placeholder="Contoh: BOM-0001" readonly
                                 class="bg-muted cursor-not-allowed" />
-                            <p class="text-[10px] text-muted-foreground italic">*SKU dibuat otomatis dan tidak dapat
+                            <p class="text-xs text-muted-foreground italic">*SKU dibuat otomatis dan tidak dapat
                                 diubah</p>
                         </div>
                         <div class="space-y-2">

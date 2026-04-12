@@ -21,11 +21,8 @@ class DatabaseSeeder extends Seeder
             MenuRoleSeeder::class,
             SatuanConversionSeeder::class,
             // BakeryStoreSeeder::class,
-        ]);
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            MaterialAndPlasticSeeder::class,
+            UserSeeder::class,
         ]);
     }
 }
