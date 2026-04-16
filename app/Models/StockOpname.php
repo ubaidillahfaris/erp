@@ -10,12 +10,15 @@ class StockOpname extends Model
         'tanggal',
         'keterangan',
         'status',
+        'storno_at',
+        'storno_reason',
     ];
 
     protected function casts(): array
     {
         return [
             'tanggal' => 'date',
+            'storno_at' => 'datetime',
         ];
     }
 

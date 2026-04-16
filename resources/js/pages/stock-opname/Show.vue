@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, FileText, CheckCircle2, History } from 'lucide-vue-next';
+import { ArrowLeft, Calendar, FileText, CheckCircle2, History, RotateCcw, AlertTriangle, Edit2, Trash2 } from 'lucide-vue-next';
+import { router } from '@inertiajs/vue3';
+import { useConfirm } from '@/composables/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import PageHeader from '@/components/PageHeader.vue';
 import { Button } from '@/components/ui/button';
@@ -36,8 +38,33 @@ const formatDate = (dateString: string) => {
 const getStatusVariant = (status: string) => {
     switch (status) {
         case 'completed': return 'default';
+        case 'storno': return 'destructive';
         case 'draft': return 'secondary';
         default: return 'outline';
+    }
+};
+
+const formatDateTime = (dateString: string) => {
+    return new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(new Date(dateString));
+};
+
+const { confirmDialog } = useConfirm();
+
+const cancelOpname = async () => {
+    if (await confirmDialog('Batalkan Hasil Opname?', 'Batalkan hasil penyesuaian stok ini? Saldo stok akan dikembalikan ke kondisi semula. Tindakan ini akan tercatat sebagai pembatalan.')) {
+        router.post(`/stock-opname/${props.opname.id}/storno`);
+    }
+};
+
+const reopenOpname = async () => {
+    if (await confirmDialog('Edit Kembali Opname?', 'Ingin mengubah data opname ini? Hasil penyesuaian stok saat ini akan dibatalkan, dan data akan dikembalikan menjadi Draft agar bisa Anda edit kembali.')) {
+        router.post(`/stock-opname/${props.opname.id}/reopen`);
     }
 };
 </script>
@@ -59,6 +86,24 @@ const getStatusVariant = (status: string) => {
                             Lanjutkan Draft
                         </Button>
                     </Link>
+                    <Button 
+                        v-if="opname.status === 'completed'" 
+                        variant="outline" 
+                        class="rounded-none border-slate-200"
+                        @click="reopenOpname"
+                    >
+                        <Edit2 class="mr-2 h-4 w-4" />
+                        Edit Kembali
+                    </Button>
+                    <Button 
+                        v-if="opname.status === 'completed'" 
+                        variant="destructive" 
+                        class="rounded-none"
+                        @click="cancelOpname"
+                    >
+                        <Trash2 class="mr-2 h-4 w-4" />
+                        Hapus Hasil
+                    </Button>
                 </div>
             </template>
         </PageHeader>
@@ -77,13 +122,25 @@ const getStatusVariant = (status: string) => {
                         <div class="text-xs font-bold text-muted-foreground uppercase tracking-widest">STATUS</div>
                         <div>
                             <Badge :variant="getStatusVariant(opname.status)" class="rounded-none text-xs px-2 py-0">
-                                {{ opname.status.toUpperCase() }}
+                                {{ opname.status === 'storno' ? 'DIBATALKAN' : opname.status.toUpperCase() }}
                             </Badge>
                         </div>
                     </div>
                     <div class="space-y-1">
                         <div class="text-xs font-bold text-muted-foreground uppercase tracking-widest">KETERANGAN</div>
                         <div class="text-sm font-medium">{{ opname.keterangan || '-' }}</div>
+                    </div>
+                </div>
+
+                <!-- Cancellation Information -->
+                <div v-if="opname.status === 'storno'" class="flex items-start gap-4 p-4 bg-rose-50 border border-rose-100 rounded-none mt-4">
+                    <AlertTriangle class="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                    <div class="space-y-1">
+                        <div class="text-sm font-bold text-rose-900">Hasil Opname Telah Dibatalkan</div>
+                        <p class="text-xs text-rose-700 leading-relaxed">
+                            Hasil opname ini telah dibatalkan pada <strong>{{ formatDateTime(opname.storno_at) }}</strong>. 
+                            <span v-if="opname.storno_reason && opname.storno_reason !== 'Dibatalkan oleh pengguna'">Alasan: {{ opname.storno_reason }}</span>
+                        </p>
                     </div>
                 </div>
             </section>

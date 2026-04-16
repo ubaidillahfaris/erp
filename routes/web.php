@@ -73,6 +73,8 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::get('stock/{produk}', [StockController::class, 'show'])->name('stock.show');
         Route::post('stock/adjustment', [StockController::class, 'adjustment'])->name('stock.adjustment');
         Route::resource('stock-opname', StockOpnameController::class);
+        Route::post('stock-opname/{stock_opname}/storno', [StockOpnameController::class, 'storno'])->name('stock-opname.storno');
+        Route::post('stock-opname/{stock_opname}/reopen', [StockOpnameController::class, 'reopen'])->name('stock-opname.reopen');
     });
 
     // 4. FINANCIALS & EXPENSES (view reports)

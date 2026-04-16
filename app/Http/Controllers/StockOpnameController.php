@@ -6,6 +6,7 @@ use App\Models\Produk;
 use App\Models\StockOpname;
 use App\Models\StockOpnameItem;
 use App\Actions\RecordStockMovement;
+use App\Services\StornoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,10 @@ use Inertia\Response;
 
 class StockOpnameController extends Controller
 {
+    public function __construct(
+        protected StornoService $stornoService
+    ) {}
+
     public function index(Request $request): Response
     {
         $query = StockOpname::withCount('items');
@@ -158,6 +163,42 @@ class StockOpnameController extends Controller
         $stockOpname->delete();
 
         return redirect()->route('stock-opname.index')->with('success', 'Stock opname berhasil dihapus.');
+    }
+
+    public function storno(Request $request, StockOpname $stockOpname): RedirectResponse
+    {
+        try {
+            $validated = $request->validate([
+                'reason' => 'nullable|string|max:255',
+            ]);
+
+            $this->stornoService->perform($stockOpname, $validated['reason'] ?? 'Dibatalkan oleh pengguna');
+
+            return redirect()->back()->with('success', 'Hasil opname berhasil dibatalkan.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal membatalkan: ' . $e->getMessage());
+        }
+    }
+
+    public function reopen(Request $request, StockOpname $stockOpname): RedirectResponse
+    {
+        try {
+            DB::transaction(function () use ($stockOpname) {
+                // 1. Perform reversal (storno)
+                $this->stornoService->perform($stockOpname, 'Dibuka kembali untuk pengeditan');
+
+                // 2. Set back to draft
+                $stockOpname->update([
+                    'status' => 'draft',
+                    'storno_at' => null,
+                    'storno_reason' => null,
+                ]);
+            });
+
+            return redirect()->route('stock-opname.edit', $stockOpname)->with('success', 'Opname telah dikembalikan ke Draft untuk diedit.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal membuka kembali: ' . $e->getMessage());
+        }
     }
 
     private function finalizeOpname(StockOpname $opname): void

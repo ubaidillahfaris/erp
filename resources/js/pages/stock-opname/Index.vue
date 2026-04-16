@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Plus, Eye, Search, Trash2, Edit2, MoreHorizontal, ClipboardList, ChevronRight } from 'lucide-vue-next';
+import { Plus, Eye, Search, Trash2, Edit2, MoreHorizontal, ClipboardList, ChevronRight, RotateCcw } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -61,6 +61,12 @@ const deleteOpname = async (id: number) => {
     }
 };
 
+const cancelOpname = async (id: number) => {
+    if (await confirmDialog('Batalkan Hasil Opname?', 'Batalkan hasil penyesuaian stok ini? Saldo stok akan dikembalikan ke kondisi semula. Tindakan ini akan tercatat sebagai pembatalan.')) {
+        router.post(`/stock-opname/${id}/storno`);
+    }
+};
+
 const formatDate = (dateString: string) => {
     return new Intl.DateTimeFormat('id-ID', {
         day: '2-digit',
@@ -72,12 +78,14 @@ const formatDate = (dateString: string) => {
 const getStatusStyles = (status: string) => {
     switch (status) {
         case 'completed': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+        case 'storno': return 'bg-rose-50 text-rose-600 border-rose-100';
         case 'draft': return 'bg-secondary/40 text-muted-foreground border-transparent';
         default: return 'bg-muted/50 text-muted-foreground border-transparent';
     }
 };
 
 const formatStatus = (status: string) => {
+    if (status === 'storno') return 'DIBATALKAN';
     return status.toUpperCase();
 };
 </script>
@@ -173,6 +181,13 @@ const formatStatus = (status: string) => {
                                     class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5 font-medium"
                                     @click="deleteOpname(row.id)">
                                     <Trash2 class="h-3.5 w-3.5" /> Hapus Draft
+                                </DropdownMenuItem>
+
+                                <DropdownMenuItem
+                                    v-if="row.status === 'completed'"
+                                    class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-rose-600 focus:text-rose-600 focus:bg-rose-50 font-medium"
+                                    @click="cancelOpname(row.id)">
+                                    <RotateCcw class="h-3.5 w-3.5" /> Batalkan Hasil
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
