@@ -33,6 +33,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 import DataTable from '@/components/DataTable.vue';
+import DateRangePicker from '@/components/DateRangePicker.vue';
 
 // Persistent Layout Fix
 defineOptions({ layout: AppLayout });
@@ -162,12 +163,27 @@ const getStockStatus = (produk: any) => {
 };
 
 const isExporting = ref(false);
+const isExportDialogOpen = ref(false);
+const exportDateRange = ref({
+    start: '',
+    end: '',
+});
+
+const openExportDialog = () => {
+    isExportDialogOpen.value = true;
+};
+
 const exportPdf = () => {
     isExporting.value = true;
     router.post(exportMutationPdf.url(), {
         type: type.value === 'all' ? undefined : type.value,
         search: search.value,
+        start_date: exportDateRange.value.start,
+        end_date: exportDateRange.value.end,
     }, {
+        onSuccess: () => {
+            isExportDialogOpen.value = false;
+        },
         onFinish: () => isExporting.value = false
     });
 };
@@ -199,7 +215,7 @@ const exportPdf = () => {
                         variant="outline" 
                         size="sm" 
                         class="h-9 gap-2 px-3 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                        @click="exportPdf"
+                        @click="openExportDialog"
                         :disabled="isExporting"
                     >
                         <Loader2 v-if="isExporting" class="h-3.5 w-3.5 animate-spin" />
@@ -355,6 +371,8 @@ const exportPdf = () => {
                         </div>
                     </div>
 
+
+
                     <div class="flex flex-col gap-1.5 pt-1">
                         <Label class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Catatan Opname</Label>
                         <Textarea 
@@ -373,6 +391,50 @@ const exportPdf = () => {
                 <Button @click="submitAdjustment" :disabled="adjustmentForm.processing" class="bg-accent hover:bg-accent/90 text-white rounded-xl h-11 px-6 text-xs font-bold uppercase tracking-widest shadow-none shadow-accent/20 gap-2">
                     <Loader2 v-if="adjustmentForm.processing" class="h-3.5 w-3.5 animate-spin" />
                     Commit Update
+                </Button>
+            </div>
+        </DialogContent>
+    </Dialog>
+
+    <!-- Export Mutation Dialog -->
+    <Dialog :open="isExportDialogOpen" @update:open="isExportDialogOpen = $event">
+        <DialogContent class="max-w-md rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
+            <DialogHeader class="bg-muted/10 px-6 py-5 border-b border-slate-200">
+                <DialogTitle class="text-[16px] font-bold flex items-center gap-2">
+                    <Printer class="h-4 w-4 text-primary" />
+                    Cetak Laporan Mutasi Stok
+                </DialogTitle>
+                <DialogDescription class="text-[12px] pt-1">
+                    Pilih periode laporan mutasi yang ingin Anda cetak ke dalam format PDF.
+                </DialogDescription>
+            </DialogHeader>
+
+            <div class="px-8 py-10 bg-white">
+                <div class="flex flex-col gap-6">
+                    <div class="flex flex-col gap-2">
+                        <Label class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Periode Laporan</Label>
+                        <DateRangePicker v-model="exportDateRange" />
+                    </div>
+                    
+                    <div class="bg-blue-50/50 border border-blue-100/50 rounded-2xl p-4 flex gap-3">
+                        <div class="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                            <Printer class="h-3 w-3 text-blue-600" />
+                        </div>
+                        <p class="text-[11px] leading-relaxed text-blue-900/70 font-medium">
+                            Klik tombol di bawah untuk memulai pembuatan laporan. Proses ini mungkin memakan waktu beberapa detik.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-muted/5 px-6 py-5 flex items-center justify-between border-t border-slate-200">
+                <Button variant="ghost" @click="isExportDialogOpen = false" class="text-muted-foreground hover:bg-secondary rounded-xl px-5 text-xs font-bold uppercase tracking-widest h-11">
+                    Batal
+                </Button>
+                <Button @click="exportPdf" :disabled="isExporting" class="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-11 px-6 text-xs font-bold uppercase tracking-widest shadow-none gap-2">
+                    <Loader2 v-if="isExporting" class="h-3.5 w-3.5 animate-spin" />
+                    <Printer v-else class="h-3.5 w-3.5" />
+                    Mulai Generate PDF
                 </Button>
             </div>
         </DialogContent>

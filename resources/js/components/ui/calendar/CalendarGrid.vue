@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { CalendarGrid, type CalendarGridProps, useForwardProps } from 'reka-ui'
+import { computed, type HTMLAttributes } from 'vue'
+import { cn } from '@/lib/utils'
+
+const props = defineProps<CalendarGridProps & { class?: HTMLAttributes['class'] }>()
+
+const forwardedProps = useForwardProps(props)
+</script>
+
+<template>
+  <CalendarGrid
+    :class="cn('w-full border-collapse space-y-1', props.class)"
+    v-bind="forwardedProps"
+  >
+    <slot />
+  </CalendarGrid>
+</template>
