@@ -10,6 +10,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "chrome-php/chrome": "^1.15",
+        "dompdf/dompdf": "^3.1",
         "http-interop/http-factory-guzzle": "^1.2",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/fortify": "^1.30",
@@ -19,6 +21,7 @@
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.9",
         "meilisearch/meilisearch-php": "^1.16",
+        "spatie/laravel-pdf": "^2.0",
         "spatie/laravel-permission": "^7.2"
     },
     "require-dev": {

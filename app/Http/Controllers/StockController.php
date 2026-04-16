@@ -9,7 +9,9 @@ use App\Actions\RecordStockMovement;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Jobs\GenerateStockMutationPdfJob;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
@@ -96,5 +98,18 @@ class StockController extends Controller
         ]));
 
         return redirect()->back()->with('success', 'Penyesuaian stok berhasil disimpan.');
+    }
+
+    public function exportMutationPdf(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date',
+            'produk_id' => 'nullable|exists:produks,id',
+        ]);
+
+        GenerateStockMutationPdfJob::dispatch($validated);
+
+        return redirect()->back()->with('success', 'Laporan mutasi sedang dibuat di background. Silakan cek folder storage/app/private/reports beberapa saat lagi.');
     }
 }

@@ -2,6 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Plus, Eye, Search, Trash2, Edit2, MoreHorizontal, ClipboardList, ChevronRight, RotateCcw } from 'lucide-vue-next';
+import { storno } from '@/actions/App/Http/Controllers/StockOpnameController';
 import { ref, watch } from 'vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -63,7 +64,7 @@ const deleteOpname = async (id: number) => {
 
 const cancelOpname = async (id: number) => {
     if (await confirmDialog('Batalkan Hasil Opname?', 'Batalkan hasil penyesuaian stok ini? Saldo stok akan dikembalikan ke kondisi semula. Tindakan ini akan tercatat sebagai pembatalan.')) {
-        router.post(`/stock-opname/${id}/storno`);
+        router.post(storno.url(id));
     }
 };
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Calendar, FileText, CheckCircle2, History, RotateCcw, AlertTriangle, Edit2, Trash2 } from 'lucide-vue-next';
+import { storno, reopen } from '@/actions/App/Http/Controllers/StockOpnameController';
 import { router } from '@inertiajs/vue3';
 import { useConfirm } from '@/composables/useConfirm';
 import { Badge } from '@/components/ui/badge';
@@ -58,13 +59,13 @@ const { confirmDialog } = useConfirm();
 
 const cancelOpname = async () => {
     if (await confirmDialog('Batalkan Hasil Opname?', 'Batalkan hasil penyesuaian stok ini? Saldo stok akan dikembalikan ke kondisi semula. Tindakan ini akan tercatat sebagai pembatalan.')) {
-        router.post(`/stock-opname/${props.opname.id}/storno`);
+        router.post(storno.url(props.opname.id));
     }
 };
 
 const reopenOpname = async () => {
     if (await confirmDialog('Edit Kembali Opname?', 'Ingin mengubah data opname ini? Hasil penyesuaian stok saat ini akan dibatalkan, dan data akan dikembalikan menjadi Draft agar bisa Anda edit kembali.')) {
-        router.post(`/stock-opname/${props.opname.id}/reopen`);
+        router.post(reopen.url(props.opname.id));
     }
 };
 </script>

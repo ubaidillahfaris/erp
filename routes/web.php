@@ -71,6 +71,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         // Stocks
         Route::get('stock', [StockController::class, 'index'])->name('stock.index');
         Route::get('stock/{produk}', [StockController::class, 'show'])->name('stock.show');
+        Route::post('stock/export-pdf', [StockController::class, 'exportMutationPdf'])->name('stock.export-pdf');
         Route::post('stock/adjustment', [StockController::class, 'adjustment'])->name('stock.adjustment');
         Route::resource('stock-opname', StockOpnameController::class);
         Route::post('stock-opname/{stock_opname}/storno', [StockOpnameController::class, 'storno'])->name('stock-opname.storno');

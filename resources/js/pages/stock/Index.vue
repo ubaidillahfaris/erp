@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Search, History, Settings2, AlertTriangle, CheckCircle2, Loader2, MoreHorizontal, ShoppingCart, TestTube, ChevronRight, Package, Boxes, Warehouse } from 'lucide-vue-next';
+import { Search, History, Settings2, AlertTriangle, CheckCircle2, Loader2, MoreHorizontal, ShoppingCart, TestTube, ChevronRight, Package, Boxes, Warehouse, Printer } from 'lucide-vue-next';
+import { exportMutationPdf } from '@/actions/App/Http/Controllers/StockController';
 import { ref, watch } from 'vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
@@ -159,6 +160,17 @@ const getStockStatus = (produk: any) => {
     if (balance <= min) return { label: 'LOW', variant: 'outline', icon: AlertTriangle, styles: 'bg-orange-50 text-orange-600 border-orange-100' };
     return { label: 'OK', variant: 'secondary', icon: CheckCircle2, styles: 'bg-emerald-50 text-emerald-600 border-emerald-100' };
 };
+
+const isExporting = ref(false);
+const exportPdf = () => {
+    isExporting.value = true;
+    router.post(exportMutationPdf.url(), {
+        type: type.value === 'all' ? undefined : type.value,
+        search: search.value,
+    }, {
+        onFinish: () => isExporting.value = false
+    });
+};
 </script>
 
 <template>
@@ -182,6 +194,20 @@ const getStockStatus = (produk: any) => {
                 search-placeholder="Cari SKU atau Nama Produk..."
                 toolbar-title="Global Inventory"
             >
+                <template #toolbar-actions>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        class="h-9 gap-2 px-3 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                        @click="exportPdf"
+                        :disabled="isExporting"
+                    >
+                        <Loader2 v-if="isExporting" class="h-3.5 w-3.5 animate-spin" />
+                        <Printer v-else class="h-3.5 w-3.5" />
+                        Cetak Mutasi
+                    </Button>
+                </template>
+
                 <template #cell(product)="{ row }">
                     <div class="flex items-center gap-4">
                         <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
