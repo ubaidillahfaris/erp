@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
             MaterialAndPlasticSeeder::class,
             UserSeeder::class,
             CustomerMenuSeeder::class,
+            SalesMenuSeeder::class,
+            TransaksiModuleSeeder::class,
         ]);
     }
 }

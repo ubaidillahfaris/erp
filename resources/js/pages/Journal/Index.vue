@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Search, Calendar, Landmark, ArrowUpCircle, ArrowDownCircle, Info, Receipt, History } from 'lucide-vue-next';
+import { Search, Calendar, Landmark, ArrowUpCircle, ArrowDownCircle, Info, Receipt, History as HistoryIcon } from 'lucide-vue-next';
 import { ref, watch, computed } from 'vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
@@ -189,7 +189,7 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
                 <div class="flex flex-col gap-0.5">
                     <span class="text-sm font-bold text-foreground">{{ row.description }}</span>
                     <span v-if="row.reference" class="text-xs text-muted-foreground uppercase opacity-50 flex items-center font-bold tracking-tight">
-                        <History class="mr-1 h-3 w-3" />
+                        <HistoryIcon class="mr-1 h-3 w-3" />
                         Ref: {{ row.reference_type.split('\\').pop() }} #{{ row.reference_id }}
                     </span>
                 </div>

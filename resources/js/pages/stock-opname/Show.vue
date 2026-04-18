@@ -5,7 +5,7 @@ import {
     Calendar, 
     FileText, 
     CheckCircle2, 
-    History, 
+    History as HistoryIcon, 
     RotateCcw, 
     AlertTriangle, 
     Edit2, 
@@ -232,7 +232,7 @@ const getStatusColor = (status: string) => {
 
                     <div class="flex items-center gap-3 relative z-10">
                         <div class="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
-                            <History class="h-5 w-5 text-slate-400" />
+                            <HistoryIcon class="h-5 w-5 text-slate-400" />
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-800 text-[15px]">Audit Trail</h3>

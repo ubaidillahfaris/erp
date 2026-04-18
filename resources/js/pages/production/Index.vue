@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Plus, Search, Trash2, CheckCircle2, RotateCcw, Eye, MoreHorizontal, ChevronRight, Boxes, History } from 'lucide-vue-next';
+import { Plus, Search, Trash2, CheckCircle2, RotateCcw, Eye, MoreHorizontal, ChevronRight, Boxes, History as HistoryIcon } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { index, create, show, edit, destroy, bulkDestroy } from '@/actions/App/Http/Controllers/ProductionController';
 import PageHeader from '@/components/PageHeader.vue';
@@ -247,7 +247,7 @@ const getStatusStyles = (status: string) => {
 
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 opacity-20 py-12">
-                        <History class="h-10 w-10 text-muted-foreground" />
+                        <HistoryIcon class="h-10 w-10 text-muted-foreground" />
                         <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Log produksi kosong</p>
                     </div>
                 </template>

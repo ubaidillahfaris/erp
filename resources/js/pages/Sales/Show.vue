@@ -3,7 +3,7 @@ import { Head, useForm, usePage, Link } from '@inertiajs/vue3';
 import { 
     Calendar, User, CreditCard, FileText, 
     ArrowLeft, Ban, CheckCircle2, AlertCircle,
-    Package, Info, Loader2, History
+    Package, Info, Loader2, History as HistoryIcon
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -171,7 +171,7 @@ const formatDate = (dateString: string, includeTime = false) => {
                 </div>
             </div>
             <div class="bg-white/50 border border-rose-200 px-4 py-2 rounded-xl flex items-center gap-2">
-                <History class="h-3.5 w-3.5 text-rose-400" />
+                <HistoryIcon class="h-3.5 w-3.5 text-rose-400" />
                 <span class="text-[11px] font-bold text-rose-600 uppercase tracking-widest">Dibatalkan pada {{ formatDate(sale.storno_at, true) }}</span>
             </div>
         </div>

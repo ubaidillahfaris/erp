@@ -4,7 +4,7 @@ import debounce from 'lodash/debounce';
 import {
     Plus, Search, Edit2, Trash2, Package,
     MoreHorizontal, ShoppingCart, TestTube,
-    History, Boxes, PackageOpen, ChevronRight,
+    History as HistoryIcon, Boxes, PackageOpen, ChevronRight,
     Pencil, Filter
 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
@@ -225,7 +225,7 @@ const formatCurrency = (value: number) => {
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="router.visit(`/stock/${row.id}`)"
                                 class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px]">
-                                <History class="h-3.5 w-3.5" /> Lihat Riwayat
+                                <HistoryIcon class="h-3.5 w-3.5" /> Lihat Riwayat
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="deleteProduk(row.id)"
                                 class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5">

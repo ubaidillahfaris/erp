@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Search, History, Settings2, AlertTriangle, CheckCircle2, Loader2, MoreHorizontal, ShoppingCart, TestTube, ChevronRight, Package, Boxes, Warehouse, Printer } from 'lucide-vue-next';
+import { Search, History as HistoryIcon, Settings2, AlertTriangle, CheckCircle2, Loader2, MoreHorizontal, ShoppingCart, TestTube, ChevronRight, Package, Boxes, Warehouse, Printer } from 'lucide-vue-next';
 import { exportMutationPdf } from '@/actions/App/Http/Controllers/StockController';
 import { ref, watch } from 'vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -266,7 +266,7 @@ const exportPdf = () => {
                     <div class="flex items-center justify-end gap-1 px-2">
                         <Link :href="`/stock/${row.id}`">
                             <button class="h-8 w-8 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all">
-                                <History class="h-4 w-4" />
+                                <HistoryIcon class="h-4 w-4" />
                             </button>
                         </Link>
                         <DropdownMenu>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { 
     Search, ShoppingCart, Plus, Minus, 
     CreditCard, Banknote, QrCode, X, 
-    Package, History, Landmark, ChevronRight,
+    Package, History as HistoryIcon, Landmark, ChevronRight,
     UserCircle, Info
 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
@@ -215,13 +215,20 @@ const getPriceBadge = (type: string) => {
                 back-href="/dashboard"
             >
                 <template #actions>
-                    <div class="relative w-full max-w-sm">
-                        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                        <Input 
-                            v-model="searchQuery"
-                            placeholder="Cari nama, SKU, atau barcode..." 
-                            class="pl-9 h-10 border-slate-200 bg-white shadow-none focus-visible:ring-accent/5 rounded-xl text-sm"
-                        />
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <Link href="/sales" class="shrink-0">
+                            <Button variant="outline" size="icon" class="h-10 w-10 rounded-xl border-slate-200 shadow-none hover:bg-slate-50 transition-all" title="Riwayat Penjualan">
+                                <HistoryIcon class="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                        </Link>
+                        <div class="relative w-full max-w-sm">
+                            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input 
+                                v-model="searchQuery"
+                                placeholder="Cari nama, SKU..." 
+                                class="pl-9 h-10 border-slate-200 bg-white shadow-none focus-visible:ring-accent/5 rounded-xl text-sm"
+                            />
+                        </div>
                     </div>
                 </template>
             </PageHeader>

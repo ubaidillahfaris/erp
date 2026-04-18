@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Plus, Search, Filter, Trash2, Edit2, MoreHorizontal, Check, ChevronRight, ShoppingCart, History } from 'lucide-vue-next';
+import { Plus, Search, Filter, Trash2, Edit2, MoreHorizontal, Check, ChevronRight, ShoppingCart, History as HistoryIcon } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { index as restockIndex, bulkDestroy as restockBulkDestroy } from '@/actions/App/Http/Controllers/RestockController';
 import PageHeader from '@/components/PageHeader.vue';
@@ -199,7 +199,7 @@ const formatStatus = (status: string) => {
                 <template #cell(vendor)="{ row }">
                     <div class="flex items-center gap-4">
                         <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
-                            <History class="h-5 w-5" />
+                            <HistoryIcon class="h-5 w-5" />
                         </div>
                         <div class="min-w-0 pr-4">
                             <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.vendor?.nama || 'Direct Purchase' }}</p>
