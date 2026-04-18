@@ -29,6 +29,7 @@ class RoleAndPermissionSeeder extends Seeder
             'manage stock',
             'view reports',
             'make sales',
+            'void sales',
         ];
 
         foreach ($permissions as $permission) {
@@ -44,6 +45,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view dashboard',
             'make sales',
             'manage products', // Minimal access to see items
+            'void sales',
         ]);
 
         // Roles and permissions only

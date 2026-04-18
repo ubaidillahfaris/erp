@@ -13,6 +13,7 @@ use App\Http\Controllers\QuickCreateVendorController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\RestockController;
+use App\Http\Controllers\SalesController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
@@ -91,6 +92,13 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         
         Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
         Route::resource('pengeluaran', PengeluaranController::class);
+    });
+
+    // 5. SALES MANAGEMENT (void sales)
+    Route::middleware('permission:void sales')->group(function () {
+        Route::get('sales', [SalesController::class, 'index'])->name('sales.index');
+        Route::get('sales/{sale}', [SalesController::class, 'show'])->name('sales.show');
+        Route::post('sales/{sale}/void', [SalesController::class, 'void'])->name('sales.void');
     });
 });
 

@@ -14,6 +14,9 @@ class Sale extends Model
         'change_amount',
         'payment_method',
         'notes',
+        'status',
+        'storno_at',
+        'storno_reason',
     ];
 
     protected function casts(): array
@@ -23,6 +26,7 @@ class Sale extends Model
             'total_amount' => 'decimal:2',
             'received_amount' => 'decimal:2',
             'change_amount' => 'decimal:2',
+            'storno_at' => 'datetime',
         ];
     }
 
