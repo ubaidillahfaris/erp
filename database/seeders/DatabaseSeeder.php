@@ -16,6 +16,11 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $this->call([
+            ModuleSeeder::class,
+            MenuModuleSeeder::class,
+            CustomerTypeSeeder::class,
+            CustomerStatusSeeder::class,
+            NasabahStatusSeeder::class,
             RoleAndPermissionSeeder::class,
             MenuSeeder::class,
             MenuRoleSeeder::class,

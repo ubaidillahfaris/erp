@@ -35,4 +35,9 @@ class Sale extends Model
     {
         return $this->morphMany(Journal::class, 'reference');
     }
+
+    public function saleCustomer(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(SaleCustomer::class);
+    }
 }

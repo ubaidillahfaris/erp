@@ -19,6 +19,7 @@ class Menu extends Model
         'group_name',
         'order_priority',
         'is_active',
+        'module_id',
     ];
 
     protected $casts = [
@@ -64,5 +65,13 @@ class Menu extends Model
     public function roles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Get the module that this menu belongs to.
+     */
+    public function module()
+    {
+        return $this->belongsTo(Module::class);
     }
 }

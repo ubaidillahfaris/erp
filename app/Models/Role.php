@@ -14,4 +14,12 @@ class Role extends SpatieRole
     {
         return $this->belongsToMany(Menu::class);
     }
+
+    /**
+     * Get the modules for the role.
+     */
+    public function modules(): BelongsToMany
+    {
+        return $this->belongsToMany(Module::class, 'module_role');
+    }
 }
