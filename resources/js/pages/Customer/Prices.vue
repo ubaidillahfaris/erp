@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm, router } from '@inertiajs/vue3';
+import { store, update, destroy as destroyPrice } from '@/actions/App/Http/Controllers/CustomerPriceController';
 import { Plus, Edit2, Trash2, History, TrendingUp, Calendar, User, Package, ArrowRight } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
