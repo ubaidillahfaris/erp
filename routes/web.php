@@ -11,7 +11,7 @@ use App\Http\Controllers\ProfitLossController;
 use App\Http\Controllers\QuickCreateSatuanController;
 use App\Http\Controllers\QuickCreateVendorController;
 use App\Http\Controllers\PurchaseController;
-
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\RestockController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\StockController;
@@ -31,6 +31,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     // 0. POINT OF SALE (make sales)
     Route::middleware('permission:make sales')->group(function () {
         Route::get('pos', [PosController::class, 'index'])->name('pos.index');
+        Route::get('pos/price', [PosController::class, 'getPrice'])->name('pos.price');
         Route::post('pos', [PosController::class, 'store'])->name('pos.store');
     });
 
@@ -50,11 +51,16 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::resource('production', ProductionController::class);
     });
 
-    // 2. VENDOR MANAGEMENT (manage vendors)
+    // 2. VENDOR & CUSTOMER MANAGEMENT
     Route::middleware('permission:manage vendors')->group(function () {
         Route::delete('vendors/bulk-destroy', [VendorController::class, 'bulkDestroy'])->name('vendor.bulk-destroy');
         Route::resource('vendors', VendorController::class)->names('vendor');
         Route::post('vendor/quick', QuickCreateVendorController::class)->name('vendor.quick');
+    });
+
+    Route::middleware('permission:manage customers')->group(function () {
+        Route::delete('customers/bulk-destroy', [CustomerController::class, 'bulkDestroy'])->name('customer.bulk-destroy');
+        Route::resource('customers', CustomerController::class)->names('customer');
     });
 
     // 3. PROCUREMENT & STOCK (manage stock)

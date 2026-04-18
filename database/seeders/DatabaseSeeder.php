@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             // BakeryStoreSeeder::class,
             MaterialAndPlasticSeeder::class,
             UserSeeder::class,
+            CustomerMenuSeeder::class,
         ]);
     }
 }

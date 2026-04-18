@@ -113,4 +113,9 @@ class Produk extends Model
     {
         return $this->hasOne(Stock::class, 'produk_id');
     }
+
+    public function customerPrices(): HasMany
+    {
+        return $this->hasMany(CustomerPrice::class, 'produk_id');
+    }
 }

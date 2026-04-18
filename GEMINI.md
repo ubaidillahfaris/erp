@@ -46,6 +46,7 @@ This project has domain-specific skills available. You MUST activate the relevan
 - You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
 - Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
 - Check for existing components to reuse before writing a new one.
+- **UI Layout**: Always use `max-w-7xl` (not `max-w-3xl`) for the main content area in all Vue pages to ensure optimal display on wide screens.
 
 ## Verification Scripts
 

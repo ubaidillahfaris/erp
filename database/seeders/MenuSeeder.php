@@ -88,6 +88,16 @@ class MenuSeeder extends Seeder
         ]);
 
         Menu::create([
+            'name' => 'Master Customer',
+            'route_name' => 'customer.index',
+            'path' => '/customers',
+            'icon' => 'Users',
+            'permission_name' => 'manage customers',
+            'group_name' => 'Master Data',
+            'order_priority' => 15,
+        ]);
+
+        Menu::create([
             'name' => 'Produksi',
             'route_name' => 'production.index',
             'path' => '/production',

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Head, useForm, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import { 
     Search, ShoppingCart, Plus, Minus, 
     CreditCard, Banknote, QrCode, X, 
-    Package, History, Landmark, ChevronRight 
+    Package, History, Landmark, ChevronRight,
+    UserCircle, Info
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,7 +17,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import PageHeader from '@/components/PageHeader.vue';
+import CreatableSelect from '@/components/CreatableSelect.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { cn } from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 
 // Persistent Layout Fix
@@ -23,6 +27,7 @@ defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
     produks: any[];
+    customers: any[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -33,6 +38,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const searchQuery = ref('');
 const cart = ref<any[]>([]);
 const isCheckoutOpen = ref(false);
+const selectedCustomerId = ref<number | null>(null);
 
 const filteredProduks = computed(() => {
     if (!searchQuery.value) return props.produks;
@@ -44,18 +50,69 @@ const filteredProduks = computed(() => {
     );
 });
 
-const addToCart = (produk: any) => {
-    const existingIndex = cart.value.findIndex(item => item.id === produk.id);
+const selectedCustomer = computed(() => {
+    return props.customers.find(c => c.id === selectedCustomerId.value);
+});
+
+/**
+ * Fetch effective price from backend based on customer and unit
+ */
+const fetchPrice = async (produkId: number, satuanId: number, customerId: number | null) => {
+    try {
+        const response = await axios.get('/pos/price', {
+            params: {
+                produk_id: produkId,
+                satuan_id: satuanId,
+                customer_id: customerId
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching price:', error);
+        return { price: 0, price_type: 'retail' };
+    }
+};
+
+const addToCart = async (produk: any) => {
+    const existingIndex = cart.value.findIndex(item => item.produk_id === produk.id);
+    
+    // Fetch appropriate price first
+    const priceData = await fetchPrice(produk.id, produk.satuan_id, selectedCustomerId.value);
+
     if (existingIndex > -1) {
         cart.value[existingIndex].qty += 1;
+        // Update price in case it changed (e.g. if we add logic for bulk discounts later)
+        cart.value[existingIndex].price = priceData.price;
+        cart.value[existingIndex].price_type = priceData.price_type;
     } else {
         cart.value.push({
             ...produk,
             qty: 1,
             produk_id: produk.id,
+            price: priceData.price,
+            price_type: priceData.price_type
         });
     }
 };
+
+/**
+ * Update all prices in cart when customer changes
+ */
+const updateCartPrices = async () => {
+    if (cart.value.length === 0) return;
+    
+    const promises = cart.value.map(async (item, index) => {
+        const priceData = await fetchPrice(item.produk_id, item.satuan_id, selectedCustomerId.value);
+        cart.value[index].price = priceData.price;
+        cart.value[index].price_type = priceData.price_type;
+    });
+
+    await Promise.all(promises);
+};
+
+watch(selectedCustomerId, () => {
+    updateCartPrices();
+});
 
 const removeFromCart = (index: number) => {
     cart.value.splice(index, 1);
@@ -77,6 +134,7 @@ const totalAmount = computed(() => {
 const form = useForm({
     tanggal: new Date().toISOString().split('T')[0],
     payment_method: 'cash',
+    customer_id: null as number | null,
     received_amount: 0,
     change_amount: 0,
     notes: '',
@@ -89,7 +147,17 @@ const changeAmount = computed(() => {
     return diff > 0 ? diff : 0;
 });
 
+// Validation logic
+const isCreditMissingCustomer = computed(() => {
+    return form.payment_method === 'credit' && !selectedCustomerId.value;
+});
+
+const canCheckout = computed(() => {
+    return cart.value.length > 0 && totalAmount.value > 0 && !isCreditMissingCustomer.value;
+});
+
 const handleCheckout = () => {
+    form.customer_id = selectedCustomerId.value;
     form.items = cart.value.map(item => ({
         produk_id: item.produk_id,
         satuan_id: item.satuan_id,
@@ -103,6 +171,7 @@ const handleCheckout = () => {
     form.post('/pos', {
         onSuccess: () => {
             cart.value = [];
+            selectedCustomerId.value = null;
             isCheckoutOpen.value = false;
             toast.success('Transaksi berhasil disimpan!');
         },
@@ -118,6 +187,17 @@ const formatCurrency = (value: number) => {
         currency: 'IDR',
         minimumFractionDigits: 0
     }).format(value || 0);
+};
+
+const getPriceBadge = (type: string) => {
+    switch (type) {
+        case 'custom':
+            return { label: 'Custom', class: 'bg-emerald-50 text-emerald-600 border-emerald-100' };
+        case 'wholesale':
+            return { label: 'Grosir', class: 'bg-blue-50 text-blue-600 border-blue-100' };
+        default:
+            return { label: 'Normal', class: 'bg-slate-50 text-slate-500 border-slate-100' };
+    }
 };
 </script>
 
@@ -170,7 +250,7 @@ const formatCurrency = (value: number) => {
                             </div>
                             <div class="flex items-center gap-1.5">
                                 <span class="text-xs font-bold font-mono text-muted-foreground uppercase">#{{ produk.sku || '--' }}</span>
-                                <span class="text-xs text-muted-foreground italic">In Stock: {{ produk.stok }}</span>
+                                <span class="text-xs text-muted-foreground italic">In Stock: {{ produk.stock }}</span>
                             </div>
                             <div class="mt-2 text-md font-bold text-foreground tabular-nums">{{ formatCurrency(produk.price) }}</div>
                         </div>
@@ -187,17 +267,46 @@ const formatCurrency = (value: number) => {
         <!-- ====== SIDEBAR: Cart ====== -->
         <div class="w-[420px] bg-white border-l border-slate-200 flex flex-col h-full shadow-none">
             
-            <div class="p-8 border-b border-slate-200 flex items-center justify-between">
-                <div class="flex flex-col gap-1">
-                    <h2 class="text-xl font-bold flex items-center gap-2">
-                        <ShoppingCart class="h-5 w-5 text-accent" />
-                        Live Order
-                    </h2>
-                    <p class="text-xs font-medium text-muted-foreground italic">Current session tracking enabled</p>
+            <div class="p-8 border-b border-slate-200 flex flex-col gap-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex flex-col gap-1">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <ShoppingCart class="h-5 w-5 text-accent" />
+                            Live Order
+                        </h2>
+                        <p class="text-xs font-medium text-muted-foreground italic">Current session tracking enabled</p>
+                    </div>
+                    <Badge variant="secondary" class="h-6 rounded-xl px-2 bg-muted/30 text-muted-foreground font-bold tabular-nums">
+                        {{ cart.length }} line items
+                    </Badge>
                 </div>
-                <Badge variant="secondary" class="h-6 rounded-xl px-2 bg-muted/30 text-muted-foreground font-bold tabular-nums">
-                    {{ cart.length }} line items
-                </Badge>
+
+                <!-- Customer Selector -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Select Customer</label>
+                        <button 
+                            v-if="selectedCustomerId" 
+                            @click="selectedCustomerId = null"
+                            class="text-[10px] font-bold text-accent hover:underline flex items-center gap-1"
+                        >
+                            <X class="h-2.5 w-2.5" /> Clear Selector
+                        </button>
+                    </div>
+                    <CreatableSelect
+                        v-model="selectedCustomerId"
+                        :options="customers"
+                        placeholder="Cari nama customer..."
+                        displayExpr="name"
+                        valueExpr="id"
+                        hideLabel
+                        class="w-full"
+                    />
+                    <div v-if="selectedCustomer" class="flex items-center gap-2 px-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div class="h-2 w-2 rounded-full bg-accent animate-pulse"></div>
+                        <span class="text-[11px] font-bold text-foreground">{{ selectedCustomer.type }} Pricing Active</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Items List -->
@@ -210,7 +319,16 @@ const formatCurrency = (value: number) => {
                     <div class="flex items-start justify-between">
                         <div class="flex flex-col gap-0.5 min-w-0 pr-4">
                             <span class="text-[13px] font-bold text-foreground truncate">{{ item.nama }}</span>
-                            <span class="text-xs font-bold text-muted-foreground uppercase tracking-tight">{{ formatCurrency(item.price) }} / {{ item.base_unit || 'PCS' }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-muted-foreground uppercase tracking-tight">{{ formatCurrency(item.price) }} / {{ item.base_unit || 'PCS' }}</span>
+                                <Badge 
+                                    v-if="item.price_type"
+                                    variant="outline" 
+                                    :class="cn('text-[9px] h-4 px-1.5 rounded-md uppercase font-bold tracking-tighter border', getPriceBadge(item.price_type).class)"
+                                >
+                                    {{ getPriceBadge(item.price_type).label }}
+                                </Badge>
+                            </div>
                         </div>
                         <button 
                             class="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all -mt-1 -mr-1"
@@ -246,6 +364,17 @@ const formatCurrency = (value: number) => {
 
             <!-- Totals & Checkout -->
             <div class="p-8 border-t border-slate-200 bg-secondary/5 flex flex-col gap-6">
+                <!-- Validation Warning for Credit -->
+                <div v-if="isCreditMissingCustomer" class="p-3 bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div class="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
+                        <Info class="h-4 w-4 text-destructive" />
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[11px] font-bold text-destructive uppercase tracking-tight">Customer Wajib</span>
+                        <span class="text-[10px] text-destructive/70 font-medium leading-tight">Metode piutang memerlukan identitas customer.</span>
+                    </div>
+                </div>
+
                 <div class="flex flex-col gap-3">
                     <div class="flex justify-between items-center px-1">
                         <span class="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Subtotal Order</span>
@@ -262,7 +391,7 @@ const formatCurrency = (value: number) => {
                     <DialogTrigger as-child>
                         <Button 
                             class="w-full h-14 text-sm font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white disabled:opacity-30 rounded-xl shadow-none shadow-accent/20 transition-all font-mono"
-                            :disabled="cart.length === 0 || totalAmount <= 0"
+                            :disabled="!canCheckout"
                         >
                             Bayar Sekarang
                         </Button>
@@ -302,6 +431,16 @@ const formatCurrency = (value: number) => {
                                                 <component :is="method.icon" class="h-6 w-6" />
                                                 <span class="text-xs font-bold uppercase tracking-tight">{{ method.label }}</span>
                                             </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div v-if="selectedCustomer" class="p-4 bg-muted/30 rounded-xl border border-dashed border-slate-200 flex items-center gap-3">
+                                        <div class="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center border border-accent/20">
+                                            <UserCircle class="h-5 w-5 text-accent" />
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-xs font-bold text-foreground">Customer: {{ selectedCustomer.name }}</span>
+                                            <span class="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">{{ selectedCustomer.type }} Tier</span>
                                         </div>
                                     </div>
                                 </div>
@@ -356,7 +495,7 @@ const formatCurrency = (value: number) => {
                         <DialogFooter class="p-8 bg-secondary/10 border-t border-slate-200 flex items-center justify-end gap-3">
                             <Button variant="ghost" @click="isCheckoutOpen = false" class="text-xs font-bold uppercase tracking-widest rounded-lg">Kembali</Button>
                             <Button 
-                                :disabled="form.processing"
+                                :disabled="form.processing || !canCheckout"
                                 @click="handleCheckout" 
                                 class="h-12 px-10 text-xs font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white rounded-lg shadow-none shadow-accent/10"
                             >
@@ -380,21 +519,6 @@ const formatCurrency = (value: number) => {
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.05);
     border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.1);
-}
-</style>
-
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.05);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.1);

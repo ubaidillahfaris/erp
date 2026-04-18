@@ -25,6 +25,7 @@ class RoleAndPermissionSeeder extends Seeder
             'manage roles',
             'manage products',
             'manage vendors',
+            'manage customers',
             'manage stock',
             'view reports',
             'make sales',

@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
+use App\Models\CustomerPrice;
 use App\Models\Produk;
 use App\Models\Sale;
+use App\Models\SaleCustomer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -33,8 +36,85 @@ class PosController extends Controller
                 ];
             });
 
+        $customers = Customer::whereHas('status', function ($query) {
+            $query->where('name', 'Active');
+        })
+        ->with('type')
+        ->get()
+        ->map(function ($customer) {
+            return [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'type' => $customer->type?->name,
+            ];
+        });
+
         return Inertia::render('Pos/Index', [
             'produks' => $produks,
+            'customers' => $customers,
+        ]);
+    }
+
+    /**
+     * Get price for a specific product, unit, and customer.
+     */
+    public function getPrice(Request $request)
+    {
+        $request->validate([
+            'produk_id' => 'required|exists:produks,id',
+            'satuan_id' => 'required|exists:satuans,id',
+            'customer_id' => 'nullable|exists:customers,id',
+        ]);
+
+        $produkId = $request->produk_id;
+        $satuanId = $request->satuan_id;
+        $customerId = $request->customer_id;
+
+        // Ensure it's a finished good
+        $produk = Produk::where('id', $produkId)->where('type', 'finished_good')->firstOrFail();
+        $currentPrice = $produk->currentPrice;
+
+        if (!$currentPrice) {
+            return response()->json(['price' => 0, 'price_type' => 'retail']);
+        }
+
+        // 1. Check for Custom Price
+        if ($customerId) {
+            $customPrice = CustomerPrice::where('customer_id', $customerId)
+                ->where('produk_id', $produkId)
+                ->where('satuan_id', $satuanId)
+                ->where('is_active', true)
+                ->where(function ($query) {
+                    $query->whereNull('valid_until')
+                        ->orWhere('valid_until', '>=', now()->toDateString());
+                })
+                ->first();
+
+            if ($customPrice) {
+                return response()->json([
+                    'price' => (float) $customPrice->custom_price,
+                    'price_type' => 'custom'
+                ]);
+            }
+        }
+
+        // 2. Fallback to Customer Type logic
+        if ($customerId) {
+            $customer = Customer::with('type')->find($customerId);
+            $typeName = $customer->type?->name;
+
+            if (in_array($typeName, ['Wholesale', 'Dropship'])) {
+                return response()->json([
+                    'price' => (float) $currentPrice->wholesale_price,
+                    'price_type' => 'wholesale'
+                ]);
+            }
+        }
+
+        // 3. Default to Retail Price
+        return response()->json([
+            'price' => (float) $currentPrice->retail_price,
+            'price_type' => 'retail'
         ]);
     }
 
@@ -43,6 +123,7 @@ class PosController extends Controller
         $validated = $request->validate([
             'tanggal' => ['required', 'date'],
             'payment_method' => ['required', 'string'],
+            'customer_id' => ['nullable', 'exists:customers,id', 'required_if:payment_method,credit'],
             'received_amount' => ['nullable', 'numeric', 'min:0'],
             'change_amount' => ['nullable', 'numeric'],
             'notes' => ['nullable', 'string'],
@@ -72,6 +153,7 @@ class PosController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
+            // Save items
             foreach ($validated['items'] as $item) {
                 $sale->items()->create([
                     'produk_id' => $item['produk_id'],
@@ -80,6 +162,14 @@ class PosController extends Controller
                     'price' => $item['price'],
                     'cost' => $item['cost'],
                     'subtotal' => $item['qty'] * $item['price'],
+                ]);
+            }
+
+            // Record Customer Sale
+            if (!empty($validated['customer_id'])) {
+                SaleCustomer::create([
+                    'sale_id' => $sale->id,
+                    'customer_id' => $validated['customer_id'],
                 ]);
             }
 
