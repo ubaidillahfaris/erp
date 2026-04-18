@@ -65,6 +65,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::resource('customers', CustomerController::class)->names('customer');
 
         // Customer Prices
+        Route::get('customer-prices', [CustomerPriceController::class, 'listAll'])->name('customer.prices.all');
         Route::get('customers/{customer}/prices', [CustomerPriceController::class, 'index'])->name('customer.prices.index');
         Route::post('customers/{customer}/prices', [CustomerPriceController::class, 'store'])->name('customer.prices.store');
         Route::put('customers/{customer}/prices/{price}', [CustomerPriceController::class, 'update'])->name('customer.prices.update');

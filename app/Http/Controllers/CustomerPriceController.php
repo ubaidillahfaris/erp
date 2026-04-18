@@ -12,6 +12,29 @@ use Inertia\Inertia;
 class CustomerPriceController extends Controller
 {
     /**
+     * Display a general listing of all customers and their custom prices.
+     */
+    public function listAll(Request $request)
+    {
+        $search = $request->input('search');
+        
+        $customers = Customer::query()
+            ->withCount(['customerPrices as active_prices_count' => function ($query) {
+                $query->where('is_active', true);
+            }])
+            ->when($search, function ($query, $search) {
+                $query->where('name', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(10);
+
+        return Inertia::render('Customer/PricingList', [
+            'customers' => $customers->withQueryString(),
+            'filters' => $request->only(['search']),
+        ]);
+    }
+
+    /**
      * Display a listing of the custom prices for a customer.
      */
     public function index(Customer $customer)

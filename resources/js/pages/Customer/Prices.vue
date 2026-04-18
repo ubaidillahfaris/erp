@@ -97,11 +97,11 @@ const openEditDialog = (price: any) => {
 
 const submit = () => {
     if (editingPriceId.value) {
-        form.put(`/customers/${props.customer.id}/prices/${editingPriceId.value}`, {
+        form.put(update({ customer: props.customer.id, price: editingPriceId.value }).url, {
             onSuccess: () => { isDialogOpen.value = false; },
         });
     } else {
-        form.post(`/customers/${props.customer.id}/prices`, {
+        form.post(store({ customer: props.customer.id }).url, {
             onSuccess: () => { isDialogOpen.value = false; },
         });
     }
@@ -109,7 +109,7 @@ const submit = () => {
 
 const handleDelete = async (priceId: number) => {
     if (await confirmDialog('Nonaktifkan Harga?', 'Harga khusus ini akan dinonaktifkan dan dipindahkan ke riwayat. Lanjutkan?')) {
-        router.delete(`/customers/${props.customer.id}/prices/${priceId}`);
+        router.delete(destroyPrice({ customer: props.customer.id, price: priceId }).url);
     }
 };
 
