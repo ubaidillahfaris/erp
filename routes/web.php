@@ -14,6 +14,7 @@ use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\RestockController;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
@@ -62,6 +63,12 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     Route::middleware('permission:manage customers')->group(function () {
         Route::delete('customers/bulk-destroy', [CustomerController::class, 'bulkDestroy'])->name('customer.bulk-destroy');
         Route::resource('customers', CustomerController::class)->names('customer');
+
+        // Customer Prices
+        Route::get('customers/{customer}/prices', [CustomerPriceController::class, 'index'])->name('customer.prices.index');
+        Route::post('customers/{customer}/prices', [CustomerPriceController::class, 'store'])->name('customer.prices.store');
+        Route::put('customers/{customer}/prices/{price}', [CustomerPriceController::class, 'update'])->name('customer.prices.update');
+        Route::delete('customers/{customer}/prices/{price}', [CustomerPriceController::class, 'destroy'])->name('customer.prices.destroy');
     });
 
     // 3. PROCUREMENT & STOCK (manage stock)
