@@ -81,9 +81,9 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // 3. PROCUREMENT & STOCK (manage stock)
     Route::middleware('permission:manage stock')->group(function () {
-        Route::delete('restock/bulk-destroy', [RestockController::class, 'bulkDestroy'])->name('restock.bulk-destroy');
-        Route::resource('restock', RestockController::class);
-        Route::post('restock/{restock}/settle', [RestockController::class, 'settle'])->name('restock.settle');
+        // Route::delete('restock/bulk-destroy', [RestockController::class, 'bulkDestroy'])->name('restock.bulk-destroy');
+        // Route::resource('restock', RestockController::class);
+        // Route::post('restock/{restock}/settle', [RestockController::class, 'settle'])->name('restock.settle');
 
         // Purchasing (Formal Procurement)
         Route::resource('purchasing', PurchaseController::class)->parameters(['purchasing' => 'purchase']);
@@ -102,11 +102,18 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // 4. FINANCIALS & EXPENSES (view reports)
     Route::middleware('permission:view reports')->group(function () {
-        Route::get('journal', [JournalController::class, 'index'])->name('journal.index');
-        Route::get('accounting/journal', [\App\Http\Controllers\Accounting\JournalController::class, 'index'])->name('accounting.journal.index');
-        Route::resource('accounts', \App\Http\Controllers\Accounting\AccountController::class);
-        Route::get('accounting/trial-balance', [\App\Http\Controllers\Accounting\TrialBalanceController::class, 'index'])->name('accounting.trial-balance.index');
-        Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
+        // Route::get('journal', [JournalController::class, 'index'])->name('journal.index'); // LEGACY - redirected
+        Route::permanentRedirect('journal', '/accounting/journal');
+
+        // Accounting Module
+        Route::prefix('accounting')->group(function () {
+            Route::get('journal', [\App\Http\Controllers\Accounting\JournalController::class, 'index'])->name('accounting.journal.index');
+            Route::get('trial-balance', [\App\Http\Controllers\Accounting\TrialBalanceController::class, 'index'])->name('accounting.trial-balance.index');
+            Route::resource('accounts', \App\Http\Controllers\Accounting\AccountController::class);
+        });
+
+        // Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index'); // LEGACY - redirected
+        Route::permanentRedirect('profit-loss', '/accounting/trial-balance');
 
         Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
         Route::resource('pengeluaran', PengeluaranController::class);

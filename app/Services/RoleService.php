@@ -146,6 +146,12 @@ class RoleService
     protected function filterMenusByStatus($menus, User $user, array $authorizedMenuIds)
     {
         return $menus->filter(function ($menu) use ($user, $authorizedMenuIds) {
+            // 0. Global Hard-Kill for Deprecated Modules (Soft-Kill)
+            // Hide Restock from all users to force transition to Purchasing
+            if (str_contains($menu->path ?? '', 'restock')) {
+                return false;
+            }
+
             // Superadmin always has access to all menus (Safety first!)
             if ($user->hasRole('superadmin')) {
                 return true;

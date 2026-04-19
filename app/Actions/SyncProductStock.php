@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\DB;
 class SyncProductStock
 {
     /**
-     * Rebuild the entire stock history from scratch based on Restocks and Productions.
+     * Rebuild the entire stock history from scratch based on Restocks,
+     * Purchases, and Productions.
      */
     public function handle(): void
     {
@@ -20,28 +21,59 @@ class SyncProductStock
             // 1. Clear existing history (PostgreSQL compatible)
             DB::statement('TRUNCATE TABLE stock_movements, stocks RESTART IDENTITY CASCADE;');
 
-            // 2. Sync from Restocks
-            Restock::with('items')->chunk(100, function ($restocks) {
-                foreach ($restocks as $restock) {
-                    foreach ($restock->items as $item) {
-                        app(RecordStockMovement::class)->handle([
-                            'produk_id' => $item->produk_id,
-                            'satuan_id' => $item->satuan_id,
-                            'type' => 'in',
-                            'jumlah' => $item->jumlah,
-                            'reference_type' => 'restock',
-                            'reference_id' => $restock->id,
-                            'keterangan' => "Initial sync from Restock ref: {$restock->id}",
-                        ]);
-                    }
-                }
+            // 2. Fetch all sources and sort by date for accurate Stock Card
+            // Legacy Restocks
+            $restocks = Restock::with('items')->get()->map(function ($restock) {
+                return [
+                    'date' => $restock->tanggal,
+                    'type' => 'restock',
+                    'model' => $restock,
+                ];
             });
 
-            // 3. Sync from Productions
-            Production::with('items.produk')->where('status', 'completed')->chunk(100, function ($productions) {
-                foreach ($productions as $production) {
-                    // Ingredient Usage
-                    foreach ($production->items as $pItem) {
+            // Primary Purchases (Finalized only)
+            $purchases = \App\Models\Purchase::where('status', 'finalized')
+                ->with('items')
+                ->get()
+                ->map(function ($purchase) {
+                    return [
+                        'date' => $purchase->tanggal,
+                        'type' => 'purchase',
+                        'model' => $purchase,
+                    ];
+                });
+
+            // Productions (Completed only)
+            $productions = Production::with(['items.produk', 'produk'])->where('status', 'completed')
+                ->get()
+                ->map(function ($production) {
+                    return [
+                        'date' => $production->created_at, // Use created_at as fallback for production date
+                        'type' => 'production',
+                        'model' => $production,
+                    ];
+                });
+
+            // Merge and Sort chronologically
+            $merged = $restocks->concat($purchases)->concat($productions)
+                ->sortBy('date');
+
+            // 3. Process merged entries
+            foreach ($merged as $entry) {
+                $type = $entry['type'];
+                $model = $entry['model'];
+
+                if ($type === 'restock') {
+                    foreach ($model->items as $item) {
+                        $this->recordInbound($item->produk_id, $item->satuan_id, $item->jumlah, 'restock', $model->id, "Legacy Restock ref: {$model->id}");
+                    }
+                } elseif ($type === 'purchase') {
+                    foreach ($model->items as $item) {
+                        $this->recordInbound($item->produk_id, $item->satuan_id, $item->jumlah, 'purchase', $model->id, "Purchase ref: {$model->id}");
+                    }
+                } elseif ($type === 'production') {
+                    // Ingredient Usage (OUT)
+                    foreach ($model->items as $pItem) {
                         if ($pItem->actual_qty > 0) {
                             app(RecordStockMovement::class)->handle([
                                 'produk_id' => $pItem->produk_id,
@@ -49,26 +81,31 @@ class SyncProductStock
                                 'type' => 'out',
                                 'jumlah' => $pItem->actual_qty,
                                 'reference_type' => 'production_usage',
-                                'reference_id' => $production->id,
-                                'keterangan' => "Initial sync production usage SKU: {$production->sku}",
+                                'reference_id' => $model->id,
+                                'keterangan' => "Initial sync production usage SKU: {$model->sku}",
                             ]);
                         }
                     }
 
-                    // Yield Produced
-                    if ($production->actual_yield > 0) {
-                        app(RecordStockMovement::class)->handle([
-                            'produk_id' => $production->produk_id,
-                            'satuan_id' => $production->produk->satuan_id,
-                            'type' => 'in',
-                            'jumlah' => $production->actual_yield,
-                            'reference_type' => 'production_yield',
-                            'reference_id' => $production->id,
-                            'keterangan' => "Initial sync production yield SKU: {$production->sku}",
-                        ]);
+                    // Yield Produced (IN)
+                    if ($model->actual_yield > 0) {
+                        $this->recordInbound($model->produk_id, $model->produk->satuan_id, $model->actual_yield, 'production_yield', $model->id, "Initial sync production yield SKU: {$model->sku}");
                     }
                 }
-            });
+            }
         });
+    }
+
+    protected function recordInbound($produkId, $satuanId, $jumlah, $refType, $refId, $keterangan): void
+    {
+        app(RecordStockMovement::class)->handle([
+            'produk_id' => $produkId,
+            'satuan_id' => $satuanId,
+            'type' => 'in',
+            'jumlah' => $jumlah,
+            'reference_type' => $refType,
+            'reference_id' => $refId,
+            'keterangan' => $keterangan,
+        ]);
     }
 }

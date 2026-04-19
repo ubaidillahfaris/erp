@@ -26,6 +26,17 @@ class Restock extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function () {
+            throw new \LogicException('Restock module is deprecated. Please use the Purchasing module.');
+        });
+
+        static::updating(function () {
+            throw new \LogicException('Restock module is deprecated and records are now read-only.');
+        });
+    }
+
     public function items()
     {
         return $this->hasMany(RestockItem::class);

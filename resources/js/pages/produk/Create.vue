@@ -147,7 +147,7 @@ const handleCreateSatuan = async (nama: string) => {
                         </div>
                         <div class="flex flex-col gap-2">
                             <CreatableSelect v-model="form.satuan_id" :options="satuans" label="Satuan"
-                                placeholder="Pilih atau Ketik untuk Tambah..." :error="form.errors.satuan_id"
+                                placeholder="Pilih atau Ketik untuk Tambah..." :error="form.errors.satuan_id" />
                         </div>
                     </div>
                     

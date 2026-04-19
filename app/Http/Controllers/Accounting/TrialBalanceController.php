@@ -18,7 +18,8 @@ class TrialBalanceController extends Controller
                 ->withSum('journalItems', 'debit')
                 ->withSum('journalItems', 'credit')
                 ->orderBy('code')
-                ->get();
+                ->get()
+                ->values();
         });
 
         $grandTotalDebit = 0;

@@ -77,7 +77,7 @@ class FinalizePurchase
     }
 
     /**
-     * Mirror existing logic from RestockController to maintain consistency.
+     * Update the current active purchase price for a product.
      */
     protected function updateCurrentPrice(int $produkId, int $satuanId, float $purchasePrice): void
     {
