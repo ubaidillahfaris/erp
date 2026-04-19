@@ -7,6 +7,7 @@ import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanC
 import CreatableSelect from '@/components/CreatableSelect.vue';
 import FormActionButtons from '@/components/FormActionButtons.vue';
 import InputError from '@/components/InputError.vue';
+import Combobox from '@/components/ui/combobox/Combobox.vue';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -139,9 +140,9 @@ const handleCreateSatuan = async (nama: string) => {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <CreatableSelect v-model="form.type" :options="productTypes" label="Tipe Produk"
-                                placeholder="Pilih Tipe" display-expr="label" value-expr="value"
-                                :error="form.errors.type" />
+                            <Label>Tipe Produk</Label>
+                            <Combobox v-model="form.type" :options="productTypes" placeholder="Pilih Tipe" />
+                            <InputError :message="form.errors.type" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <CreatableSelect v-model="form.satuan_id" :options="satuans" label="Satuan"

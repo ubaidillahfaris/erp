@@ -6,6 +6,7 @@ import { computed } from 'vue';
 import { index as bomIndex, update } from '@/actions/App/Http/Controllers/BOMController';
 import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
 import CreatableSelect from '@/components/CreatableSelect.vue';
+import Combobox from '@/components/ui/combobox/Combobox.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -203,9 +204,13 @@ const submit = () => {
                 <div class="p-6 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
-                            <CreatableSelect v-model="form.produk_id" :options="produks"
-                                label="Barang Jadi / Setengah Jadi" placeholder="Pilih Produk"
-                                :error="form.errors.produk_id" />
+                            <Label>Barang Jadi / Setengah Jadi</Label>
+                            <Combobox 
+                                v-model="form.produk_id"
+                                :options="produks.map(p => ({ value: p.id.toString(), label: p.nama }))"
+                                placeholder="Pilih Produk"
+                            />
+                            <InputError :message="form.errors.produk_id" />
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -284,9 +289,12 @@ const submit = () => {
                         <TableBody>
                             <TableRow v-for="(item, idx) in form.items" :key="idx">
                                 <TableCell>
-                                    <CreatableSelect v-model="item.produk_id" :options="bahanBakus"
-                                        placeholder="Pilih Bahan" hide-label hide-error
-                                        @update:model-value="onBahanSelected(item, $event)" />
+                                    <Combobox
+                                        v-model="item.produk_id"
+                                        :options="bahanBakus.map(b => ({ value: b.id.toString(), label: b.nama }))"
+                                        placeholder="Pilih Bahan"
+                                        @update:modelValue="onBahanSelected(item, $event)"
+                                    />
                                 </TableCell>
                                 <TableCell>
                                     <Input type="number" step="0.0001" v-model="item.jumlah" />

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import InputPhone from '@/components/ui/input/InputPhone.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import Map from '@/components/Map.vue';
 import SectionHeader from '@/components/SectionHeader.vue';
@@ -79,7 +80,7 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <Label for="telepon" class="text-sm font-medium text-foreground px-0.5">Telepon</Label>
-                            <Input id="telepon" v-model="form.telepon" placeholder="Nomor Telepon" class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.telepon" />
+                            <InputPhone v-model="form.telepon" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <Label for="email" class="text-sm font-medium text-foreground px-0.5">Email</Label>

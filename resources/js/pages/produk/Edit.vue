@@ -24,6 +24,8 @@ import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanC
 import CreatableSelect from '@/components/CreatableSelect.vue';
 import FormActionButtons from '@/components/FormActionButtons.vue';
 import InputError from '@/components/InputError.vue';
+import Combobox from '@/components/ui/combobox/Combobox.vue';
+import InputCurrency from '@/components/ui/input/InputCurrency.vue';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -144,15 +146,9 @@ const handleCreateSatuan = async (nama: string, onCreated?: (id: number) => void
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <CreatableSelect 
-                                v-model="form.type" 
-                                :options="productTypes" 
-                                label="Tipe Produk"
-                                placeholder="Pilih Tipe" 
-                                display-expr="label"
-                                value-expr="value"
-                                :error="form.errors.type" 
-                            />
+                            <Label>Tipe Produk</Label>
+                            <Combobox v-model="form.type" :options="productTypes" placeholder="Pilih Tipe" />
+                            <InputError :message="form.errors.type" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <CreatableSelect v-model="form.satuan_id" :options="satuans" label="Satuan"
@@ -197,18 +193,12 @@ const handleCreateSatuan = async (nama: string, onCreated?: (id: number) => void
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="flex flex-col gap-2">
                                 <Label for="retail_price">Harga Jual Eceran</Label>
-                                <div class="relative flex items-center">
-                                    <span class="absolute left-3 text-muted-foreground text-sm">Rp</span>
-                                    <Input id="retail_price" type="number" v-model="form.retail_price" class="pl-10" />
-                                </div>
+                                <InputCurrency id="retail_price" v-model="form.retail_price" required />
                                 <InputError :message="form.errors.retail_price" />
                             </div>
                             <div class="flex flex-col gap-2">
                                 <Label for="wholesale_price">Harga Grosir (Optional)</Label>
-                                <div class="relative flex items-center">
-                                    <span class="absolute left-3 text-muted-foreground text-sm">Rp</span>
-                                    <Input id="wholesale_price" type="number" v-model="form.wholesale_price" class="pl-10" />
-                                </div>
+                                <InputCurrency id="wholesale_price" v-model="form.wholesale_price" />
                                 <InputError :message="form.errors.wholesale_price" />
                             </div>
                         </div>

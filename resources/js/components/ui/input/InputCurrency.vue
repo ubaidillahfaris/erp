@@ -23,22 +23,36 @@ const formatDisplayValue = (val: number | null): string => {
 const displayValue = computed({
     get: () => formatDisplayValue(props.modelValue),
     set: (val: string) => {
-        // Strip everything except digits
-        const numericValue = parseInt(val.replace(/\D/g, ''), 10);
-        emit('update:modelValue', isNaN(numericValue) ? null : numericValue);
+        // Strip everything except digits and negative sign at start
+        const isNegative = val.trim().startsWith('-');
+        const numericPart = val.replace(/\D/g, '');
+        const numericValue = parseInt(numericPart, 10);
+        
+        if (isNaN(numericValue)) {
+            emit('update:modelValue', null);
+        } else {
+            emit('update:modelValue', isNegative ? -numericValue : numericValue);
+        }
     },
 });
 
 const handleInput = (event: Event) => {
     const target = event.target as HTMLInputElement;
-    const rawValue = target.value.replace(/\D/g, '');
+    const value = target.value;
+    
+    // Check if it's negative
+    const isNegative = value.trim().startsWith('-');
+    // Strip everything except digits
+    const numericPart = value.replace(/\D/g, '');
     
     // Update model value
-    const numericValue = rawValue === '' ? null : parseInt(rawValue, 10);
-    emit('update:modelValue', numericValue);
+    const numericValue = numericPart === '' ? null : parseInt(numericPart, 10);
+    const finalValue = (numericValue !== null && isNegative) ? -numericValue : numericValue;
     
-    // Re-format the input field display immediately to keep cursor in check and formatting correct
-    target.value = formatDisplayValue(numericValue);
+    emit('update:modelValue', finalValue);
+    
+    // Re-format the input field display
+    target.value = (isNegative && (numericValue === null || numericValue === 0)) ? '-' : formatDisplayValue(finalValue);
 };
 </script>
 

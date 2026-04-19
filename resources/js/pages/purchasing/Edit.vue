@@ -4,6 +4,9 @@ import { Plus, Trash2, ArrowLeft, Save, FileIcon, ImageIcon, X, Building2 } from
 import { computed, ref, watch } from 'vue';
 import { index } from '@/actions/App/Http/Controllers/PurchaseController';
 import CreatableSelect from '@/components/CreatableSelect.vue';
+import Combobox from '@/components/ui/combobox/Combobox.vue';
+import InputCurrency from '@/components/ui/input/InputCurrency.vue';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +30,7 @@ import FileDropzone from '@/components/FileDropzone.vue';
 import QuickVendorModal from '@/components/QuickVendorModal.vue';
 import type { BreadcrumbItem } from '@/types';
 import { useConfirm } from '@/composables/useConfirm';
+import { toast } from 'vue-sonner';
 
 const props = defineProps<{ 
     purchase: any;
@@ -75,7 +79,7 @@ const removeItem = (idx: number) => {
     form.items.splice(idx, 1);
 };
 
-const handleProductChange = (idx: number, productId: string | number) => {
+const handleProductChange = (idx: number, productId: any) => {
     const product = props.produks.find(p => p.id == productId);
     if (product) {
         form.items[idx].satuan_id = product.satuan_id;
@@ -88,7 +92,7 @@ const handleProductChange = (idx: number, productId: string | number) => {
 watch(() => form.transaction_type, (newType) => {
     if (newType !== 'purchase') {
         form.vendor_id = null;
-        form.items.forEach(item => {
+        form.items.forEach((item: any) => {
             item.harga_satuan = 0;
         });
     }
@@ -118,7 +122,7 @@ const formatSize = (bytes: number) => {
 };
 
 const totalBiaya = computed(() => {
-    return form.items.reduce((total, item) => {
+    return form.items.reduce((total: number, item: any) => {
         return total + (Number(item.jumlah) * Number(item.harga_satuan));
     }, 0);
 });
@@ -192,21 +196,18 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="flex flex-col gap-2">
                             <div class="flex items-center justify-between">
-                                <Label for="vendor_id">Supplier / Vendor</Label>
+                                <Label>Supplier / Vendor</Label>
                                 <button type="button" v-if="form.transaction_type === 'purchase'" @click="isQuickVendorOpen = true" class="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
                                     <Plus class="h-3 w-3" /> Rekanan Baru
                                 </button>
                             </div>
-                            <CreatableSelect 
+                            <Combobox 
                                 v-model="form.vendor_id" 
-                                :options="vendors" 
+                                :options="vendors.map(v => ({ value: v.id.toString(), label: v.nama }))" 
                                 placeholder="Pilih Vendor..." 
-                                display-expr="nama"
-                                value-expr="id"
                                 :disabled="form.transaction_type !== 'purchase'"
-                                hide-label
                             />
-                            <p v-if="form.errors.vendor_id" class="text-sm text-destructive">{{ form.errors.vendor_id }}</p>
+                            <InputError :message="form.errors.vendor_id" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <Label for="no_invoice">No Invoice / Ref (Opsional)</Label>
@@ -248,16 +249,13 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                             <TableBody>
                                 <TableRow v-for="(item, idx) in form.items" :key="idx">
                                     <TableCell class="pl-6 align-top pt-4">
-                                        <CreatableSelect 
+                                        <Combobox 
                                             v-model="item.produk_id" 
-                                            :options="produks" 
+                                            :options="produks.map(p => ({ value: p.id.toString(), label: p.nama }))" 
                                             placeholder="Pilih Produk..."
-                                            hide-label
-                                            display-expr="nama"
-                                            value-expr="id"
-                                            @update:modelValue="(val) => handleProductChange(idx, val)"
+                                            @update:modelValue="(val: any) => handleProductChange(idx as number, val)"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.produk_id`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.produk_id`] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.produk_id` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.produk_id` as keyof typeof form.errors] }}</p>
                                     </TableCell>
                                     <!-- Select Satuan -->
                                     <TableCell class="align-top pt-4">
@@ -269,28 +267,24 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                                             display-expr="simbol"
                                             value-expr="id"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.satuan_id`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.satuan_id`] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.satuan_id` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.satuan_id` as keyof typeof form.errors] }}</p>
                                     </TableCell>
                                     <!-- Input Kuantitas -->
                                     <TableCell class="align-top pt-4">
                                         <Input type="number" step="0.0001" v-model="item.jumlah" required min="0.0001" class="text-right" />
-                                        <p v-if="form.errors[`items.${idx}.jumlah`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.jumlah`] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.jumlah` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.jumlah` as keyof typeof form.errors] }}</p>
                                     </TableCell>
                                     <!-- Input Harga Satuan -->
                                     <TableCell class="align-top pt-4">
-                                        <Input 
-                                            type="number" 
+                                        <InputCurrency 
                                             v-model="item.harga_satuan" 
-                                            required 
-                                            min="0" 
-                                            class="text-right"
                                             :disabled="form.transaction_type !== 'purchase'"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.harga_satuan`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.harga_satuan`] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.harga_satuan` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.harga_satuan` as keyof typeof form.errors] }}</p>
                                     </TableCell>
                                     <!-- Hapus -->
                                     <TableCell class="text-right pr-6 align-top pt-4">
-                                        <Button type="button" variant="ghost" size="icon" @click="removeItem(idx)" :disabled="form.items.length <= 1">
+                                        <Button type="button" variant="ghost" size="icon" @click="removeItem(idx as number)" :disabled="form.items.length <= 1">
                                             <Trash2 class="h-4 w-4 text-destructive" />
                                         </Button>
                                     </TableCell>
@@ -351,7 +345,7 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                                 v-model="form.attachments"
                                 :max-size-m-b="20"
                                 accept="image/*,application/pdf"
-                                @error="(msg) => $toast?.error?.(msg)"
+                                @error="(msg) => toast.error(msg)"
                             />
                             <p v-if="form.errors.attachments" class="text-xs text-destructive mt-2">{{ form.errors.attachments }}</p>
                         </div>
@@ -377,9 +371,11 @@ const deleteExistingAttachment = async (id: string, name: string) => {
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 input[type=number] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 </style>

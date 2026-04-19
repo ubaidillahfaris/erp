@@ -2,9 +2,13 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Trash2, ArrowLeft, Save, Plus } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { index as restockIndex, update } from '@/actions/App/Http/Controllers/RestockController';
+import { update, index as restockIndex } from '@/actions/App/Http/Controllers/RestockController';
 import CreatableSelect from '@/components/CreatableSelect.vue';
+import Combobox from '@/components/ui/combobox/Combobox.vue';
+import InputCurrency from '@/components/ui/input/InputCurrency.vue';
+import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -158,15 +162,13 @@ const sisaPembayaran = computed(() => {
                             </p>
                         </div>
                         <div class="space-y-2">
-                            <CreatableSelect 
+                            <Label>Supplier / Vendor</Label>
+                            <Combobox 
                                 v-model="form.vendor_id" 
-                                :options="vendors" 
-                                label="Supplier / Vendor"
+                                :options="vendors.map(v => ({ value: v.id.toString(), label: v.nama }))" 
                                 placeholder="Pilih Vendor" 
-                                display-expr="nama"
-                                value-expr="id"
-                                :error="form.errors.vendor_id" 
                             />
+                            <InputError :message="form.errors.vendor_id" />
                         </div>
                         <div class="space-y-2">
                             <Label for="keterangan">Keterangan Tambahan (Opsional)</Label>
@@ -179,19 +181,17 @@ const sisaPembayaran = computed(() => {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
-                            <CreatableSelect 
+                            <Label>Status Pembayaran</Label>
+                            <Combobox 
                                 v-model="form.status_pembayaran" 
                                 :options="paymentStatuses" 
-                                label="Status Pembayaran"
                                 placeholder="Pilih Status" 
-                                display-expr="label"
-                                value-expr="value"
-                                :error="form.errors.status_pembayaran" 
                             />
+                            <InputError :message="form.errors.status_pembayaran" />
                         </div>
                         <div class="space-y-2" v-if="form.status_pembayaran !== 'lunas'">
                             <Label for="total_bayar">Jumlah Dibayar (DP)</Label>
-                            <Input id="total_bayar" type="number" v-model="form.total_bayar" />
+                            <InputCurrency id="total_bayar" v-model="form.total_bayar" />
                             <p v-if="form.status_pembayaran === 'bayar_berkala'" class="text-xs text-muted-foreground italic">
                                 Sisa hutang: {{ formatCurrency(sisaPembayaran) }}
                             </p>
@@ -228,11 +228,10 @@ const sisaPembayaran = computed(() => {
                             <TableRow v-for="(item, idx) in form.items" :key="idx">
                                 <!-- Select Bahan -->
                                 <TableCell>
-                                    <CreatableSelect 
+                                    <Combobox 
                                         v-model="item.produk_id" 
-                                        :options="bahanBakus" 
+                                        :options="bahanBakus.map(b => ({ value: b.id.toString(), label: b.nama }))" 
                                         placeholder="Pilih Bahan"
-                                        hide-label
                                         @update:modelValue="(val: any) => handleProductChange(idx as number, val)"
                                     />
                                     <InputError :message="form.errors[`items.${idx}.produk_id` as keyof typeof form.errors]" />
@@ -256,7 +255,7 @@ const sisaPembayaran = computed(() => {
                                 </TableCell>
                                 <!-- Input Harga Satuan -->
                                 <TableCell>
-                                    <Input type="number" v-model="item.harga_satuan" required min="0" />
+                                    <InputCurrency v-model="item.harga_satuan" required />
                                     <InputError :message="form.errors[`items.${idx}.harga_satuan` as keyof typeof form.errors]" />
                                 </TableCell>
                                 <!-- Subtotal Text -->
@@ -304,7 +303,7 @@ const sisaPembayaran = computed(() => {
                                     <InputError :message="form.errors[`biaya_tambahan.${adjIdx}.nama`]" />
                                 </TableCell>
                                 <TableCell>
-                                    <Input type="number" v-model="adj.nominal" placeholder="Gunakan minus untuk diskon" />
+                                    <InputCurrency v-model="adj.nominal" placeholder="Gunakan minus untuk diskon" />
                                     <InputError :message="form.errors[`biaya_tambahan.${adjIdx}.nominal`]" />
                                 </TableCell>
                                 <TableCell>
