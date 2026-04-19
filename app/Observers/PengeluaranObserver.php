@@ -14,6 +14,8 @@ class PengeluaranObserver
     {
         $tanggal = $pengeluaran->tanggal instanceof \Carbon\CarbonInterface ? $pengeluaran->tanggal->format('Y-m-d') : $pengeluaran->tanggal;
 
+        // Journal creation DISABLED - Transition to Double-Entry
+        /*
         Journal::create([
             'tanggal' => $tanggal,
             'type' => 'kredit',
@@ -24,12 +26,15 @@ class PengeluaranObserver
             'reference_id' => $pengeluaran->id,
             'description' => "{$pengeluaran->jenis_pengeluaran}: {$pengeluaran->nama_pengeluaran}" . ($pengeluaran->keterangan ? " ({$pengeluaran->keterangan})" : ""),
         ]);
+        */
     }
 
     public function updated(Pengeluaran $pengeluaran): void
     {
         $tanggal = $pengeluaran->tanggal instanceof \Carbon\CarbonInterface ? $pengeluaran->tanggal->format('Y-m-d') : $pengeluaran->tanggal;
 
+        // Journal update DISABLED - Transition to Double-Entry
+        /*
         $journal = Journal::where('reference_type', Pengeluaran::class)
             ->where('reference_id', $pengeluaran->id)
             ->first();
@@ -41,6 +46,7 @@ class PengeluaranObserver
                 'description' => "{$pengeluaran->jenis_pengeluaran}: {$pengeluaran->nama_pengeluaran}" . ($pengeluaran->keterangan ? " ({$pengeluaran->keterangan})" : ""),
             ]);
         }
+        */
     }
 
     /**
@@ -48,9 +54,12 @@ class PengeluaranObserver
      */
     public function deleted(Pengeluaran $pengeluaran): void
     {
+        // Delete journal entries (DISABLED - Journals are now read-only)
+        /*
         Journal::where('reference_type', Pengeluaran::class)
             ->where('reference_id', $pengeluaran->id)
             ->get()
             ->each->delete();
+        */
     }
 }

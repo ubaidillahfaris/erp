@@ -15,6 +15,7 @@ class Sale extends Model
         'payment_method',
         'notes',
         'status',
+        'cogs_amount',
         'storno_at',
         'storno_reason',
     ];
@@ -26,6 +27,7 @@ class Sale extends Model
             'total_amount' => 'decimal:2',
             'received_amount' => 'decimal:2',
             'change_amount' => 'decimal:2',
+            'cogs_amount' => 'integer',
             'storno_at' => 'datetime',
         ];
     }

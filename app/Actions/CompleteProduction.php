@@ -2,13 +2,22 @@
 
 namespace App\Actions;
 
+use App\DTOs\JournalEntryData;
+use App\DTOs\JournalItemData;
+use App\Exceptions\MissingOverheadRateException;
+use App\Models\Account;
 use App\Models\Production;
 use App\Models\Produk;
-use App\Models\SatuanConversion;
+use App\Services\JournalService;
 use Illuminate\Support\Facades\DB;
 
 class CompleteProduction
 {
+    public function __construct(
+        protected JournalService $journalService
+    ) {
+    }
+
     /**
      * Handle the completion of a Production Run.
      * Deduct stock for ingredients and increase stock for the finished product.
@@ -28,8 +37,6 @@ class CompleteProduction
                     $qtyToDeduct = $item->actual_qty / ($ratio ?: 1);
                 }
 
-                // There is no explicit stock column on the `produks` table in this app structure based on usual Warung schema,
-                // but if we were managing stock via transactions, we'd record the usage here.
                 // Record Stock Movement for Ingredient Usage
                 app(\App\Actions\RecordStockMovement::class)->handle([
                     'produk_id' => $item->produk_id,
@@ -55,6 +62,12 @@ class CompleteProduction
 
             // 3. Update the HPP of the finished product based on actual yield
             $finishedProduk = Produk::with('currentPrice')->find($production->produk_id);
+            
+            // Hard Constraint: Overhead Rate Validation
+            if (($finishedProduk->overhead_rate_per_unit ?? 0) <= 0) {
+                throw new MissingOverheadRateException($finishedProduk->nama);
+            }
+
             if ($production->actual_yield > 0) {
                 $newHpp = $production->total_cost / $production->actual_yield;
 
@@ -71,6 +84,38 @@ class CompleteProduction
                     ]);
                 }
             }
+
+            // 4. Record Financial Journal (Double-Entry)
+            $materialCostCents = (int) round((float) ($production->total_cost ?? 0) * 100);
+            $overheadAppliedCents = (int) round((float) $finishedProduk->overhead_rate_per_unit * $production->actual_yield);
+
+            $journalData = new JournalEntryData(
+                items: [
+                    // Debit 1302: Persediaan Barang Jadi = material_cost + overhead_applied
+                    new JournalItemData(
+                        account_id: Account::findByCode('1302')->id,
+                        amount: $materialCostCents + $overheadAppliedCents,
+                        type: 'debit'
+                    ),
+                    // Credit 1301: Persediaan Bahan Baku = material_cost
+                    new JournalItemData(
+                        account_id: Account::findByCode('1301')->id,
+                        amount: $materialCostCents,
+                        type: 'credit'
+                    ),
+                    // Credit 5102: Biaya Overhead = overhead_applied
+                    new JournalItemData(
+                        account_id: Account::findByCode('5102')->id,
+                        amount: $overheadAppliedCents,
+                        type: 'credit'
+                    ),
+                ],
+                tanggal: $production->tanggal,
+                description: "Produksi selesai: {$production->sku}",
+                journalable: $production
+            );
+
+            $this->journalService->record($journalData);
         });
     }
 }

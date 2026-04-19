@@ -28,6 +28,7 @@ class StoreProdukRequest extends FormRequest
             'retail_price' => ['nullable', 'numeric', 'min:0'],
             'wholesale_price' => ['nullable', 'numeric', 'min:0'],
             'track_stock' => ['nullable', 'boolean'],
+            'overhead_rate' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }

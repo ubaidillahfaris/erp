@@ -55,6 +55,13 @@ class ProdukController extends Controller
     public function store(StoreProdukRequest $request)
     {
         $validated = $request->validated();
+
+        if ($request->has('overhead_rate')) {
+            $validated['overhead_rate_per_unit'] = $request->input('overhead_rate') !== null
+                ? (int) round((float) $request->input('overhead_rate') * 100)
+                : null;
+        }
+
         $produk = Produk::create($validated);
 
         if (isset($validated['retail_price']) || isset($validated['wholesale_price'])) {
@@ -83,6 +90,7 @@ class ProdukController extends Controller
     {
         return inertia('produk/Show', [
             'produk' => $produk->load('satuan'),
+            'overhead_rate' => $produk->overhead_rate_per_unit ? $produk->overhead_rate_per_unit / 100 : null,
         ]);
     }
 
@@ -96,12 +104,20 @@ class ProdukController extends Controller
         return inertia('produk/Edit', [
             'produk' => $produk,
             'satuans' => Satuan::all(['id', 'nama', 'simbol']),
+            'overhead_rate' => $produk->overhead_rate_per_unit ? $produk->overhead_rate_per_unit / 100 : null,
         ]);
     }
 
     public function update(UpdateProdukRequest $request, Produk $produk)
     {
         $validated = $request->validated();
+
+        if ($request->has('overhead_rate')) {
+            $validated['overhead_rate_per_unit'] = $request->input('overhead_rate') !== null
+                ? (int) round((float) $request->input('overhead_rate') * 100)
+                : null;
+        }
+
         $produk->update($validated);
 
         // Update pricing if provided

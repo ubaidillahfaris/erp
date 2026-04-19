@@ -44,6 +44,7 @@ const form = useForm({
     satuan_id: '',
     type: 'finished_good',
     track_stock: true,
+    overhead_rate: 0,
     add_another: false });
 
 const submit = (addAnother = false) => {
@@ -147,8 +148,25 @@ const handleCreateSatuan = async (nama: string) => {
                         <div class="flex flex-col gap-2">
                             <CreatableSelect v-model="form.satuan_id" :options="satuans" label="Satuan"
                                 placeholder="Pilih atau Ketik untuk Tambah..." :error="form.errors.satuan_id"
-                                @create="handleCreateSatuan" />
                         </div>
+                    </div>
+                    
+                    <div v-if="form.type === 'finished_good'" class="flex flex-col gap-2 p-4 rounded-xl bg-amber-50/50 border border-amber-100">
+                        <Label for="overhead_rate" class="text-amber-900 font-bold">Biaya Overhead per Unit</Label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-2.5 text-sm text-amber-500 font-bold">Rp</span>
+                            <Input 
+                                id="overhead_rate" 
+                                type="number" 
+                                step="0.01" 
+                                min="0" 
+                                v-model="form.overhead_rate" 
+                                class="pl-9 bg-white border-amber-200 focus-visible:ring-amber-500" 
+                                placeholder="0.00"
+                            />
+                        </div>
+                        <p class="text-xs text-amber-600 italic">Estimasi biaya listrik & produksi per unit output</p>
+                        <InputError :message="form.errors.overhead_rate" />
                     </div>
 
                     <div class="flex items-center space-x-3 py-4 border-b border-muted/50">

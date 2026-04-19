@@ -26,6 +26,7 @@ class Produk extends Model
         'satuan_id',
         'type',
         'track_stock',
+        'overhead_rate_per_unit',
     ];
 
     /**
@@ -55,6 +56,7 @@ class Produk extends Model
             'stok_minimal' => 'integer',
             'is_active' => 'boolean',
             'track_stock' => 'boolean',
+            'overhead_rate_per_unit' => 'integer',
         ];
     }
 

@@ -9,6 +9,7 @@ use App\Models\Production;
 use App\Models\StockMovement;
 use App\Models\Journal;
 use App\Models\Pengeluaran;
+use App\Models\Purchase;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Observers\ProdukObserver;
@@ -19,6 +20,7 @@ use App\Observers\JournalObserver;
 use App\Observers\PengeluaranObserver;
 use App\Observers\SaleObserver;
 use App\Observers\SaleItemObserver;
+use App\Observers\PurchaseObserver;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
         Pengeluaran::observe(PengeluaranObserver::class);
         Sale::observe(SaleObserver::class);
         SaleItem::observe(SaleItemObserver::class);
+        Purchase::observe(PurchaseObserver::class);
 
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()

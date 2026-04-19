@@ -103,6 +103,9 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     // 4. FINANCIALS & EXPENSES (view reports)
     Route::middleware('permission:view reports')->group(function () {
         Route::get('journal', [JournalController::class, 'index'])->name('journal.index');
+        Route::get('accounting/journal', [\App\Http\Controllers\Accounting\JournalController::class, 'index'])->name('accounting.journal.index');
+        Route::resource('accounts', \App\Http\Controllers\Accounting\AccountController::class);
+        Route::get('accounting/trial-balance', [\App\Http\Controllers\Accounting\TrialBalanceController::class, 'index'])->name('accounting.trial-balance.index');
         Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
 
         Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');

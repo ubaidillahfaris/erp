@@ -17,6 +17,8 @@ class RestockObserver
     {
         $tanggal = $restock->tanggal instanceof \Carbon\CarbonInterface ? $restock->tanggal->format('Y-m-d') : $restock->tanggal;
 
+        // Journal creation DISABLED - Transition to Double-Entry
+        /*
         Journal::create([
             'tanggal' => $tanggal,
             'type' => 'kredit',
@@ -27,6 +29,7 @@ class RestockObserver
             'reference_id' => $restock->id,
             'description' => 'Pembelian stok: '.($restock->keterangan ?? 'Tanpa keterangan'),
         ]);
+        */
 
         // Auto-create Payable
         if (in_array($restock->status_pembayaran, ['hutang', 'bayar_berkala'])) {
@@ -54,6 +57,8 @@ class RestockObserver
     {
         $tanggal = $restock->tanggal instanceof \Carbon\CarbonInterface ? $restock->tanggal->format('Y-m-d') : $restock->tanggal;
 
+        // Journal update DISABLED - Transition to Double-Entry
+        /*
         $journal = Journal::where('reference_type', Restock::class)
             ->where('reference_id', $restock->id)
             ->first();
@@ -66,6 +71,7 @@ class RestockObserver
                 'description' => 'Pembelian stok: '.($restock->keterangan ?? 'Tanpa keterangan'),
             ]);
         }
+        */
 
         // Update Payable status if changed to lunas
         if ($restock->isDirty('status_pembayaran') && $restock->status_pembayaran === 'lunas') {
@@ -86,11 +92,13 @@ class RestockObserver
             ->get()
             ->each->delete();
 
-        // Delete journal entries via instance to trigger JournalObserver
+        // Delete journal entries (DISABLED - Journals are now read-only)
+        /*
         Journal::where('reference_type', Restock::class)
             ->where('reference_id', $restock->id)
             ->get()
             ->each->delete();
+        */
 
         // Delete associated payables
         Payable::where('reference_type', 'restock')

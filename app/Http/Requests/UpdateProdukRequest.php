@@ -29,6 +29,7 @@ class UpdateProdukRequest extends FormRequest
             'wholesale_price' => ['nullable', 'numeric', 'min:0'],
             'satuan_id' => ['required', 'exists:satuans,id'],
             'track_stock' => ['nullable', 'boolean'],
+            'overhead_rate' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }
