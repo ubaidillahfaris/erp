@@ -23,7 +23,14 @@ class SalesController extends Controller
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         $query = Sale::query()
-            ->with(['saleCustomer.customer', 'items.produk', 'items.satuan'])
+            ->with([
+                'saleCustomer.customer', 
+                'items.produk', 
+                'items.satuan',
+                'payable' => function($q) {
+                    $q->select('id', 'reference_id', 'reference_type', 'status', 'total_amount', 'remaining_amount');
+                }
+            ])
             ->latest('tanggal');
 
         // Filters
@@ -62,8 +69,16 @@ class SalesController extends Controller
      */
     public function show(Sale $sale)
     {
+        $sale->load([
+            'saleCustomer.customer',
+            'items.produk',
+            'items.satuan', 
+            'payable.payments.createdBy'
+        ]);
+
         return Inertia::render('Sales/Show', [
-            'sale' => $sale->load(['items.produk', 'items.satuan', 'saleCustomer.customer']),
+            'sale' => $sale,
+            'payable' => $sale->payable,
         ]);
     }
 

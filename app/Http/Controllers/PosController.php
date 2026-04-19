@@ -75,8 +75,16 @@ class PosController extends Controller
         $currentPrice = $produk->currentPrice;
 
         if (!$currentPrice) {
-            return response()->json(['price' => 0, 'price_type' => 'retail']);
+            return response()->json([
+                'price' => 0, 
+                'original_price' => 0,
+                'discount_rate' => 0,
+                'price_type' => 'retail'
+            ]);
         }
+
+        $basePrice = (float) $currentPrice->retail_price;
+        $priceType = 'retail';
 
         // 1. Check for Custom Price
         if ($customerId) {
@@ -91,30 +99,49 @@ class PosController extends Controller
                 ->first();
 
             if ($customPrice) {
-                return response()->json([
-                    'price' => (float) $customPrice->custom_price,
-                    'price_type' => 'custom'
-                ]);
+                $basePrice = (float) $customPrice->custom_price;
+                $priceType = 'custom';
+            } else {
+                // 2. Fallback to Customer Type logic
+                $customer = Customer::with('type')->find($customerId);
+                $typeName = $customer->type?->name;
+
+                if (in_array($typeName, ['Wholesale', 'Dropship'])) {
+                    $basePrice = (float) $currentPrice->wholesale_price;
+                    $priceType = 'wholesale';
+                }
             }
         }
 
-        // 2. Fallback to Customer Type logic
+        // 3. Discount Calculation
+        $discountRate = 0;
         if ($customerId) {
-            $customer = Customer::with('type')->find($customerId);
-            $typeName = $customer->type?->name;
+            $customer = Customer::with(['creditSetting', 'categoryDiscounts'])->find($customerId);
+            
+            if ($customer) {
+                // a. Check Category Discount
+                $categoryDiscount = $customer->categoryDiscounts()
+                    ->where('kategori', $produk->kategori)
+                    ->where('is_active', true)
+                    ->first();
 
-            if (in_array($typeName, ['Wholesale', 'Dropship'])) {
-                return response()->json([
-                    'price' => (float) $currentPrice->wholesale_price,
-                    'price_type' => 'wholesale'
-                ]);
+                if ($categoryDiscount) {
+                    $discountRate = (float) $categoryDiscount->discount_rate;
+                } 
+                // b. Fallback to Global Discount
+                elseif ($customer->creditSetting?->global_discount > 0) {
+                    $discountRate = (float) $customer->creditSetting->global_discount;
+                }
             }
         }
 
-        // 3. Default to Retail Price
+        $finalPrice = $basePrice * (1 - $discountRate / 100);
+
         return response()->json([
-            'price' => (float) $currentPrice->retail_price,
-            'price_type' => 'retail'
+            'price' => $finalPrice,
+            'original_price' => $basePrice,
+            'discount_rate' => $discountRate,
+            'price_type' => $priceType
         ]);
     }
 

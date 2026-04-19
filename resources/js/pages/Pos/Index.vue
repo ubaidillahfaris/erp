@@ -81,8 +81,10 @@ const addToCart = async (produk: any) => {
 
     if (existingIndex > -1) {
         cart.value[existingIndex].qty += 1;
-        // Update price in case it changed (e.g. if we add logic for bulk discounts later)
+        // Update price in case it changed
         cart.value[existingIndex].price = priceData.price;
+        cart.value[existingIndex].original_price = priceData.original_price;
+        cart.value[existingIndex].discount_rate = priceData.discount_rate;
         cart.value[existingIndex].price_type = priceData.price_type;
     } else {
         cart.value.push({
@@ -90,6 +92,8 @@ const addToCart = async (produk: any) => {
             qty: 1,
             produk_id: produk.id,
             price: priceData.price,
+            original_price: priceData.original_price,
+            discount_rate: priceData.discount_rate,
             price_type: priceData.price_type
         });
     }
@@ -104,6 +108,8 @@ const updateCartPrices = async () => {
     const promises = cart.value.map(async (item, index) => {
         const priceData = await fetchPrice(item.produk_id, item.satuan_id, selectedCustomerId.value);
         cart.value[index].price = priceData.price;
+        cart.value[index].original_price = priceData.original_price;
+        cart.value[index].discount_rate = priceData.discount_rate;
         cart.value[index].price_type = priceData.price_type;
     });
 
@@ -335,15 +341,31 @@ const getPriceBadge = (type: string) => {
                     <div class="flex items-start justify-between">
                         <div class="flex flex-col gap-0.5 min-w-0 pr-4">
                             <span class="text-[13px] font-bold text-foreground truncate">{{ item.nama }}</span>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold text-muted-foreground uppercase tracking-tight">{{ formatCurrency(item.price) }} / {{ item.base_unit || 'PCS' }}</span>
-                                <Badge 
-                                    v-if="item.price_type"
-                                    variant="outline" 
-                                    :class="cn('text-[9px] h-4 px-1.5 rounded-md uppercase font-bold tracking-tighter border', getPriceBadge(item.price_type).class)"
-                                >
-                                    {{ getPriceBadge(item.price_type).label }}
-                                </Badge>
+                            <div class="flex items-center flex-wrap gap-2 mt-0.5">
+                                <div class="flex items-center gap-1.5 grayscale-[0.3]">
+                                    <span v-if="item.discount_rate > 0" class="text-[11px] font-bold text-muted-foreground/60 line-through">
+                                        {{ formatCurrency(item.original_price) }}
+                                    </span>
+                                    <span :class="cn('text-xs font-bold uppercase tracking-tight', item.discount_rate > 0 ? 'text-accent' : 'text-muted-foreground')">
+                                        {{ formatCurrency(item.price) }} / {{ item.base_unit || 'PCS' }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <Badge 
+                                        v-if="item.price_type"
+                                        variant="outline" 
+                                        :class="cn('text-[9px] h-4 px-1.5 rounded-md uppercase font-bold tracking-tighter border', getPriceBadge(item.price_type).class)"
+                                    >
+                                        {{ getPriceBadge(item.price_type).label }}
+                                    </Badge>
+                                    <Badge 
+                                        v-if="item.discount_rate > 0"
+                                        variant="outline" 
+                                        class="text-[9px] h-4 px-1.5 rounded-md uppercase font-bold tracking-tighter border bg-amber-50 text-amber-600 border-amber-100"
+                                    >
+                                        -{{ item.discount_rate }}%
+                                    </Badge>
+                                </div>
                             </div>
                         </div>
                         <button 

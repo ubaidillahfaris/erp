@@ -29,6 +29,7 @@ defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
     sale: any;
+    payable: any | null;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -237,6 +238,56 @@ const formatDate = (dateString: string, includeTime = false) => {
                     <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-2">Catatan Tambahan</label>
                     <p class="text-xs text-muted-foreground leading-relaxed font-medium italic">"{{ sale.notes }}"</p>
                 </div>
+
+                <!-- Status Piutang Card -->
+                <div v-if="sale.payment_method === 'credit' && payable" class="bg-white border border-slate-200 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            <CreditCard class="h-3.5 w-3.5 text-accent" /> Status Piutang
+                        </h3>
+                        <Badge 
+                            v-if="payable.status === 'paid'"
+                            class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[10px] uppercase font-bold px-1.5 h-5 line-height-none"
+                        >
+                            Lunas
+                        </Badge>
+                        <Badge 
+                            v-else-if="payable.status === 'partial'"
+                            class="bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-50 text-[10px] uppercase font-bold px-1.5 h-5"
+                        >
+                            Cicilan
+                        </Badge>
+                        <Badge 
+                            v-else
+                            class="bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-50 text-[10px] uppercase font-bold px-1.5 h-5"
+                        >
+                            Belum Bayar
+                        </Badge>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-muted-foreground font-medium uppercase tracking-tighter">Total Tagihan</span>
+                            <span class="font-bold text-foreground">{{ formatCurrency(payable.total_amount) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-muted-foreground font-medium uppercase tracking-tighter">Terbayar</span>
+                            <span class="font-bold text-emerald-600 leading-none">{{ formatCurrency(payable.paid_amount || (payable.total_amount - payable.remaining_amount)) }}</span>
+                        </div>
+                        <div class="h-px bg-slate-100"></div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-muted-foreground font-medium uppercase tracking-tighter">Sisa Tagihan</span>
+                            <span class="font-bold" :class="payable.remaining_amount > 0 ? 'text-rose-600 text-lg' : 'text-foreground'">
+                                {{ formatCurrency(payable.remaining_amount) }}
+                            </span>
+                        </div>
+                        
+                        <Button variant="outline" as-child class="w-full mt-2 h-9 text-xs font-bold uppercase tracking-widest border-slate-200 hover:bg-slate-50">
+                            <Link :href="`/payables/${payable.id}`">
+                                Lihat Detail Piutang
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Items Panel -->
@@ -303,6 +354,49 @@ const formatDate = (dateString: string, includeTime = false) => {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Payment History Card -->
+                <div v-if="payable?.payments && payable.payments.length > 0" class="bg-white border border-slate-200 rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            <HistoryIcon class="h-3.5 w-3.5 text-accent" /> Riwayat Pembayaran
+                        </h3>
+                    </div>
+                    
+                    <Table>
+                        <TableHeader>
+                            <TableRow class="bg-slate-50/30">
+                                <TableHead class="pl-6 py-4">Tanggal</TableHead>
+                                <TableHead class="px-4">Metode</TableHead>
+                                <TableHead class="text-right px-4">Jumlah</TableHead>
+                                <TableHead class="text-right pr-6">Dicatat Oleh</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            <TableRow v-for="payment in payable.payments" :key="payment.id" class="border-slate-100 hover:bg-slate-50/40">
+                                <TableCell class="pl-6 py-4 text-sm font-medium">
+                                    {{ formatDate(payment.payment_date || payment.created_at, true) }}
+                                </TableCell>
+                                <TableCell class="px-4">
+                                    <Badge variant="outline" class="text-[10px] font-bold uppercase tracking-tighter px-2 h-5 bg-slate-50 border-slate-200">
+                                        {{ payment.payment_method || 'Transfer' }}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell class="text-right px-4 font-bold text-emerald-600 tabular-nums">
+                                    {{ formatCurrency(payment.amount) }}
+                                </TableCell>
+                                <TableCell class="text-right pr-6">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <div class="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center">
+                                            <User class="h-3 w-3 text-slate-400" />
+                                        </div>
+                                        <span class="text-xs font-semibold text-slate-700 whitespace-nowrap">{{ payment.created_by?.name || 'System' }}</span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
         </div>

@@ -44,4 +44,10 @@ class Sale extends Model
     {
         return $this->hasOne(SaleCustomer::class);
     }
+
+    public function payable(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Payable::class, 'reference_id')
+            ->where('reference_type', 'sale');
+    }
 }

@@ -227,17 +227,42 @@ const hasActiveFilters = computed(() => {
             </template>
 
             <template #cell(status_badge)="{ row }">
+                <!-- Priority 1: Voided -->
                 <Badge 
-                    v-if="row.status === 'completed'" 
-                    class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[10px] uppercase font-bold px-1.5 h-5"
-                >
-                    <CircleCheck class="h-3 w-3 mr-1" /> Completed
-                </Badge>
-                <Badge 
-                    v-else 
+                    v-if="row.status === 'voided'" 
                     class="bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-50 text-[10px] uppercase font-bold px-1.5 h-5"
                 >
                     <CircleAlert class="h-3 w-3 mr-1" /> Voided
+                </Badge>
+
+                <!-- Priority 2: Credit/Payable Status -->
+                <template v-else-if="row.payment_method === 'credit' && row.payable">
+                    <Badge 
+                        v-if="row.payable.status === 'paid'"
+                        class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[10px] uppercase font-bold px-1.5 h-5 whitespace-nowrap"
+                    >
+                        <CircleCheck class="h-3 w-3 mr-1" /> Lunas
+                    </Badge>
+                    <Badge 
+                        v-else-if="row.payable.status === 'partial'"
+                        class="bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-50 text-[10px] uppercase font-bold px-1.5 h-5 whitespace-nowrap"
+                    >
+                        <CircleAlert class="h-3 w-3 mr-1" /> Cicilan
+                    </Badge>
+                    <Badge 
+                        v-else
+                        class="bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-50 text-[10px] uppercase font-bold px-1.5 h-5 whitespace-nowrap"
+                    >
+                        <CircleAlert class="h-3 w-3 mr-1" /> Belum Bayar
+                    </Badge>
+                </template>
+
+                <!-- Priority 3: Completed Normal -->
+                <Badge 
+                    v-else
+                    class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[10px] uppercase font-bold px-1.5 h-5"
+                >
+                    <CircleCheck class="h-3 w-3 mr-1" /> Selesai
                 </Badge>
             </template>
 

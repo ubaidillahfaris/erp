@@ -71,6 +71,12 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::post('customers/{customer}/prices', [CustomerPriceController::class, 'store'])->name('customer.prices.store');
         Route::put('customers/{customer}/prices/{price}', [CustomerPriceController::class, 'update'])->name('customer.prices.update');
         Route::delete('customers/{customer}/prices/{price}', [CustomerPriceController::class, 'destroy'])->name('customer.prices.destroy');
+
+        // Customer Credit & Discounts
+        Route::post('customers/{customer}/credit-setting', [CustomerPriceController::class, 'storeCreditSetting'])->name('customer.credit-setting.store');
+        Route::put('customers/{customer}/credit-setting', [CustomerPriceController::class, 'updateCreditSetting'])->name('customer.credit-setting.update');
+        Route::post('customers/{customer}/category-discounts', [CustomerPriceController::class, 'storeCategoryDiscount'])->name('customer.category-discounts.store');
+        Route::delete('customers/{customer}/category-discounts/{discount}', [CustomerPriceController::class, 'destroyCategoryDiscount'])->name('customer.category-discounts.destroy');
     });
 
     // 3. PROCUREMENT & STOCK (manage stock)

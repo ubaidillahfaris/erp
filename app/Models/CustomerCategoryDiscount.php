@@ -5,22 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CustomerCreditSetting extends Model
+class CustomerCategoryDiscount extends Model
 {
     protected $fillable = [
         'customer_id',
-        'allow_credit',
-        'credit_limit',
-        'global_discount',
+        'kategori',
+        'discount_rate',
         'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'allow_credit' => 'boolean',
-            'credit_limit' => 'decimal:2',
-            'global_discount' => 'decimal:2',
+            'discount_rate' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }

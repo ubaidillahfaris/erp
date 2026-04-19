@@ -50,4 +50,9 @@ class Customer extends Model
     {
         return $this->hasOne(CustomerCreditSetting::class);
     }
+
+    public function categoryDiscounts()
+    {
+        return $this->hasMany(CustomerCategoryDiscount::class);
+    }
 }
