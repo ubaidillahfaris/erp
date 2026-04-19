@@ -45,7 +45,55 @@ const props = defineProps<{
         total_receivable: number;
         overdue_count: number;
     };
+    chartData: {
+        payable_total: number;
+        payable_paid: number;
+        payable_remaining: number;
+        receivable_total: number;
+        receivable_paid: number;
+        receivable_remaining: number;
+        open_count: number;
+        partial_count: number;
+        paid_count: number;
+        overdue_count: number;
+    };
 }>();
+
+// DONUT CHART CALCULATIONS
+// radius = 70, cx=90, cy=90
+const radius = 70;
+const circumference = 2 * Math.PI * radius; // ~439.8
+
+const donutData = computed(() => {
+    const totalCurrent = props.chartData.payable_remaining + props.chartData.receivable_remaining + (props.chartData.payable_paid + props.chartData.receivable_paid);
+    
+    if (totalCurrent === 0) return [];
+
+    const segments = [
+        { label: 'Hutang', value: props.chartData.payable_remaining, color: 'rgb(225, 29, 72)' }, // rose-600
+        { label: 'Piutang', value: props.chartData.receivable_remaining, color: 'rgb(16, 185, 129)' }, // emerald-500
+        { label: 'Terbayar', value: props.chartData.payable_paid + props.chartData.receivable_paid, color: 'rgb(100, 116, 139)' }, // slate-500
+    ];
+
+    let currentOffset = 0;
+    return segments.map(s => {
+        const percentage = (s.value / totalCurrent) * 100;
+        const dash = (s.value / totalCurrent) * circumference;
+        const offset = currentOffset;
+        currentOffset -= dash; // Subtract because SVG strokes go clockwise from top if rotated correctly
+        
+        return {
+            ...s,
+            percentage,
+            dasharray: `${dash} ${circumference}`,
+            dashoffset: offset
+        };
+    });
+});
+
+const donutTotal = computed(() => {
+    return props.chartData.payable_remaining + props.chartData.receivable_remaining;
+});
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -53,6 +101,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const search = ref(props.filters.search || '');
+// ... (rest of search/filters code)
 const type = ref(props.filters.type || 'all');
 const status = ref(props.filters.status || 'all');
 const date_start = ref(props.filters.date_start || '');
@@ -149,67 +198,136 @@ const getTypeLabel = (type: string) => {
         :count="payables.total" 
     />
     
-    <!-- ====== SUMMARY CARDS ====== -->
-    <div class="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Total Hutang -->
-        <Card class="border-none shadow-sm overflow-hidden bg-white group hover:shadow-md transition-all duration-300">
-            <CardContent class="p-0">
-                <div class="p-6 flex items-center justify-between">
-                    <div class="flex flex-col gap-1">
-                        <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Total Hutang Aktif</p>
-                        <h3 class="text-2xl font-black text-rose-600 tabular-nums">
-                            {{ formatCurrency(summary.total_payable) }}
-                        </h3>
+    <!-- ====== DASHBOARD OVERVIEW ====== -->
+    <div class="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-6">
+        
+        <!-- LEFT COLUMN: METRICS & STATUS (3/5) -->
+        <div class="lg:col-span-3 flex flex-col gap-6">
+            
+            <!-- ROW 1: LARGE CARDS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Hutang Aktif Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-4 group hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Hutang Aktif</span>
+                            <h3 class="text-xl font-black text-rose-600 tabular-nums">{{ formatCurrency(chartData.payable_remaining) }}</h3>
+                            <span class="text-[10px] text-muted-foreground">dari {{ formatCurrency(chartData.payable_total) }} total</span>
+                        </div>
+                        <div class="h-10 w-10 shrink-0 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500">
+                            <Wallet class="h-5 w-5" />
+                        </div>
                     </div>
-                    <div class="h-12 w-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform duration-300">
-                        <Wallet class="h-6 w-6" />
+                    <!-- Progress Section -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-tighter">
+                            <span class="text-emerald-600">Terbayar: {{ formatCurrency(chartData.payable_paid) }}</span>
+                            <span class="text-muted-foreground">{{ Math.round((chartData.payable_paid / chartData.payable_total) * 100) || 0 }}%</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                                class="h-full bg-rose-500 rounded-full transition-all duration-1000" 
+                                :style="{ width: `${(chartData.payable_paid / chartData.payable_total) * 100}%` }"
+                            ></div>
+                        </div>
                     </div>
                 </div>
-                <div class="h-1 w-full bg-rose-100/50">
-                    <div class="h-full bg-rose-500 rounded-r-full" style="width: 100%"></div>
-                </div>
-            </CardContent>
-        </Card>
 
-        <!-- Total Piutang -->
-        <Card class="border-none shadow-sm overflow-hidden bg-white group hover:shadow-md transition-all duration-300">
-            <CardContent class="p-0">
-                <div class="p-6 flex items-center justify-between">
-                    <div class="flex flex-col gap-1">
-                        <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Total Piutang Aktif</p>
-                        <h3 class="text-2xl font-black text-emerald-600 tabular-nums">
-                            {{ formatCurrency(summary.total_receivable) }}
-                        </h3>
+                <!-- Piutang Aktif Card -->
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-4 group hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Piutang Aktif</span>
+                            <h3 class="text-xl font-black text-emerald-600 tabular-nums">{{ formatCurrency(chartData.receivable_remaining) }}</h3>
+                            <span class="text-[10px] text-muted-foreground">dari {{ formatCurrency(chartData.receivable_total) }} total</span>
+                        </div>
+                        <div class="h-10 w-10 shrink-0 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+                            <HandCoins class="h-5 w-5" />
+                        </div>
                     </div>
-                    <div class="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform duration-300">
-                        <HandCoins class="h-6 w-6" />
+                    <!-- Progress Section -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-tighter">
+                            <span class="text-emerald-600">Terbayar: {{ formatCurrency(chartData.receivable_paid) }}</span>
+                            <span class="text-muted-foreground">{{ Math.round((chartData.receivable_paid / chartData.receivable_total) * 100) || 0 }}%</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                                class="h-full bg-emerald-500 rounded-full transition-all duration-1000" 
+                                :style="{ width: `${(chartData.receivable_paid / chartData.receivable_total) * 100}%` }"
+                            ></div>
+                        </div>
                     </div>
                 </div>
-                <div class="h-1 w-full bg-emerald-100/50">
-                    <div class="h-full bg-emerald-500 rounded-r-full" style="width: 100%"></div>
-                </div>
-            </CardContent>
-        </Card>
+            </div>
 
-        <!-- Overdue -->
-        <Card class="border-none shadow-sm overflow-hidden bg-white group hover:shadow-md transition-all duration-300">
-            <CardContent class="p-0">
-                <div class="p-6 flex items-center justify-between">
-                    <div class="flex flex-col gap-1">
-                        <p class="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Jumlah Overdue</p>
-                        <h3 class="text-2xl font-black text-amber-600 tabular-nums">
-                            {{ summary.overdue_count }} <span class="text-sm font-bold text-muted-foreground tracking-tight">Tagihan</span>
-                        </h3>
-                    </div>
-                    <div class="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform duration-300">
-                        <Clock class="h-6 w-6" />
-                    </div>
+            <!-- ROW 2: STATUS COUNTERS -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-xl border border-slate-100 p-3 flex flex-col gap-1 items-center text-center">
+                    <span class="text-lg font-black text-blue-600">{{ chartData.open_count }}</span>
+                    <span class="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Open</span>
                 </div>
-                <div class="h-1 w-full bg-amber-100/50">
-                    <div class="h-full bg-amber-500 rounded-r-full" style="width: 100%"></div>
+                <div class="bg-white rounded-xl border border-slate-100 p-3 flex flex-col gap-1 items-center text-center">
+                    <span class="text-lg font-black text-amber-600">{{ chartData.partial_count }}</span>
+                    <span class="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Cicilan</span>
                 </div>
-            </CardContent>
-        </Card>
+                <div class="bg-white rounded-xl border border-slate-100 p-3 flex flex-col gap-1 items-center text-center">
+                    <span class="text-lg font-black text-emerald-600">{{ chartData.paid_count }}</span>
+                    <span class="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Lunas</span>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-100 p-3 flex flex-col gap-1 items-center text-center relative overflow-hidden group">
+                    <div v-if="chartData.overdue_count > 0" class="absolute inset-0 bg-rose-500/5 animate-pulse"></div>
+                    <span class="text-lg font-black text-rose-600 relative z-10">{{ chartData.overdue_count }}</span>
+                    <span class="text-[9px] font-bold uppercase tracking-widest text-rose-400 relative z-10">Overdue</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: DONUT CHART (2/5) -->
+        <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 flex flex-col items-center gap-6">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground w-full text-left">Komposisi Kewajiban</h3>
+            
+            <div class="relative flex items-center justify-center">
+                <!-- SVG DONUT -->
+                <svg width="180" height="180" viewBox="0 0 180 180" class="transform -rotate-90">
+                    <!-- Background Circle -->
+                    <circle cx="90" cy="90" :r="radius" stroke="currentColor" stroke-width="20" fill="transparent" class="text-slate-50" />
+                    
+                    <!-- Data Segments -->
+                    <circle 
+                        v-for="(seg, idx) in donutData" 
+                        :key="idx"
+                        cx="90" 
+                        cy="90" 
+                        :r="radius" 
+                        :stroke="seg.color" 
+                        stroke-width="20" 
+                        fill="transparent" 
+                        :stroke-dasharray="seg.dasharray"
+                        :stroke-dashoffset="seg.dashoffset"
+                        stroke-linecap="round"
+                        class="transition-all duration-1000 ease-out"
+                    />
+                </svg>
+                
+                <!-- Center Text -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Aktif</span>
+                    <span class="text-sm font-black text-slate-900 leading-none">{{ formatCurrency(donutTotal) }}</span>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="grid grid-cols-3 w-full gap-2">
+                <div v-for="(seg, idx) in donutData" :key="idx" class="flex flex-col gap-1 items-center">
+                    <div class="flex items-center gap-1.5">
+                        <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: seg.color }"></div>
+                        <span class="text-[9px] font-bold uppercase text-muted-foreground">{{ seg.label }}</span>
+                    </div>
+                    <span class="text-[10px] font-black text-slate-700">{{ Math.round(seg.percentage) }}%</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ====== CONTENT AREA ====== -->

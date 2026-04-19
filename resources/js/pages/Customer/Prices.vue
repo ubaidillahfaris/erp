@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import InputCurrency from '@/components/ui/input/InputCurrency.vue';
 import Combobox from '@/components/ui/combobox/Combobox.vue';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
@@ -443,7 +442,29 @@ const actionLabel: Record<string, string> = {
                                 <Label class="text-sm font-bold text-slate-700">Izinkan Kredit</Label>
                                 <span class="text-[10px] text-slate-400">Aktifkan limit piutang</span>
                             </div>
-                            <Checkbox v-model:checked="creditForm.allow_credit" />
+                            <div class="flex items-center gap-3">
+                                <span :class="[
+                                    'text-[10px] font-bold uppercase tracking-widest transition-colors',
+                                    creditForm.allow_credit ? 'text-accent' : 'text-muted-foreground'
+                                ]">
+                                    {{ creditForm.allow_credit ? 'Kredit Diizinkan' : 'Kredit Tidak Aktif' }}
+                                </span>
+                                <button
+                                    type="button"
+                                    @click="creditForm.allow_credit = !creditForm.allow_credit"
+                                    :class="[
+                                        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none',
+                                        creditForm.allow_credit ? 'bg-accent' : 'bg-slate-200'
+                                    ]"
+                                >
+                                    <span
+                                        :class="[
+                                            'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200',
+                                            creditForm.allow_credit ? 'translate-x-6' : 'translate-x-1'
+                                        ]"
+                                    />
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Is Active -->
@@ -452,7 +473,29 @@ const actionLabel: Record<string, string> = {
                                 <Label class="text-sm font-bold text-slate-700">Status Aktif</Label>
                                 <span class="text-[10px] text-slate-400">Status pengaturan ini</span>
                             </div>
-                            <Checkbox v-model:checked="creditForm.is_active" />
+                            <div class="flex items-center gap-3">
+                                <span :class="[
+                                    'text-[10px] font-bold uppercase tracking-widest transition-colors',
+                                    creditForm.is_active ? 'text-accent' : 'text-muted-foreground'
+                                ]">
+                                    {{ creditForm.is_active ? 'Setting Aktif' : 'Setting Nonaktif' }}
+                                </span>
+                                <button
+                                    type="button"
+                                    @click="creditForm.is_active = !creditForm.is_active"
+                                    :class="[
+                                        'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none',
+                                        creditForm.is_active ? 'bg-accent' : 'bg-slate-200'
+                                    ]"
+                                >
+                                    <span
+                                        :class="[
+                                            'inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200',
+                                            creditForm.is_active ? 'translate-x-6' : 'translate-x-1'
+                                        ]"
+                                    />
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Credit Limit -->

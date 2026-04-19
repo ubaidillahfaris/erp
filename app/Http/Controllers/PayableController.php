@@ -49,17 +49,29 @@ class PayableController extends Controller
         $direction = $request->direction ?? 'desc';
         $query->orderBy($sort, $direction);
 
-        // Summary
-        $summary = [
-            'total_payable' => Payable::where('type', 'payable')->where('status', '!=', 'paid')->sum('remaining_amount'),
-            'total_receivable' => Payable::where('type', 'receivable')->where('status', '!=', 'paid')->sum('remaining_amount'),
+        // Dashboard Data
+        $chartData = [
+            'payable_total' => (float) Payable::where('type', 'payable')->sum('total_amount'),
+            'payable_paid' => (float) Payable::where('type', 'payable')->sum('paid_amount'),
+            'payable_remaining' => (float) Payable::where('type', 'payable')->where('status', '!=', 'paid')->sum(DB::raw('total_amount - paid_amount')),
+            'receivable_total' => (float) Payable::where('type', 'receivable')->sum('total_amount'),
+            'receivable_paid' => (float) Payable::where('type', 'receivable')->sum('paid_amount'),
+            'receivable_remaining' => (float) Payable::where('type', 'receivable')->where('status', '!=', 'paid')->sum(DB::raw('total_amount - paid_amount')),
+            'open_count' => Payable::where('status', 'open')->count(),
+            'partial_count' => Payable::where('status', 'partial')->count(),
+            'paid_count' => Payable::where('status', 'paid')->count(),
             'overdue_count' => Payable::where('status', 'overdue')->count(),
         ];
 
         return Inertia::render('Payables/Index', [
             'payables' => $query->paginate($request->per_page ?? 15)->withQueryString(),
             'filters' => $request->only(['search', 'type', 'status', 'date_start', 'date_end', 'per_page', 'sort', 'direction']),
-            'summary' => $summary,
+            'summary' => [
+                'total_payable' => $chartData['payable_remaining'],
+                'total_receivable' => $chartData['receivable_remaining'],
+                'overdue_count' => $chartData['overdue_count'],
+            ],
+            'chartData' => $chartData,
         ]);
     }
 
