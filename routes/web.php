@@ -3,6 +3,7 @@
 use App\Http\Controllers\BOMController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JournalController;
+use App\Http\Controllers\PayableController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductionController;
@@ -97,7 +98,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     Route::middleware('permission:view reports')->group(function () {
         Route::get('journal', [JournalController::class, 'index'])->name('journal.index');
         Route::get('profit-loss', [ProfitLossController::class, 'index'])->name('profit-loss.index');
-        
+
         Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
         Route::resource('pengeluaran', PengeluaranController::class);
     });
@@ -121,4 +122,4 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     });
 });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

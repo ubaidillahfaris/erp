@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Plus, Trash2, ArrowLeft, Save } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { store, index as restockIndex } from '@/actions/App/Http/Controllers/RestockController';
 import CreatableSelect from '@/components/CreatableSelect.vue';
 import Combobox from '@/components/ui/combobox/Combobox.vue';
@@ -91,9 +91,9 @@ const handleProductChange = (index: number, produkId: string | number) => {
     }
 };
 
-const submit = () => {
-    form.post(store.url());
-};
+
+
+
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -117,6 +117,36 @@ const totalBiaya = computed(() => {
 
 const sisaPembayaran = computed(() => {
     return totalBiaya.value - form.total_bayar;
+});
+
+const submit = () => {
+    // Ensure total_bayar is a number before submitting
+    if (form.total_bayar === null || form.total_bayar === undefined) {
+        form.total_bayar = 0;
+    }
+    
+    // For "lunas", ensure total_bayar equals totalBiaya
+    if (form.status_pembayaran === 'lunas') {
+        form.total_bayar = totalBiaya.value;
+    }
+
+    form.post(store.url());
+};
+
+// Auto-sync total_bayar based on payment status
+watch(() => form.status_pembayaran, (newStatus) => {
+    if (newStatus === 'lunas') {
+        form.total_bayar = totalBiaya.value;
+    } else if (newStatus === 'hutang') {
+        form.total_bayar = 0;
+    }
+});
+
+// If status is "lunas", update total_bayar whenever totalBiaya changes
+watch(totalBiaya, (newTotal) => {
+    if (form.status_pembayaran === 'lunas') {
+        form.total_bayar = newTotal;
+    }
 });
 </script>
 

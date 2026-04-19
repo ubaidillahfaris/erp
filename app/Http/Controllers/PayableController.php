@@ -2,114 +2,88 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use App\Models\Nasabah;
 use App\Models\Payable;
 use App\Models\Payment;
-use App\Models\Restock;
-use App\Models\Sale;
+use App\Models\Customer;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class PayableController extends Controller
 {
     /**
-     * Display a listing of payables/receivables.
+     * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10);
-        $sort = $request->input('sort', 'created_at');
-        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
-
-        $query = Payable::query()
-            ->with(['interestSchedules', 'createdBy'])
-            ->withSum('payments', 'amount');
+        $query = Payable::with(['party', 'createdBy']);
 
         // Filters
-        $query->when($request->type, fn ($q, $type) => $q->where('type', $type));
-        $query->when($request->status, fn ($q, $status) => $q->where('status', $status));
-
-        $query->when($request->date_start, fn ($q, $date) => $q->whereDate('created_at', '>=', $date));
-        $query->when($request->date_end, fn ($q, $date) => $q->whereDate('created_at', '<=', $date));
-
-        $query->when($request->search, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
-                $q->where(function ($q2) use ($search) {
-                    $q2->where('party_type', 'vendor')
-                        ->whereIn('party_id', Vendor::where('name', 'like', "%{$search}%")->pluck('id'));
-                })->orWhere(function ($q2) use ($search) {
-                    $q2->where('party_type', 'customer')
-                        ->whereIn('party_id', Customer::where('name', 'like', "%{$search}%")->pluck('id'));
-                });
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('reference_type', 'like', "%{$request->search}%")
+                    ->orWhere('notes', 'like', "%{$request->search}%");
             });
-        });
+        }
 
-        $payables = $query->orderBy($sort, $direction)
-            ->paginate($perPage)
-            ->through(function ($payable) {
-                $paidAmount = (float) ($payable->payments_sum_amount ?? 0);
-                $payable->paid_amount = $paidAmount;
-                $payable->remaining_amount = (float) $payable->total_amount - $paidAmount;
+        if ($request->type && $request->type !== 'all') {
+            $query->where('type', $request->type);
+        }
 
-                // Resolve party name for list view convenience
-                if ($payable->party_type === 'vendor') {
-                    $payable->party_name = Vendor::find($payable->party_id)?->name ?? 'Unknown Vendor';
-                } else {
-                    $payable->party_name = Customer::find($payable->party_id)?->name ?? 'Unknown Customer';
-                }
+        if ($request->status && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
 
-                return $payable;
-            })
-            ->withQueryString();
+        if ($request->date_start) {
+            $query->whereDate('created_at', '>=', $request->date_start);
+        }
 
+        if ($request->date_end) {
+            $query->whereDate('created_at', '<=', $request->date_end);
+        }
+
+        // Sorting
+        $sort = $request->sort ?? 'created_at';
+        $direction = $request->direction ?? 'desc';
+        $query->orderBy($sort, $direction);
+
+        // Summary
         $summary = [
-            'total_payable' => Payable::where('type', 'payable')->where('status', '!=', 'paid')->sum('total_amount'),
-            'total_receivable' => Payable::where('type', 'receivable')->where('status', '!=', 'paid')->sum('total_amount'),
+            'total_payable' => Payable::where('type', 'payable')->where('status', '!=', 'paid')->sum('remaining_amount'),
+            'total_receivable' => Payable::where('type', 'receivable')->where('status', '!=', 'paid')->sum('remaining_amount'),
             'overdue_count' => Payable::where('status', 'overdue')->count(),
         ];
 
         return Inertia::render('Payables/Index', [
-            'payables' => $payables,
-            'filters' => $request->only(['type', 'status', 'search', 'date_start', 'date_end', 'per_page', 'sort', 'direction']),
+            'payables' => $query->paginate($request->per_page ?? 15)->withQueryString(),
+            'filters' => $request->only(['search', 'type', 'status', 'date_start', 'date_end', 'per_page', 'sort', 'direction']),
             'summary' => $summary,
         ]);
     }
 
     /**
-     * Display the specified payable/receivable.
+     * Display the specified resource.
      */
-    public function show($id)
+    public function show(Payable $payable)
     {
-        $payable = Payable::with([
-            'payments.recordedBy',
-            'interestSchedules',
-            'paymentReminders',
-            'createdBy',
-        ])->withSum('payments', 'amount')->findOrFail($id);
+        $payable->load(['payments.createdBy', 'interestSchedules', 'createdBy']);
 
-        $paidAmount = (float) ($payable->payments_sum_amount ?? 0);
-        $payable->paid_amount = $paidAmount;
-        $payable->remaining_amount = (float) $payable->total_amount - $paidAmount;
-
-        // Resolve Party
+        // Fetch Party
         $party = null;
-        if ($payable->party_type === 'vendor') {
-            $party = Vendor::find($payable->party_id);
-        } elseif ($payable->party_type === 'customer') {
+        if ($payable->party_type === 'customer') {
             $party = Customer::find($payable->party_id);
+        } elseif ($payable->party_type === 'vendor') {
+            $party = Vendor::find($payable->party_id);
         }
 
-        // Resolve Reference
+        // Fetch Reference (Dynamic)
         $reference = null;
-        if ($payable->reference_type === 'restock') {
-            $reference = Restock::find($payable->reference_id);
-        } elseif ($payable->reference_type === 'sale') {
-            $reference = Sale::find($payable->reference_id);
-        } elseif ($payable->reference_type === 'nasabah') {
-            $reference = Nasabah::find($payable->reference_id);
+        if ($payable->reference_type === 'sale') {
+            $reference = DB::table('sales')->where('id', $payable->reference_id)->first();
+        } elseif ($payable->reference_type === 'restock') {
+            $reference = DB::table('restocks')->where('id', $payable->reference_id)->first();
         }
 
         return Inertia::render('Payables/Show', [
@@ -120,32 +94,29 @@ class PayableController extends Controller
     }
 
     /**
-     * Store a payment for the specified payable/receivable.
+     * Store a newly created payment in storage.
      */
-    public function storePayment(Request $request, $payableId)
+    public function storePayment(Request $request, Payable $payable)
     {
-        $payable = Payable::withSum('payments', 'amount')->findOrFail($payableId);
-        $paidAmount = (float) ($payable->payments_sum_amount ?? 0);
-        $remainingAmount = (float) $payable->total_amount - $paidAmount;
-
-        $validated = $request->validate([
-            'amount' => 'required|numeric|min:0.01|max:'.$remainingAmount,
+        $request->validate([
+            'amount' => 'required|numeric|min:1|max:' . $payable->remaining_amount,
             'payment_date' => 'required|date',
             'payment_method' => 'required|string',
             'notes' => 'nullable|string',
-        ], [
-            'amount.max' => 'Jumlah pembayaran melebihi sisa tagihan (Sisa: '.number_format($remainingAmount, 2).').',
         ]);
 
-        Payment::create([
-            'payable_id' => $payable->id,
-            'amount' => $validated['amount'],
-            'payment_date' => $validated['payment_date'],
-            'payment_method' => $validated['payment_method'],
-            'notes' => $validated['notes'],
-            'recorded_by' => Auth::id(),
-        ]);
+        DB::transaction(function () use ($request, $payable) {
+            // Create Payment - observer in Payment model will update Payable status/paid_amount/remaining_amount
+            Payment::create([
+                'payable_id' => $payable->id,
+                'amount' => $request->amount,
+                'payment_date' => $request->payment_date,
+                'payment_method' => $request->payment_method,
+                'notes' => $request->notes,
+                'recorded_by' => auth()->id(),
+            ]);
+        });
 
-        return back()->with('success', 'Pembayaran sebesar '.number_format($validated['amount'], 2).' berhasil dicatat.');
+        return redirect()->back()->with('success', 'Pembayaran berhasil dicatat');
     }
 }

@@ -30,7 +30,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             CustomerMenuSeeder::class,
             SalesMenuSeeder::class,
+            PayableSeeder::class,
             TransaksiModuleSeeder::class,
+            PayablesMenuSeeder::class,
         ]);
     }
 }

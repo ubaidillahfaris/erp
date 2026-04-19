@@ -29,16 +29,24 @@ class SaleObserver
 
         // 2. Auto-create Receivable for Credit Sales
         if ($sale->payment_method === 'credit') {
-            $saleCustomer = $sale->saleCustomer;
+            // Check relationship first, fallback to request if not yet created (race condition)
+            $customer = $sale->saleCustomer?->customer;
+            
+            if (!$customer && request()->has('customer_id')) {
+                $customer = \App\Models\Customer::find(request()->input('customer_id'));
+            }
 
-            if (!$saleCustomer || !$saleCustomer->customer) {
+            if (!$customer) {
                 throw new Exception('Credit sale harus ada customer');
             }
 
-            $customer = $saleCustomer->customer;
             $creditSetting = $customer->creditSetting;
 
-            if (!$creditSetting || !$creditSetting->allow_credit) {
+            if (!$creditSetting) {
+                throw new Exception('Customer ini belum memiliki izin kredit. Aktifkan kredit di halaman Master Customer.');
+            }
+
+            if (!$creditSetting->allow_credit) {
                 throw new Exception('Customer tidak diizinkan kredit');
             }
 

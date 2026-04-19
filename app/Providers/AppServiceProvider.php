@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use App\Models\Customer;
+use App\Models\Vendor;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -56,6 +59,11 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, $ability) {
             return $user->hasRole('superadmin') ? true : null;
         });
+
+        Relation::morphMap([
+            'vendor' => Vendor::class,
+            'customer' => Customer::class,
+        ]);
     }
 
     /**

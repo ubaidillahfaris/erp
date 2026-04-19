@@ -127,6 +127,11 @@ const updateQty = (index: number, delta: number) => {
     }
 };
 
+const setQty = (index: number, value: any) => {
+    const qty = Math.max(1, Math.floor(Number(value) || 1));
+    cart.value[index].qty = qty;
+};
+
 const totalAmount = computed(() => {
     return cart.value.reduce((total, item) => total + (item.qty * (item.price || 0)), 0);
 });
@@ -175,8 +180,12 @@ const handleCheckout = () => {
             isCheckoutOpen.value = false;
             toast.success('Transaksi berhasil disimpan!');
         },
-        onError: () => {
-            toast.error('Gagal memproses transaksi.');
+        onError: (errors) => {
+            if (errors.checkout) {
+                toast.error(errors.checkout);
+            } else {
+                toast.error('Gagal memproses transaksi.');
+            }
         },
     });
 };
@@ -350,7 +359,14 @@ const getPriceBadge = (type: string) => {
                             <button @click="updateQty(index, -1)" class="h-7 w-7 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-none text-muted-foreground transition-all">
                                 <Minus class="h-3 w-3" />
                             </button>
-                            <span class="w-10 text-center text-[12px] font-bold tabular-nums">{{ item.qty }}</span>
+                            <input 
+                                type="number" 
+                                v-model.number="item.qty" 
+                                class="qty-input w-14 text-center text-[12px] font-bold tabular-nums bg-transparent border-none focus:outline-none focus:ring-0"
+                                min="1"
+                                @change="setQty(index, ($event.target as HTMLInputElement).value)"
+                                @keydown.enter.prevent="($event.target as HTMLInputElement).blur()"
+                            />
                             <button @click="updateQty(index, 1)" class="h-7 w-7 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-none text-muted-foreground transition-all">
                                 <Plus class="h-3 w-3" />
                             </button>
@@ -529,5 +545,14 @@ const getPriceBadge = (type: string) => {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(0, 0, 0, 0.1);
+}
+
+input[type=number].qty-input::-webkit-outer-spin-button,
+input[type=number].qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type=number].qty-input {
+    -moz-appearance: textfield;
 }
 </style>

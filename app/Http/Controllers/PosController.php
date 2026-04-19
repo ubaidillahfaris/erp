@@ -135,45 +135,49 @@ class PosController extends Controller
             'items.*.cost' => ['required', 'numeric', 'min:0'],
         ]);
 
-        return DB::transaction(function () use ($validated) {
-            $totalAmount = collect($validated['items'])->sum(function ($item) {
-                return $item['qty'] * $item['price'];
+        try {
+            return DB::transaction(function () use ($validated) {
+                $totalAmount = collect($validated['items'])->sum(function ($item) {
+                    return $item['qty'] * $item['price'];
+                });
+
+                // Generate simple unique invoice
+                $invoiceNumber = 'IV' . now()->format('ymd') . strtoupper(bin2hex(random_bytes(2)));
+
+                $sale = Sale::create([
+                    'invoice_number' => $invoiceNumber,
+                    'tanggal' => $validated['tanggal'],
+                    'total_amount' => $totalAmount,
+                    'received_amount' => $validated['received_amount'] ?? $totalAmount,
+                    'change_amount' => $validated['change_amount'] ?? 0,
+                    'payment_method' => $validated['payment_method'] ?? 'cash',
+                    'notes' => $validated['notes'] ?? null,
+                ]);
+
+                // Save items
+                foreach ($validated['items'] as $item) {
+                    $sale->items()->create([
+                        'produk_id' => $item['produk_id'],
+                        'satuan_id' => $item['satuan_id'],
+                        'qty' => $item['qty'],
+                        'price' => $item['price'],
+                        'cost' => $item['cost'],
+                        'subtotal' => $item['qty'] * $item['price'],
+                    ]);
+                }
+
+                // Record Customer Sale
+                if (!empty($validated['customer_id'])) {
+                    SaleCustomer::create([
+                        'sale_id' => $sale->id,
+                        'customer_id' => $validated['customer_id'],
+                    ]);
+                }
+
+                return redirect()->route('pos.index')->with('success', 'Transaksi berhasil. No Invoice: ' . $sale->invoice_number);
             });
-
-            // Generate simple unique invoice
-            $invoiceNumber = 'IV' . now()->format('ymd') . strtoupper(bin2hex(random_bytes(2)));
-
-            $sale = Sale::create([
-                'invoice_number' => $invoiceNumber,
-                'tanggal' => $validated['tanggal'],
-                'total_amount' => $totalAmount,
-                'received_amount' => $validated['received_amount'] ?? $totalAmount,
-                'change_amount' => $validated['change_amount'] ?? 0,
-                'payment_method' => $validated['payment_method'] ?? 'cash',
-                'notes' => $validated['notes'] ?? null,
-            ]);
-
-            // Save items
-            foreach ($validated['items'] as $item) {
-                $sale->items()->create([
-                    'produk_id' => $item['produk_id'],
-                    'satuan_id' => $item['satuan_id'],
-                    'qty' => $item['qty'],
-                    'price' => $item['price'],
-                    'cost' => $item['cost'],
-                    'subtotal' => $item['qty'] * $item['price'],
-                ]);
-            }
-
-            // Record Customer Sale
-            if (!empty($validated['customer_id'])) {
-                SaleCustomer::create([
-                    'sale_id' => $sale->id,
-                    'customer_id' => $validated['customer_id'],
-                ]);
-            }
-
-            return redirect()->route('pos.index')->with('success', 'Transaksi berhasil. No Invoice: ' . $sale->invoice_number);
-        });
+        } catch (\Exception $e) {
+            return back()->withErrors(['checkout' => $e->getMessage()]);
+        }
     }
 }

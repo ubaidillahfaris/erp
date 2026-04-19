@@ -22,6 +22,8 @@ class Payable extends Model
         'installment_count',
         'total_interest',
         'total_amount',
+        'paid_amount',
+        'remaining_amount',
         'due_date',
         'status',
         'notes',
@@ -36,15 +38,26 @@ class Payable extends Model
             'installment_count' => 'integer',
             'total_interest' => 'decimal:2',
             'total_amount' => 'decimal:2',
+            'paid_amount' => 'decimal:2',
+            'remaining_amount' => 'decimal:2',
             'due_date' => 'date',
         ];
     }
 
     protected static function booted(): void
     {
+        static::creating(function (Payable $payable) {
+            $payable->remaining_amount = $payable->total_amount - $payable->paid_amount;
+        });
+
         static::created(function (Payable $payable) {
             $payable->generateInterestSchedules();
         });
+    }
+
+    public function party()
+    {
+        return $this->morphTo();
     }
 
     public function createdBy(): BelongsTo

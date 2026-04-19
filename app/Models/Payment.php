@@ -36,7 +36,7 @@ class Payment extends Model
         return $this->belongsTo(Payable::class);
     }
 
-    public function recordedBy(): BelongsTo
+    public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
     }
@@ -54,6 +54,27 @@ class Payment extends Model
             $newStatus = 'open';
         }
 
-        $payable->update(['status' => $newStatus]);
+        $payable->update([
+            'status' => $newStatus,
+            'paid_amount' => $totalPaid,
+            'remaining_amount' => max(0, $payable->total_amount - $totalPaid),
+        ]);
+
+        // Sync payment status back to Restock if applicable
+        if ($payable->reference_type === 'restock' && $payable->reference_id) {
+            $restockStatus = match ($newStatus) {
+                'paid' => 'lunas',
+                'partial' => 'bayar_berkala',
+                default => null,
+            };
+
+            if ($restockStatus) {
+                Restock::withoutEvents(function () use ($payable, $restockStatus) {
+                    Restock::where('id', $payable->reference_id)->update([
+                        'status_pembayaran' => $restockStatus
+                    ]);
+                });
+            }
+        }
     }
 }
