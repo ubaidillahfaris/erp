@@ -9,6 +9,7 @@ import SectionHeader from '@/components/SectionHeader.vue';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import InputCurrency from '@/components/ui/input/InputCurrency.vue';
 import { Label } from '@/components/ui/label';
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -381,18 +382,10 @@ const actionLabel: Record<string, string> = {
                         }}</span>
                 </div>
 
-                <!-- Harga -->
                 <div class="flex flex-col gap-1.5">
-                    <Label for="price" class="text-xs font-bold uppercase tracking-widest text-slate-500">Harga
-                        Khusus</Label>
-                    <div class="relative">
-                        <span
-                            class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 pointer-events-none">Rp</span>
-                        <Input id="price" type="number" v-model="form.custom_price"
-                            class="h-10 pl-10 rounded-xl border-slate-200 shadow-none font-bold text-sm" required />
-                    </div>
-                    <span v-if="form.errors.custom_price" class="text-xs text-destructive">{{ form.errors.custom_price
-                        }}</span>
+                    <Label for="price" class="text-xs font-bold uppercase tracking-widest text-slate-500">Harga Khusus</Label>
+                    <InputCurrency id="price" v-model="form.custom_price" required />
+                    <span v-if="form.errors.custom_price" class="text-xs text-destructive">{{ form.errors.custom_price }}</span>
                 </div>
 
                 <!-- Valid Until -->

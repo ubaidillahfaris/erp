@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import InputPhone from '@/components/ui/input/InputPhone.vue';
+import Combobox from '@/components/ui/combobox/Combobox.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SectionHeader from '@/components/SectionHeader.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -82,7 +84,7 @@ const submit = () => {
 
                         <div class="flex flex-col gap-2">
                             <Label for="phone" class="text-sm font-medium text-foreground px-0.5">Nomor Telepon</Label>
-                            <Input id="phone" v-model="form.phone" placeholder="Contoh: 08123456789" class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 text-sm" :aria-invalid="!!form.errors.phone" />
+                            <InputPhone id="phone" v-model="form.phone" placeholder="Contoh: 08123456789" :aria-invalid="!!form.errors.phone" />
                         </div>
 
                         <div class="flex flex-col gap-2">
@@ -95,16 +97,12 @@ const submit = () => {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <Label for="customer_type_id" class="text-sm font-medium text-foreground px-0.5">Tipe Customer</Label>
-                            <Select :model-value="String(form.customer_type_id || '')" @update:model-value="(val) => form.customer_type_id = Number(val)">
-                                <SelectTrigger class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 text-sm">
-                                    <SelectValue placeholder="Pilih Tipe Customer" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="type in customerTypes" :key="type.id" :value="String(type.id)">
-                                        {{ type.name }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Combobox 
+                                v-model="form.customer_type_id" 
+                                :options="customerTypes.map(t => ({ value: t.id, label: t.name }))"
+                                placeholder="Pilih Tipe Customer"
+                                search-placeholder="Cari tipe..."
+                            />
                             <div v-if="form.errors.customer_type_id" class="text-xs text-destructive flex items-center gap-1 mt-1">
                                 ⚠️ {{ form.errors.customer_type_id }}
                             </div>
@@ -112,16 +110,12 @@ const submit = () => {
 
                         <div class="flex flex-col gap-2">
                             <Label for="customer_status_id" class="text-sm font-medium text-foreground px-0.5">Status Filter</Label>
-                            <Select :model-value="String(form.customer_status_id || '')" @update:model-value="(val) => form.customer_status_id = Number(val)">
-                                <SelectTrigger class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 text-sm">
-                                    <SelectValue placeholder="Pilih Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem v-for="status in customerStatuses" :key="status.id" :value="String(status.id)">
-                                        {{ status.name }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Combobox 
+                                v-model="form.customer_status_id" 
+                                :options="customerStatuses.map(t => ({ value: t.id, label: t.name }))"
+                                placeholder="Pilih Status"
+                                search-placeholder="Cari status..."
+                            />
                             <div v-if="form.errors.customer_status_id" class="text-xs text-destructive flex items-center gap-1 mt-1">
                                 ⚠️ {{ form.errors.customer_status_id }}
                             </div>
