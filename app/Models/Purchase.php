@@ -14,6 +14,7 @@ class Purchase extends Model
         'vendor_id',
         'tanggal',
         'transaction_type',
+        'payment_method',
         'status',
         'total_biaya',
         'keterangan',

@@ -10,8 +10,18 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
+
+defineProps<{
+    accounts: any[];
+}>();
 const expenseTypes = ref([
     { id: 'Listrik', nama: 'Listrik' },
     { id: 'Air & Galon', nama: 'Air & Galon' },
@@ -35,6 +45,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const form = useForm({
     tanggal: new Date().toISOString().slice(0, 10),
     jenis_pengeluaran: '',
+    account_id: '' as string | number,
     nama_pengeluaran: '',
     nominal: 0,
     keterangan: '',
@@ -85,28 +96,45 @@ const submit = (addAnother = false) => {
                             <InputError :message="form.errors.tanggal" />
                         </div>
                         <div class="flex flex-col gap-2">
-                            <CreatableSelect 
-                                v-model="form.jenis_pengeluaran" 
-                                :options="expenseTypes" 
-                                label="Jenis Pengeluaran"
-                                placeholder="Pilih atau Ketik Baru..." 
-                                :error="form.errors.jenis_pengeluaran"
-                                @create="handleCreateType"
-                            />
+                            <Label for="account_id">Kategori Akun (Accounting)</Label>
+                            <Select v-model="form.account_id" id="account_id">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih Akun Biaya..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem v-for="acc in accounts" :key="acc.id" :value="acc.id.toString()">
+                                        {{ acc.code }} - {{ acc.name }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError :message="form.errors.account_id" />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <Label for="nama_pengeluaran">Nama Pengeluaran</Label>
-                            <Input id="nama_pengeluaran" v-model="form.nama_pengeluaran"
-                                placeholder="Contoh: Token Listrik 100rb, atau Refill Galon Aqua" required />
-                            <InputError :message="form.errors.nama_pengeluaran" />
+                            <CreatableSelect 
+                                v-model="form.jenis_pengeluaran" 
+                                :options="expenseTypes" 
+                                label="Jenis Pengeluaran (Label)"
+                                placeholder="Pilih atau Ketik Baru..." 
+                                :error="form.errors.jenis_pengeluaran"
+                                @create="handleCreateType"
+                            />
                         </div>
                         <div class="flex flex-col gap-2">
                             <Label for="nominal">Nominal (Rp)</Label>
                             <Input id="nominal" type="number" v-model="form.nominal" required min="0" />
                             <InputError :message="form.errors.nominal" />
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="flex flex-col gap-2">
+                            <Label for="nama_pengeluaran">Nama Pengeluaran</Label>
+                            <Input id="nama_pengeluaran" v-model="form.nama_pengeluaran"
+                                placeholder="Contoh: Token Listrik 100rb, atau Refill Galon Aqua" required />
+                            <InputError :message="form.errors.nama_pengeluaran" />
                         </div>
                     </div>
 

@@ -150,6 +150,9 @@ const formatDate = (dateString: string) => {
                     <div class="flex flex-col gap-1">
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold font-mono px-1.5 py-0.5 bg-secondary text-muted-foreground rounded uppercase tracking-tighter">{{ row.jenis_pengeluaran }}</span>
+                            <span v-if="row.account" class="text-[10px] font-bold px-1.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded uppercase px-1 line-clamp-1">
+                                {{ row.account.code }}
+                            </span>
                         </div>
                         <span class="text-xs font-medium text-muted-foreground">{{ formatDate(row.tanggal) }}</span>
                     </div>

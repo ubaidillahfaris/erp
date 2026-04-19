@@ -61,6 +61,18 @@ const formatDateTime = (isoString?: string) => {
     });
 };
 
+const paymentMethodLabels: Record<string, string> = {
+    cash: 'Tunai (Cash)',
+    transfer: 'Transfer Bank',
+    credit: 'Kredit (Hutang)'
+};
+
+const paymentMethodVariants: Record<string, string> = {
+    cash: 'bg-blue-100 text-blue-700 border-blue-200',
+    transfer: 'bg-purple-100 text-purple-700 border-purple-200',
+    credit: 'bg-amber-100 text-amber-700 border-amber-200'
+};
+
 const { confirmDialog } = useConfirm();
 
 const handleFinalize = async () => {
@@ -124,9 +136,14 @@ const handleFinalize = async () => {
                     <div class="flex flex-col md:flex-row justify-between p-6 gap-6">
                         <div class="flex flex-col gap-1">
                             <h3 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Tipe Transaksi</h3>
-                            <p class="text-lg font-bold text-foreground">
-                                {{ typeLabels[purchase.transaction_type] || purchase.transaction_type }}
-                            </p>
+                            <div class="flex flex-col gap-1.5">
+                                <p class="text-lg font-bold text-foreground">
+                                    {{ typeLabels[purchase.transaction_type] || purchase.transaction_type }}
+                                </p>
+                                <Badge variant="outline" :class="['w-fit font-semibold px-2 py-0.5 text-[10px] uppercase tracking-wider', paymentMethodVariants[purchase.payment_method] || 'bg-slate-100 text-slate-700 border-slate-200']">
+                                    {{ paymentMethodLabels[purchase.payment_method] || purchase.payment_method }}
+                                </Badge>
+                            </div>
                         </div>
                         <div class="flex flex-col gap-1 md:items-end">
                             <h3 class="text-xs font-bold md:text-right uppercase tracking-widest text-muted-foreground">Total Nilai</h3>

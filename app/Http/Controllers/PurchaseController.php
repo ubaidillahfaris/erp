@@ -72,6 +72,7 @@ class PurchaseController extends Controller
                 'vendor_id' => $request->vendor_id,
                 'tanggal' => $request->tanggal,
                 'transaction_type' => $request->transaction_type,
+                'payment_method' => $request->payment_method,
                 'status' => 'draft',
                 'total_biaya' => $itemsTotal,
                 'keterangan' => $request->keterangan,
@@ -130,6 +131,7 @@ class PurchaseController extends Controller
                 'vendor_id' => $request->vendor_id,
                 'tanggal' => $request->tanggal,
                 'transaction_type' => $request->transaction_type,
+                'payment_method' => $request->payment_method,
                 'total_biaya' => $itemsTotal,
                 'keterangan' => $request->keterangan,
             ]);

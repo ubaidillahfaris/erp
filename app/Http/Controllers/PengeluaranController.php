@@ -26,19 +26,26 @@ class PengeluaranController extends Controller
             });
         }
 
-        $pengeluarans = $query->orderBy($sort, $direction)
+        $pengeluarans = $query->with('account')
+            ->orderBy($sort, $direction)
             ->paginate($perPage)
             ->withQueryString();
 
+        $accounts = \App\Models\Account::where('type', 'expense')->orderBy('code')->get();
+
         return inertia('pengeluaran/Index', [
             'pengeluarans' => $pengeluarans,
+            'accounts' => $accounts,
             'filters' => $request->only(['search', 'per_page', 'sort', 'direction']),
         ]);
     }
 
     public function create()
     {
-        return inertia('pengeluaran/Create');
+        $accounts = \App\Models\Account::where('type', 'expense')->orderBy('code')->get();
+        return inertia('pengeluaran/Create', [
+            'accounts' => $accounts
+        ]);
     }
 
     public function store(Request $request)
@@ -46,6 +53,7 @@ class PengeluaranController extends Controller
         $validated = $request->validate([
             'tanggal' => ['required', 'date'],
             'jenis_pengeluaran' => ['required', 'string', 'max:255'],
+            'account_id' => ['nullable', 'exists:accounts,id'],
             'nama_pengeluaran' => ['required', 'string', 'max:255'],
             'nominal' => ['required', 'numeric', 'min:0'],
             'keterangan' => ['nullable', 'string'],

@@ -61,6 +61,7 @@ const formItems = props.purchase.items.map((item: any) => ({
 const form = useForm({
     tanggal: props.purchase.tanggal,
     transaction_type: props.purchase.transaction_type,
+    payment_method: props.purchase.payment_method || 'cash',
     vendor_id: props.purchase.vendor_id || null,
     keterangan: props.purchase.keterangan || '',
     no_invoice: props.purchase.no_invoice || '',
@@ -195,6 +196,30 @@ const deleteExistingAttachment = async (id: string, name: string) => {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="flex flex-col gap-2">
+                            <Label for="payment_method">Metode Pembayaran</Label>
+                            <Select v-model="form.payment_method" id="payment_method">
+                                <SelectTrigger :disabled="form.transaction_type !== 'purchase'">
+                                    <SelectValue placeholder="Pilih Metode Bayar" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="cash">Tunai (Cash)</SelectItem>
+                                    <SelectItem value="transfer">Transfer Bank</SelectItem>
+                                    <SelectItem value="credit">Kredit (Hutang Vendor)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p class="text-xs text-muted-foreground mt-1">
+                                {{ form.payment_method === 'credit' ? 'Tagihan akan masuk ke daftar Hutang Usaha.' : 'Pembayaran akan langsung memotong saldo Kas/Bank.' }}
+                            </p>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <Label for="no_invoice">No Invoice / Ref (Opsional)</Label>
+                            <Input id="no_invoice" v-model="form.no_invoice" placeholder="Misal: INV/2026/04/001" />
+                            <p v-if="form.errors.no_invoice" class="text-sm text-destructive">{{ form.errors.no_invoice }}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex flex-col gap-2">
                             <div class="flex items-center justify-between">
                                 <Label>Supplier / Vendor</Label>
                                 <button type="button" v-if="form.transaction_type === 'purchase'" @click="isQuickVendorOpen = true" class="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
@@ -208,11 +233,6 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                                 :disabled="form.transaction_type !== 'purchase'"
                             />
                             <InputError :message="form.errors.vendor_id" />
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <Label for="no_invoice">No Invoice / Ref (Opsional)</Label>
-                            <Input id="no_invoice" v-model="form.no_invoice" placeholder="Misal: INV/2026/04/001" />
-                            <p v-if="form.errors.no_invoice" class="text-sm text-destructive">{{ form.errors.no_invoice }}</p>
                         </div>
                     </div>
                     

@@ -63,6 +63,36 @@ class ChartOfAccountsSeeder extends Seeder
                 'type' => 'expense',
                 'balance_type' => 'debit',
             ],
+            [
+                'code' => '6101',
+                'name' => 'Beban Listrik, Air & Gas',
+                'type' => 'expense',
+                'balance_type' => 'debit',
+            ],
+            [
+                'code' => '6102',
+                'name' => 'Beban Gaji & Upah',
+                'type' => 'expense',
+                'balance_type' => 'debit',
+            ],
+            [
+                'code' => '6103',
+                'name' => 'Beban Sewa & Keamanan',
+                'type' => 'expense',
+                'balance_type' => 'debit',
+            ],
+            [
+                'code' => '6104',
+                'name' => 'Beban Pemeliharaan & Alat',
+                'type' => 'expense',
+                'balance_type' => 'debit',
+            ],
+            [
+                'code' => '6201',
+                'name' => 'Beban Operasional Lainnya',
+                'type' => 'expense',
+                'balance_type' => 'debit',
+            ],
         ];
 
         foreach ($accounts as $account) {

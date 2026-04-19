@@ -13,9 +13,15 @@ class StorePurchaseRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        // Default payment_method to cash if not provided
+        if (!$this->payment_method) {
+            $this->merge(['payment_method' => 'cash']);
+        }
+
         if ($this->transaction_type !== 'purchase') {
             $this->merge([
                 'vendor_id' => null,
+                'payment_method' => 'cash',
             ]);
 
             if (is_array($this->items)) {
@@ -35,6 +41,7 @@ class StorePurchaseRequest extends FormRequest
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'tanggal' => ['required', 'date'],
             'transaction_type' => ['required', 'in:purchase,gift,adjustment'],
+            'payment_method' => ['required', 'string', 'in:cash,transfer,credit'],
             'keterangan' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.produk_id' => ['required', 'exists:produks,id'],

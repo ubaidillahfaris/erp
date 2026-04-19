@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Index already exists — skip silently
+        if (collect(\DB::select("SELECT indexname FROM pg_indexes WHERE tablename = 'journal_items' AND indexname = 'journal_items_account_id_index'"))->isNotEmpty()) {
+            return;
+        }
+
         Schema::table('journal_items', function (Blueprint $table) {
             $table->index('account_id');
         });

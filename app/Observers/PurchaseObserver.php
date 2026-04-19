@@ -35,6 +35,9 @@ class PurchaseObserver
 
     /**
      * Record double-entry journal for finalized purchase.
+     * Journal accounts depend on payment_method:
+     *   cash / transfer  → Dr. Persediaan / Cr. Kas & Bank (no Payable created)
+     *   credit           → Dr. Persediaan / Cr. Hutang Usaha + create Payable
      */
     protected function recordJournal(Purchase $purchase): void
     {
@@ -44,7 +47,7 @@ class PurchaseObserver
             throw new InvalidPurchaseAmountException();
         }
 
-        $tanggal = $purchase->tanggal; // Date instance from casts
+        $tanggal = $purchase->tanggal;
 
         $refNumber = sprintf(
             'PUR-%s-%d',
@@ -53,15 +56,22 @@ class PurchaseObserver
         );
 
         $vendorName = $purchase->vendor?->nama ?? 'Unknown Vendor';
-        $description = "Pembelian stok dari vendor: {$vendorName}";
+        $paymentMethod = $purchase->payment_method ?? 'cash';
 
-        // Accounts: Debit 1301 (Raw materials) vs Credit 2101 (Payables)
+        // Debit: Persediaan Bahan Baku always
         $rawMaterialAcc = Account::findByCode('1301');
-        $payableAcc = Account::findByCode('2101');
 
-        if (!$rawMaterialAcc || !$payableAcc) {
-            throw new \Exception("Required accounts (1301 or 2101) not found in Chart of Accounts.");
-        }
+        // Credit: depends on payment method
+        $creditAcc = match ($paymentMethod) {
+            'credit' => Account::findByCode('2101'), // Hutang Usaha
+            default  => Account::findByCode('1101'), // Kas & Bank
+        };
+
+        $description = match ($paymentMethod) {
+            'credit'   => "Pembelian kredit dari vendor: {$vendorName}",
+            'transfer' => "Pembelian via transfer dari vendor: {$vendorName}",
+            default    => "Pembelian tunai dari vendor: {$vendorName}",
+        };
 
         $amountCents = (int) round($amount * 100);
 
@@ -73,7 +83,7 @@ class PurchaseObserver
                     type: 'debit'
                 ),
                 new JournalItemData(
-                    account_id: $payableAcc->id,
+                    account_id: $creditAcc->id,
                     amount: $amountCents,
                     type: 'credit'
                 ),
@@ -85,5 +95,24 @@ class PurchaseObserver
         );
 
         $this->journalService->record($journalData);
+
+        // Only create Payable for credit purchases
+        if ($paymentMethod === 'credit' && $purchase->vendor_id) {
+            \App\Models\Payable::firstOrCreate(
+                ['reference_type' => 'purchase', 'reference_id' => $purchase->id],
+                [
+                    'type'             => 'payable',
+                    'party_type'       => 'vendor',
+                    'party_id'         => $purchase->vendor_id,
+                    'principal_amount' => $amount,
+                    'total_amount'     => $amount,
+                    'total_interest'   => 0,
+                    'paid_amount'      => 0,
+                    'remaining_amount' => $amount,
+                    'status'           => 'open',
+                    'created_by'       => auth()->id(),
+                ]
+            );
+        }
     }
 }
