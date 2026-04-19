@@ -30,6 +30,9 @@ class RoleAndPermissionSeeder extends Seeder
             'view reports',
             'make sales',
             'void sales',
+            'manage payables',
+            'manage payments',
+            'view payables',
         ];
 
         foreach ($permissions as $permission) {

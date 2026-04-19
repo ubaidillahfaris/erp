@@ -45,4 +45,9 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerPrice::class);
     }
+
+    public function creditSetting()
+    {
+        return $this->hasOne(CustomerCreditSetting::class);
+    }
 }

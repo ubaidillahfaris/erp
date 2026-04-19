@@ -108,6 +108,17 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::get('sales/{sale}', [SalesController::class, 'show'])->name('sales.show');
         Route::post('sales/{sale}/void', [SalesController::class, 'void'])->name('sales.void');
     });
+
+    // 6. PAYABLES & RECEIVABLES
+    Route::middleware('permission:view payables')->group(function () {
+        Route::get('payables', [PayableController::class, 'index'])->name('payables.index');
+        Route::get('payables/{payable}', [PayableController::class, 'show'])->name('payables.show');
+
+        // Manage Payments (Sub-permission)
+        Route::middleware('permission:manage payments')->group(function () {
+            Route::post('payables/{payable}/payments', [PayableController::class, 'storePayment'])->name('payables.payments.store');
+        });
+    });
 });
 
 require __DIR__.'/settings.php';
