@@ -145,7 +145,11 @@ const formatCurrency = (value: number) => {
                 <template #cell(info)="{ row }">
                     <div class="flex flex-col gap-0.5">
                         <span class="text-[13px] font-semibold text-foreground/80">{{ row.nama || 'Unnamed recipe' }}</span>
-                        <span class="text-xs text-muted-foreground italic tracking-tight opacity-60">Target Item SKU: {{ row.produk.sku }}</span>
+                        <div class="flex items-center gap-1.5 text-xs text-muted-foreground italic tracking-tight opacity-60">
+                            <span class="font-bold text-foreground/70">{{ row.expected_yield }} {{ row.yield_satuan?.nama || row.produk?.satuan?.nama }}</span>
+                            <span>•</span>
+                            <span>SKU: {{ row.produk.sku }}</span>
+                        </div>
                     </div>
                 </template>
 

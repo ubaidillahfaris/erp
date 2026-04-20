@@ -17,6 +17,7 @@ class Bom extends Model
         'nama',
         'is_active',
         'expected_yield',
+        'yield_satuan_id',
         'auto_deduct_on_sale',
     ];
 
@@ -34,6 +35,14 @@ class Bom extends Model
     public function produk(): BelongsTo
     {
         return $this->belongsTo(Produk::class, 'produk_id');
+    }
+
+    /**
+     * Get the unit for the yield total.
+     */
+    public function yieldSatuan(): BelongsTo
+    {
+        return $this->belongsTo(Satuan::class, 'yield_satuan_id');
     }
 
     /**

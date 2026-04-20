@@ -109,6 +109,8 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::prefix('accounting')->group(function () {
             Route::get('journal', [\App\Http\Controllers\Accounting\JournalController::class, 'index'])->name('accounting.journal.index');
             Route::get('trial-balance', [\App\Http\Controllers\Accounting\TrialBalanceController::class, 'index'])->name('accounting.trial-balance.index');
+            Route::post('accounting/trial-balance/refresh', [\App\Http\Controllers\Accounting\TrialBalanceController::class, 'refresh'])
+                ->name('accounting.trial-balance.refresh');
             Route::resource('accounts', \App\Http\Controllers\Accounting\AccountController::class);
         });
 

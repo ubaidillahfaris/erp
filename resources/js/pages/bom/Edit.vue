@@ -40,6 +40,7 @@ const form = useForm({
     nama: props.bom.nama || '',
     is_active: props.bom.is_active === true || Number(props.bom.is_active) === 1,
     expected_yield: props.bom.expected_yield || 1,
+    yield_satuan_id: props.bom.yield_satuan_id ? props.bom.yield_satuan_id.toString() : '',
     auto_deduct_on_sale: props.bom.auto_deduct_on_sale === true || Number(props.bom.auto_deduct_on_sale) === 1,
     items: props.bom.items.map((item: any) => ({
         produk_id: item.produk_id.toString(),
@@ -48,9 +49,20 @@ const form = useForm({
     })) as BOMItem[]
 });
 
-const selectedProdukSatuan = computed(() => {
-    const prd = props.produks.find((p: any) => p.id.toString() === form.produk_id);
-    return prd?.satuan?.simbol || '';
+const selectedYieldSatuanSimbol = computed(() => {
+    const sat = props.satuans.find(s => s.id.toString() === form.yield_satuan_id?.toString());
+    return sat?.simbol || '';
+});
+
+import { watch } from 'vue';
+
+watch(() => form.produk_id, (newVal) => {
+    if (newVal) {
+        const prd = props.produks.find((p: any) => p.id.toString() === newVal);
+        if (prd && prd.satuan_id) {
+            form.yield_satuan_id = prd.satuan_id.toString();
+        }
+    }
 });
 
 const shouldShowSyncBanner = computed(() => {
@@ -186,8 +198,8 @@ const submit = () => {
                     <div class="space-y-1">
                         <p class="font-medium">Data Produksi Aktual Berbeda</p>
                         <p class="text-sm opacity-90">Sistem mendeteksi bahwa pada produksi terbaru, resep ini
-                            menghasilkan <strong>{{ latest_production_yield }} {{ selectedProdukSatuan }}</strong>
-                            aktual (berbeda dari estimasi {{ form.expected_yield }} {{ selectedProdukSatuan }}).</p>
+                            menghasilkan <strong>{{ latest_production_yield }} {{ selectedYieldSatuanSimbol }}</strong>
+                            aktual (berbeda dari estimasi {{ form.expected_yield }} {{ selectedYieldSatuanSimbol }}).</p>
                     </div>
                 </div>
                 <Button type="button" @click="syncYield" variant="default"
@@ -232,14 +244,18 @@ const submit = () => {
                             <Label for="expected_yield">Estimasi Hasil Jadi (Yield)</Label>
                             <div class="flex flex-row items-center gap-2">
                                 <Input id="expected_yield" type="number" step="0.0001" min="0.0001"
-                                    v-model="form.expected_yield" />
-                                <span class="text-muted-foreground whitespace-nowrap min-w-8">{{ selectedProdukSatuan
-                                }}</span>
+                                    v-model="form.expected_yield" class="w-1/2" />
+                                <div class="flex-1">
+                                    <CreatableSelect v-model="form.yield_satuan_id" :options="satuans"
+                                        placeholder="Pilih Satuan" hide-label hide-error display-expr="simbol"
+                                        @create="(nama: string) => handleCreateSatuan(nama, (id: number) => form.yield_satuan_id = id)" />
+                                </div>
                             </div>
                             <p v-if="form.errors.expected_yield" class="text-sm text-destructive">{{
                                 form.errors.expected_yield }}</p>
-                            <p class="text-xs text-muted-foreground">Jumlah barang jadi yang dihasilkan dari komposisi
-                                di bawah.</p>
+                            <p v-if="form.errors.yield_satuan_id" class="text-sm text-destructive">{{
+                                form.errors.yield_satuan_id }}</p>
+                            <p class="text-xs text-muted-foreground">Jumlah barang jadi yang dihasilkan dari komposisi di bawah.</p>
                         </div>
 
                         <div class="flex items-center space-x-2 py-4 border-t border-muted/50 mt-4">
@@ -327,7 +343,7 @@ const submit = () => {
                         <span class="text-lg font-semibold">{{ formatCurrency(totalEstimatedCost) }}</span>
                     </div>
                     <div class="text-right">
-                        <span class="text-sm text-muted-foreground block">Estimasi HPP per {{ selectedProdukSatuan ||
+                        <span class="text-sm text-muted-foreground block">Estimasi HPP per {{ selectedYieldSatuanSimbol ||
                             'Unit' }}:</span>
                         <span class="text-2xl font-bold text-primary">{{ formatCurrency(totalEstimatedCost /
                             (form.expected_yield || 1)) }}</span>

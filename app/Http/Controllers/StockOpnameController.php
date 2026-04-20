@@ -7,6 +7,12 @@ use App\Models\StockOpname;
 use App\Models\StockOpnameItem;
 use App\Actions\RecordStockMovement;
 use App\Services\StornoService;
+use App\Models\ProductPriceStat;
+use App\Services\JournalService;
+use App\DTOs\JournalEntryData;
+use App\DTOs\JournalItemData;
+use App\Models\Account;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +68,7 @@ class StockOpnameController extends Controller
             'items.*.satuan_id' => 'required|exists:satuans,id',
             'items.*.system_qty' => 'required|numeric',
             'items.*.physical_qty' => 'required|numeric',
+            'items.*.harga_satuan' => 'nullable|numeric',
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -71,7 +78,18 @@ class StockOpnameController extends Controller
                 'status' => $validated['status'],
             ]);
 
-            foreach ($validated['items'] as $item) {
+            foreach ($validated['items'] as &$item) {
+                if (!isset($item['harga_satuan']) || $item['harga_satuan'] === null) {
+                    $avgPrice = ProductPriceStat::where('produk_id', $item['produk_id'])->value('avg_price');
+                    if ($avgPrice === null) {
+                        Log::warning("harga_satuan not found for produk_id {$item['produk_id']}");
+                        $item['harga_satuan'] = 0;
+                    } else {
+                        $item['harga_satuan'] = (int) round(((float)$avgPrice) * 100);
+                    }
+                } else {
+                    $item['harga_satuan'] = (int) round(((float)$item['harga_satuan']) * 100);
+                }
                 $opname->items()->create($item);
             }
 
@@ -131,6 +149,7 @@ class StockOpnameController extends Controller
             'items.*.satuan_id' => 'required|exists:satuans,id',
             'items.*.system_qty' => 'required|numeric',
             'items.*.physical_qty' => 'required|numeric',
+            'items.*.harga_satuan' => 'nullable|numeric',
         ]);
 
         DB::transaction(function () use ($validated, $stockOpname) {
@@ -141,7 +160,18 @@ class StockOpnameController extends Controller
             ]);
 
             $stockOpname->items()->delete();
-            foreach ($validated['items'] as $item) {
+            foreach ($validated['items'] as &$item) {
+                if (!isset($item['harga_satuan']) || $item['harga_satuan'] === null) {
+                    $avgPrice = ProductPriceStat::where('produk_id', $item['produk_id'])->value('avg_price');
+                    if ($avgPrice === null) {
+                        Log::warning("harga_satuan not found for produk_id {$item['produk_id']}");
+                        $item['harga_satuan'] = 0;
+                    } else {
+                        $item['harga_satuan'] = (int) round(((float)$avgPrice) * 100);
+                    }
+                } else {
+                    $item['harga_satuan'] = (int) round(((float)$item['harga_satuan']) * 100);
+                }
                 $stockOpname->items()->create($item);
             }
 
@@ -172,6 +202,8 @@ class StockOpnameController extends Controller
                 'reason' => 'nullable|string|max:255',
             ]);
 
+            // STORNO NOTE: Manual reversal required for journals.
+            Log::info("Manual reversal required for journals of OPN-{$stockOpname->id}");
             $this->stornoService->perform($stockOpname, $validated['reason'] ?? 'Dibatalkan oleh pengguna');
 
             return redirect()->back()->with('success', 'Hasil opname berhasil dibatalkan.');
@@ -215,6 +247,54 @@ class StockOpnameController extends Controller
                     'reference_id' => $opname->id,
                     'keterangan' => 'Penyesuaian stok dari Opname #' . $opname->id . ' tgl ' . ($opname->tanggal instanceof \Carbon\Carbon ? $opname->tanggal->format('d/m/Y') : $opname->tanggal),
                 ]);
+
+                // Journal Logic
+                try {
+                    $diffQty = (float) $item->physical_qty - (float) $item->system_qty;
+                    $hargaSatuan = (int) ($item->harga_satuan ?? 0);
+                    $nilaiSelisih = (int) round(abs($diffQty) * $hargaSatuan);
+
+                    if ($nilaiSelisih > 0) {
+                        $journalService = app(JournalService::class);
+                        $refNumber = "OPN-" . ($opname->tanggal instanceof \Carbon\Carbon ? $opname->tanggal->format('Ymd') : date('Ymd', strtotime((string)$opname->tanggal))) . "-{$opname->id}-{$item->id}";
+                        
+                        $persediaanAccount = Account::where('code', '1301')->first();
+                        $itemsData = [];
+
+                        if ($diffQty > 0) {
+                            // Surplus
+                            $incomeAccount = Account::where('code', '4102')->first();
+                            if ($persediaanAccount && $incomeAccount) {
+                                $itemsData = [
+                                    new JournalItemData($persediaanAccount->id, $nilaiSelisih, 'debit'),
+                                    new JournalItemData($incomeAccount->id, $nilaiSelisih, 'credit'),
+                                ];
+                            }
+                        } else {
+                            // Shrinkage
+                            $expenseAccount = Account::where('code', '6201')->first();
+                            if ($persediaanAccount && $expenseAccount) {
+                                $itemsData = [
+                                    new JournalItemData($expenseAccount->id, $nilaiSelisih, 'debit'),
+                                    new JournalItemData($persediaanAccount->id, $nilaiSelisih, 'credit'),
+                                ];
+                            }
+                        }
+
+                        if (!empty($itemsData)) {
+                            $journalData = new JournalEntryData(
+                                items: $itemsData,
+                                description: "Penyesuaian stok Opname #{$opname->id} item {$item->produk_id}",
+                                tanggal: $opname->tanggal,
+                                ref_number: $refNumber,
+                                journalable: $opname
+                            );
+                            $journalService->record($journalData);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error("Failed to record journal for Opname item #{$item->id}: " . $e->getMessage());
+                }
             }
         }
     }

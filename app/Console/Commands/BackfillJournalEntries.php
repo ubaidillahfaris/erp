@@ -35,7 +35,7 @@ class BackfillJournalEntries extends Command
         }
 
         // Pre-check: Required accounts must exist
-        $requiredCodes = ['1101', '1102', '1301', '1302', '2101', '4101', '5101', '6201'];
+        $requiredCodes = ['1101', '1102', '1301', '1302', '2101', '4101', '5101', '6101', '6201'];
         $accounts = Account::whereIn('code', $requiredCodes)->pluck('id', 'code');
         $missingCodes = array_diff($requiredCodes, $accounts->keys()->toArray());
 
@@ -233,7 +233,7 @@ class BackfillJournalEntries extends Command
             $amountCents = (int) round($amount * 100);
 
             // Determine Debit Account (Expense)
-            $expenseAccId = $expense->account_id ?? $accounts['6201'];
+            $expenseAccId = $expense->account_id ?? $accounts['6101'];
             
             $this->line("  Creating: {$refNumber} — Rp " . number_format($amount, 0, ',', '.'));
 

@@ -2,7 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { 
     Calculator, Hash, CheckCircle2, AlertCircle, 
-    ArrowLeft, Printer, FileDown
+    ArrowLeft, Printer, FileDown, RefreshCw
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -103,6 +103,18 @@ const isAbnormal = (account: Account) => {
                     <h1 class="text-xl font-bold tracking-tight text-slate-900">Trial Balance (Neraca Saldo)</h1>
                     <p class="text-sm text-slate-400 mt-0.5">Audit saldo seluruh akun per {{ generated_at }}</p>
                 </div>
+
+                <form @submit.prevent="$inertia.post(route('accounting.trial-balance.refresh'))">
+                    <Button 
+                        type="submit" 
+                        variant="outline" 
+                        size="sm"
+                        class="h-8 gap-2 text-slate-500 border-slate-200"
+                    >
+                        <RefreshCw class="h-3.5 w-3.5" />
+                        Refresh Data
+                    </Button>
+                </form>
             </div>
 
             <div class="flex items-center gap-2">

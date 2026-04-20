@@ -88,8 +88,14 @@ class ChartOfAccountsSeeder extends Seeder
                 'balance_type' => 'debit',
             ],
             [
+                'code' => '4102',
+                'name' => 'Pendapatan Lain-lain',
+                'type' => 'income',
+                'balance_type' => 'credit',
+            ],
+            [
                 'code' => '6201',
-                'name' => 'Beban Operasional Lainnya',
+                'name' => 'Kerugian Selisih Stok',
                 'type' => 'expense',
                 'balance_type' => 'debit',
             ],

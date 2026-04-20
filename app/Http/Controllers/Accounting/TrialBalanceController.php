@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Accounting;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,6 +22,16 @@ class TrialBalanceController extends Controller
                 ->get()
                 ->values();
         });
+        
+        if ($accounts->isEmpty()) {
+            Cache::forget('trial_balance_current');
+            $accounts = Account::query()
+                ->where('is_active', true)
+                ->withSum('journalItems', 'debit')
+                ->withSum('journalItems', 'credit')
+                ->orderBy('code')
+                ->get();
+        }
 
         $grandTotalDebit = 0;
         $grandTotalCredit = 0;
@@ -41,5 +52,12 @@ class TrialBalanceController extends Controller
             'is_balanced' => $isBalanced,
             'generated_at' => now()->toDateTimeString(),
         ]);
+    }
+
+    public function refresh(): RedirectResponse
+    {
+        Cache::forget('trial_balance_current');
+        return redirect()->route('accounting.trial-balance.index')
+            ->with('success', 'Trial Balance berhasil diperbarui.');
     }
 }

@@ -51,7 +51,7 @@ if (props.reproduceFrom) {
     form.bom_id = props.reproduceFrom.bom_id;
     form.produk_id = props.reproduceFrom.produk_id;
     form.target_yield = props.reproduceFrom.target_yield;
-    targetYieldUnit.value = props.reproduceFrom.produk?.satuan?.nama || '';
+    targetYieldUnit.value = props.reproduceFrom.yield_satuan?.nama || props.reproduceFrom.produk?.satuan?.nama || '';
 
     // 2. Ensure the BOM is in the selection options
     if (props.reproduceFrom.bom) {
@@ -119,7 +119,7 @@ watch(() => form.bom_id, (newBomId) => {
     if (selectedBom) {
         form.produk_id = selectedBom.produk_id;
         form.target_yield = selectedBom.expected_yield || 1;
-        targetYieldUnit.value = selectedBom.produk?.satuan?.nama || '';
+        targetYieldUnit.value = selectedBom.yield_satuan?.nama || selectedBom.produk?.satuan?.nama || '';
 
         form.items = (selectedBom.items || []).map((item: any) => ({
             produk_id: item.produk_id,

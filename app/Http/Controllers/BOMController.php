@@ -23,7 +23,7 @@ class BOMController extends Controller
         $sort = $request->input('sort') ?: 'created_at';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
-        $query = Bom::with('produk.satuan', 'produk.currentPrice');
+        $query = Bom::with('produk.satuan', 'produk.currentPrice', 'yieldSatuan');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -105,7 +105,7 @@ class BOMController extends Controller
      */
     public function edit(Bom $bom): Response
     {
-        $bom->load('items.produk.satuan');
+        $bom->load(['items.produk.satuan', 'yieldSatuan']);
 
         $produks = Produk::whereIn('type', ['finished_good', 'intermediate_good'])
             ->where(function ($query) use ($bom) {

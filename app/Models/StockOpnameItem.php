@@ -12,6 +12,7 @@ class StockOpnameItem extends Model
         'satuan_id',
         'system_qty',
         'physical_qty',
+        'harga_satuan',
     ];
 
     protected function casts(): array
@@ -19,6 +20,7 @@ class StockOpnameItem extends Model
         return [
             'system_qty' => 'decimal:4',
             'physical_qty' => 'decimal:4',
+            'harga_satuan' => 'integer',
         ];
     }
 
