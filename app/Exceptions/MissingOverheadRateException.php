@@ -10,6 +10,6 @@ class MissingOverheadRateException extends Exception
 {
     public function __construct(string $productName)
     {
-        parent::__construct("Cannot complete production: Product '{$productName}' is missing overhead_rate_per_unit.");
+        parent::__construct("Gagal menyelesaikan produksi: Produk '{$productName}' belum memiliki data Biaya Overhead per Unit. Silakan edit produk terkait terlebih dahulu.");
     }
 }

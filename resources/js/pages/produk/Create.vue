@@ -151,21 +151,23 @@ const handleCreateSatuan = async (nama: string) => {
                         </div>
                     </div>
                     
-                    <div v-if="form.type === 'finished_good'" class="flex flex-col gap-2 p-4 rounded-xl bg-amber-50/50 border border-amber-100">
-                        <Label for="overhead_rate" class="text-amber-900 font-bold">Biaya Overhead per Unit</Label>
+                    <div v-if="form.type === 'finished_good' || form.type === 'intermediate_good'" class="flex flex-col gap-2 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                        <Label for="overhead_rate" class="text-slate-900 font-medium">Biaya Overhead per Unit</Label>
                         <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-sm text-amber-500 font-bold">Rp</span>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-slate-500 sm:text-sm font-medium">Rp</span>
+                            </div>
                             <Input 
                                 id="overhead_rate" 
                                 type="number" 
                                 step="0.01" 
                                 min="0" 
                                 v-model="form.overhead_rate" 
-                                class="pl-9 bg-white border-amber-200 focus-visible:ring-amber-500" 
+                                class="pl-9 bg-white" 
                                 placeholder="0.00"
                             />
                         </div>
-                        <p class="text-xs text-amber-600 italic">Estimasi biaya listrik & produksi per unit output</p>
+                        <p class="text-xs text-slate-500">Estimasi biaya listrik & produksi per unit output.</p>
                         <InputError :message="form.errors.overhead_rate" />
                     </div>
 

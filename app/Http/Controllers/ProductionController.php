@@ -167,49 +167,53 @@ class ProductionController extends Controller
 
     public function update(UpdateProductionRequest $request, Production $production): RedirectResponse
     {
-        DB::transaction(function () use ($request, $production) {
-            $validated = $request->validated();
+        try {
+            DB::transaction(function () use ($request, $production) {
+                $validated = $request->validated();
 
-            $totalCost = 0;
+                $totalCost = 0;
 
-            foreach ($validated['items'] as $itemData) {
-                // Update item actual_qty
-                $item = $production->items()->find($itemData['id']);
+                foreach ($validated['items'] as $itemData) {
+                    // Update item actual_qty
+                    $item = $production->items()->find($itemData['id']);
 
-                // Get the current HPP of the ingredient
-                $ingredientProduk = Produk::with('currentPrice')->find($itemData['produk_id']);
-                $basePricePerUnit = $ingredientProduk->currentPrice ? $ingredientProduk->currentPrice->purchase_price : 0;
+                    // Get the current HPP of the ingredient
+                    $ingredientProduk = Produk::with('currentPrice')->find($itemData['produk_id']);
+                    $basePricePerUnit = $ingredientProduk->currentPrice ? $ingredientProduk->currentPrice->purchase_price : 0;
 
-                // Calculate scale factor if units differ
-                $ingredientBaseSatuanId = $ingredientProduk->satuan_id;
-                $usedSatuanId = $itemData['satuan_id'];
+                    // Calculate scale factor if units differ
+                    $ingredientBaseSatuanId = $ingredientProduk->satuan_id;
+                    $usedSatuanId = $itemData['satuan_id'];
 
-                $conversionRatio = 1;
-                if ($ingredientBaseSatuanId !== $usedSatuanId) {
-                    $conversionRatio = app(\App\Services\SatuanService::class)->getConversionRatio($ingredientBaseSatuanId, $usedSatuanId);
+                    $conversionRatio = 1;
+                    if ($ingredientBaseSatuanId !== $usedSatuanId) {
+                        $conversionRatio = app(\App\Services\SatuanService::class)->getConversionRatio($ingredientBaseSatuanId, $usedSatuanId);
+                    }
+
+                    // Cost for this ingredient = (price_per_base_unit / conversion_multiplier) * (qty_used)
+                    $itemCost = ($basePricePerUnit / ($conversionRatio ?: 1)) * $itemData['actual_qty'];
+                    $totalCost += $itemCost;
+
+                    $item->update([
+                        'actual_qty' => $itemData['actual_qty'],
+                        'harga_satuan' => $basePricePerUnit,
+                    ]);
                 }
 
-                // Cost for this ingredient = (price_per_base_unit / conversion_multiplier) * (qty_used)
-                $itemCost = ($basePricePerUnit / ($conversionRatio ?: 1)) * $itemData['actual_qty'];
-                $totalCost += $itemCost;
-
-                $item->update([
-                    'actual_qty' => $itemData['actual_qty'],
-                    'harga_satuan' => $basePricePerUnit,
+                // Update header
+                $production->update([
+                    'actual_yield' => $validated['actual_yield'],
+                    'status' => 'completed',
+                    'total_cost' => $totalCost,
                 ]);
-            }
 
-            // Update header
-            $production->update([
-                'actual_yield' => $validated['actual_yield'],
-                'status' => 'completed',
-                'total_cost' => $totalCost,
-            ]);
-
-            // Note: Dedicated Action to recalculate HPP & update Stock goes here
-            // We can optionally use Observers or an Action class similar to RecalculateHpp
-            app(\App\Actions\CompleteProduction::class)->handle($production);
-        });
+                // Note: Dedicated Action to recalculate HPP & update Stock goes here
+                // We can optionally use Observers or an Action class similar to RecalculateHpp
+                app(\App\Actions\CompleteProduction::class)->handle($production);
+            });
+        } catch (\App\Exceptions\MissingOverheadRateException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
         return redirect()->route('production.index')->with('success', 'Produksi berhasil diselesaikan.');
     }
