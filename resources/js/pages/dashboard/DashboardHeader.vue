@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { Menu, Plus, Search } from 'lucide-vue-next';
+import { Plus, Search } from 'lucide-vue-next';
 
 defineProps<{
     user: { name?: string } | null;
@@ -10,9 +10,6 @@ defineProps<{
 <template>
   <header class="flex items-center justify-between gap-4 font-['Plus_Jakarta_Sans',sans-serif]">
     <div class="flex items-center gap-4">
-      <button class="h-12 w-12 rounded-full bg-card border border-border/50 flex items-center justify-center hover:bg-muted transition shadow-sm" aria-label="Menu">
-        <Menu class="h-5 w-5 text-foreground" />
-      </button>
       <div class="flex items-center gap-3">
         <div class="h-12 w-12 rounded-full bg-slate-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-black text-xl shadow-md tracking-tighter">W</div>
         <div class="leading-tight">

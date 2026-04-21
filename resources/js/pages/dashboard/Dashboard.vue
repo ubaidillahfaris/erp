@@ -414,21 +414,17 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
       <div class="mt-8 overflow-hidden rounded-2xl border border-border/60 shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow class="bg-muted/30 hover:bg-muted/30 border-b border-border/60">
-              <TableHead class="font-bold text-foreground text-[13px] py-4 px-6 uppercase tracking-wider">Ref ID
-              </TableHead>
-              <TableHead class="font-bold text-foreground text-[13px] py-4 uppercase tracking-wider">Kategori
-              </TableHead>
-              <TableHead class="font-bold text-foreground text-[13px] py-4 uppercase tracking-wider">Tanggal</TableHead>
-              <TableHead class="font-bold text-foreground text-[13px] py-4 uppercase tracking-wider">Status</TableHead>
-              <TableHead class="font-bold text-foreground text-[13px] py-4 pr-6 text-right uppercase tracking-wider">
-                Total IDR</TableHead>
+            <TableRow>
+              <TableHead class="uppercase tracking-wider">Ref ID</TableHead>
+              <TableHead class="uppercase tracking-wider">Kategori</TableHead>
+              <TableHead class="uppercase tracking-wider">Tanggal</TableHead>
+              <TableHead class="uppercase tracking-wider">Status</TableHead>
+              <TableHead class="text-right uppercase tracking-wider">Total IDR</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="(tx, idx) in recent_sales" :key="idx"
-              class="border-b border-border/40 hover:bg-muted/20 cursor-pointer transition-colors group">
-              <TableCell class="py-4 px-6">
+            <TableRow v-for="(tx, idx) in recent_sales" :key="idx" class="cursor-pointer group">
+              <TableCell>
                 <div class="flex items-center gap-4">
                   <span
                     class="h-10 w-10 rounded-full flex items-center justify-center bg-primary/10 text-primary shrink-0 group-hover:scale-110 transition-transform">
@@ -442,20 +438,18 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
                   </div>
                 </div>
               </TableCell>
-              <TableCell class="py-4">
-                <span
-                  class="text-xs px-3 py-1.5 rounded-full border border-border/60 font-bold text-foreground shadow-sm bg-background">Income</span>
+              <TableCell>
+                <span class="text-xs px-3 py-1.5 rounded-full border border-border/60 font-bold text-foreground shadow-sm bg-background">Income</span>
               </TableCell>
-              <TableCell class="text-[13px] font-bold text-muted-foreground py-4">{{ formatDate(tx.tanggal) }}
-              </TableCell>
-              <TableCell class="py-4">
+              <TableCell class="text-[13px] font-bold text-muted-foreground">{{ formatDate(tx.tanggal) }}</TableCell>
+              <TableCell>
                 <span
                   class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-md shadow-emerald-500/50" />
                   Completed
                 </span>
               </TableCell>
-              <TableCell class="text-right font-black text-base text-primary tracking-tight py-4 pr-6">
+              <TableCell class="text-right font-black text-base text-primary tracking-tight">
                 + {{ formatRupiah(tx.total_amount) }}
               </TableCell>
             </TableRow>

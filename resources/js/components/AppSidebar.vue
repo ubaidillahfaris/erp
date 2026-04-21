@@ -5,7 +5,7 @@ import {
     FileText, ReceiptText, PieChart, PackageOpen, Boxes,
     ClipboardList, Building2, Landmark, Users, ShieldCheck,
     Search, Zap, ChevronsUpDown, Settings, LifeBuoy, Bell,
-    Store, History as HistoryIcon
+    Store, History as HistoryIcon, Menu
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
@@ -18,12 +18,14 @@ import {
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar
 } from '@/components/ui/sidebar';
 import type { NavItem } from '@/types';
 
 const page = usePage();
 const user = computed(() => (page.props.auth as any).user);
 const menus = computed(() => (page.props.menus as any[]) || []);
+const { toggleSidebar } = useSidebar();
 
 const iconMap: Record<string, any> = {
     LayoutGrid, Package, Ruler, ShoppingCart, ShoppingBag,
@@ -56,17 +58,22 @@ const groupedMenus = computed(() => {
     class="border-r border-sidebar-border bg-white shadow-none font-['Plus_Jakarta_Sans',sans-serif]">
 
     <!-- ── HEADER: Logo ── -->
-    <SidebarHeader class="px-5 pt-8 pb-6">
-        <Link href="/dashboard" class="flex items-center gap-3 group transition-transform active:scale-95">
-            <div
-                class="h-9 w-9 shrink-0 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-none ">
-                <Store class="h-5 w-5" />
-            </div>
-            <span
-                class="text-xl font-black tracking-tighter text-slate-900 group-data-[collapsible=icon]:hidden dark:text-white">
-                Warung<span class="text-blue-600">.ERP</span>
-            </span>
-        </Link>
+    <SidebarHeader class="px-5 pt-8 pb-6 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:pt-6">
+        <div class="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
+            <Link href="/dashboard" class="flex items-center gap-3 group transition-transform active:scale-95 group-data-[collapsible=icon]:hidden">
+                <div
+                    class="h-9 w-9 shrink-0 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-none ">
+                    <Store class="h-5 w-5" />
+                </div>
+                <span
+                    class="text-xl font-black tracking-tighter text-slate-900 group-data-[collapsible=icon]:hidden dark:text-white">
+                    Warung<span class="text-blue-600">.ERP</span>
+                </span>
+            </Link>
+            <button @click="toggleSidebar" class="h-9 w-9 shrink-0 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-500">
+                <Menu class="h-5 w-5" />
+            </button>
+        </div>
     </SidebarHeader>
 
     <!-- ── NAV ITEMS ── -->
