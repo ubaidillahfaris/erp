@@ -6,6 +6,7 @@ import Map from '@/components/Map.vue';
 import SalesTrendChart from '@/components/Dashboard/SalesTrendChart.vue';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
+import { Separator } from '@/components/ui/separator'
 import {
     Banknote, AlertTriangle, FlaskConical, TrendingDown,
     Plus, ChevronRight, FileText, PackageOpen, Store,
@@ -146,271 +147,292 @@ const metricCards = computed(() => [
 <Head title="Dashboard" />
 
 <div class="min-h-screen bg-slate-50 font-['Plus_Jakarta_Sans',sans-serif]">
-<div class="p-6 md:p-8 space-y-6">
+    <div class="p-6 md:p-8 space-y-6">
 
-    <!-- ─── GREETING ROW ─── -->
-    <div class="flex items-center justify-between">
-        <div>
-            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">
-                {{ new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) }}
-            </p>
-            <h1 class="text-2xl font-black tracking-tight text-slate-900 mt-1">
-                Selamat datang kembali, {{ user?.name?.split(' ')[0] ?? 'Admin' }} 👋
-            </h1>
+        <!-- ─── GREETING ROW ─── -->
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs font-medium uppercase tracking-widest text-slate-400">
+                    {{ new Date().toLocaleDateString('id-ID', {
+                        weekday: 'long', day: 'numeric', month: 'long', year:
+                            'numeric'
+                    }) }}
+                </p>
+                <h1 class="text-3xl font-medium tracking-tight text-slate-900 mt-1">
+                    Selamat datang kembali, {{ user?.name?.split(' ')[0] ?? 'Admin' }} 👋
+                </h1>
+            </div>
         </div>
-        <div class="flex items-center gap-2">
+
+
+        <!-- Quick Actions -->
+        <div
+            class="w-fit flex items-center bg-white border border-slate-200 rounded-full  overflow-hidden divide-x divide-slate-100">
             <Link v-for="action in quickActions" :key="action.label" :href="action.href"
-                class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl transition-all text-xs font-semibold text-slate-600"
-            >
-                <component :is="action.icon" class="h-3.5 w-3.5" :class="action.color.split(' ')[0]" />
-                {{ action.label }}
+                class="flex items-center gap-2.5 px-4 py-1.5 hover:bg-slate-50/80 transition-colors group">
+                <div :class="['p-1.5 rounded-lg border border-white/50', action.color.split(' ')[1]]">
+                    <component :is="action.icon" :class="['h-3.5 w-3.5', action.color.split(' ')[0]]" />
+                </div>
+                <span
+                    class="text-[11px] font-bold text-slate-600 group-hover:text-slate-900 transition-colors uppercase tracking-wide">{{
+                        action.label }}</span>
             </Link>
         </div>
-    </div>
+        <!-- End Quick Actions -->
 
-    <!-- ─── METRIC CARDS ROW ─── -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div v-for="card in metricCards" :key="card.label"
-            class="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-3 hover:border-slate-300 transition-all"
-        >
-            <div class="flex items-center justify-between">
-                <div :class="['p-2 rounded-lg', card.bg]">
-                    <component :is="card.icon" :class="['h-4 w-4', card.color]" />
-                </div>
-                <div :class="['flex items-center gap-1 text-xs font-bold',
-                    card.trend === 'up' ? 'text-emerald-600' :
-                    card.trend === 'down' ? 'text-red-500' : 'text-slate-400'
-                ]">
-                    <ArrowUp v-if="card.trend === 'up'" class="h-3 w-3" />
-                    <ArrowDown v-else-if="card.trend === 'down'" class="h-3 w-3" />
-                    <Minus v-else class="h-3 w-3" />
-                </div>
-            </div>
-            <div>
-                <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400 leading-none">{{ card.label }}</p>
-                <h3 class="text-xl font-black text-slate-900 mt-1.5 tabular-nums leading-none">{{ card.value }}</h3>
-                <p class="text-[11px] text-slate-400 mt-1">{{ card.sub }}</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── MAIN CONTENT GRID ─── -->
-    <div class="grid grid-cols-12 gap-6">
-
-        <!-- Sales Trend Chart — span 8 -->
-        <div class="col-span-12 lg:col-span-8">
-            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                <!-- Header -->
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-violet-50 rounded-lg">
-                            <BarChart3 class="h-4 w-4 text-violet-600" />
+        <!-- ─── METRIC OVERVIEW ─── -->
+        <div class="bg-white border border-slate-200 rounded-2xl  overflow-hidden">
+            <div class="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+                <div v-for="card in metricCards" :key="card.label"
+                    class="p-6 flex flex-col gap-4 hover:bg-slate-50/80 transition-colors group">
+                    <div class="flex items-center justify-between">
+                        <div :class="['p-2.5 rounded-xl border border-white/50 shadow-sm', card.bg]">
+                            <component :is="card.icon" :class="['h-5 w-5', card.color]" />
                         </div>
-                        <div>
-                            <p class="text-sm font-bold text-slate-900">Revenue Flow</p>
-                            <p class="text-xs text-slate-400">{{ formatRupiah(totalTrend) }} total periode</p>
+                        <div :class="['flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full',
+                            card.trend === 'up' ? 'text-emerald-700 bg-emerald-100/50' :
+                                card.trend === 'down' ? 'text-red-700 bg-red-100/50' : 'text-slate-500 bg-slate-100'
+                        ]">
+                            <ArrowUp v-if="card.trend === 'up'" class="h-3 w-3" />
+                            <ArrowDown v-else-if="card.trend === 'down'" class="h-3 w-3" />
+                            <Minus v-else class="h-3 w-3" />
+                            <span class="leading-none">{{ card.trend === 'up' ? 'Naik' : card.trend === 'down' ? 'Turun'
+                                : 'Stabil' }}</span>
                         </div>
                     </div>
-                    <!-- Interval Switcher -->
-                    <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1">
-                        <button
-                            v-for="intv in ['H', 'D', 'W', 'M', 'Y']"
-                            :key="intv"
-                            @click="updateInterval(intv)"
-                            :class="[
-                                'px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider transition-all',
-                                current_interval === intv
-                                    ? 'bg-white text-slate-900 border border-slate-200'
-                                    : 'text-slate-400 hover:text-slate-600'
-                            ]"
-                        >{{ intv }}</button>
+                    <div class="mt-2">
+                        <h3 class="text-3xl font-black text-slate-900 tracking-tight tabular-nums">{{ card.value }}</h3>
+                        <div class="flex items-center justify-between mt-1">
+                            <p class="text-xs font-semibold text-slate-500">{{ card.label }}</p>
+                            <p class="text-[10px] text-slate-400 font-medium">{{ card.sub }}</p>
+                        </div>
                     </div>
-                </div>
-                <!-- Chart -->
-                <div class="h-[260px] p-4">
-                    <SalesTrendChart :data="sales_trend" :interval="current_interval" />
                 </div>
             </div>
         </div>
 
-        <!-- Stats Sidebar — span 4 -->
-        <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
-            <!-- Total Revenue Highlight -->
-            <div class="bg-slate-900 text-white border border-slate-800 rounded-xl p-5 flex flex-col gap-4">
-                <div class="flex items-center justify-between">
-                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Terminal Revenue</p>
-                    <ArrowUpRight class="h-4 w-4 text-emerald-400" />
-                </div>
-                <div>
-                    <h3 class="text-2xl font-black tabular-nums tracking-tighter">{{ formatRupiah(metrics.sales_today) }}</h3>
-                    <div class="flex items-center gap-2 mt-2">
-                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
-                        <p class="text-xs text-slate-400 font-medium">Live · Hari ini</p>
-                    </div>
-                </div>
-            </div>
+        <!-- ─── MAIN CONTENT GRID ─── -->
+        <div class="grid grid-cols-12 gap-6">
 
-            <!-- Vendor Map Widget -->
-            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden flex-1">
-                <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="p-1.5 bg-blue-50 rounded-xl">
-                            <Store class="h-3.5 w-3.5 text-blue-600" />
-                        </div>
-                        <p class="text-xs font-bold text-slate-900">Vendor Map</p>
-                    </div>
-                    <button
-                        @click="showVendors = !showVendors"
-                        :class="['text-xs font-bold px-2.5 py-1 rounded-xl border transition-all',
-                            showVendors ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-500 border-slate-200'
-                        ]"
-                    >{{ showVendors ? 'Aktif' : 'Nonaktif' }}</button>
-                </div>
-                <div class="h-[200px] w-full relative z-0">
-                    <Map
-                        :center="[-6.200000, 106.816666]"
-                        :zoom="11"
-                        :markers="mapMarkers"
-                    />
-                </div>
-                <div class="px-4 py-2 border-t border-slate-100 flex items-center justify-between">
-                    <p class="text-xs text-slate-400 font-medium">{{ vendors.length }} titik vendor</p>
-                    <Link href="/vendors" class="text-xs font-bold text-blue-600 hover:underline">Lihat semua →</Link>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ─── BOTTOM GRID: Recent Sales + Quick Nav ─── -->
-    <div class="grid grid-cols-12 gap-6">
-
-        <!-- Recent Sales Table — span 8 -->
-        <div class="col-span-12 lg:col-span-8">
-            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2 bg-slate-100 rounded-lg">
-                            <FileText class="h-4 w-4 text-slate-600" />
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-slate-900">Transaksi Terakhir</p>
-                            <p class="text-xs text-slate-400">{{ recent_sales.length }} transaksi terbaru</p>
-                        </div>
-                    </div>
-                    <Link href="/pos" class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-                        Ke POS <ChevronRight class="h-3 w-3" />
-                    </Link>
-                </div>
-
-                <!-- Table -->
-                <div class="divide-y divide-slate-50">
-                    <div
-                        v-for="(sale, i) in recent_sales" :key="sale.id"
-                        class="px-6 py-4 flex items-center justify-between hover:bg-slate-50/60 transition-colors group"
-                    >
-                        <div class="flex items-center gap-4">
-                            <div class="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-black group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
-                                {{ i + 1 }}
+            <!-- Sales Trend Chart — span 8 -->
+            <div class="col-span-12 lg:col-span-8">
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <!-- Header -->
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-violet-50 rounded-lg">
+                                <BarChart3 class="h-4 w-4 text-violet-600" />
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                                    {{ sale.invoice_number || `TRX#${String(sale.id).padStart(4, '0')}` }}
-                                </p>
-                                <p class="text-xs text-slate-400 mt-0.5">{{ formatDate(sale.tanggal) }} · {{ formatTime(sale.tanggal) }}</p>
+                                <p class="text-sm font-bold text-slate-900">Revenue Flow</p>
+                                <p class="text-xs text-slate-400">{{ formatRupiah(totalTrend) }} total periode</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-4">
-                            <div class="text-right">
-                                <p class="text-sm font-black text-slate-900 tabular-nums">{{ formatRupiah(sale.total_amount) }}</p>
-                                <div class="flex items-center justify-end gap-1 mt-0.5">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-                                    <p class="text-xs text-emerald-600 font-bold">Lunas</p>
+                        <!-- Interval Switcher -->
+                        <div class="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-lg p-1">
+                            <button v-for="intv in ['H', 'D', 'W', 'M', 'Y']" :key="intv" @click="updateInterval(intv)"
+                                :class="[
+                                    'px-3 py-1 rounded-xl text-xs font-bold uppercase tracking-wider transition-all',
+                                    current_interval === intv
+                                        ? 'bg-white text-slate-900 border border-slate-200'
+                                        : 'text-slate-400 hover:text-slate-600'
+                                ]">{{ intv }}</button>
+                        </div>
+                    </div>
+                    <!-- Chart -->
+                    <div class="h-[260px] p-4">
+                        <SalesTrendChart :data="sales_trend" :interval="current_interval" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Sidebar — span 4 -->
+            <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
+                <!-- Total Revenue Highlight -->
+                <div class="bg-slate-900 text-white border border-slate-800 rounded-xl p-5 flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Terminal Revenue</p>
+                        <ArrowUpRight class="h-4 w-4 text-emerald-400" />
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-black tabular-nums tracking-tighter">{{
+                            formatRupiah(metrics.sales_today) }}</h3>
+                        <div class="flex items-center gap-2 mt-2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                            <p class="text-xs text-slate-400 font-medium">Live · Hari ini</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vendor Map Widget -->
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden flex-1">
+                    <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="p-1.5 bg-blue-50 rounded-xl">
+                                <Store class="h-3.5 w-3.5 text-blue-600" />
+                            </div>
+                            <p class="text-xs font-bold text-slate-900">Vendor Map</p>
+                        </div>
+                        <button @click="showVendors = !showVendors" :class="['text-xs font-bold px-2.5 py-1 rounded-xl border transition-all',
+                            showVendors ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-500 border-slate-200'
+                        ]">{{ showVendors ? 'Aktif' : 'Nonaktif' }}</button>
+                    </div>
+                    <div class="h-[200px] w-full relative z-0">
+                        <Map :center="[-6.200000, 106.816666]" :zoom="11" :markers="mapMarkers" />
+                    </div>
+                    <div class="px-4 py-2 border-t border-slate-100 flex items-center justify-between">
+                        <p class="text-xs text-slate-400 font-medium">{{ vendors.length }} titik vendor</p>
+                        <Link href="/vendors" class="text-xs font-bold text-blue-600 hover:underline">Lihat semua →
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── BOTTOM GRID: Recent Sales + Quick Nav ─── -->
+        <div class="grid grid-cols-12 gap-6">
+
+            <!-- Recent Sales Table — span 8 -->
+            <div class="col-span-12 lg:col-span-8">
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-slate-100 rounded-lg">
+                                <FileText class="h-4 w-4 text-slate-600" />
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-900">Transaksi Terakhir</p>
+                                <p class="text-xs text-slate-400">{{ recent_sales.length }} transaksi terbaru</p>
+                            </div>
+                        </div>
+                        <Link href="/pos"
+                            class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                            Ke POS
+                            <ChevronRight class="h-3 w-3" />
+                        </Link>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="divide-y divide-slate-50">
+                        <div v-for="(sale, i) in recent_sales" :key="sale.id"
+                            class="px-6 py-4 flex items-center justify-between hover:bg-slate-50/60 transition-colors group">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-black group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                    {{ i + 1 }}
+                                </div>
+                                <div>
+                                    <p
+                                        class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                        {{ sale.invoice_number || `TRX#${String(sale.id).padStart(4, '0')}` }}
+                                    </p>
+                                    <p class="text-xs text-slate-400 mt-0.5">{{ formatDate(sale.tanggal) }} · {{
+                                        formatTime(sale.tanggal) }}</p>
                                 </div>
                             </div>
-                            <ChevronRight class="h-4 w-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
-                        </div>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div v-if="recent_sales.length === 0" class="py-16 flex flex-col items-center gap-3">
-                        <div class="h-14 w-14 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                            <PackageOpen class="h-7 w-7 text-slate-300" />
-                        </div>
-                        <div class="text-center">
-                            <p class="text-sm font-bold text-slate-500">Belum ada transaksi</p>
-                            <p class="text-xs text-slate-400 mt-1">Mulai dari menu POS untuk mencatat penjualan</p>
-                        </div>
-                        <Link href="/pos">
-                            <button class="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors">
-                                Buka POS →
-                            </button>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Navigation Panel — span 4 -->
-        <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
-            <!-- Quick Links Card -->
-            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                <div class="px-5 py-4 border-b border-slate-100">
-                    <p class="text-sm font-bold text-slate-900">Akses Cepat</p>
-                    <p class="text-xs text-slate-400 mt-0.5">Modul yang sering digunakan</p>
-                </div>
-                <div class="divide-y divide-slate-50">
-                    <Link v-for="action in quickActions" :key="action.label" :href="action.href"
-                        class="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors group"
-                    >
-                        <div class="flex items-center gap-3">
-                            <div :class="['p-2 rounded-lg', action.color.split(' ')[1]]">
-                                <component :is="action.icon" :class="['h-4 w-4', action.color.split(' ')[0]]" />
+                            <div class="flex items-center gap-4">
+                                <div class="text-right">
+                                    <p class="text-sm font-black text-slate-900 tabular-nums">{{
+                                        formatRupiah(sale.total_amount) }}</p>
+                                    <div class="flex items-center justify-end gap-1 mt-0.5">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                        <p class="text-xs text-emerald-600 font-bold">Lunas</p>
+                                    </div>
+                                </div>
+                                <ChevronRight
+                                    class="h-4 w-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
                             </div>
-                            <p class="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">{{ action.label }}</p>
                         </div>
-                        <ChevronRight class="h-4 w-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
-                    </Link>
+
+                        <!-- Empty State -->
+                        <div v-if="recent_sales.length === 0" class="py-16 flex flex-col items-center gap-3">
+                            <div
+                                class="h-14 w-14 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                                <PackageOpen class="h-7 w-7 text-slate-300" />
+                            </div>
+                            <div class="text-center">
+                                <p class="text-sm font-bold text-slate-500">Belum ada transaksi</p>
+                                <p class="text-xs text-slate-400 mt-1">Mulai dari menu POS untuk mencatat penjualan</p>
+                            </div>
+                            <Link href="/pos">
+                                <button
+                                    class="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-colors">
+                                    Buka POS →
+                                </button>
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Critical Stock Alert -->
-            <div v-if="metrics.critical_stocks > 0"
-                class="bg-red-50 border border-red-200 rounded-xl p-5"
-            >
-                <div class="flex items-start gap-3">
-                    <div class="p-2 bg-red-100 rounded-lg shrink-0">
-                        <AlertTriangle class="h-4 w-4 text-red-600" />
+            <!-- Quick Navigation Panel — span 4 -->
+            <div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
+                <!-- Quick Links Card -->
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="px-5 py-4 border-b border-slate-100">
+                        <p class="text-sm font-bold text-slate-900">Akses Cepat</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Modul yang sering digunakan</p>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-red-700">{{ metrics.critical_stocks }} Stok Kritis</p>
-                        <p class="text-xs text-red-500 mt-1">Beberapa barang hampir habis dan perlu segera di-restock.</p>
-                        <Link href="/stock" class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:underline">
-                            Cek Stok <ChevronRight class="h-3 w-3" />
+                    <div class="divide-y divide-slate-50">
+                        <Link v-for="action in quickActions" :key="action.label" :href="action.href"
+                            class="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <div :class="['p-2 rounded-lg', action.color.split(' ')[1]]">
+                                    <component :is="action.icon" :class="['h-4 w-4', action.color.split(' ')[0]]" />
+                                </div>
+                                <p
+                                    class="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
+                                    {{ action.label }}</p>
+                            </div>
+                            <ChevronRight class="h-4 w-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
                         </Link>
                     </div>
                 </div>
-            </div>
 
-            <!-- All good state -->
-            <div v-else class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-                <div class="flex items-start gap-3">
-                    <div class="p-2 bg-emerald-100 rounded-lg shrink-0">
-                        <Package class="h-4 w-4 text-emerald-600" />
+                <!-- Critical Stock Alert -->
+                <div v-if="metrics.critical_stocks > 0" class="bg-red-50 border border-red-200 rounded-xl p-5">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 bg-red-100 rounded-lg shrink-0">
+                            <AlertTriangle class="h-4 w-4 text-red-600" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-red-700">{{ metrics.critical_stocks }} Stok Kritis</p>
+                            <p class="text-xs text-red-500 mt-1">Beberapa barang hampir habis dan perlu segera
+                                di-restock.</p>
+                            <Link href="/stock"
+                                class="mt-3 inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:underline">
+                                Cek Stok
+                                <ChevronRight class="h-3 w-3" />
+                            </Link>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-emerald-700">Semua Stok Aman</p>
-                        <p class="text-xs text-emerald-600 mt-1">Tidak ada stok yang perlu perhatian saat ini.</p>
+                </div>
+
+                <!-- All good state -->
+                <div v-else class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 bg-emerald-100 rounded-lg shrink-0">
+                            <Package class="h-4 w-4 text-emerald-600" />
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-emerald-700">Semua Stok Aman</p>
+                            <p class="text-xs text-emerald-600 mt-1">Tidak ada stok yang perlu perhatian saat ini.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-</div>
+    </div>
 </div>
 </template>
 
 <style scoped>
-::-webkit-scrollbar { display: none; }
-* { scrollbar-width: none; }
+::-webkit-scrollbar {
+    display: none;
+}
+
+* {
+    scrollbar-width: none;
+}
 </style>
