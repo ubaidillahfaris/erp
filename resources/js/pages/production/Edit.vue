@@ -48,7 +48,7 @@ const submit = () => {
     <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <div class="flex items-center gap-4">
             <Link :href="index().url">
-                <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
+                <Button variant="outline" size="icon" class="btn-secondary h-8 w-8">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
             </Link>
@@ -105,8 +105,8 @@ const submit = () => {
                     </div>
 
                     <div class="flex gap-2 justify-end">
-                        <Button type="button" variant="outline" @click="router.get(index().url)">Batal</Button>
-                        <Button type="submit" :disabled="form.processing">
+                        <Button type="button" variant="outline" @click="router.get(index().url)" class="btn-secondary">Batal</Button>
+                        <Button type="submit" :disabled="form.processing" class="btn-primary">
                             <CheckCircle class="w-4 h-4 mr-2" />
                             Selesaikan & Hitung HPP
                         </Button>

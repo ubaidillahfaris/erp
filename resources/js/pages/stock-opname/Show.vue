@@ -119,7 +119,7 @@ const getStatusColor = (status: string) => {
                     </Button>
                 </Link>
                 <div v-if="opname.status === 'completed'" class="flex gap-2">
-                    <Button variant="outline" class="rounded-xl border-slate-200 bg-white shadow-sm h-10 font-bold gap-2 text-slate-600" @click="reopenOpname">
+                    <Button variant="outline" class="btn-secondary rounded-xl h-10 font-bold gap-2" @click="reopenOpname">
                         <RotateCcw class="h-4 w-4" />
                         Edit Kembali
                     </Button>

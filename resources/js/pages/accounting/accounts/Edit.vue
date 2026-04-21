@@ -54,7 +54,7 @@ const submit = () => {
         
         <div class="flex items-center gap-4">
             <Link href="/accounting/accounts">
-                <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
+                <Button variant="outline" size="icon" class="btn-secondary h-8 w-8 shrink-0">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
             </Link>

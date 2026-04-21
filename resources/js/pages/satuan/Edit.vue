@@ -78,7 +78,7 @@ const submit = () => {
     <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <div class="flex items-center gap-4">
             <Link :href="satuanIndex().url">
-                <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
+                <Button variant="outline" size="icon" class="btn-secondary h-8 w-8 shrink-0">
                     <ArrowLeft class="h-4 w-4" />
                 </Button>
             </Link>

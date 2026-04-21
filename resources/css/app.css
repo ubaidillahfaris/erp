@@ -161,3 +161,11 @@
         -moz-osx-font-smoothing: grayscale;
     }
 }
+
+@utility btn-primary {
+    @apply bg-slate-900 hover:bg-slate-800 text-white transition-colors;
+}
+
+@utility btn-secondary {
+    @apply bg-slate-200 border-slate-200 text-slate-700 hover:bg-slate-300 transition-colors;
+}

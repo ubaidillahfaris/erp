@@ -15,7 +15,8 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow } from '@/components/ui/table';
+    TableRow
+} from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -63,7 +64,8 @@ watch(() => props.produks.data, (newProduks) => {
                 satuan_nama: p.satuan?.nama,
                 satuan_simbol: p.satuan?.simbol,
                 system_qty: parseFloat(p.stock?.balance || 0),
-                physical_qty: parseFloat(p.stock?.balance || 0) };
+                physical_qty: parseFloat(p.stock?.balance || 0)
+            };
         }
     });
 }, { immediate: true });
@@ -96,7 +98,8 @@ const submit = async (status: 'draft' | 'completed') => {
         // Transform items_map to items array for backend
         form.transform((data) => ({
             ...data,
-            items: Object.values(data.items_map) })).post('/stock-opname');
+            items: Object.values(data.items_map)
+        })).post('/stock-opname');
     }
 };
 
@@ -114,7 +117,8 @@ const totalDiscrepancies = computed(() => {
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <Link href="/stock-opname">
-                    <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
+                    <Button variant="outline" size="icon"
+                        class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
                         <ArrowLeft class="h-4 w-4" />
                     </Button>
                 </Link>
@@ -125,12 +129,12 @@ const totalDiscrepancies = computed(() => {
             </div>
             <div class="flex gap-2">
                 <Button variant="outline" @click="submit('draft')" :disabled="form.processing"
-                    class="border-slate-200 text-slate-700">
+                    class="btn-secondary">
                     <Save class="mr-2 h-4 w-4" />
                     Simpan Draft
                 </Button>
                 <Button @click="submit('completed')" :disabled="form.processing"
-                    class="bg-slate-900 hover:bg-slate-800 text-white">
+                    class="btn-primary">
                     <CheckCircle class="mr-2 h-4 w-4" />
                     Selesaikan Opname
                 </Button>
@@ -172,12 +176,15 @@ const totalDiscrepancies = computed(() => {
                 <div class="flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Barang</h3>
-                        <p class="text-xs text-slate-400 mt-1">Masukkan jumlah stok fisik aktual untuk setiap barang.</p>
+                        <p class="text-xs text-slate-400 mt-1">Masukkan jumlah stok fisik aktual untuk setiap barang.
+                        </p>
                     </div>
                     <!-- Search -->
                     <div class="relative w-64">
-                        <Search v-if="!isSearching" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                        <Loader2 v-else class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
+                        <Search v-if="!isSearching"
+                            class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                        <Loader2 v-else
+                            class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 animate-spin" />
                         <Input v-model="searchTerm" placeholder="Cari barang..."
                             class="pl-9 h-9 bg-slate-50 border-slate-200" />
                     </div>
@@ -187,10 +194,17 @@ const totalDiscrepancies = computed(() => {
                 <Table>
                     <TableHeader class="bg-slate-50 border-b border-slate-200">
                         <TableRow class="hover:bg-slate-50">
-                            <TableHead class="h-10 px-6 text-[11px] font-bold uppercase tracking-widest text-slate-500">Barang</TableHead>
-                            <TableHead class="h-10 px-4 text-right text-[11px] font-bold uppercase tracking-widest text-slate-500">Stok Sistem</TableHead>
-                            <TableHead class="h-10 px-4 w-[200px] text-right text-[11px] font-bold uppercase tracking-widest text-slate-500">Stok Fisik</TableHead>
-                            <TableHead class="h-10 px-6 text-right text-[11px] font-bold uppercase tracking-widest text-slate-500">Selisih</TableHead>
+                            <TableHead class="h-10 px-6 text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                                Barang</TableHead>
+                            <TableHead
+                                class="h-10 px-4 text-right text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                                Stok Sistem</TableHead>
+                            <TableHead
+                                class="h-10 px-4 w-[200px] text-right text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                                Stok Fisik</TableHead>
+                            <TableHead
+                                class="h-10 px-6 text-right text-[11px] font-bold uppercase tracking-widest text-slate-500">
+                                Selisih</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -209,7 +223,8 @@ const totalDiscrepancies = computed(() => {
                                     <Input v-if="form.items_map[produk.id]"
                                         v-model="form.items_map[produk.id].physical_qty" type="number" step="any"
                                         class="w-28 text-right h-9 border-slate-200 bg-white text-sm" />
-                                    <span class="text-xs font-bold text-slate-400 w-8 text-left uppercase">{{ produk.satuan?.simbol }}</span>
+                                    <span class="text-xs font-bold text-slate-400 w-8 text-left uppercase">{{
+                                        produk.satuan?.simbol }}</span>
                                 </div>
                             </TableCell>
                             <TableCell class="px-6 py-4 text-right">

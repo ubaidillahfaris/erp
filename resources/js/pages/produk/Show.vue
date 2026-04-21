@@ -47,7 +47,7 @@ const formatDate = (dateString: string) => {
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <Link :href="index().url">
-                        <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900">
+                        <Button variant="outline" size="icon" class="btn-secondary h-8 w-8">
                             <ArrowLeft class="h-4 w-4" />
                         </Button>
                     </Link>

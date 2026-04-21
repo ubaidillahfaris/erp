@@ -519,7 +519,7 @@ const actionLabel: Record<string, string> = {
                     </div>
 
                     <div class="flex justify-end pt-4 border-t border-slate-100">
-                        <Button type="submit" :disabled="creditForm.processing" class="bg-slate-900 rounded-xl px-8 shadow-none gap-2">
+                        <Button type="submit" :disabled="creditForm.processing" class="btn-primary rounded-xl px-8 shadow-none gap-2">
                             <ShieldCheck v-if="!creditForm.processing" class="h-4 w-4" />
                             {{ creditForm.processing ? 'Menyimpan...' : 'Simpan Pengaturan' }}
                         </Button>

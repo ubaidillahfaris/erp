@@ -17,7 +17,7 @@ defineProps<Props>();
 <div class="flex items-center justify-between max-w-7xl mx-auto w-full">
     <div class="flex items-center gap-3">
         <Button v-if="backHref" variant="outline" size="icon" as-child
-            class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 shrink-0">
+            class="btn-secondary h-8 w-8 shrink-0">
             <Link :href="backHref">
                 <ChevronLeft class="h-4 w-4" />
             </Link>

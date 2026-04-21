@@ -22,7 +22,7 @@ const emit = defineEmits<{
         Batal
     </Button>
     <!-- Action: Simpan & Tutup (Default) -->
-    <Button type="submit" :disabled="processing" @click="$emit('save')" variant="default" class="min-w-[120px]">
+    <Button type="submit" :disabled="processing" @click="$emit('save')" class="btn-primary min-w-[120px]">
         <template v-if="processing">
             <Loader2 class="mr-2 h-4 w-4 animate-spin" />
             Menyimpan...

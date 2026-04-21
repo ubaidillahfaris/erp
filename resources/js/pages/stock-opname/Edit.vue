@@ -128,7 +128,7 @@ const totalDiscrepancies = computed(() => {
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <Link href="/stock-opname">
-                    <Button variant="outline" size="icon" class="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50">
+                    <Button variant="outline" size="icon" class="btn-secondary h-8 w-8">
                         <ArrowLeft class="h-4 w-4" />
                     </Button>
                 </Link>
@@ -139,12 +139,12 @@ const totalDiscrepancies = computed(() => {
             </div>
             <div class="flex gap-2">
                 <Button variant="outline" @click="submit('draft')" :disabled="form.processing"
-                    class="border-slate-200 text-slate-700">
+                    class="btn-secondary">
                     <Save class="mr-2 h-4 w-4" />
                     Simpan Draft
                 </Button>
                 <Button @click="submit('completed')" :disabled="form.processing"
-                    class="bg-slate-900 hover:bg-slate-800 text-white">
+                    class="btn-primary">
                     <CheckCircle class="mr-2 h-4 w-4" />
                     Selesaikan Opname
                 </Button>

@@ -94,7 +94,7 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
                     </div>
 
                     <div class="mt-4 pt-5 border-t border-slate-200">
-                        <Button type="submit" :disabled="form.processing" class="w-full h-10 text-sm font-semibold bg-slate-900 text-white rounded-lg gap-2 hover:bg-slate-800 transition-colors">
+                        <Button type="submit" :disabled="form.processing" class="w-full h-10 text-sm font-semibold btn-primary rounded-lg gap-2">
                             <Save class="h-4 w-4" />
                             Simpan Data Vendor
                         </Button>
