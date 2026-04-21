@@ -29,6 +29,15 @@ class Bom extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::creating(function (Bom $bom) {
+            if (!$bom->yield_satuan_id && $bom->produk_id) {
+                $bom->yield_satuan_id = $bom->produk->satuan_id;
+            }
+        });
+    }
+
     /**
      * Get the finished product that owns the BOM.
      */

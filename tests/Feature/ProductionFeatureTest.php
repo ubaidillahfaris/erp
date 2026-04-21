@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\RecalculateHpp;
+use App\Models\Account;
 use App\Models\Bom;
 use App\Models\Production;
 use App\Models\Produk;
@@ -31,6 +32,11 @@ class ProductionFeatureTest extends TestCase
     {
         parent::setUp();
 
+        // Seed required COA for production
+        Account::create(['code' => '1301', 'name' => 'Bahan Baku', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1302', 'name' => 'Barang Jadi', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '5102', 'name' => 'Overhead', 'type' => 'expense', 'balance_type' => 'credit']);
+
         $this->user = User::factory()->superadmin()->create();
 
         // Setup base units
@@ -58,7 +64,13 @@ class ProductionFeatureTest extends TestCase
         Stock::create(['produk_id' => $air->id, 'balance' => 2000, 'last_satuan_id' => $this->ml->id]);
 
         // 2. Setup Finished Good
-        $baseKopi = Produk::create(['nama' => 'Base Kopi', 'type' => 'intermediate_good', 'satuan_id' => $this->liter->id, 'sku' => '125']);
+        $baseKopi = Produk::create([
+            'nama' => 'Base Kopi', 
+            'type' => 'intermediate_good', 
+            'satuan_id' => $this->liter->id, 
+            'sku' => '125',
+            'overhead_rate_per_unit' => 100
+        ]);
 
         // 3. Setup BOM (requires 100gr kopi, 500ml air, expecting 400ml yield representing 0.4L)
         // Cost: (100 * 150) = 15,000 + (500 * 2) = 1,000 => 16,000 total

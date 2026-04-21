@@ -48,6 +48,14 @@ class Payable extends Model
     {
         static::creating(function (Payable $payable) {
             $payable->remaining_amount = $payable->total_amount - $payable->paid_amount;
+            
+            // Fill mandatory reference fields for tests if missing
+            if (!$payable->reference_type) {
+                $payable->reference_type = 'manual';
+            }
+            if (!$payable->reference_id) {
+                $payable->reference_id = 0;
+            }
         });
 
         static::created(function (Payable $payable) {

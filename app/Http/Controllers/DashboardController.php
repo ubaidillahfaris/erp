@@ -71,9 +71,27 @@ class DashboardController extends Controller
         };
 
         // Revenue Flow (Sum)
+        $dbDriver = DB::connection()->getDriverName();
+        $trunc = $chartConfig['trunc'];
+        $col = $chartConfig['col'];
+
+        if ($dbDriver === 'sqlite') {
+            $format = match($trunc) {
+                'hour' => '%Y-%m-%d %H:00:00',
+                'day' => '%Y-%m-%d',
+                'week' => '%Y-%W',
+                'month' => '%Y-%m',
+                'year' => '%Y',
+                default => '%Y-%m-%d'
+            };
+            $selectRaw = "strftime('$format', $col) as date";
+        } else {
+            $selectRaw = "DATE_TRUNC('$trunc', $col) as date";
+        }
+
         $salesTrend = DB::table('sales')
             ->where($chartConfig['col'], '>=', $chartConfig['range'])
-            ->selectRaw("DATE_TRUNC('{$chartConfig['trunc']}', {$chartConfig['col']}) as date, SUM(total_amount) as total")
+            ->selectRaw("$selectRaw, SUM(total_amount) as total")
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get()
@@ -85,7 +103,7 @@ class DashboardController extends Controller
         // Traffic Pulse (Count)
         $pulseData = DB::table('sales')
             ->where($chartConfig['col'], '>=', $chartConfig['range'])
-            ->selectRaw("DATE_TRUNC('{$chartConfig['trunc']}', {$chartConfig['col']}) as date, COUNT(*) as count")
+            ->selectRaw("$selectRaw, COUNT(*) as count")
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get()

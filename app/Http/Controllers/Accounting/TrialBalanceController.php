@@ -13,15 +13,17 @@ class TrialBalanceController extends Controller
 {
     public function index(): Response
     {
-        $accounts = Cache::remember('trial_balance_current', 300, function () {
+        $accountsData = Cache::remember('trial_balance_current', 300, function () {
             return Account::query()
                 ->where('is_active', true)
                 ->withSum('journalItems', 'debit')
                 ->withSum('journalItems', 'credit')
                 ->orderBy('code')
                 ->get()
-                ->values();
+                ->toArray();
         });
+
+        $accounts = collect($accountsData);
         
         if ($accounts->isEmpty()) {
             Cache::forget('trial_balance_current');
@@ -37,8 +39,8 @@ class TrialBalanceController extends Controller
         $grandTotalCredit = 0;
 
         foreach ($accounts as $account) {
-            $grandTotalDebit += ($account->journal_items_sum_debit ?? 0);
-            $grandTotalCredit += ($account->journal_items_sum_credit ?? 0);
+            $grandTotalDebit += data_get($account, 'journal_items_sum_debit', 0);
+            $grandTotalCredit += data_get($account, 'journal_items_sum_credit', 0);
         }
 
         $isBalanced = $grandTotalDebit === $grandTotalCredit;

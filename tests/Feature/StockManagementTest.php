@@ -20,13 +20,22 @@ class StockManagementTest extends TestCase
 
     protected Satuan $satuan;
 
+    protected \App\Models\Vendor $vendor;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Seed required COA for restock journaling
+        \App\Models\Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
+
         $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
 
         $this->satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
+        $this->vendor = \App\Models\Vendor::factory()->create();
     }
 
     public function test_restock_creates_stock_movement_and_updates_balance()
@@ -35,6 +44,7 @@ class StockManagementTest extends TestCase
 
         $response = $this->post(route('restock.store'), [
             'tanggal' => now()->format('Y-m-d'),
+            'vendor_id' => $this->vendor->id,
             'status_pembayaran' => 'lunas',
             'total_bayar' => 10000,
             'items' => [
@@ -111,6 +121,7 @@ class StockManagementTest extends TestCase
             'tanggal' => now(),
             'status_pembayaran' => 'lunas',
             'total_biaya' => 1000,
+            'vendor_id' => $this->vendor->id,
         ]);
 
         app(RecordStockMovement::class)->handle([

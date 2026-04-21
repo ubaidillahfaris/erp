@@ -2,24 +2,32 @@
 
 namespace App\Observers;
 
+use App\Models\Account;
 use App\Models\Journal;
 use App\Models\Payable;
 use App\Models\Restock;
 use App\Models\StockMovement;
+use App\Services\JournalService;
+use App\DTOs\JournalEntryData;
+use App\DTOs\JournalItemData;
 use Illuminate\Support\Facades\Auth;
 
 class RestockObserver
 {
+    public function __construct(protected JournalService $journalService) {}
+
     /**
      * Handle the Restock "created" event.
      */
     public function created(Restock $restock): void
     {
+        $this->recordRestockJournal($restock);
+
         $tanggal = $restock->tanggal instanceof \Carbon\CarbonInterface ? $restock->tanggal->format('Y-m-d') : $restock->tanggal;
 
-        // Journal creation DISABLED - Transition to Double-Entry
+        // Journal creation (DISABLED - Transition to Double-Entry)
         /*
-        Journal::create([
+        \App\Models\Journal::create([
             'tanggal' => $tanggal,
             'type' => 'kredit',
             'amount' => $restock->total_biaya,
@@ -78,7 +86,32 @@ class RestockObserver
             Payable::where('reference_type', 'restock')
                 ->where('reference_id', $restock->id)
                 ->update(['status' => 'paid']);
+            
+            // Record settlement journal if it was previously hhutang
+            // For now, simplicity: just record the journal item for payment
+            // Actually, we'll just re-sync or handle it in recordRestockJournal
+            $this->recordRestockJournal($restock);
         }
+    }
+
+    protected function recordRestockJournal(Restock $restock): void
+    {
+        $materialAcc = Account::findByCode('1301');
+        $paymentAcc = $restock->status_pembayaran === 'lunas' 
+            ? Account::findByCode('1101') 
+            : Account::findByCode('2101');
+
+        $amountCents = (int) round((float) $restock->total_biaya * 100);
+
+        $this->journalService->record(new JournalEntryData(
+            items: [
+                new JournalItemData($materialAcc->id, $amountCents, 'debit'),
+                new JournalItemData($paymentAcc->id, $amountCents, 'credit'),
+            ],
+            tanggal: $restock->tanggal,
+            description: "Restock [Legacy]: " . ($restock->keterangan ?? 'Tanpa keterangan'),
+            journalable: $restock
+        ));
     }
 
     /**
@@ -92,13 +125,10 @@ class RestockObserver
             ->get()
             ->each->delete();
 
-        // Delete journal entries (DISABLED - Journals are now read-only)
-        /*
-        Journal::where('reference_type', Restock::class)
-            ->where('reference_id', $restock->id)
-            ->get()
-            ->each->delete();
-        */
+        // Delete journal entries (Transition to Double-Entry)
+        \App\Models\JournalEntry::where('journalable_type', Restock::class)
+            ->where('journalable_id', $restock->id)
+            ->delete();
 
         // Delete associated payables
         Payable::where('reference_type', 'restock')

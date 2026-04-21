@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Journal;
-use App\Models\FinancialSummary;
+use App\Models\Account;
+use App\Models\JournalEntry;
 use App\Models\Restock;
 use App\Models\Pengeluaran;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,7 +13,18 @@ class FinanceIntegrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_restock_creation_triggers_journal_and_summary(): void
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Seed basic accounts for integration tests
+        Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1301', 'name' => 'Persediaan', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
+        Account::create(['code' => '6201', 'name' => 'Beban Operasional', 'type' => 'expense', 'balance_type' => 'debit']);
+    }
+
+    public function test_restock_creation_triggers_journal(): void
     {
         $date = now()->startOfDay();
         $restock = Restock::create([
@@ -23,25 +34,29 @@ class FinanceIntegrationTest extends TestCase
             'keterangan' => 'Test Restock',
         ]);
 
-        // Verify Journal entry
-        $this->assertDatabaseHas('journals', [
-            'reference_type' => Restock::class,
-            'reference_id' => $restock->id,
-            'type' => 'kredit',
-            'amount' => 100000,
+        // Verify Journal Entry (Double-Entry)
+        $this->assertDatabaseHas('journal_entries', [
+            'journalable_type' => Restock::class,
+            'journalable_id' => $restock->id,
         ]);
 
-        // Verify Summary
-        $summary = FinancialSummary::where('date', $date->format('Y-m-d'))->first();
-        if (!$summary) {
-            dump(FinancialSummary::all()->toArray());
-        }
-        $this->assertNotNull($summary, "FinancialSummary not found for date: " . $date->format('Y-m-d'));
-        $this->assertEquals(100000, (float) $summary->total_kredit);
-        $this->assertEquals(-100000, (float) $summary->final_balance);
+        $entry = JournalEntry::where('journalable_id', $restock->id)->first();
+        
+        // Verify Balanced Items (Debit Inventory vs Credit Cash)
+        $this->assertDatabaseHas('journal_items', [
+            'journal_entry_id' => $entry->id,
+            'account_id' => Account::where('code', '1301')->first()->id,
+            'debit' => 10000000, // Cents
+        ]);
+
+        $this->assertDatabaseHas('journal_items', [
+            'journal_entry_id' => $entry->id,
+            'account_id' => Account::where('code', '1101')->first()->id,
+            'credit' => 10000000, // Cents
+        ]);
     }
 
-    public function test_pengeluaran_creation_triggers_journal_and_summary(): void
+    public function test_pengeluaran_creation_triggers_journal(): void
     {
         $date = now()->startOfDay();
         $pengeluaran = Pengeluaran::create([
@@ -51,21 +66,21 @@ class FinanceIntegrationTest extends TestCase
             'nominal' => 50000,
         ]);
 
-        $this->assertDatabaseHas('journals', [
-            'reference_type' => Pengeluaran::class,
-            'reference_id' => $pengeluaran->id,
-            'amount' => 50000,
+        $this->assertDatabaseHas('journal_entries', [
+            'journalable_type' => Pengeluaran::class,
+            'journalable_id' => $pengeluaran->id,
         ]);
 
-        $summary = FinancialSummary::where('date', $date->format('Y-m-d'))->first();
-        if (!$summary) {
-            dump(FinancialSummary::all()->toArray());
-        }
-        $this->assertNotNull($summary, "FinancialSummary not found for date: " . $date->format('Y-m-d'));
-        $this->assertEquals(50000, (float) $summary->total_kredit);
+        $entry = JournalEntry::where('journalable_id', $pengeluaran->id)->first();
+
+        $this->assertDatabaseHas('journal_items', [
+            'journal_entry_id' => $entry->id,
+            'account_id' => Account::where('code', '6201')->first()->id,
+            'debit' => 5000000, // Cents
+        ]);
     }
 
-    public function test_restock_deletion_reverts_journal_and_summary(): void
+    public function test_restock_deletion_reverts_journal(): void
     {
         $date = now()->startOfDay();
         $restock = Restock::create([
@@ -74,19 +89,16 @@ class FinanceIntegrationTest extends TestCase
             'status_pembayaran' => 'lunas',
         ]);
 
-        $summary = FinancialSummary::where('date', $date->format('Y-m-d'))->first();
-        $this->assertNotNull($summary, "FinancialSummary not found before deletion");
-        $this->assertEquals(100000, (float) $summary->total_kredit);
+        $this->assertDatabaseHas('journal_entries', [
+            'journalable_type' => Restock::class,
+            'journalable_id' => $restock->id,
+        ]);
 
         $restock->delete();
 
-        $this->assertDatabaseMissing('journals', [
-            'reference_type' => Restock::class,
-            'reference_id' => $restock->id,
+        $this->assertDatabaseMissing('journal_entries', [
+            'journalable_type' => Restock::class,
+            'journalable_id' => $restock->id,
         ]);
-
-        $summary = FinancialSummary::where('date', $date->format('Y-m-d'))->first();
-        $this->assertEquals(0, (float) $summary->total_kredit);
-        $this->assertEquals(0, (float) $summary->final_balance);
     }
 }

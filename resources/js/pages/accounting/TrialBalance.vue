@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { 
     Calculator, Hash, CheckCircle2, AlertCircle, 
     ArrowLeft, Printer, FileDown, RefreshCw
@@ -10,6 +10,7 @@ import type { BreadcrumbItem } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import trialBalanceController from '@/actions/App/Http/Controllers/Accounting/TrialBalanceController';
 
 interface Account {
     id: number;
@@ -104,7 +105,7 @@ const isAbnormal = (account: Account) => {
                     <p class="text-sm text-slate-400 mt-0.5">Audit saldo seluruh akun per {{ generated_at }}</p>
                 </div>
 
-                <form @submit.prevent="$inertia.post(route('accounting.trial-balance.refresh'))">
+                <form @submit.prevent="router.post(trialBalanceController.refresh().url)">
                     <Button 
                         type="submit" 
                         variant="outline" 

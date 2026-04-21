@@ -15,56 +15,26 @@ class AccountingMenuSeeder extends Seeder
      */
     public function run(): void
     {
-        // Find Finance module (slug: 'finance')
+        // Finance module (slug: 'finance')
         $financeModule = Module::where('slug', 'finance')->firstOrFail();
 
-        // Deactivate legacy menus (IDs from user request)
-        Menu::whereIn('id', [43, 44])->update(['is_active' => false]);
+        // Account / Module mapping is now centralized in MenuSeeder for structure.
+        // This seeder ensures permissions and role assignments are correct.
 
-        // Create 3 new accounting menus
-        $menus = [
-            [
-                'name' => 'Chart of Accounts',
-                'path' => '/accounting/accounts',
-                'icon' => 'Landmark',
-                'permission_name' => 'view reports',
-                'module_id' => $financeModule->id,
-                'is_active' => true,
-                'order_priority' => 21,
-            ],
-            [
-                'name' => 'Buku Jurnal',
-                'path' => '/accounting/journal',
-                'icon' => 'FileText',
-                'permission_name' => 'view reports',
-                'module_id' => $financeModule->id,
-                'is_active' => true,
-                'order_priority' => 22,
-            ],
-            [
-                'name' => 'Trial Balance',
-                'path' => '/accounting/trial-balance',
-                'icon' => 'PieChart',
-                'permission_name' => 'view reports',
-                'module_id' => $financeModule->id,
-                'is_active' => true,
-                'order_priority' => 23,
-            ],
+        $accountingMenus = [
+            '/accounting/accounts',
+            '/accounting/journal',
+            '/accounting/trial-balance',
+            '/accounting/aging',
+            '/pengeluaran'
         ];
 
-        $createdMenuIds = [];
-        foreach ($menus as $menuData) {
-            $menu = Menu::firstOrCreate(
-                ['path' => $menuData['path']],
-                $menuData
-            );
-            $createdMenuIds[] = $menu->id;
-        }
+        $menuIds = Menu::whereIn('path', $accountingMenus)->pluck('id')->toArray();
 
         // Assign to all roles that have 'view reports' permission
         $roles = Role::permission('view reports')->get();
         foreach ($roles as $role) {
-            $role->menus()->syncWithoutDetaching($createdMenuIds);
+            $role->menus()->syncWithoutDetaching($menuIds);
         }
 
         // Invalidate all menu caches

@@ -15,6 +15,17 @@ class StockOpnameTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Seed required accounts for integration
+        \App\Models\Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '1302', 'name' => 'Persediaan FG', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
+    }
+
     public function test_can_save_stock_opname_as_draft(): void
     {
         $user = User::factory()->superadmin()->create();
@@ -98,11 +109,13 @@ class StockOpnameTest extends TestCase
     public function test_can_settle_restock_debt(): void
     {
         $user = User::factory()->superadmin()->create();
+        $vendor = \App\Models\Vendor::factory()->create();
         $restock = \App\Models\Restock::create([
             'tanggal' => now(),
             'total_biaya' => 100000,
             'total_bayar' => 0,
             'status_pembayaran' => 'hutang',
+            'vendor_id' => $vendor->id,
         ]);
 
         $response = $this->actingAs($user)->post(route('restock.settle', $restock));

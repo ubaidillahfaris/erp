@@ -20,18 +20,9 @@ class PurchaseJournalTest extends TestCase
         parent::setUp();
         
         // Setup COA required for purchase integration
-        Account::create([
-            'code' => '1301', 
-            'name' => 'Persediaan Bahan Baku', 
-            'type' => 'asset', 
-            'balance_type' => 'debit'
-        ]);
-        Account::create([
-            'code' => '2101', 
-            'name' => 'Hutang Usaha', 
-            'type' => 'liability', 
-            'balance_type' => 'credit'
-        ]);
+        Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1301', 'name' => 'Persediaan', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
         
         $this->vendor = Vendor::factory()->create(['nama' => 'Vendor Test']);
     }
@@ -45,7 +36,8 @@ class PurchaseJournalTest extends TestCase
             'status' => 'draft',
             'vendor_id' => $this->vendor->id,
             'total_biaya' => 1000.50,
-            'tanggal' => '2024-04-19'
+            'tanggal' => '2024-04-19',
+            'payment_method' => 'credit',
         ]);
 
         // Status change triggers the observer

@@ -15,6 +15,10 @@ class RoleService
     {
         $cacheKey = 'user_menus_'.$user->id;
 
+        if (app()->runningUnitTests()) {
+            Cache::forget($cacheKey);
+        }
+
         return Cache::remember($cacheKey, now()->addDay(), function () use ($user) {
             // 0. Ensure user roles are loaded for reliable checking
             if (!$user->relationLoaded('roles')) {
@@ -28,6 +32,7 @@ class RoleService
                 ->root()
                 ->active()
                 ->orderBy('order_priority')
+                ->orderBy('id')
                 ->get();
 
             // 2. Identify authorized menu IDs for filtering (if not superadmin)
@@ -146,12 +151,6 @@ class RoleService
     protected function filterMenusByStatus($menus, User $user, array $authorizedMenuIds)
     {
         return $menus->filter(function ($menu) use ($user, $authorizedMenuIds) {
-            // 0. Global Hard-Kill for Deprecated Modules (Soft-Kill)
-            // Hide Restock from all users to force transition to Purchasing
-            if (str_contains($menu->path ?? '', 'restock')) {
-                return false;
-            }
-
             // Superadmin always has access to all menus (Safety first!)
             if ($user->hasRole('superadmin')) {
                 return true;

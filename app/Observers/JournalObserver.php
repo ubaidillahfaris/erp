@@ -90,13 +90,17 @@ class JournalObserver
         // Debit = Money In, Kredit = Money Out
         $balance = $totalDebit - $totalKredit;
 
-        FinancialSummary::updateOrCreate(
-            ['date' => $dateString],
-            [
-                'total_debit' => $totalDebit,
-                'total_kredit' => $totalKredit,
-                'final_balance' => $balance,
-            ]
-        );
+        if ($totalDebit == 0 && $totalKredit == 0) {
+            FinancialSummary::where('date', $dateString)->delete();
+        } else {
+            FinancialSummary::updateOrCreate(
+                ['date' => $dateString],
+                [
+                    'total_debit' => $totalDebit,
+                    'total_kredit' => $totalKredit,
+                    'final_balance' => $balance,
+                ]
+            );
+        }
     }
 }

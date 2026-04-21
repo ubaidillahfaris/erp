@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Account;
+use App\Models\JournalEntry;
 use App\Models\Price;
 use App\Models\Produk;
 use App\Models\Sale;
@@ -14,6 +16,17 @@ use Tests\TestCase;
 class SalesProcessTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        \App\Models\Account::create(['code' => '1101', 'name' => 'Cash', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '1102', 'name' => 'Receivable', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '1302', 'name' => 'Finished Goods', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '4101', 'name' => 'Sales', 'type' => 'income', 'balance_type' => 'credit']);
+        \App\Models\Account::create(['code' => '5101', 'name' => 'COGS', 'type' => 'expense', 'balance_type' => 'debit']);
+    }
 
     public function test_can_process_sale_and_automate_everything()
     {
@@ -78,23 +91,40 @@ class SalesProcessTest extends TestCase
         $stock = Stock::where('produk_id', $produk->id)->first();
         $this->assertEquals(95, (float) $stock->balance);
 
-        // 3. Assert Journal entries (Revenue & COGS)
-        // Revenue: Debit 12500 (Penjualan)
-        $this->assertDatabaseHas('journals', [
-            'reference_type' => Sale::class,
-            'reference_id' => $sale->id,
-            'category' => 'penjualan',
-            'type' => 'debit',
-            'amount' => 12500,
+        // 3. Assert Double-Entry Journaling
+        // Verify Revenue Entry
+        $this->assertDatabaseHas('journal_entries', [
+            'journalable_type' => Sale::class,
+            'journalable_id' => $sale->id,
+            'description' => "Revenue Penjualan INV-{$sale->invoice_number}",
         ]);
 
-        // COGS: Kredit 5000 (HPP)
-        $this->assertDatabaseHas('journals', [
-            'reference_type' => Sale::class,
-            'reference_id' => $sale->id,
-            'category' => 'hpp',
-            'type' => 'kredit',
-            'amount' => 5000,
+        // Verify COGS Entry
+        $this->assertDatabaseHas('journal_entries', [
+            'journalable_type' => Sale::class,
+            'journalable_id' => $sale->id,
+            'description' => "COGS Penjualan INV-{$sale->invoice_number}",
+        ]);
+
+        // Verify some items
+        $revenueEntry = JournalEntry::where('journalable_id', $sale->id)
+            ->where('description', 'LIKE', '%Revenue%')
+            ->first();
+        
+        $this->assertDatabaseHas('journal_items', [
+            'journal_entry_id' => $revenueEntry->id,
+            'account_id' => Account::where('code', '4101')->first()->id,
+            'credit' => 1250000, // 12500 in cents
+        ]);
+
+        $cogsEntry = JournalEntry::where('journalable_id', $sale->id)
+            ->where('description', 'LIKE', '%COGS%')
+            ->first();
+
+        $this->assertDatabaseHas('journal_items', [
+            'journal_entry_id' => $cogsEntry->id,
+            'account_id' => Account::where('code', '5101')->first()->id,
+            'debit' => 500000, // 5000 in cents
         ]);
     }
 }

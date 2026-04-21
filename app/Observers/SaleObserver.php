@@ -26,7 +26,7 @@ class SaleObserver
         /** @var \Carbon\Carbon $tanggal */
         $tanggal = $sale->tanggal;
 
-        // 1. Record Revenue Journal (DISABLED - Transition to Double-Entry)
+        // 1. Record Revenue Journal (DISABLED - Journals are now read-only)
         /*
         $sale->journals()->create([
             'tanggal' => $tanggal->format('Y-m-d'),
@@ -87,6 +87,7 @@ class SaleObserver
                 'created_by' => Auth::id(),
             ]);
         }
+
     }
 
     /**

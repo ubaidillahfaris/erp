@@ -2,13 +2,13 @@
 import { computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { 
-    Select, 
-    SelectContent, 
-    SelectGroup, 
-    SelectItem, 
-    SelectTrigger, 
-    SelectValue 
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
 } from '@/components/ui/select';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-vue-next';
 
@@ -88,39 +88,24 @@ const options = props.perPageOptions || [10, 25, 50, 100];
 
         <!-- Navigation Buttons -->
         <div class="flex items-center space-x-2">
-            <Button
-                variant="outline"
-                class="hidden h-8 w-8 p-0 lg:flex border-input"
-                :disabled="paginator.current_page === 1"
-                @click="currentPage = 1"
-            >
+            <Button variant="outline" class="hidden h-8 w-8 p-0 lg:flex border-input"
+                :disabled="paginator.current_page === 1" @click="currentPage = 1">
                 <span class="sr-only">Go to first page</span>
                 <ChevronsLeft class="h-4 w-4" />
             </Button>
-            <Button
-                variant="outline"
-                class="h-8 w-8 p-0 border-input"
-                :disabled="paginator.current_page === 1"
-                @click="currentPage = paginator.current_page - 1"
-            >
+            <Button variant="outline" class="h-8 w-8 p-0 border-input" :disabled="paginator.current_page === 1"
+                @click="currentPage = paginator.current_page - 1">
                 <span class="sr-only">Go to previous page</span>
                 <ChevronLeft class="h-4 w-4" />
             </Button>
-            <Button
-                variant="outline"
-                class="h-8 w-8 p-0 border-input"
+            <Button variant="outline" class="h-8 w-8 p-0 border-input"
                 :disabled="paginator.current_page === paginator.last_page"
-                @click="currentPage = paginator.current_page + 1"
-            >
+                @click="currentPage = paginator.current_page + 1">
                 <span class="sr-only">Go to next page</span>
                 <ChevronRight class="h-4 w-4" />
             </Button>
-            <Button
-                variant="outline"
-                class="hidden h-8 w-8 p-0 lg:flex border-input"
-                :disabled="paginator.current_page === paginator.last_page"
-                @click="currentPage = paginator.last_page"
-            >
+            <Button variant="outline" class="hidden h-8 w-8 p-0 lg:flex border-input"
+                :disabled="paginator.current_page === paginator.last_page" @click="currentPage = paginator.last_page">
                 <span class="sr-only">Go to last page</span>
                 <ChevronsRight class="h-4 w-4" />
             </Button>

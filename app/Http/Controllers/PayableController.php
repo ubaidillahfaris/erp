@@ -9,6 +9,7 @@ use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class PayableController extends Controller
@@ -127,6 +128,8 @@ class PayableController extends Controller
                 'notes' => $request->notes,
                 'recorded_by' => auth()->id(),
             ]);
+
+            Cache::forget('aging_report');
         });
 
         return redirect()->back()->with('success', 'Pembayaran berhasil dicatat');

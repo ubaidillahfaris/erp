@@ -17,11 +17,19 @@ class RestockTest extends TestCase
 
     private Produk $bahanBaku;
 
+    private \App\Models\Vendor $vendor;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        // Seed required COA for restock journaling
+        \App\Models\Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
+
         $this->user = User::factory()->superadmin()->create();
+        $this->vendor = \App\Models\Vendor::factory()->create();
 
         $satuan = Satuan::create([
             'nama' => 'Kilogram',
@@ -63,6 +71,7 @@ class RestockTest extends TestCase
         $data = [
             'tanggal' => Carbon::now()->format('Y-m-d'),
             'keterangan' => 'Restock Tepung dari Supplier A',
+            'vendor_id' => $this->vendor->id,
             'status_pembayaran' => 'lunas',
             'total_bayar' => 500000,
             'items' => [

@@ -179,6 +179,7 @@ class PosController extends Controller
                     'change_amount' => $validated['change_amount'] ?? 0,
                     'payment_method' => $validated['payment_method'] ?? 'cash',
                     'notes' => $validated['notes'] ?? null,
+                    'status' => 'pending', // Set to pending initially
                 ]);
 
                 // Save items
@@ -192,6 +193,9 @@ class PosController extends Controller
                         'subtotal' => $item['qty'] * $item['price'],
                     ]);
                 }
+
+                // Finalize sale to trigger observers (Calculate COGS + Journaling)
+                $sale->update(['status' => 'completed']);
 
                 // Record Customer Sale
                 if (!empty($validated['customer_id'])) {

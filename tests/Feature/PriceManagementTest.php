@@ -14,6 +14,20 @@ class PriceManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    private \App\Models\Vendor $vendor;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Seed required COA for restock journaling
+        \App\Models\Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
+        \App\Models\Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
+
+        $this->vendor = \App\Models\Vendor::factory()->create();
+    }
+
     public function test_purchase_price_is_automatically_tracked_on_restock(): void
     {
         $user = User::factory()->superadmin()->create();
@@ -29,6 +43,7 @@ class PriceManagementTest extends TestCase
         // 1. Initial restock
         $this->actingAs($user)->post(route('restock.store'), [
             'tanggal' => now()->format('Y-m-d'),
+            'vendor_id' => $this->vendor->id,
             'status_pembayaran' => 'lunas',
             'total_bayar' => 10000,
             'items' => [
@@ -51,6 +66,7 @@ class PriceManagementTest extends TestCase
         // 2. Second restock with different price
         $this->actingAs($user)->post(route('restock.store'), [
             'tanggal' => now()->format('Y-m-d'),
+            'vendor_id' => $this->vendor->id,
             'status_pembayaran' => 'lunas',
             'total_bayar' => 12000,
             'items' => [
@@ -165,6 +181,7 @@ class PriceManagementTest extends TestCase
             'status_pembayaran' => 'lunas',
             'total_bayar' => 1000,
             'total_biaya' => 1000,
+            'vendor_id' => $this->vendor->id,
         ]);
         $restock->items()->create([
             'produk_id' => $produk->id,

@@ -91,6 +91,19 @@ class PengeluaranObserver
             );
 
             $this->journalService->record($data);
+            
+            // Legacy Journal (DISABLED - Transition to Double-Entry)
+            /*
+            \App\Models\Journal::create([
+                'tanggal' => $pengeluaran->tanggal->format('Y-m-d'),
+                'type' => 'kredit',
+                'amount' => $pengeluaran->nominal,
+                'category' => 'operasional',
+                'description' => "Pengeluaran Operasional: {$pengeluaran->nama_pengeluaran}",
+                'reference_type' => Pengeluaran::class,
+                'reference_id' => $pengeluaran->id,
+            ]);
+            */
 
         } catch (\Exception $e) {
             Log::error("Failed to record journal for Pengeluaran #{$pengeluaran->id}: " . $e->getMessage());
