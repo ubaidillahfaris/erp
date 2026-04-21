@@ -95,10 +95,28 @@ class DashboardController extends Controller
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get()
-            ->map(fn($item) => [
-                'date' => $item->date,
-                'total' => (float) $item->total
-            ]);
+            ->keyBy('date');
+
+        $expensesTrend = DB::table('pengeluarans')
+            ->where($chartConfig['col'], '>=', $chartConfig['range'])
+            ->selectRaw("$selectRaw, SUM(nominal) as total")
+            ->groupBy('date')
+            ->orderBy('date', 'asc')
+            ->get()
+            ->keyBy('date');
+
+        $allDates = collect([...$salesTrend->keys(), ...$expensesTrend->keys()])
+            ->unique()
+            ->sort()
+            ->values();
+
+        $cashFlowTrend = $allDates->map(function ($date) use ($salesTrend, $expensesTrend) {
+            return [
+                'month' => $date, // Standardized date key, will be formatted in Vue
+                'income' => (float) ($salesTrend->get($date)->total ?? 0),
+                'expense' => (float) ($expensesTrend->get($date)->total ?? 0),
+            ];
+        });
 
         // Traffic Pulse (Count)
         $pulseData = DB::table('sales')
@@ -112,7 +130,7 @@ class DashboardController extends Controller
                 'count' => (int) $item->count
             ]);
 
-        return Inertia::render('Dashboard', [
+        return Inertia::render('dashboard/Dashboard', [
             'metrics' => [
                 'sales_today' => (float) $salesToday,
                 'active_productions' => $activeProductions,
@@ -121,7 +139,7 @@ class DashboardController extends Controller
             ],
             'recent_sales' => $recentSales,
             'vendors' => $vendors,
-            'sales_trend' => $salesTrend,
+            'cash_flow_trend' => $cashFlowTrend,
             'heatmap_data' => $pulseData,
             'current_interval' => $interval,
         ]);
