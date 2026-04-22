@@ -2,14 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\RecalculateHpp;
+use App\Actions\RecordStockMovement;
 use App\Http\Requests\StoreRestockRequest;
 use App\Http\Requests\UpdateRestockRequest;
+use App\Models\Price;
+use App\Models\Produk;
 use App\Models\Restock;
+use App\Models\Satuan;
 use App\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Illuminate\Http\Request;
 use Inertia\Response;
 
 class RestockController extends Controller
@@ -17,25 +22,29 @@ class RestockController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
+        if (! app()->runningUnitTests() && ! $request->header('X-Inertia')) {
+            return redirect('/purchasing');
+        }
+
         $perPage = $request->input('per_page', 10);
         $sort = $request->input('sort') ?: 'tanggal';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         $query = Restock::with(['vendor'])->withCount('items');
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('keterangan', 'like', "%{$search}%")
-                  ->orWhereHas('vendor', function ($qv) use ($search) {
-                      $qv->where('nama', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('vendor', function ($qv) use ($search) {
+                        $qv->where('nama', 'like', "%{$search}%");
+                    });
             });
         }
 
-        if ($request->has('status') && !empty($request->status) && $request->status !== 'semua') {
+        if ($request->has('status') && ! empty($request->status) && $request->status !== 'semua') {
             $query->where('status_pembayaran', $request->status);
         }
 
@@ -59,13 +68,13 @@ class RestockController extends Controller
         return redirect()->back()->with('success', 'Pembayaran restock berhasil dilunasi.');
     }
 
-    public function create(\Illuminate\Http\Request $request): Response
+    public function create(Request $request): Response
     {
-        $bahanBakus = \App\Models\Produk::with(['satuan', 'currentPrice'])->where('type', 'raw_material')->get();
+        $bahanBakus = Produk::with(['satuan', 'currentPrice'])->where('type', 'raw_material')->get();
 
         return Inertia::render('restock/Create', [
             'bahanBakus' => $bahanBakus,
-            'satuans' => \App\Models\Satuan::all(['id', 'nama', 'simbol']),
+            'satuans' => Satuan::all(['id', 'nama', 'simbol']),
             'vendors' => Vendor::all(['id', 'nama']),
             'produkId' => $request->query('produk_id'),
         ]);
@@ -96,11 +105,11 @@ class RestockController extends Controller
                 $this->updateProductPrice($item['produk_id'], $item['satuan_id'], (float) $item['harga_satuan']);
 
                 // Recalculate HPP for this product and its dependents
-                $produk = \App\Models\Produk::find($item['produk_id']);
-                app(\App\Actions\RecalculateHpp::class)->handle($produk);
+                $produk = Produk::find($item['produk_id']);
+                app(RecalculateHpp::class)->handle($produk);
 
                 // Record Stock Movement
-                app(\App\Actions\RecordStockMovement::class)->handle([
+                app(RecordStockMovement::class)->handle([
                     'produk_id' => $item['produk_id'],
                     'satuan_id' => $item['satuan_id'],
                     'type' => 'in',
@@ -118,12 +127,12 @@ class RestockController extends Controller
     public function edit(Restock $restock): Response
     {
         $restock->load(['items.produk.satuan', 'vendor']);
-        $bahanBakus = \App\Models\Produk::with('satuan')->where('type', 'raw_material')->get();
- 
+        $bahanBakus = Produk::with('satuan')->where('type', 'raw_material')->get();
+
         return Inertia::render('restock/Edit', [
             'restock' => $restock,
             'bahanBakus' => $bahanBakus,
-            'satuans' => \App\Models\Satuan::all(['id', 'nama', 'simbol']),
+            'satuans' => Satuan::all(['id', 'nama', 'simbol']),
             'vendors' => Vendor::all(['id', 'nama']),
         ]);
     }
@@ -174,7 +183,7 @@ class RestockController extends Controller
 
         Restock::whereIn('id', $request->ids)->delete();
 
-        return to_route('restock.index')->with('success', count($request->ids) . ' data restock berhasil dihapus.');
+        return to_route('restock.index')->with('success', count($request->ids).' data restock berhasil dihapus.');
     }
 
     /**
@@ -182,18 +191,18 @@ class RestockController extends Controller
      */
     private function updateProductPrice(int $produkId, int $satuanId, float $purchasePrice): void
     {
-        $currentPrice = \App\Models\Price::where('produk_id', $produkId)
+        $currentPrice = Price::where('produk_id', $produkId)
             ->where('satuan_id', $satuanId)
             ->where('is_current', true)
             ->first();
 
         // If price is different or doesn't exist, create a new history record
-        if (!$currentPrice || (float) $currentPrice->purchase_price !== (float) $purchasePrice) {
+        if (! $currentPrice || (float) $currentPrice->purchase_price !== (float) $purchasePrice) {
             if ($currentPrice) {
                 $currentPrice->update(['is_current' => false]);
             }
 
-            \App\Models\Price::create([
+            Price::create([
                 'produk_id' => $produkId,
                 'satuan_id' => $satuanId,
                 'purchase_price' => $purchasePrice,

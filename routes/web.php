@@ -1,21 +1,22 @@
 <?php
 
+use App\Http\Controllers\Accounting\AccountController;
+use App\Http\Controllers\Accounting\AgingReportController;
+use App\Http\Controllers\Accounting\TrialBalanceController;
 use App\Http\Controllers\BOMController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\JournalController;
 use App\Http\Controllers\PayableController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\ProdukController;
-use App\Http\Controllers\ProfitLossController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\QuickCreateSatuanController;
 use App\Http\Controllers\QuickCreateVendorController;
-use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\RestockController;
 use App\Http\Controllers\SalesController;
-use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
@@ -81,12 +82,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // 3. PROCUREMENT & STOCK (manage stock)
     Route::middleware('permission:manage stock')->group(function () {
-        Route::get('restock', function() {
-            if (app()->runningUnitTests() || request()->header('X-Inertia')) {
-                return (new \App\Http\Controllers\RestockController)->index(request());
-            }
-            return redirect('/purchasing');
-        })->name('restock.index');
+        Route::get('restock', [RestockController::class, 'index'])->name('restock.index');
         Route::delete('restock/bulk-destroy', [RestockController::class, 'bulkDestroy'])->name('restock.bulk-destroy');
         Route::resource('restock', RestockController::class)->except(['index']);
         Route::post('restock/{restock}/settle', [RestockController::class, 'settle'])->name('restock.settle');
@@ -108,20 +104,20 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // 4. FINANCIALS & EXPENSES (view reports)
     Route::middleware('permission:view reports')->group(function () {
-        Route::get('journal', [\App\Http\Controllers\Accounting\JournalController::class, 'index'])
+        Route::get('journal', [App\Http\Controllers\Accounting\JournalController::class, 'index'])
             ->name('journal.index');
 
         // Accounting Module
         Route::prefix('accounting')->group(function () {
-            Route::get('journal', [\App\Http\Controllers\Accounting\JournalController::class, 'index'])->name('accounting.journal.index');
-            Route::get('trial-balance', [\App\Http\Controllers\Accounting\TrialBalanceController::class, 'index'])->name('accounting.trial-balance.index');
-            Route::post('accounting/trial-balance/refresh', [\App\Http\Controllers\Accounting\TrialBalanceController::class, 'refresh'])
+            Route::get('journal', [App\Http\Controllers\Accounting\JournalController::class, 'index'])->name('accounting.journal.index');
+            Route::get('trial-balance', [TrialBalanceController::class, 'index'])->name('accounting.trial-balance.index');
+            Route::post('accounting/trial-balance/refresh', [TrialBalanceController::class, 'refresh'])
                 ->name('accounting.trial-balance.refresh');
-            Route::get('aging', [\App\Http\Controllers\Accounting\AgingReportController::class, 'index'])->name('accounting.aging.index');
-            Route::resource('accounts', \App\Http\Controllers\Accounting\AccountController::class);
+            Route::get('aging', [AgingReportController::class, 'index'])->name('accounting.aging.index');
+            Route::resource('accounts', AccountController::class);
         });
 
-        Route::get('profit-loss', [\App\Http\Controllers\Accounting\TrialBalanceController::class, 'index'])
+        Route::get('profit-loss', [TrialBalanceController::class, 'index'])
             ->name('profit-loss.index');
 
         Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
@@ -147,4 +143,4 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     });
 });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';
