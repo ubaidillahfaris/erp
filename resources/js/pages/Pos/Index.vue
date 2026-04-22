@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import axios from 'axios';
-import { 
-    Search, ShoppingCart, Plus, Minus, 
-    CreditCard, Banknote, QrCode, X, 
-    Package, History as HistoryIcon, Landmark, ChevronRight,
-    UserCircle, Info
+import {
+    Search, Plus, Minus, Trash2, Coffee, Cookie, Sandwich, IceCream2, Pizza, Soup,
+    Wallet, QrCode, Banknote, CreditCard, Printer, WifiOff, Wifi, ShieldAlert,
+    Receipt, Users, Split, Merge, ArrowLeftRight, ChevronRight, Lock, Unlock,
+    CircleDollarSign, Percent, UserPlus, MessageSquare, X, Check, Clock,
+    ArrowLeft, AlertTriangle, History, LayoutGrid,
+    LogIn, LogOut, ShoppingBag, Store, Fingerprint, Package, Info
 } from 'lucide-vue-next';
 import { ref, computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-    Dialog, DialogContent, DialogHeader, DialogTitle, 
-    DialogFooter, DialogTrigger, DialogDescription 
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import PageHeader from '@/components/PageHeader.vue';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle,
+    DialogFooter, DialogDescription
+} from '@/components/ui/dialog';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { cn } from '@/lib/utils';
-import type { BreadcrumbItem } from '@/types';
+import CreatableSelect from '@/components/CreatableSelect.vue';
 
 // Persistent Layout Fix
 defineOptions({ layout: AppLayout });
@@ -30,33 +30,132 @@ const props = defineProps<{
     customers: any[];
 }>();
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Penjualan (POS)', href: '/pos' },
+// ============ Types & Constants ============
+type Category = "all" | "coffee" | "tea" | "pastry" | "main" | "dessert" | "snack";
+type PaymentMethod = "cash" | "qris" | "transfer" | "credit";
+type OrderType = "dine-in" | "takeaway" | "counter";
+
+const CATEGORIES: { id: Category; label: string; icon: any }[] = [
+    { id: "all", label: "Semua", icon: LayoutGrid },
+    { id: "coffee", label: "Kopi", icon: Coffee },
+    { id: "tea", label: "Teh", icon: Soup },
+    { id: "pastry", label: "Pastry", icon: Cookie },
+    { id: "main", label: "Main", icon: Pizza },
+    { id: "dessert", label: "Dessert", icon: IceCream2 },
+    { id: "snack", label: "Snack", icon: Sandwich },
 ];
 
-const searchQuery = ref('');
+const TABLES = [
+    { id: "t1", label: "T-01", seats: 2, status: "open", bill: 86000, guests: 2, openedAt: "14:02" },
+    { id: "t2", label: "T-02", seats: 4, status: "available" },
+    { id: "t3", label: "T-03", seats: 4, status: "open", bill: 142000, guests: 3, openedAt: "13:48" },
+    { id: "t4", label: "T-04", seats: 2, status: "reserved" },
+    { id: "t5", label: "T-05", seats: 6, status: "available" },
+    { id: "t6", label: "T-06", seats: 2, status: "open", bill: 54000, guests: 1, openedAt: "14:18" },
+    { id: "t7", label: "T-07", seats: 4, status: "available" },
+    { id: "t8", label: "T-08", seats: 8, status: "available" },
+];
+
+// ============ Local Sub-components ============
+const StatusPill = {
+    props: ['icon', 'label', 'tone'],
+    template: `
+        <div :class="[
+            'h-9 px-3 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all',
+            tone === 'primary' ? 'bg-primary/10 text-primary' :
+            tone === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+            tone === 'warning' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+            'bg-slate-100 text-slate-500'
+        ]">
+            <component :is="icon" class="h-3.5 w-3.5" />
+            {{ label }}
+        </div>
+    `
+};
+
+const IconBtn = {
+    props: ['ariaLabel'],
+    template: `
+        <button
+            :aria-label="ariaLabel"
+            class="h-9 w-9 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-all active:scale-90"
+        >
+            <slot />
+        </button>
+    `
+};
+
+// ============ State ============
+const activeCat = ref<Category>("all");
+const searchQuery = ref("");
 const cart = ref<any[]>([]);
-const isCheckoutOpen = ref(false);
+const orderType = ref<OrderType>("counter");
+const selectedTableId = ref("t1");
+const discountPct = ref(0);
 const selectedCustomerId = ref<number | null>(null);
 
+// Modal states
+const showPayment = ref(false);
+const showVoid = ref(false);
+const showTables = ref(false);
+const showShift = ref(false);
+
+// Environment states (Mock)
+const online = ref(true);
+const shiftOpen = ref(true);
+const employee = ref<{ name: string; initial: string; checkedInAt: string } | null>({
+    name: "Rizal A.", initial: "RA", checkedInAt: "07:58",
+});
+
+// ============ Computed ============
 const filteredProduks = computed(() => {
-    if (!searchQuery.value) return props.produks;
-    const q = searchQuery.value.toLowerCase();
-    return props.produks.filter(p => 
-        p.nama.toLowerCase().includes(q) || 
-        p.sku?.toLowerCase().includes(q) || 
-        p.barcode?.toLowerCase().includes(q)
-    );
+    return props.produks.filter(p => {
+        const q = searchQuery.value.toLowerCase();
+        const matchesQuery = !q ||
+            p.nama.toLowerCase().includes(q) ||
+            p.sku?.toLowerCase().includes(q) ||
+            p.barcode?.toLowerCase().includes(q);
+
+        if (!matchesQuery) return false;
+
+        if (activeCat.value === "all") return true;
+
+        const catMap: Record<string, string> = {
+            'makanan': 'main',
+            'minuman': 'coffee',
+            'snack': 'snack',
+            'roti': 'pastry'
+        };
+        const mappedCat = catMap[p.kategori?.toLowerCase()] || 'all';
+        return mappedCat === activeCat.value;
+    });
 });
 
 const selectedCustomer = computed(() => {
     return props.customers.find(c => c.id === selectedCustomerId.value);
 });
 
-/**
- * Fetch effective price from backend based on customer and unit
- */
+const subtotal = computed(() => {
+    return cart.value.reduce((s, l) => s + (l.price || 0) * l.qty, 0);
+});
+
+const discountAmt = computed(() => Math.round((subtotal.value * discountPct.value) / 100));
+const afterDiscount = computed(() => subtotal.value - discountAmt.value);
+const serviceCharge = computed(() => Math.round(afterDiscount.value * 0.05));
+const tax = computed(() => Math.round((afterDiscount.value + serviceCharge.value) * 0.11));
+const totalAmount = computed(() => afterDiscount.value + serviceCharge.value + tax.value);
+
+const selectedTable = computed(() => TABLES.find(t => t.id === selectedTableId.value));
+
+// ============ Actions ============
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(value || 0);
+};
+
 const fetchPrice = async (produkId: number, satuanId: number, customerId: number | null) => {
     try {
         const response = await axios.get('/pos/price', {
@@ -75,17 +174,11 @@ const fetchPrice = async (produkId: number, satuanId: number, customerId: number
 
 const addToCart = async (produk: any) => {
     const existingIndex = cart.value.findIndex(item => item.produk_id === produk.id);
-    
-    // Fetch appropriate price first
     const priceData = await fetchPrice(produk.id, produk.satuan_id, selectedCustomerId.value);
 
     if (existingIndex > -1) {
         cart.value[existingIndex].qty += 1;
-        // Update price in case it changed
         cart.value[existingIndex].price = priceData.price;
-        cart.value[existingIndex].original_price = priceData.original_price;
-        cart.value[existingIndex].discount_rate = priceData.discount_rate;
-        cart.value[existingIndex].price_type = priceData.price_type;
     } else {
         cart.value.push({
             ...produk,
@@ -99,52 +192,29 @@ const addToCart = async (produk: any) => {
     }
 };
 
-/**
- * Update all prices in cart when customer changes
- */
-const updateCartPrices = async () => {
-    if (cart.value.length === 0) return;
-    
-    const promises = cart.value.map(async (item, index) => {
-        const priceData = await fetchPrice(item.produk_id, item.satuan_id, selectedCustomerId.value);
-        cart.value[index].price = priceData.price;
-        cart.value[index].original_price = priceData.original_price;
-        cart.value[index].discount_rate = priceData.discount_rate;
-        cart.value[index].price_type = priceData.price_type;
-    });
+const updateQty = (produkId: number, delta: number) => {
+    const index = cart.value.findIndex(l => l.produk_id === produkId);
+    if (index === -1) return;
 
-    await Promise.all(promises);
-};
-
-watch(selectedCustomerId, () => {
-    updateCartPrices();
-});
-
-const removeFromCart = (index: number) => {
-    cart.value.splice(index, 1);
-};
-
-const updateQty = (index: number, delta: number) => {
     const newQty = cart.value[index].qty + delta;
     if (newQty > 0) {
         cart.value[index].qty = newQty;
     } else {
-        removeFromCart(index);
+        cart.value.splice(index, 1);
     }
 };
 
-const setQty = (index: number, value: any) => {
-    const qty = Math.max(1, Math.floor(Number(value) || 1));
-    cart.value[index].qty = qty;
+const removeFromCart = (produkId: number) => {
+    const index = cart.value.findIndex(l => l.produk_id === produkId);
+    if (index > -1) cart.value.splice(index, 1);
 };
 
-const totalAmount = computed(() => {
-    return cart.value.reduce((total, item) => total + (item.qty * (item.price || 0)), 0);
-});
+const clearCart = () => cart.value = [];
 
+// ============ Form & Checkout ============
 const form = useForm({
     tanggal: new Date().toISOString().split('T')[0],
-    payment_method: 'cash',
+    payment_method: 'cash' as PaymentMethod,
     customer_id: null as number | null,
     received_amount: 0,
     change_amount: 0,
@@ -152,19 +222,10 @@ const form = useForm({
     items: [] as any[],
 });
 
-const changeAmount = computed(() => {
-    if (form.payment_method !== 'cash') return 0;
-    const diff = form.received_amount - totalAmount.value;
-    return diff > 0 ? diff : 0;
-});
-
-// Validation logic
-const isCreditMissingCustomer = computed(() => {
-    return form.payment_method === 'credit' && !selectedCustomerId.value;
-});
-
-const canCheckout = computed(() => {
-    return cart.value.length > 0 && totalAmount.value > 0 && !isCreditMissingCustomer.value;
+watch(totalAmount, (newTotal) => {
+    if (form.payment_method !== 'cash') {
+        form.received_amount = newTotal;
+    }
 });
 
 const handleCheckout = () => {
@@ -177,404 +238,449 @@ const handleCheckout = () => {
         cost: item.cost,
     }));
 
-    form.change_amount = changeAmount.value;
-    
+    form.change_amount = Math.max(0, form.received_amount - totalAmount.value);
+
     form.post('/pos', {
         onSuccess: () => {
             cart.value = [];
             selectedCustomerId.value = null;
-            isCheckoutOpen.value = false;
+            showPayment.value = false;
             toast.success('Transaksi berhasil disimpan!');
         },
         onError: (errors) => {
-            if (errors.checkout) {
-                toast.error(errors.checkout);
-            } else {
-                toast.error('Gagal memproses transaksi.');
-            }
+            toast.error(errors.checkout || 'Gagal memproses transaksi.');
         },
     });
-};
-
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format(value || 0);
-};
-
-const getPriceBadge = (type: string) => {
-    switch (type) {
-        case 'custom':
-            return { label: 'Custom', class: 'bg-emerald-50 text-emerald-600 border-emerald-100' };
-        case 'wholesale':
-            return { label: 'Grosir', class: 'bg-blue-50 text-blue-600 border-blue-100' };
-        default:
-            return { label: 'Normal', class: 'bg-slate-50 text-slate-500 border-slate-100' };
-    }
 };
 </script>
 
 <template>
-    <Head title="POS Penjualan" />
+<Head title="Cangkir POS · Terminal" />
 
-    <div class="flex h-[calc(100vh-64px)] overflow-hidden bg-[#F8F9FA]">
-        
-        <!-- ====== MAIN CONTENT: Product Selector ====== -->
-        <div class="flex-1 flex flex-col p-8 overflow-hidden gap-8">
-            
-            <PageHeader 
-                title="Point of Sale" 
-                description="Terminal Penjualan & Checkout Kasir"
-                back-href="/dashboard"
-            >
-                <template #actions>
-                    <div class="flex items-center gap-3 w-full sm:w-auto">
-                        <Link href="/sales" class="shrink-0">
-                            <Button variant="outline" size="icon" class="h-10 w-10 rounded-xl border-slate-200 shadow-none hover:bg-slate-50 transition-all" title="Riwayat Penjualan">
-                                <HistoryIcon class="h-4 w-4 text-muted-foreground" />
-                            </Button>
-                        </Link>
-                        <div class="relative w-full max-w-sm">
-                            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                            <Input 
-                                v-model="searchQuery"
-                                placeholder="Cari nama, SKU..." 
-                                class="pl-9 h-10 border-slate-200 bg-white shadow-none focus-visible:ring-accent/5 rounded-xl text-sm"
-                            />
-                        </div>
-                    </div>
-                </template>
-            </PageHeader>
-
-            <!-- Product Grid -->
-            <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 h-fit pb-10">
-                    <div 
-                        v-for="produk in filteredProduks" 
-                        :key="produk.id"
-                        @click="addToCart(produk)"
-                        class="group cursor-pointer bg-white border border-slate-200 p-4 rounded-xl shadow-none hover:shadow-none hover:border-accent/30 transition-all flex flex-col gap-4"
-                    >
-                        <div class="aspect-square bg-[#F8F9FA] rounded-lg flex items-center justify-center border border-slate-200 overflow-hidden relative group-hover:bg-accent/5 transition-colors">
-                            <Package class="h-10 w-10 text-muted-foreground group-hover:text-accent transition-all" />
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-accent/5-[1px]">
-                                <div class="bg-accent text-white h-8 w-8 rounded-full flex items-center justify-center shadow-none ">
-                                    <Plus class="h-4 w-4" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col gap-1.5 px-0.5">
-                            <div class="flex items-start justify-between gap-2">
-                                <h3 class="text-[13px] font-bold text-foreground leading-tight truncate">{{ produk.nama }}</h3>
-                            </div>
-                            <div class="flex items-center gap-1.5">
-                                <span class="text-xs font-bold font-mono text-muted-foreground uppercase">#{{ produk.sku || '--' }}</span>
-                                <span class="text-xs text-muted-foreground italic">In Stock: {{ produk.stock }}</span>
-                            </div>
-                            <div class="mt-2 text-md font-bold text-foreground tabular-nums">{{ formatCurrency(produk.price) }}</div>
-                        </div>
+<div class="min-h-screen bg-[#F8F9FA] font-sans text-slate-900">
+    <!-- ===== Top Bar ===== -->
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="mx-auto  px-5 md:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <Link href="/dashboard"
+                    class="h-10 w-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+                    <ArrowLeft class="h-4 w-4" />
+                </Link>
+                <div class="flex items-center gap-3">
+                    <div
+                        class="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">
+                        №</div>
+                    <div class="leading-tight">
+                        <h1 class="text-base font-bold">Cangkir POS</h1>
+                        <p class="text-xs text-slate-400 font-medium -mt-0.5">Cabang Utama · Terminal #02</p>
                     </div>
                 </div>
+            </div>
 
-                <div v-if="filteredProduks.length === 0" class="h-full flex flex-col items-center justify-center py-20 opacity-20">
-                    <Search class="h-12 w-12 mb-4" />
-                    <p class="text-xs font-bold uppercase tracking-widest text-center">Produk tidak ditemukan</p>
+            <div class="hidden md:flex items-center gap-2">
+                <StatusPill :icon="shiftOpen ? Unlock : Lock" :label="shiftOpen ? 'Shift Aktif · 06:42' : 'Shift Tutup'"
+                    :tone="shiftOpen ? 'primary' : 'muted'" />
+                <StatusPill :icon="online ? Wifi : WifiOff"
+                    :label="online ? 'Online · ERP synced' : 'Offline · 12 antrian'"
+                    :tone="online ? 'success' : 'warning'" />
+                <StatusPill :icon="Printer" label="Printer Ready" tone="muted" />
+            </div>
+
+            <div class="flex items-center gap-2">
+                <Button :variant="shiftOpen ? 'outline' : 'default'" size="sm" @click="showShift = true"
+                    :class="cn('gap-2 rounded-full h-9', !shiftOpen && 'bg-primary text-white')">
+                    <component :is="shiftOpen ? LogOut : LogIn" class="h-4 w-4" />
+                    {{ shiftOpen ? 'Tutup Shift' : 'Buka Shift' }}
+                </Button>
+
+                <Button variant="ghost" size="sm" @click="showVoid = true"
+                    class="gap-2 rounded-full h-9 text-slate-500">
+                    <ShieldAlert class="h-4 w-4" /> Void
+                </Button>
+
+                <Link href="/sales">
+                    <Button variant="ghost" size="sm" class="gap-2 rounded-full h-9 text-slate-500">
+                        <History class="h-4 w-4" /> Riwayat
+                    </Button>
+                </Link>
+
+                <div
+                    class="h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold ml-1">
+                    {{ employee?.initial ?? '—' }}
                 </div>
             </div>
         </div>
+    </header>
 
-        <!-- ====== SIDEBAR: Cart ====== -->
-        <div class="w-[420px] bg-white border-l border-slate-200 flex flex-col h-full shadow-none">
-            
-            <div class="p-8 border-b border-slate-200 flex flex-col gap-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex flex-col gap-1">
-                        <h2 class="text-xl font-bold flex items-center gap-2">
-                            <ShoppingCart class="h-5 w-5 text-accent" />
-                            Live Order
-                        </h2>
-                        <p class="text-xs font-medium text-muted-foreground italic">Current session tracking enabled</p>
+    <!-- ===== Body ===== -->
+    <main class="mx-auto p-4 grid grid-cols-9 gap-6">
+        <!-- ====== LEFT: Catalog & Tables ====== -->
+        <section class="col-span-6 space-y-5">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 space-y-4">
+                <div class="flex flex-col md:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <Search class="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <Input v-model="searchQuery" placeholder="Cari menu, scan barcode, atau ketik SKU…"
+                            class="h-12 pl-11 rounded-2xl bg-slate-50 border-0 text-sm focus-visible:ring-primary/20" />
                     </div>
-                    <Badge variant="secondary" class="h-6 rounded-xl px-2 bg-muted/30 text-muted-foreground font-bold tabular-nums">
-                        {{ cart.length }} line items
-                    </Badge>
+                    <div class="flex gap-2">
+                        <div class="h-12 p-1 rounded-2xl bg-slate-100 flex items-center">
+                            <button v-for="opt in (['counter', 'dine-in', 'takeaway'] as OrderType[])" :key="opt"
+                                @click="orderType = opt" :class="cn(
+                                    'h-full px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition',
+                                    orderType === opt ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'
+                                )">
+                                {{ opt.replace('-', ' ') }}
+                            </button>
+                        </div>
+
+                        <Button v-if="orderType === 'dine-in'" variant="outline"
+                            class="h-12 rounded-2xl gap-2 border-slate-200" @click="showTables = true">
+                            <Users class="h-4 w-4" />
+                            Meja {{ selectedTable?.label }}
+                        </Button>
+                    </div>
                 </div>
 
-                <!-- Customer Selector -->
-                <div class="flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Select Customer</label>
-                        <button 
-                            v-if="selectedCustomerId" 
-                            @click="selectedCustomerId = null"
-                            class="text-[10px] font-bold text-accent hover:underline flex items-center gap-1"
-                        >
-                            <X class="h-2.5 w-2.5" /> Clear Selector
-                        </button>
-                    </div>
-                    <CreatableSelect
-                        v-model="selectedCustomerId"
-                        :options="customers"
-                        placeholder="Cari nama customer..."
-                        displayExpr="name"
-                        valueExpr="id"
-                        hideLabel
-                        class="w-full"
-                    />
-                    <div v-if="selectedCustomer" class="flex items-center gap-2 px-1 animate-in fade-in slide-in-from-top-1 duration-200">
-                        <div class="h-2 w-2 rounded-full bg-accent animate-pulse"></div>
-                        <span class="text-[11px] font-bold text-foreground">{{ selectedCustomer.type }} Pricing Active</span>
-                    </div>
+                <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
+                    <button v-for="cat in CATEGORIES" :key="cat.id" @click="activeCat = cat.id" :class="cn(
+                        'shrink-0 h-11 px-4 rounded-2xl flex items-center gap-2 text-sm font-bold transition border',
+                        activeCat === cat.id
+                            ? 'bg-slate-900 text-white border-slate-900'
+                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                    )">
+                        <component :is="cat.icon" class="h-4 w-4" />
+                        {{ cat.label }}
+                    </button>
                 </div>
             </div>
 
-            <!-- Items List -->
-            <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-4 custom-scrollbar">
-                <div 
-                    v-for="(item, index) in cart" 
-                    :key="index"
-                    class="bg-white border border-slate-200 p-4 rounded-xl flex flex-col gap-3 group animate-in slide-in-from-right-2 duration-300"
-                >
-                    <div class="flex items-start justify-between">
-                        <div class="flex flex-col gap-0.5 min-w-0 pr-4">
-                            <span class="text-[13px] font-bold text-foreground truncate">{{ item.nama }}</span>
-                            <div class="flex items-center flex-wrap gap-2 mt-0.5">
-                                <div class="flex items-center gap-1.5 grayscale-[0.3]">
-                                    <span v-if="item.discount_rate > 0" class="text-[11px] font-bold text-muted-foreground/60 line-through">
-                                        {{ formatCurrency(item.original_price) }}
-                                    </span>
-                                    <span :class="cn('text-xs font-bold uppercase tracking-tight', item.discount_rate > 0 ? 'text-accent' : 'text-muted-foreground')">
-                                        {{ formatCurrency(item.price) }} / {{ item.base_unit || 'PCS' }}
-                                    </span>
-                                </div>
-                                <div class="flex items-center gap-1">
-                                    <Badge 
-                                        v-if="item.price_type"
-                                        variant="outline" 
-                                        :class="cn('text-[9px] h-4 px-1.5 rounded-md uppercase font-bold tracking-tighter border', getPriceBadge(item.price_type).class)"
-                                    >
-                                        {{ getPriceBadge(item.price_type).label }}
-                                    </Badge>
-                                    <Badge 
-                                        v-if="item.discount_rate > 0"
-                                        variant="outline" 
-                                        class="text-[9px] h-4 px-1.5 rounded-md uppercase font-bold tracking-tighter border bg-amber-50 text-amber-600 border-amber-100"
-                                    >
-                                        -{{ item.discount_rate }}%
-                                    </Badge>
-                                </div>
-                            </div>
-                        </div>
-                        <button 
-                            class="h-7 w-7 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all -mt-1 -mr-1"
-                            @click="removeFromCart(index)"
-                        >
-                            <X class="h-3.5 w-3.5" />
-                        </button>
+            <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                <button v-for="p in filteredProduks" :key="p.id" :disabled="p.stock === 0" @click="addToCart(p)"
+                    class="group relative flex flex-col text-left rounded-2xl bg-white border border-slate-200 p-3 transition hover:border-primary hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none">
+                    <span v-if="p.stock === 0"
+                        class="absolute top-2 right-2 z-10 text-[10px] font-bold uppercase tracking-wider bg-destructive text-white px-2 py-0.5 rounded-full">
+                        Habis
+                    </span>
+                    <span v-else-if="p.stock < 10"
+                        class="absolute top-2 right-2 z-10 text-[10px] font-bold uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full">
+                        Sisa {{ p.stock }}
+                    </span>
+
+                    <div
+                        class="aspect-square w-full rounded-xl bg-slate-50 flex items-center justify-center mb-3 group-hover:bg-primary/5 transition-colors">
+                        <Package class="h-10 w-10 text-slate-300 group-hover:text-primary transition-colors" />
                     </div>
 
-                    <div class="flex items-center justify-between mt-1">
-                        <div class="flex items-center bg-secondary/50 rounded-lg p-0.5">
-                            <button @click="updateQty(index, -1)" class="h-7 w-7 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-none text-muted-foreground transition-all">
-                                <Minus class="h-3 w-3" />
-                            </button>
-                            <input 
-                                type="number" 
-                                v-model.number="item.qty" 
-                                class="qty-input w-14 text-center text-[12px] font-bold tabular-nums bg-transparent border-none focus:outline-none focus:ring-0"
-                                min="1"
-                                @change="setQty(index, ($event.target as HTMLInputElement).value)"
-                                @keydown.enter.prevent="($event.target as HTMLInputElement).blur()"
-                            />
-                            <button @click="updateQty(index, 1)" class="h-7 w-7 flex items-center justify-center rounded-xl hover:bg-white hover:shadow-none text-muted-foreground transition-all">
-                                <Plus class="h-3 w-3" />
-                            </button>
-                        </div>
-                        <span class="text-[14px] font-bold text-foreground tabular-nums">
-                            {{ formatCurrency(item.qty * (item.price || 0)) }}
+                    <h3 class="text-[13px] font-bold leading-snug line-clamp-2 min-h-[2.4em] mb-2 text-slate-800">
+                        {{ p.nama }}
+                    </h3>
+
+                    <div class="flex items-center justify-between mt-auto">
+                        <p class="text-sm font-bold text-slate-900 tabular-nums">
+                            {{ formatCurrency(p.price) }}
+                        </p>
+                        <span
+                            class="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-primary group-hover:text-white flex items-center justify-center transition shrink-0">
+                            <Plus class="h-4 w-4" />
                         </span>
                     </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- ====== RIGHT: Cart ====== -->
+        <aside
+            class="col-span-3 lg:sticky lg:top-20 lg:h-[calc(100vh-100px)] bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+            <div class="p-5 border-b border-slate-200">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Order Aktif</h2>
+                        <p class="text-xs text-slate-400 font-medium flex items-center gap-1.5 mt-0.5">
+                            <template v-if="orderType === 'dine-in'">
+                                <Users class="h-3 w-3" /> Meja {{ selectedTable?.label }} · {{ selectedTable?.guests }}
+                                tamu
+                            </template>
+                            <template v-else-if="orderType === 'takeaway'">
+                                <ShoppingBag class="h-3 w-3" /> Takeaway
+                            </template>
+                            <template v-else>
+                                <Store class="h-3 w-3" /> Counter / Walk-in
+                            </template>
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <template v-if="orderType === 'dine-in'">
+                            <IconBtn aria-label="Split bill">
+                                <Split class="h-4 w-4" />
+                            </IconBtn>
+                            <IconBtn aria-label="Pindah meja">
+                                <ArrowLeftRight class="h-4 w-4" />
+                            </IconBtn>
+                            <IconBtn aria-label="Gabung meja">
+                                <Merge class="h-4 w-4" />
+                            </IconBtn>
+                        </template>
+                        <IconBtn aria-label="Bersihkan cart" @click="clearCart">
+                            <Trash2 class="h-4 w-4" />
+                        </IconBtn>
+                    </div>
                 </div>
 
-                <div v-if="cart.length === 0" class="h-full flex flex-col items-center justify-center py-20 opacity-20 text-muted-foreground">
-                    <div class="h-16 w-16 border-2 border-dashed border-muted-foreground rounded-full flex items-center justify-center mb-4">
-                        <ShoppingCart class="h-6 w-6" />
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pilih
+                            Customer</label>
+                        <button v-if="selectedCustomerId" @click="selectedCustomerId = null"
+                            class="text-[10px] font-bold text-primary hover:underline flex items-center gap-1">
+                            <X class="h-2.5 w-2.5" /> Lepas
+                        </button>
                     </div>
-                    <p class="text-xs font-bold font-mono italic uppercase tracking-widest text-center">Keranjang masih kosong</p>
+                    <CreatableSelect v-model="selectedCustomerId" :options="customers"
+                        placeholder="Cari customer / member..." displayExpr="name" valueExpr="id" hideLabel
+                        class="w-full" />
                 </div>
             </div>
 
-            <!-- Totals & Checkout -->
-            <div class="p-8 border-t border-slate-200 bg-secondary/5 flex flex-col gap-6">
-                <!-- Validation Warning for Credit -->
-                <div v-if="isCreditMissingCustomer" class="p-3 bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    <div class="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center flex-shrink-0">
-                        <Info class="h-4 w-4 text-destructive" />
+            <div class="flex-1 overflow-y-auto p-5 space-y-3 min-h-[200px] custom-scrollbar">
+                <div v-for="line in cart" :key="line.produk_id" class="flex gap-3 items-start group">
+                    <div
+                        class="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
+                        <Package class="h-5 w-5 text-slate-300" />
                     </div>
-                    <div class="flex flex-col">
-                        <span class="text-[11px] font-bold text-destructive uppercase tracking-tight">Customer Wajib</span>
-                        <span class="text-[10px] text-destructive/70 font-medium leading-tight">Metode piutang memerlukan identitas customer.</span>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-3">
-                    <div class="flex justify-between items-center px-1">
-                        <span class="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Subtotal Order</span>
-                        <span class="text-[13px] font-bold text-foreground tabular-nums">{{ formatCurrency(totalAmount) }}</span>
-                    </div>
-                    <div class="h-px bg-border/20 mx-1" />
-                    <div class="flex justify-between items-center px-1 py-1">
-                        <span class="text-xs font-bold text-foreground uppercase tracking-[0.1em]">Total Invoice</span>
-                        <span class="text-2xl font-bold text-accent tabular-nums">{{ formatCurrency(totalAmount) }}</span>
-                    </div>
-                </div>
-
-                <Dialog :open="isCheckoutOpen" @update:open="isCheckoutOpen = $event">
-                    <DialogTrigger as-child>
-                        <Button 
-                            class="w-full h-14 text-sm font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white disabled:opacity-30 rounded-xl shadow-none shadow-accent/20 transition-all font-mono"
-                            :disabled="!canCheckout"
-                        >
-                            Bayar Sekarang
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent class="max-w-2xl rounded-xl border-none p-0 overflow-hidden shadow-none ">
-                        <DialogHeader class="p-8 bg-accent text-white">
-                            <div class="flex flex-col gap-1">
-                                <DialogTitle class="text-2xl font-bold uppercase tracking-widest">Selesaikan Pembayaran</DialogTitle>
-                                <DialogDescription class="text-white/60">Pilih metode pembayaran dan konfirmasi transaksi.</DialogDescription>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <h4 class="text-sm font-bold leading-tight truncate text-slate-800">{{ line.nama }}</h4>
+                                <p class="text-xs text-slate-400 font-medium mt-0.5">{{ formatCurrency(line.price) }}
+                                </p>
                             </div>
-                        </DialogHeader>
-                        
-                        <div class="p-10 flex flex-col gap-10 bg-white">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                <!-- Summary & Method -->
-                                <div class="flex flex-col gap-6">
-                                    <div class="p-8 bg-[#F8F9FA] border border-slate-200 rounded-xl text-center flex flex-col gap-1 translate-y-0 hover:-translate-y-1 transition-transform">
-                                        <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground opacity-50">Total Tagihan</span>
-                                        <div class="text-4xl font-bold text-accent tabular-nums">{{ formatCurrency(totalAmount) }}</div>
-                                    </div>
-
-                                    <div class="flex flex-col gap-3">
-                                        <h4 class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Metode Pembayaran</h4>
-                                        <div class="grid grid-cols-2 gap-3">
-                                            <button 
-                                                v-for="method in [
-                                                    { id: 'cash', label: 'Tunai', icon: Banknote },
-                                                    { id: 'qris', label: 'QRIS', icon: QrCode },
-                                                    { id: 'transfer', label: 'Transfer', icon: CreditCard },
-                                                    { id: 'credit', label: 'Piutang', icon: Landmark }
-                                                ]"
-                                                :key="method.id"
-                                                @click="form.payment_method = method.id"
-                                                class="flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2"
-                                                :class="form.payment_method === method.id ? 'border-accent bg-accent/5 text-accent' : 'border-slate-200 hover:border-slate-200 hover:bg-secondary/20 text-muted-foreground'"
-                                            >
-                                                <component :is="method.icon" class="h-6 w-6" />
-                                                <span class="text-xs font-bold uppercase tracking-tight">{{ method.label }}</span>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div v-if="selectedCustomer" class="p-4 bg-muted/30 rounded-xl border border-dashed border-slate-200 flex items-center gap-3">
-                                        <div class="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center border border-accent/20">
-                                            <UserCircle class="h-5 w-5 text-accent" />
-                                        </div>
-                                        <div class="flex flex-col">
-                                            <span class="text-xs font-bold text-foreground">Customer: {{ selectedCustomer.name }}</span>
-                                            <span class="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">{{ selectedCustomer.type }} Tier</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Input Details -->
-                                <div class="flex flex-col gap-6">
-                                    <div v-if="form.payment_method === 'cash'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                                        <div class="flex flex-col gap-2">
-                                            <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Uang Diterima</label>
-                                            <div class="relative">
-                                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-muted-foreground">Rp</span>
-                                                <Input 
-                                                    v-model.number="form.received_amount"
-                                                    type="number"
-                                                    class="pl-12 h-14 text-2xl font-bold border-slate-200 bg-[#F8F9FA] focus:border-accent/30 rounded-xl shadow-none "
-                                                />
-                                            </div>
-                                        </div>
-                                        <div class="flex flex-col gap-2">
-                                            <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Kembalian</label>
-                                            <div class="h-14 flex items-center justify-end px-6 border border-slate-200 bg-secondary/20 rounded-xl text-2xl font-bold text-destructive tabular-nums">
-                                                {{ formatCurrency(changeAmount) }}
-                                            </div>
-                                        </div>
-                                        <div class="flex flex-wrap gap-2 mt-1">
-                                            <button 
-                                                v-for="cash in [10000, 20000, 50000, 100000]" 
-                                                :key="cash"
-                                                @click="form.received_amount = cash"
-                                                class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold hover:bg-muted transition-all"
-                                            >
-                                                {{ cash / 1000 }}K
-                                            </button>
-                                            <button @click="form.received_amount = totalAmount" class="px-3 py-1.5 rounded-lg border border-accent/20 bg-accent/5 text-accent text-xs font-bold hover:bg-accent/10 transition-all">
-                                                Uang Pas
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex flex-col gap-2 flex-1">
-                                        <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-1">Catatan Transaksi</label>
-                                        <textarea 
-                                            v-model="form.notes"
-                                            class="w-full flex-1 min-h-[100px] border border-slate-200 bg-[#F8F9FA] rounded-xl p-4 text-sm focus:outline-none focus:border-accent/30 transition-all resize-none font-medium"
-                                            placeholder="Opsional: Nama meja, ID member..."
-                                        ></textarea>
-                                    </div>
-                                </div>
-                            </div>
+                            <button @click="removeFromCart(line.produk_id)"
+                                class="opacity-0 group-hover:opacity-100 transition text-slate-300 hover:text-destructive">
+                                <X class="h-4 w-4" />
+                            </button>
                         </div>
-
-                        <DialogFooter class="p-8 bg-secondary/10 border-t border-slate-200 flex items-center justify-end gap-3">
-                            <Button variant="ghost" @click="isCheckoutOpen = false" class="text-xs font-bold uppercase tracking-widest rounded-lg">Kembali</Button>
-                            <Button 
-                                :disabled="form.processing || !canCheckout"
-                                @click="handleCheckout" 
-                                class="h-12 px-10 text-xs font-bold uppercase tracking-widest bg-accent hover:bg-accent/90 text-white rounded-lg shadow-none shadow-accent/10"
-                            >
-                                Konfirmasi & Simpan
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                        <div class="mt-2 flex items-center justify-between">
+                            <div class="flex items-center gap-1 bg-slate-100 rounded-full p-0.5">
+                                <button @click="updateQty(line.produk_id, -1)"
+                                    class="h-7 w-7 rounded-full bg-white hover:bg-slate-50 shadow-sm flex items-center justify-center text-slate-600">
+                                    <Minus class="h-3 w-3" />
+                                </button>
+                                <span class="w-7 text-center text-sm font-bold tabular-nums text-slate-800">{{ line.qty
+                                    }}</span>
+                                <button @click="updateQty(line.produk_id, 1)"
+                                    class="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center">
+                                    <Plus class="h-3 w-3" />
+                                </button>
+                            </div>
+                            <p class="text-sm font-bold tabular-nums text-slate-900">{{ formatCurrency(line.price *
+                                line.qty) }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+
+            <div class="border-t border-slate-200 p-5 space-y-3 bg-white">
+                <div class="space-y-1.5 text-sm">
+                    <div class="flex justify-between text-slate-600"><span class="font-medium">Subtotal</span><span
+                            class="tabular-nums font-bold">{{ formatCurrency(subtotal) }}</span></div>
+                    <div class="flex justify-between text-slate-400">
+                        <button class="flex items-center gap-1 font-medium"
+                            @click="discountPct = discountPct > 0 ? 0 : 10">
+                            <Percent class="h-3 w-3" /> Diskon {{ discountPct }}%
+                        </button>
+                        <span class="tabular-nums font-medium">- {{ formatCurrency(discountAmt) }}</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400"><span>Pajak & Layanan</span><span
+                            class="tabular-nums font-medium">{{ formatCurrency(serviceCharge + tax) }}</span></div>
+                </div>
+                <div class="flex items-end justify-between pt-2 border-t border-slate-100">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Bayar</p>
+                        <p class="text-2xl font-bold tabular-nums text-slate-900 tracking-tight">{{
+                            formatCurrency(totalAmount) }}
+                        </p>
+                    </div>
+                    <Badge variant="secondary" class="bg-primary/10 text-primary rounded-lg px-2 py-1 font-bold">{{
+                        cart.reduce((s,
+                            l) => s + l.qty, 0)}} items</Badge>
+                </div>
+                <Button :disabled="cart.length === 0" @click="showPayment = true"
+                    class="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase tracking-widest shadow-xl shadow-slate-900/10">
+                    <CircleDollarSign class="h-5 w-5" /> Bayar Sekarang
+                </Button>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Modals -->
+    <Dialog :open="showPayment" @update:open="showPayment = $event">
+        <DialogContent class="max-w-3xl rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+            <div class="flex items-center justify-between p-5 border-b border-slate-100">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Selesaikan Pembayaran</h3>
+                    <p class="text-xs text-slate-400">Pilih metode bayar dan konfirmasi transaksi.</p>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-[1fr_320px]">
+                <div class="p-6 space-y-5 bg-white">
+                    <div class="grid grid-cols-2 gap-3">
+                        <button
+                            v-for="m in [{ id: 'cash', label: 'Cash', icon: Banknote }, { id: 'qris', label: 'QRIS', icon: QrCode }, { id: 'transfer', label: 'Transfer', icon: Wallet }, { id: 'credit', label: 'Piutang', icon: CreditCard }]"
+                            :key="m.id" @click="form.payment_method = m.id as PaymentMethod"
+                            :class="cn('text-left p-4 rounded-2xl border-2 transition-all', form.payment_method === m.id ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-300')">
+                            <div class="flex items-center justify-between mb-3">
+                                <div
+                                    :class="cn('p-2 rounded-xl', form.payment_method === m.id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400')">
+                                    <component :is="m.icon" class="h-5 w-5" />
+                                </div>
+                                <Check v-if="form.payment_method === m.id" class="h-4 w-4 text-primary" />
+                            </div>
+                            <p class="text-sm font-bold text-slate-800">{{ m.label }}</p>
+                        </button>
+                    </div>
+                    <div v-if="form.payment_method === 'cash'"
+                        class="bg-slate-50 rounded-2xl p-5 space-y-4 border border-slate-100 animate-in fade-in slide-in-from-top-2">
+                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Jumlah
+                            Diterima</label>
+                        <Input type="number" v-model.number="form.received_amount"
+                            class="h-14 text-2xl font-bold rounded-xl" />
+                        <div class="flex justify-between pt-3 border-t border-slate-200"><span
+                                class="text-xs font-bold text-slate-400">Kembalian</span><span
+                                class="text-xl font-bold text-emerald-600">{{ formatCurrency(Math.max(0,
+                                    form.received_amount - totalAmount)) }}</span></div>
+                    </div>
+                    <div v-if="form.payment_method === 'qris'"
+                        class="bg-slate-50 rounded-2xl p-8 flex flex-col items-center justify-center border border-slate-100 animate-in zoom-in-95">
+                        <QrCode class="h-32 w-32 text-slate-800 mb-2" />
+                        <p class="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Scan QRIS Dinamis</p>
+                    </div>
+                </div>
+                <div class="bg-slate-900 text-white p-6 flex flex-col">
+                    <div class="flex-1 space-y-4">
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Ringkasan</h4>
+                        <div class="flex justify-between text-sm text-slate-400"><span>Total Belanja</span><span>{{
+                            formatCurrency(subtotal) }}</span></div>
+                        <div class="flex justify-between text-sm text-slate-400"><span>Diskon</span><span>-{{
+                            formatCurrency(discountAmt) }}</span></div>
+                        <div class="flex justify-between text-sm text-slate-400"><span>Pajak & Svc</span><span>{{
+                            formatCurrency(serviceCharge + tax) }}</span></div>
+                        <div class="border-t border-slate-800 my-4"></div>
+                        <div class="flex flex-col gap-1">
+                            <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Total
+                                Bayar</span>
+                            <span class="font-bold text-3xl">{{ formatCurrency(totalAmount) }}</span>
+                        </div>
+                    </div>
+                    <div class="pt-6 space-y-3">
+                        <Button @click="handleCheckout"
+                            :disabled="form.processing || (form.payment_method === 'cash' && form.received_amount < totalAmount)"
+                            class="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold uppercase tracking-widest">Konfirmasi
+                            & Cetak</Button>
+                        <Button variant="ghost" @click="showPayment = false"
+                            class="w-full text-slate-400">Batal</Button>
+                    </div>
+                </div>
+            </div>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog :open="showVoid" @update:open="showVoid = $event">
+        <DialogContent class="max-w-md rounded-3xl p-6">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="h-12 w-12 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center">
+                    <AlertTriangle class="h-6 w-6" />
+                </div>
+                <h3 class="font-bold text-slate-900">Void Transaksi</h3>
+            </div>
+            <p class="text-sm text-slate-500 mb-6">Otorisasi supervisor diperlukan untuk pembatalan transaksi.</p>
+            <div class="space-y-4">
+                <Input type="password" placeholder="PIN Supervisor"
+                    class="h-12 text-center text-2xl tracking-[0.5em] font-bold" />
+                <Button variant="destructive" class="w-full h-12 font-bold uppercase tracking-widest">Void
+                    Sekarang</Button>
+            </div>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog :open="showTables" @update:open="showTables = $event">
+        <DialogContent class="max-w-2xl rounded-3xl p-6">
+            <h3 class="font-bold text-lg text-slate-900 mb-4">Pilih Meja</h3>
+            <div class="grid grid-cols-4 gap-3">
+                <button v-for="t in TABLES" :key="t.id" @click="selectedTableId = t.id; showTables = false"
+                    :class="cn('p-4 rounded-2xl border-2 text-left transition-all', t.status === 'open' ? 'border-primary bg-primary/5' : 'border-slate-200 hover:border-slate-400')">
+                    <span class="text-lg font-bold block">{{ t.label }}</span>
+                    <span class="text-[10px] text-slate-400 uppercase font-bold">{{ t.status }}</span>
+                </button>
+            </div>
+        </DialogContent>
+    </Dialog>
+
+    <Dialog :open="showShift" @update:open="showShift = $event">
+        <DialogContent class="max-w-md rounded-3xl p-6">
+            <div class="flex items-center gap-4 mb-4">
+                <div
+                    :class="cn('h-12 w-12 rounded-2xl flex items-center justify-center', shiftOpen ? 'bg-primary/10 text-primary' : 'bg-emerald-100 text-emerald-700')">
+                    <component :is="shiftOpen ? LogOut : LogIn" class="h-6 w-6" />
+                </div>
+                <h3 class="font-bold text-slate-900">{{ shiftOpen ? 'Tutup Shift' : 'Buka Shift' }}</h3>
+            </div>
+            <div class="space-y-6">
+                <div class="bg-slate-50 p-4 rounded-2xl space-y-2">
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Petugas Aktif</p>
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">
+                            {{ employee?.initial }}</div>
+                        <span class="font-bold">{{ employee?.name }}</span>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">{{ shiftOpen ?
+                        `Uang Fisik di Laci` : 'Modal Awal' }}</label>
+                    <Input type="number" placeholder="0" class="h-14 text-center text-2xl font-bold" />
+                </div>
+                <div class="flex gap-3">
+                    <Button variant="ghost" @click="showShift = false"
+                        class="flex-1 h-12 font-bold uppercase">Batal</Button>
+                    <Button
+                        @click="shiftOpen = !shiftOpen; employee = shiftOpen ? null : { name: 'Rizal A.', initial: 'RA', checkedInAt: '08:00' }; showShift = false"
+                        class="flex-1 h-12 bg-slate-900 text-white font-bold uppercase">
+                        {{ shiftOpen ? 'Konfirmasi Tutup' : 'Mulai Shift' }}
+                    </Button>
+                </div>
+            </div>
+        </DialogContent>
+    </Dialog>
+</div>
 </template>
 
 <style scoped>
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-}
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.05);
     border-radius: 10px;
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.1);
-}
 
-input[type=number].qty-input::-webkit-outer-spin-button,
-input[type=number].qty-input::-webkit-inner-spin-button {
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
-input[type=number].qty-input {
+
+input[type=number] {
     -moz-appearance: textfield;
 }
 </style>
