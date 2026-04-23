@@ -3,8 +3,10 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { 
     ArrowLeft, User, Briefcase, CreditCard, 
     Save, X, Info, Camera, MapPin, 
-    Phone, Mail, Calendar, Building2
+    Phone, Mail, Calendar, Building2,
+    ShieldCheck
 } from 'lucide-vue-next';
+import { index, store, update } from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import { Button } from '@/components/ui/button';
@@ -22,56 +24,71 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 
+const props = defineProps<{
+    employee?: any;
+    roles: string[];
+    isEditing?: boolean;
+}>();
+
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Pegawai', href: '/employees' },
-    { title: 'Tambah Pegawai', href: '#' },
+    { title: 'Pegawai', href: index().url },
+    { title: props.isEditing ? 'Edit Pegawai' : 'Tambah Pegawai', href: '#' },
 ];
 
-// Mock Form
-const form = {
-    name: '',
-    nik: '',
-    email: '',
-    phone: '',
-    address: '',
-    position: '',
-    department: '',
-    join_date: '',
-    employment_type: 'Tetap',
-    basic_salary: '',
-    bank_name: '',
-    bank_account: '',
-    create_user: false,
-    role: 'Staff'
+const form = useForm({
+    name: props.employee?.name ?? '',
+    nik: props.employee?.nik ?? '',
+    email: props.employee?.email ?? '',
+    phone: props.employee?.phone ?? '',
+    address: props.employee?.address ?? '',
+    position: props.employee?.position ?? '',
+    department: props.employee?.department ?? '',
+    join_date: props.employee?.join_date ?? '',
+    employment_type: props.employee?.employment_type ?? 'Tetap',
+    status: props.employee?.status ?? 'active',
+    basic_salary: props.employee?.basic_salary ?? '',
+    bank_name: props.employee?.bank_name ?? '',
+    bank_account: props.employee?.bank_account ?? '',
+    create_user: !!props.employee?.user_id,
+    role: props.employee?.user?.roles?.[0]?.name ?? 'Staff',
+    password: '',
+});
+
+const submit = () => {
+    if (props.isEditing) {
+        form.put(update(props.employee.id).url);
+    } else {
+        form.post(store().url);
+    }
 };
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head title="Tambah Pegawai Baru" />
+        <Head :title="isEditing ? 'Edit Pegawai' : 'Tambah Pegawai Baru'" />
 
-        <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans text-slate-700">
+        <form @submit.prevent="submit" class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans text-slate-700">
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Link href="/employees">
-                        <Button variant="outline" size="icon" class="btn-secondary h-8 w-8">
+                    <Link :href="index().url">
+                        <Button type="button" variant="outline" size="icon" class="btn-secondary h-8 w-8">
                             <ArrowLeft class="h-4 w-4" />
                         </Button>
                     </Link>
                     <div>
-                        <h1 class="text-xl font-bold tracking-tight text-slate-900">Tambah Pegawai Baru</h1>
+                        <h1 class="text-xl font-bold tracking-tight text-slate-900">{{ isEditing ? 'Edit Data Pegawai' : 'Tambah Pegawai Baru' }}</h1>
                         <p class="text-sm text-slate-400 mt-0.5">Input data personal dan informasi kontrak kerja.</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <Link href="/employees">
-                        <Button variant="outline" class="rounded-full px-6 font-normal">Batal</Button>
+                    <Link :href="index().url">
+                        <Button type="button" variant="outline" class="rounded-full px-6 font-normal">Batal</Button>
                     </Link>
-                    <Button primary class="rounded-full px-6 font-normal gap-2 shadow-none">
+                    <Button type="submit" primary :disabled="form.processing" class="rounded-full px-6 font-normal gap-2 shadow-none">
                         <Save class="h-4 w-4" />
-                        Simpan Data
+                        {{ isEditing ? 'Update Data' : 'Simpan Data' }}
                     </Button>
                 </div>
             </div>
@@ -92,29 +109,34 @@ const form = {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Nama Lengkap Sesuai KTP</Label>
-                                    <Input placeholder="Masukkan nama lengkap..." class="rounded-xl h-11 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
+                                    <Input v-model="form.name" placeholder="Masukkan nama lengkap..." class="rounded-xl h-11 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
+                                    <p v-if="form.errors.name" class="text-[10px] text-red-500 ml-1">{{ form.errors.name }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">NIK (Nomor Induk Kependudukan)</Label>
-                                    <Input placeholder="16 digit NIK..." class="rounded-xl h-11 border-border/60 bg-white shadow-none focus-visible:ring-primary/20 font-mono" />
+                                    <Input v-model="form.nik" placeholder="16 digit NIK..." class="rounded-xl h-11 border-border/60 bg-white shadow-none focus-visible:ring-primary/20 font-mono" />
+                                    <p v-if="form.errors.nik" class="text-[10px] text-red-500 ml-1">{{ form.errors.nik }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Nomor WhatsApp</Label>
                                     <div class="relative">
                                         <Phone class="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
-                                        <Input placeholder="0812..." class="rounded-xl h-11 pl-10 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
+                                        <Input v-model="form.phone" placeholder="0812..." class="rounded-xl h-11 pl-10 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
                                     </div>
+                                    <p v-if="form.errors.phone" class="text-[10px] text-red-500 ml-1">{{ form.errors.phone }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Email Kerja / Personal</Label>
                                     <div class="relative">
                                         <Mail class="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
-                                        <Input placeholder="email@example.com" class="rounded-xl h-11 pl-10 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
+                                        <Input v-model="form.email" placeholder="email@example.com" class="rounded-xl h-11 pl-10 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
                                     </div>
+                                    <p v-if="form.errors.email" class="text-[10px] text-red-500 ml-1">{{ form.errors.email }}</p>
                                 </div>
                                 <div class="col-span-2 space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Alamat Domisili</Label>
-                                    <Textarea placeholder="Alamat lengkap..." class="rounded-2xl min-h-[100px] border-border/60 bg-white shadow-none focus-visible:ring-primary/20 resize-none" />
+                                    <Textarea v-model="form.address" placeholder="Alamat lengkap..." class="rounded-2xl min-h-[100px] border-border/60 bg-white shadow-none focus-visible:ring-primary/20 resize-none" />
+                                    <p v-if="form.errors.address" class="text-[10px] text-red-500 ml-1">{{ form.errors.address }}</p>
                                 </div>
                             </div>
                         </div>
@@ -132,50 +154,55 @@ const form = {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Jabatan / Posisi</Label>
-                                    <Select>
+                                    <Select v-model="form.position">
                                         <SelectTrigger class="rounded-xl h-11 border-border/60 bg-white shadow-none">
                                             <SelectValue placeholder="Pilih jabatan..." />
                                         </SelectTrigger>
                                         <SelectContent class="rounded-xl shadow-none">
-                                            <SelectItem value="manager">Manager</SelectItem>
-                                            <SelectItem value="kasir">Kasir</SelectItem>
-                                            <SelectItem value="cook">Cook</SelectItem>
-                                            <SelectItem value="server">Server</SelectItem>
+                                            <SelectItem value="Manager">Manager</SelectItem>
+                                            <SelectItem value="Kasir">Kasir</SelectItem>
+                                            <SelectItem value="Cook">Cook</SelectItem>
+                                            <SelectItem value="Server">Server</SelectItem>
+                                            <SelectItem value="Admin">Admin</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    <p v-if="form.errors.position" class="text-[10px] text-red-500 ml-1">{{ form.errors.position }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Departemen</Label>
-                                    <Select>
+                                    <Select v-model="form.department">
                                         <SelectTrigger class="rounded-xl h-11 border-border/60 bg-white shadow-none">
                                             <SelectValue placeholder="Pilih departemen..." />
                                         </SelectTrigger>
                                         <SelectContent class="rounded-xl shadow-none">
-                                            <SelectItem value="ops">Operasional</SelectItem>
-                                            <SelectItem value="kitchen">Dapur</SelectItem>
-                                            <SelectItem value="admin">Administrasi</SelectItem>
+                                            <SelectItem value="Operasional">Operasional</SelectItem>
+                                            <SelectItem value="Dapur">Dapur</SelectItem>
+                                            <SelectItem value="Administrasi">Administrasi</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    <p v-if="form.errors.department" class="text-[10px] text-red-500 ml-1">{{ form.errors.department }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Tanggal Mulai Kerja</Label>
                                     <div class="relative">
                                         <Calendar class="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground/40" />
-                                        <Input type="date" class="rounded-xl h-11 pl-10 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
+                                        <Input v-model="form.join_date" type="date" class="rounded-xl h-11 pl-10 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
                                     </div>
+                                    <p v-if="form.errors.join_date" class="text-[10px] text-red-500 ml-1">{{ form.errors.join_date }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Status Kepegawaian</Label>
-                                    <Select>
+                                    <Select v-model="form.employment_type">
                                         <SelectTrigger class="rounded-xl h-11 border-border/60 bg-white shadow-none">
                                             <SelectValue placeholder="Pilih status..." />
                                         </SelectTrigger>
                                         <SelectContent class="rounded-xl shadow-none">
-                                            <SelectItem value="tetap">Karyawan Tetap</SelectItem>
-                                            <SelectItem value="kontrak">Kontrak</SelectItem>
-                                            <SelectItem value="harian">Harian Lepas</SelectItem>
+                                            <SelectItem value="Tetap">Karyawan Tetap</SelectItem>
+                                            <SelectItem value="Kontrak">Kontrak</SelectItem>
+                                            <SelectItem value="Harian">Harian Lepas</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    <p v-if="form.errors.employment_type" class="text-[10px] text-red-500 ml-1">{{ form.errors.employment_type }}</p>
                                 </div>
                             </div>
                         </div>
@@ -195,28 +222,32 @@ const form = {
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Gaji Pokok (Monthly)</Label>
                                     <div class="relative">
                                         <span class="absolute left-4 top-3 text-[13px] font-bold text-muted-foreground/60">Rp</span>
-                                        <Input type="number" placeholder="0" class="rounded-xl h-11 pl-12 border-border/60 bg-white shadow-none focus-visible:ring-primary/20 tabular-nums" />
+                                        <Input v-model="form.basic_salary" type="number" placeholder="0" class="rounded-xl h-11 pl-12 border-border/60 bg-white shadow-none focus-visible:ring-primary/20 tabular-nums" />
                                     </div>
+                                    <p v-if="form.errors.basic_salary" class="text-[10px] text-red-500 ml-1">{{ form.errors.basic_salary }}</p>
                                 </div>
                                 <div class="space-y-2">
-                                    <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Metode Pembayaran</Label>
-                                    <Select>
+                                    <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Status</Label>
+                                    <Select v-model="form.status">
                                         <SelectTrigger class="rounded-xl h-11 border-border/60 bg-white shadow-none">
-                                            <SelectValue placeholder="Pilih metode..." />
+                                            <SelectValue placeholder="Pilih status..." />
                                         </SelectTrigger>
                                         <SelectContent class="rounded-xl shadow-none">
-                                            <SelectItem value="transfer">Transfer Bank</SelectItem>
-                                            <SelectItem value="tunai">Tunai / Cash</SelectItem>
+                                            <SelectItem value="active">Aktif</SelectItem>
+                                            <SelectItem value="inactive">Non-Aktif</SelectItem>
                                         </SelectContent>
                                     </Select>
+                                    <p v-if="form.errors.status" class="text-[10px] text-red-500 ml-1">{{ form.errors.status }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Nama Bank</Label>
-                                    <Input placeholder="Misal: BCA, Mandiri, BRI" class="rounded-xl h-11 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
+                                    <Input v-model="form.bank_name" placeholder="Misal: BCA, Mandiri, BRI" class="rounded-xl h-11 border-border/60 bg-white shadow-none focus-visible:ring-primary/20" />
+                                    <p v-if="form.errors.bank_name" class="text-[10px] text-red-500 ml-1">{{ form.errors.bank_name }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <Label class="text-[11px] uppercase tracking-widest text-muted-foreground font-normal ml-1">Nomor Rekening</Label>
-                                    <Input placeholder="Nomor rekening..." class="rounded-xl h-11 border-border/60 bg-white shadow-none focus-visible:ring-primary/20 font-mono" />
+                                    <Input v-model="form.bank_account" placeholder="Nomor rekening..." class="rounded-xl h-11 border-border/60 bg-white shadow-none focus-visible:ring-primary/20 font-mono" />
+                                    <p v-if="form.errors.bank_account" class="text-[10px] text-red-500 ml-1">{{ form.errors.bank_account }}</p>
                                 </div>
                             </div>
                         </div>
@@ -245,22 +276,42 @@ const form = {
                                 <ShieldCheck class="h-5 w-5 text-blue-400" />
                                 <h3 class="text-[11px] font-normal uppercase tracking-widest text-white/70">Akses Sistem</h3>
                             </div>
-                            <Switch class="data-[state=checked]:bg-blue-500 border-white/20" />
+                            <Switch 
+                                :checked="form.create_user" 
+                                @update:checked="form.create_user = $event"
+                                :disabled="isEditing && !!employee?.user_id"
+                                class="data-[state=checked]:bg-blue-500 border-white/20" 
+                            />
                         </div>
                         
-                        <div class="space-y-8">
+                        <div v-if="form.create_user" class="space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
                             <div class="space-y-2">
                                 <Label class="text-[10px] uppercase tracking-widest text-white/50 font-normal">System Role</Label>
-                                <Select disabled>
-                                    <SelectTrigger class="rounded-xl h-11 border-white/10 bg-white/5 text-white/40 shadow-none">
+                                <Select v-model="form.role">
+                                    <SelectTrigger class="rounded-xl h-11 border-white/10 bg-white/5 text-white shadow-none focus:ring-blue-500/20">
                                         <SelectValue placeholder="Pilih Role" />
                                     </SelectTrigger>
+                                    <SelectContent class="bg-slate-800 border-white/10 text-white">
+                                        <SelectItem v-for="role in roles" :key="role" :value="role">{{ role }}</SelectItem>
+                                    </SelectContent>
                                 </Select>
+                                <p v-if="form.errors.role" class="text-[10px] text-red-400">{{ form.errors.role }}</p>
+                            </div>
+                            <div v-if="!isEditing" class="space-y-2">
+                                <Label class="text-[10px] uppercase tracking-widest text-white/50 font-normal">Password Awal</Label>
+                                <Input v-model="form.password" type="password" placeholder="Minimal 8 karakter..." class="rounded-xl h-11 border-white/10 bg-white/5 text-white shadow-none focus-visible:ring-blue-500/20" />
+                                <p v-if="form.errors.password" class="text-[10px] text-red-400">{{ form.errors.password }}</p>
                             </div>
                             <div class="flex items-start gap-3">
                                 <Info class="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
-                                <p class="text-[11px] text-white/60 leading-relaxed font-normal">Aktifkan switch di atas jika pegawai memerlukan akses login ke aplikasi ini.</p>
+                                <p class="text-[11px] text-white/60 leading-relaxed font-normal">
+                                    {{ isEditing ? 'Akun sistem sudah tertaut.' : 'User baru akan dibuat otomatis saat data pegawai disimpan.' }}
+                                </p>
                             </div>
+                        </div>
+                        <div v-else class="flex items-start gap-3">
+                            <Info class="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                            <p class="text-[11px] text-white/60 leading-relaxed font-normal">Aktifkan switch di atas jika pegawai memerlukan akses login ke aplikasi ini.</p>
                         </div>
                     </Card>
 
@@ -273,6 +324,6 @@ const form = {
                     </div>
                 </div>
             </div>
-        </div>
+        </form>
     </AppLayout>
 </template>

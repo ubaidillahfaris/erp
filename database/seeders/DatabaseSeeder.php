@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             PayableSeeder::class,
             TransaksiModuleSeeder::class,
             PayablesMenuSeeder::class,
+            EmployeeSeeder::class,
         ]);
     }
 }

@@ -6,6 +6,7 @@ import {
     Clock, TrendingUp, History, 
     Printer, Edit2, AlertCircle, User as UserIcon
 } from 'lucide-vue-next';
+import { edit } from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import { Button } from '@/components/ui/button';
@@ -15,35 +16,14 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 
-// Mock Data for a Single Employee
-const employee = {
-    id: 1,
-    name: 'Ahmad Fauzi',
-    nik: '3275012345670001',
-    position: 'Manager Operasional',
-    phone: '0812-3456-7890',
-    email: 'ahmad.fauzi@warung.com',
-    address: 'Jl. Raya Bogor No. 123, Cimanggis, Depok, Jawa Barat',
-    status: 'active',
-    join_date: '15 Jan 2023',
-    employment_type: 'Karyawan Tetap',
-    department: 'Manajemen',
-    basic_salary: 7500000,
-    bank_name: 'BCA',
-    bank_account: '8830123456',
-    photo: null,
-    user: {
-        id: 5,
-        username: 'ahmad_fauzi',
-        role: 'Admin',
-        last_login: '2 jam yang lalu'
-    }
-};
+const props = defineProps<{
+    employee: any;
+}>();
 
 const breadcrumbs = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Pegawai', href: '/employees' },
-    { title: employee.name, href: '#' },
+    { title: props.employee.name, href: '#' },
 ];
 
 const formatCurrency = (value: number) => {
@@ -57,27 +37,27 @@ const formatCurrency = (value: number) => {
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
-        <Head :title="`Pegawai - ${employee.name}`" />
+        <Head :title="`Pegawai - ${props.employee.name}`" />
 
         <div class="px-6 py-8 space-y-8 animate-fade-up font-sans text-slate-700 bg-slate-50 min-h-[calc(100vh-64px)]">
             
             <!-- Header Section -->
             <PageHeader 
-                :title="employee.name" 
-                :description="`NIK: ${employee.nik} • Terdaftar sejak ${employee.join_date}`"
+                :title="props.employee.name" 
+                :description="`NIK: ${props.employee.nik} • Terdaftar sejak ${props.employee.join_date}`"
                 back-href="/employees"
                 class="pb-6 border-b border-border/60"
             >
                 <template #actions>
                     <div class="flex items-center gap-3">
                         <Badge class="rounded-full px-2.5 py-0.5 font-normal text-[10px] uppercase tracking-widest border-0 bg-emerald-500/10 text-emerald-600 shadow-none">
-                            Aktif
+                            {{ props.employee.status === 'active' ? 'Aktif' : 'Nonaktif' }}
                         </Badge>
                         <Button variant="outline" class="h-10 px-5 rounded-full text-sm font-normal flex items-center gap-2 transition hover:-translate-y-0.5 shadow-none border-border/60">
                             <Printer class="h-3.5 w-3.5 text-muted-foreground" />
                             Cetak
                         </Button>
-                        <Link :href="`/employees/${employee.id}/edit`" class="inline-block">
+                        <Link :href="edit(props.employee.id).url" class="inline-block">
                             <Button primary class="h-10 px-5 rounded-full text-sm font-normal flex items-center gap-2 transition hover:-translate-y-0.5 shadow-none">
                                 <Edit2 class="h-3.5 w-3.5" />
                                 Edit Pegawai
@@ -93,28 +73,28 @@ const formatCurrency = (value: number) => {
                 
                 <Avatar class="h-28 w-28 rounded-2xl border border-border/40 shadow-sm shrink-0">
                     <AvatarFallback class="bg-primary/5 text-primary text-3xl font-normal rounded-2xl">
-                        {{ employee.name.split(' ').map(n => n[0]).join('') }}
+                        {{ props.employee.name.split(' ').map((n: string) => n[0]).join('') }}
                     </AvatarFallback>
                 </Avatar>
 
                 <div class="space-y-4 text-center md:text-left flex-1">
                     <div class="space-y-1">
-                        <h2 class="text-2xl font-normal tracking-tight text-foreground leading-tight">{{ employee.name }}</h2>
-                        <p class="text-[11px] font-normal text-muted-foreground/60 uppercase tracking-[0.2em]">{{ employee.position }}</p>
+                        <h2 class="text-2xl font-normal tracking-tight text-foreground leading-tight">{{ props.employee.name }}</h2>
+                        <p class="text-[11px] font-normal text-muted-foreground/60 uppercase tracking-[0.2em]">{{ props.employee.position }}</p>
                     </div>
 
                     <div class="flex flex-wrap justify-center md:justify-start items-center gap-y-3 gap-x-6">
                         <div class="flex items-center gap-2">
                             <Building2 class="h-3.5 w-3.5 text-muted-foreground/50" />
-                            <span class="text-[13px] font-normal text-muted-foreground leading-none">{{ employee.department }}</span>
+                            <span class="text-[13px] font-normal text-muted-foreground leading-none">{{ props.employee.department }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <Calendar class="h-3.5 w-3.5 text-muted-foreground/50" />
-                            <span class="text-[13px] font-normal text-muted-foreground leading-none">Mulai: {{ employee.join_date }}</span>
+                            <span class="text-[13px] font-normal text-muted-foreground leading-none">Mulai: {{ props.employee.join_date }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <Phone class="h-3.5 w-3.5 text-muted-foreground/50" />
-                            <span class="text-[13px] font-normal text-muted-foreground leading-none">{{ employee.phone }}</span>
+                            <span class="text-[13px] font-normal text-muted-foreground leading-none">{{ props.employee.phone }}</span>
                         </div>
                     </div>
                 </div>
@@ -143,7 +123,7 @@ const formatCurrency = (value: number) => {
                                         <TrendingUp class="h-4 w-4" />
                                     </div>
                                 </div>
-                                <h3 class="text-3xl font-normal tracking-tighter tabular-nums text-foreground">{{ formatCurrency(employee.basic_salary) }}</h3>
+                                <h3 class="text-3xl font-normal tracking-tighter tabular-nums text-foreground">{{ formatCurrency(props.employee.basic_salary) }}</h3>
                                 <p class="text-[11px] font-normal text-muted-foreground/60 uppercase tracking-widest mt-2 leading-none">Basic Salary / Month</p>
                             </Card>
 
@@ -165,7 +145,7 @@ const formatCurrency = (value: number) => {
                                         <MapPin class="h-4 w-4 text-slate-400" />
                                     </div>
                                     <div class="space-y-1">
-                                        <p class="text-[15px] font-normal leading-relaxed text-foreground/80">{{ employee.address }}</p>
+                                        <p class="text-[15px] font-normal leading-relaxed text-foreground/80">{{ props.employee.address }}</p>
                                         <p class="text-[11px] text-muted-foreground/40 font-normal uppercase tracking-widest">Domisili Utama</p>
                                     </div>
                                 </div>
@@ -173,7 +153,7 @@ const formatCurrency = (value: number) => {
                         </div>
 
                         <div class="col-span-12 md:col-span-4 space-y-5">
-                            <Card class="p-6 rounded-3xl bg-slate-900 border-0 shadow-none text-white relative overflow-hidden">
+                            <Card v-if="props.employee.user" class="p-6 rounded-3xl bg-slate-900 border-0 shadow-none text-white relative overflow-hidden">
                                 <div class="absolute bottom-0 right-0 -mr-4 -mb-4 w-24 h-24 bg-white/5 rounded-full blur-2xl"></div>
                                 <div class="flex items-center gap-3 mb-8">
                                     <div class="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center">
@@ -184,15 +164,20 @@ const formatCurrency = (value: number) => {
                                 <div class="space-y-5">
                                     <div class="space-y-1">
                                         <p class="text-[10px] uppercase tracking-widest text-white/30 leading-none font-normal">Linked Account</p>
-                                        <p class="text-lg font-normal text-white">@{{ employee.user.username }}</p>
+                                        <p class="text-lg font-normal text-white">{{ props.employee.user.email }}</p>
                                     </div>
                                     <div class="flex items-center justify-between pt-4 border-t border-white/5">
                                         <Badge class="bg-white/10 text-white border-0 font-normal text-[9px] uppercase tracking-widest rounded-full">
-                                            {{ employee.user.role }}
+                                            {{ props.employee.user.roles?.[0]?.name || 'No Role' }}
                                         </Badge>
-                                        <span class="text-[10px] text-white/30 font-normal">{{ employee.user.last_login }}</span>
+                                        <span class="text-[10px] text-white/30 font-normal">{{ props.employee.user.last_login || 'N/A' }}</span>
                                     </div>
                                 </div>
+                            </Card>
+
+                            <Card v-else class="p-6 rounded-3xl bg-slate-100 border border-border/40 shadow-none flex flex-col items-center justify-center text-center py-10 opacity-60">
+                                <ShieldCheck class="h-8 w-8 text-slate-400 mb-3" />
+                                <p class="text-[11px] font-normal uppercase tracking-widest text-slate-500">No System Account</p>
                             </Card>
 
                             <Card class="p-6 rounded-3xl bg-white border border-border/40 shadow-none flex items-center gap-4 py-8">
@@ -219,23 +204,23 @@ const formatCurrency = (value: number) => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-16">
                                 <div class="space-y-2">
                                     <label class="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-normal">Full Name</label>
-                                    <p class="text-lg font-normal text-foreground/90">{{ employee.name }}</p>
+                                    <p class="text-lg font-normal text-foreground/90">{{ props.employee.name }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-normal">Identity Number (NIK)</label>
-                                    <p class="text-lg font-normal text-foreground/90 font-mono tracking-tight">{{ employee.nik }}</p>
+                                    <p class="text-lg font-normal text-foreground/90 font-mono tracking-tight">{{ props.employee.nik }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-normal">Phone Number</label>
-                                    <p class="text-lg font-normal text-foreground/90">{{ employee.phone }}</p>
+                                    <p class="text-lg font-normal text-foreground/90">{{ props.employee.phone }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-normal">Official Email</label>
-                                    <p class="text-lg font-normal text-foreground/90">{{ employee.email }}</p>
+                                    <p class="text-lg font-normal text-foreground/90">{{ props.employee.email }}</p>
                                 </div>
                                 <div class="col-span-2 space-y-2">
                                     <label class="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60 font-normal">Address Details</label>
-                                    <p class="text-lg font-normal text-foreground/90 leading-relaxed">{{ employee.address }}</p>
+                                    <p class="text-lg font-normal text-foreground/90 leading-relaxed">{{ props.employee.address }}</p>
                                 </div>
                             </div>
                         </div>
@@ -256,17 +241,17 @@ const formatCurrency = (value: number) => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 <div class="p-8 rounded-3xl bg-slate-50/50 border border-border/40">
                                     <p class="text-[10px] font-normal text-muted-foreground uppercase tracking-widest mb-4">Gaji Pokok Terakhir</p>
-                                    <h2 class="text-3xl font-normal tracking-tighter tabular-nums text-foreground">{{ formatCurrency(employee.basic_salary) }}</h2>
+                                    <h2 class="text-3xl font-normal tracking-tighter tabular-nums text-foreground">{{ formatCurrency(props.employee.basic_salary) }}</h2>
                                     <p class="text-[11px] text-muted-foreground mt-2 font-normal uppercase tracking-widest opacity-60">Status: Fixed / Monthly</p>
                                 </div>
                                 <div class="p-8 rounded-3xl bg-slate-50/50 border border-border/40 space-y-6">
                                     <div class="space-y-1">
                                         <p class="text-[10px] font-normal text-muted-foreground uppercase tracking-widest">Bank Entity</p>
-                                        <p class="text-lg font-normal text-foreground">{{ employee.bank_name }}</p>
+                                        <p class="text-lg font-normal text-foreground">{{ props.employee.bank_name }}</p>
                                     </div>
                                     <div class="space-y-1 pt-4 border-t border-border/40">
                                         <p class="text-[10px] font-normal text-muted-foreground uppercase tracking-widest">Account Number</p>
-                                        <p class="text-lg font-normal font-mono text-foreground tracking-tight">{{ employee.bank_account }}</p>
+                                        <p class="text-lg font-normal font-mono text-foreground tracking-tight">{{ props.employee.bank_account }}</p>
                                     </div>
                                 </div>
                             </div>

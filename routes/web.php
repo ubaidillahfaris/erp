@@ -8,6 +8,7 @@ use App\Http\Controllers\BOMController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PayableController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PosController;
@@ -143,22 +144,8 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         });
     });
 
-    // TEMPORARY: Employee Management UI Preview
-    Route::get('employees', function () {
-        return inertia('employees/Index');
-    })->name('employees.index');
-    
-    Route::get('employees/create', function () {
-        return inertia('employees/Create');
-    })->name('employees.create');
-
-    Route::get('employees/{id}', function () {
-        return inertia('employees/Show');
-    })->name('employees.show');
-
-    Route::get('employees/{id}/edit', function () {
-        return inertia('employees/Create'); // Using Create as a template for now
-    })->name('employees.edit');
+    // Employee Management
+    Route::resource('employees', EmployeeController::class);
 });
 
 require __DIR__.'/settings.php';
