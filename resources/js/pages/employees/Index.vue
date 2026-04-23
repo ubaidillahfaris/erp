@@ -4,6 +4,8 @@ import {
     Plus, MoreHorizontal, Eye, Edit2, Trash2,
     Phone, Mail, UserPlus
 } from 'lucide-vue-next';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 import AppLayout from '@/layouts/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -59,18 +61,9 @@ const getPositionBadge = (position: string) => {
         <PageHeader 
             title="Daftar Pegawai" 
             description="Kelola data personal, kontrak, dan akses sistem seluruh staf warung."
-        >
-            <template #actions>
-                <div class="flex items-center gap-3">
-                    <Link :href="create().url">
-                        <Button primary class="rounded-full px-6 font-normal gap-2 transition hover:-translate-y-0.5 shadow-none">
-                            <UserPlus class="h-4 w-4" />
-                            Tambah Pegawai
-                        </Button>
-                    </Link>
-                </div>
-            </template>
-        </PageHeader>
+            back-href="/dashboard"
+            :count="employees.total"
+        />
 
         <!-- ====== CONTENT AREA ====== -->
         <div class="w-full max-w-7xl mx-auto">
@@ -81,6 +74,14 @@ const getPositionBadge = (position: string) => {
                 toolbar-title="Daftar Pegawai"
                 :total-count="employees.total"
             >
+                <template #header-actions>
+                    <Link :href="create().url">
+                        <Button primary class="rounded-full px-6 font-normal gap-2 shadow-none transition hover:-translate-y-0.5">
+                            <UserPlus class="h-4 w-4" />
+                            Tambah Pegawai
+                        </Button>
+                    </Link>
+                </template>
                 <template #cell(employee)="{ row }">
                     <div class="flex items-center gap-3">
                         <div class="h-9 w-9 shrink-0 rounded-full bg-primary/5 flex items-center justify-center text-primary font-normal text-xs border border-primary/10">
@@ -120,7 +121,9 @@ const getPositionBadge = (position: string) => {
 
                 <template #cell(join_date)="{ row }">
                     <div class="flex flex-col gap-0.5">
-                        <span class="text-[12px] font-normal text-foreground">{{ row.join_date }}</span>
+                        <span class="text-[12px] font-normal text-foreground">
+                            {{ format(new Date(row.join_date), 'dd MMM yyyy', { locale: id }) }}
+                        </span>
                         <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-normal opacity-50">Terdaftar</span>
                     </div>
                 </template>

@@ -6,6 +6,8 @@ import {
     Clock, TrendingUp, History, 
     Printer, Edit2, AlertCircle, User as UserIcon
 } from 'lucide-vue-next';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 import { edit } from '@/actions/App/Http/Controllers/EmployeeController';
 import AppLayout from '@/layouts/AppLayout.vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -44,7 +46,7 @@ const formatCurrency = (value: number) => {
             <!-- Header Section -->
             <PageHeader 
                 :title="props.employee.name" 
-                :description="`NIK: ${props.employee.nik} • Terdaftar sejak ${props.employee.join_date}`"
+                :description="`NIK: ${props.employee.nik} • Terdaftar sejak ${format(new Date(props.employee.join_date), 'dd MMM yyyy', { locale: id })}`"
                 back-href="/employees"
                 class="pb-6 border-b border-border/60"
             >
@@ -90,7 +92,7 @@ const formatCurrency = (value: number) => {
                         </div>
                         <div class="flex items-center gap-2">
                             <Calendar class="h-3.5 w-3.5 text-muted-foreground/50" />
-                            <span class="text-[13px] font-normal text-muted-foreground leading-none">Mulai: {{ props.employee.join_date }}</span>
+                            <span class="text-[13px] font-normal text-muted-foreground leading-none">Mulai: {{ format(new Date(props.employee.join_date), 'dd MMM yyyy', { locale: id }) }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <Phone class="h-3.5 w-3.5 text-muted-foreground/50" />

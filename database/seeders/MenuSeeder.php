@@ -179,6 +179,17 @@ class MenuSeeder extends Seeder
             'order_priority' => 510,
         ]);
 
+        // HR (Slug: hr)
+        $this->seedMenu([
+            'name' => 'Manajemen Pegawai',
+            'path' => '/employees',
+            'route_name' => 'employees.index',
+            'icon' => 'ContactRound',
+            'permission_name' => 'manage employees',
+            'module_slug' => 'hr',
+            'order_priority' => 710,
+        ]);
+
         // Settings (Slug: settings)
         $this->seedMenu([
             'name' => 'Satuan Barang',
