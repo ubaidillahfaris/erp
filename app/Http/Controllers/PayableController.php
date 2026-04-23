@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Payable;
 use App\Models\Payment;
-use App\Models\Customer;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class PayableController extends Controller
 {
@@ -112,7 +111,7 @@ class PayableController extends Controller
     public function storePayment(Request $request, Payable $payable)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:1|max:' . $payable->remaining_amount,
+            'amount' => 'required|numeric|min:1|max:'.$payable->remaining_amount,
             'payment_date' => 'required|date',
             'payment_method' => 'required|string',
             'notes' => 'nullable|string',

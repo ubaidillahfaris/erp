@@ -2,18 +2,17 @@
 
 namespace App\Observers;
 
-use App\Models\Pengeluaran;
-use App\Models\Account;
-use App\Services\JournalService;
 use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
+use App\Models\Account;
+use App\Models\JournalEntry;
+use App\Models\Pengeluaran;
+use App\Services\JournalService;
 use Illuminate\Support\Facades\Log;
 
 class PengeluaranObserver
 {
-    public function __construct(protected JournalService $journalService)
-    {
-    }
+    public function __construct(protected JournalService $journalService) {}
 
     /**
      * Handle the Pengeluaran "created" event.
@@ -39,11 +38,11 @@ class PengeluaranObserver
     public function deleted(Pengeluaran $pengeluaran): void
     {
         try {
-            \App\Models\JournalEntry::where('journalable_type', Pengeluaran::class)
+            JournalEntry::where('journalable_type', Pengeluaran::class)
                 ->where('journalable_id', $pengeluaran->id)
                 ->delete();
         } catch (\Exception $e) {
-            Log::error("Failed to delete journal for Pengeluaran #{$pengeluaran->id}: " . $e->getMessage());
+            Log::error("Failed to delete journal for Pengeluaran #{$pengeluaran->id}: ".$e->getMessage());
         }
     }
 
@@ -53,21 +52,24 @@ class PengeluaranObserver
             // 1. Determine accounts
             // Dr. Expense Account (from pengeluaran or default to 6201)
             // Cr. Kas & Bank (1101)
-            $expenseAccount = $pengeluaran->account_id 
-                ? Account::find($pengeluaran->account_id) 
+            $expenseAccount = $pengeluaran->account_id
+                ? Account::find($pengeluaran->account_id)
                 : Account::where('code', '6201')->first();
 
             $cashAccount = Account::where('code', '1101')->first();
 
-            if (!$expenseAccount || !$cashAccount) {
+            if (! $expenseAccount || ! $cashAccount) {
                 Log::warning("Skipping journal for Pengeluaran #{$pengeluaran->id}: Missing accounts (6201/1101).");
+
                 return;
             }
 
             // 2. Prepare Data (Amounts in cents)
             $amountCents = (int) round($pengeluaran->nominal * 100);
-            
-            if ($amountCents <= 0) return;
+
+            if ($amountCents <= 0) {
+                return;
+            }
 
             $items = [
                 new JournalItemData(
@@ -86,12 +88,12 @@ class PengeluaranObserver
                 items: $items,
                 description: "Pengeluaran Operasional: {$pengeluaran->nama_pengeluaran} ({$pengeluaran->jenis_pengeluaran})",
                 tanggal: $pengeluaran->tanggal,
-                ref_number: "EXP-" . $pengeluaran->tanggal->format('Ymd') . "-" . str_pad((string)$pengeluaran->id, 4, '0', STR_PAD_LEFT),
+                ref_number: 'EXP-'.$pengeluaran->tanggal->format('Ymd').'-'.str_pad((string) $pengeluaran->id, 4, '0', STR_PAD_LEFT),
                 journalable: $pengeluaran
             );
 
             $this->journalService->record($data);
-            
+
             // Legacy Journal (DISABLED - Transition to Double-Entry)
             /*
             \App\Models\Journal::create([
@@ -106,7 +108,7 @@ class PengeluaranObserver
             */
 
         } catch (\Exception $e) {
-            Log::error("Failed to record journal for Pengeluaran #{$pengeluaran->id}: " . $e->getMessage());
+            Log::error("Failed to record journal for Pengeluaran #{$pengeluaran->id}: ".$e->getMessage());
         }
     }
 }

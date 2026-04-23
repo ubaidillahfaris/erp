@@ -19,7 +19,7 @@ class Produk extends Model
         'sku',
         'barcode',
         'nama',
-        'kategori',
+        'category_id',
         'deskripsi',
         'stok_minimal',
         'is_active',
@@ -40,7 +40,7 @@ class Produk extends Model
             'id' => (int) $this->id,
             'sku' => $this->sku,
             'nama' => $this->nama,
-            'kategori' => $this->kategori,
+            'category' => $this->category?->name,
             'type' => $this->type,
         ];
     }
@@ -58,6 +58,14 @@ class Produk extends Model
             'track_stock' => 'boolean',
             'overhead_rate_per_unit' => 'integer',
         ];
+    }
+
+    /**
+     * Get the category that owns the product.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id');
     }
 
     /**

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class JournalEntryData
 {
     /**
-     * @param JournalItemData[] $items
+     * @param  JournalItemData[]  $items
      */
     public function __construct(
         public array $items,
@@ -19,6 +19,5 @@ class JournalEntryData
         public ?string $description = null,
         public ?Model $journalable = null,
         public ?int $created_by = null,
-    ) {
-    }
+    ) {}
 }

@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Account;
 use App\Models\Produk;
 use App\Models\Satuan;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -17,19 +19,19 @@ class RestockTest extends TestCase
 
     private Produk $bahanBaku;
 
-    private \App\Models\Vendor $vendor;
+    private Vendor $vendor;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         // Seed required COA for restock journaling
-        \App\Models\Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
+        Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
 
         $this->user = User::factory()->superadmin()->create();
-        $this->vendor = \App\Models\Vendor::factory()->create();
+        $this->vendor = Vendor::factory()->create();
 
         $satuan = Satuan::create([
             'nama' => 'Kilogram',

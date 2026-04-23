@@ -14,7 +14,7 @@ class MenuRoleSeeder extends Seeder
     public function run(): void
     {
         $superAdmin = Role::where('name', 'superadmin')->first();
-        
+
         if ($superAdmin) {
             // Attach all menus to superadmin
             $menuIds = Menu::pluck('id')->toArray();

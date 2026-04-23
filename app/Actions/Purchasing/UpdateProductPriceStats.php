@@ -2,9 +2,9 @@
 
 namespace App\Actions\Purchasing;
 
+use App\Models\ProductPriceStat;
 use App\Models\Produk;
 use App\Models\PurchaseItem;
-use App\Models\ProductPriceStat;
 use App\Services\SatuanService;
 use Illuminate\Support\Facades\DB;
 
@@ -20,7 +20,7 @@ class UpdateProductPriceStats
         $produk = Produk::findOrFail($produkId);
         $baseSatuanId = $produk->satuan_id;
 
-        if (!$baseSatuanId) {
+        if (! $baseSatuanId) {
             return;
         }
 
@@ -28,7 +28,7 @@ class UpdateProductPriceStats
         $items = PurchaseItem::where('produk_id', $produkId)
             ->whereHas('purchase', function ($query) {
                 $query->where('status', 'finalized')
-                      ->where('transaction_type', 'purchase');
+                    ->where('transaction_type', 'purchase');
             })
             ->get();
 
@@ -38,6 +38,7 @@ class UpdateProductPriceStats
                 ['produk_id' => $produkId, 'satuan_id' => $baseSatuanId],
                 ['avg_price' => 0, 'min_price' => 0, 'max_price' => 0, 'last_purchase_price' => 0]
             );
+
             return;
         }
 
@@ -48,19 +49,19 @@ class UpdateProductPriceStats
 
         foreach ($items as $item) {
             $ratio = $this->satuanService->getConversionRatio($item->satuan_id, $baseSatuanId, $produkId);
-            
+
             // Normalized price per base unit
             // 1 Unit of item->satuan_id = Ratio units of baseSatuanId
             // So Price per baseSatuanId = Price per item->satuan_id / Ratio
             $normalizedPrice = (float) $item->harga_satuan / ($ratio ?: 1);
-            
+
             // For weighted average, we need to convert the 'jumlah' to base unit as well
             $normalizedQty = (float) $item->jumlah * ($ratio ?: 1);
 
             $normalizedPrices[] = $normalizedPrice;
             $weightedSum += ($normalizedPrice * $normalizedQty);
             $totalWeight += $normalizedQty;
-            
+
             // Store the very last purchase price in normalized form
             $lastPurchasePrice = $normalizedPrice;
         }

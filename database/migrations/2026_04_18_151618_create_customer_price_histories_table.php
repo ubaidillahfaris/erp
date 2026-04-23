@@ -17,15 +17,15 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
             $table->foreignId('satuan_id')->constrained('satuans')->onDelete('cascade');
-            
+
             $table->decimal('old_price', 15, 2)->nullable();
             $table->decimal('new_price', 15, 2)->nullable();
             $table->date('old_valid_until')->nullable();
             $table->date('new_valid_until')->nullable();
-            
+
             $table->string('action'); // created, updated, deleted
             $table->foreignId('changed_by')->nullable()->constrained('users')->onDelete('set null');
-            
+
             $table->timestamp('created_at')->useCurrent();
         });
     }

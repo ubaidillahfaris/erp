@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Accounting\AccountController;
 use App\Http\Controllers\Accounting\AgingReportController;
+use App\Http\Controllers\Accounting\JournalController;
 use App\Http\Controllers\Accounting\TrialBalanceController;
 use App\Http\Controllers\BOMController;
 use App\Http\Controllers\CustomerController;
@@ -104,12 +105,12 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // 4. FINANCIALS & EXPENSES (view reports)
     Route::middleware('permission:view reports')->group(function () {
-        Route::get('journal', [App\Http\Controllers\Accounting\JournalController::class, 'index'])
+        Route::get('journal', [JournalController::class, 'index'])
             ->name('journal.index');
 
         // Accounting Module
         Route::prefix('accounting')->group(function () {
-            Route::get('journal', [App\Http\Controllers\Accounting\JournalController::class, 'index'])->name('accounting.journal.index');
+            Route::get('journal', [JournalController::class, 'index'])->name('accounting.journal.index');
             Route::get('trial-balance', [TrialBalanceController::class, 'index'])->name('accounting.trial-balance.index');
             Route::post('accounting/trial-balance/refresh', [TrialBalanceController::class, 'refresh'])
                 ->name('accounting.trial-balance.refresh');

@@ -48,12 +48,12 @@ class Payable extends Model
     {
         static::creating(function (Payable $payable) {
             $payable->remaining_amount = $payable->total_amount - $payable->paid_amount;
-            
+
             // Fill mandatory reference fields for tests if missing
-            if (!$payable->reference_type) {
+            if (! $payable->reference_type) {
                 $payable->reference_type = 'manual';
             }
-            if (!$payable->reference_id) {
+            if (! $payable->reference_id) {
                 $payable->reference_id = 0;
             }
         });
@@ -94,7 +94,7 @@ class Payable extends Model
         $period = $this->interest_period;
         $dueDate = $this->due_date ? Carbon::parse($this->due_date) : null;
 
-        if (!$count && $dueDate && $period) {
+        if (! $count && $dueDate && $period) {
             $now = Carbon::now();
             if ($period === 'daily') {
                 $count = (int) $now->diffInDays($dueDate);
@@ -105,7 +105,7 @@ class Payable extends Model
             }
         }
 
-        if (!$count || $count <= 0) {
+        if (! $count || $count <= 0) {
             return;
         }
 
@@ -125,9 +125,11 @@ class Payable extends Model
             } else {
                 // If no period specified but count exists, we can't determine dates easily
                 // Default to monthly if count exists? Or skip?
-                // Logic says: "Jika null -> hitung dari due_date / interest_period". 
+                // Logic says: "Jika null -> hitung dari due_date / interest_period".
                 // So if period is null, we might skip or use monthly as fallback if dueDate exists.
-                if (!$period) break; 
+                if (! $period) {
+                    break;
+                }
             }
 
             $this->interestSchedules()->create([

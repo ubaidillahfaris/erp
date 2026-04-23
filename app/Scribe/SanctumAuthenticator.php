@@ -5,7 +5,6 @@ namespace App\Scribe;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Extracting\Strategies\Responses\ResponseCallsAuthenticator;
-use Knuckles\Scribe\Tools\AnnotationParser;
 
 class SanctumAuthenticator extends ResponseCallsAuthenticator
 {
@@ -25,7 +24,7 @@ class SanctumAuthenticator extends ResponseCallsAuthenticator
 
             // Add the Bearer token to the request headers
             $token = $user->createToken('scribe-test-token')->plainTextToken;
-            $request->headers->set('Authorization', 'Bearer ' . $token);
+            $request->headers->set('Authorization', 'Bearer '.$token);
         }
     }
 }

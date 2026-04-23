@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Journal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class ProfitLossController extends Controller
 {
@@ -25,21 +24,21 @@ class ProfitLossController extends Controller
         $report = [
             'revenue' => [
                 'total' => 0,
-                'items' => []
+                'items' => [],
             ],
             'cogs' => [
                 'total' => 0,
-                'items' => []
+                'items' => [],
             ],
             'expenses' => [
                 'total' => 0,
-                'items' => []
+                'items' => [],
             ],
         ];
 
         foreach ($financialData as $data) {
             $label = ucfirst($data->category);
-            
+
             if ($data->category === 'hpp') {
                 $label = 'Beban Pokok Penjualan (HPP)';
             } elseif ($data->category === 'produksi') {
@@ -50,7 +49,7 @@ class ProfitLossController extends Controller
 
             $item = [
                 'label' => $label,
-                'amount' => (float) $data->total
+                'amount' => (float) $data->total,
             ];
 
             if ($data->category === 'penjualan') {
@@ -77,12 +76,12 @@ class ProfitLossController extends Controller
             'summary' => [
                 'gross_profit' => $grossProfit,
                 'net_profit' => $netProfit,
-                'margin' => $report['revenue']['total'] > 0 ? ($netProfit / $report['revenue']['total']) * 100 : 0
+                'margin' => $report['revenue']['total'] > 0 ? ($netProfit / $report['revenue']['total']) * 100 : 0,
             ],
             'filters' => [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
-            ]
+            ],
         ]);
     }
 }

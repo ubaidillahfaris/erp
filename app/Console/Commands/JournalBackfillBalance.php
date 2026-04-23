@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Journal;
+use Illuminate\Console\Command;
 
 class JournalBackfillBalance extends Command
 {
@@ -28,7 +28,7 @@ class JournalBackfillBalance extends Command
     {
         $this->info('Starting balance backfill...');
 
-        $journals = \App\Models\Journal::orderBy('tanggal', 'asc')
+        $journals = Journal::orderBy('tanggal', 'asc')
             ->orderBy('id', 'asc')
             ->get();
 
@@ -38,7 +38,7 @@ class JournalBackfillBalance extends Command
         foreach ($journals as $journal) {
             $impact = ($journal->type === 'debit' ? (float) $journal->amount : -(float) $journal->amount);
             $currentBalance += $impact;
-            
+
             // Update without triggering observers again to avoid infinite loop
             Journal::where('id', $journal->id)->update(['balance' => (int) round($currentBalance)]);
             $bar->advance();

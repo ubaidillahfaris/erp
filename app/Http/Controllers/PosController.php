@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Customer;
 use App\Models\CustomerPrice;
 use App\Models\Produk;
@@ -18,7 +19,7 @@ class PosController extends Controller
     {
         $produks = Produk::where('is_active', true)
             ->where('type', 'finished_good')
-            ->with(['currentPrice', 'satuan', 'stock'])
+            ->with(['currentPrice', 'satuan', 'stock', 'category'])
             ->get()
             ->map(function ($produk) {
                 return [
@@ -26,7 +27,8 @@ class PosController extends Controller
                     'nama' => $produk->nama,
                     'sku' => $produk->sku,
                     'barcode' => $produk->barcode,
-                    'kategori' => $produk->kategori,
+                    'category_id' => $produk->category_id,
+                    'kategori' => $produk->category?->name,
                     'type' => $produk->type,
                     'satuan_id' => $produk->satuan_id,
                     'base_unit' => $produk->satuan->nama,
@@ -36,22 +38,28 @@ class PosController extends Controller
                 ];
             });
 
+        $categories = Category::whereHas('produks', function ($query) {
+            $query->where('type', 'finished_good')
+                ->where('is_active', true);
+        })->orderBy('name')->get(['id', 'name']);
+
         $customers = Customer::whereHas('status', function ($query) {
             $query->where('name', 'Active');
         })
-        ->with('type')
-        ->get()
-        ->map(function ($customer) {
-            return [
-                'id' => $customer->id,
-                'name' => $customer->name,
-                'type' => $customer->type?->name,
-            ];
-        });
+            ->with('type')
+            ->get()
+            ->map(function ($customer) {
+                return [
+                    'id' => $customer->id,
+                    'name' => $customer->name,
+                    'type' => $customer->type?->name,
+                ];
+            });
 
         return Inertia::render('Pos/Index', [
             'produks' => $produks,
             'customers' => $customers,
+            'categories' => $categories,
         ]);
     }
 
@@ -74,12 +82,12 @@ class PosController extends Controller
         $produk = Produk::where('id', $produkId)->where('type', 'finished_good')->firstOrFail();
         $currentPrice = $produk->currentPrice;
 
-        if (!$currentPrice) {
+        if (! $currentPrice) {
             return response()->json([
-                'price' => 0, 
+                'price' => 0,
                 'original_price' => 0,
                 'discount_rate' => 0,
-                'price_type' => 'retail'
+                'price_type' => 'retail',
             ]);
         }
 
@@ -117,17 +125,17 @@ class PosController extends Controller
         $discountRate = 0;
         if ($customerId) {
             $customer = Customer::with(['creditSetting', 'categoryDiscounts'])->find($customerId);
-            
+
             if ($customer) {
                 // a. Check Category Discount
                 $categoryDiscount = $customer->categoryDiscounts()
-                    ->where('kategori', $produk->kategori)
+                    ->where('category_id', $produk->category_id)
                     ->where('is_active', true)
                     ->first();
 
                 if ($categoryDiscount) {
                     $discountRate = (float) $categoryDiscount->discount_rate;
-                } 
+                }
                 // b. Fallback to Global Discount
                 elseif ($customer->creditSetting?->global_discount > 0) {
                     $discountRate = (float) $customer->creditSetting->global_discount;
@@ -141,7 +149,7 @@ class PosController extends Controller
             'price' => $finalPrice,
             'original_price' => $basePrice,
             'discount_rate' => $discountRate,
-            'price_type' => $priceType
+            'price_type' => $priceType,
         ]);
     }
 
@@ -169,7 +177,7 @@ class PosController extends Controller
                 });
 
                 // Generate simple unique invoice
-                $invoiceNumber = 'IV' . now()->format('ymd') . strtoupper(bin2hex(random_bytes(2)));
+                $invoiceNumber = 'IV'.now()->format('ymd').strtoupper(bin2hex(random_bytes(2)));
 
                 $sale = Sale::create([
                     'invoice_number' => $invoiceNumber,
@@ -198,14 +206,14 @@ class PosController extends Controller
                 $sale->update(['status' => 'completed']);
 
                 // Record Customer Sale
-                if (!empty($validated['customer_id'])) {
+                if (! empty($validated['customer_id'])) {
                     SaleCustomer::create([
                         'sale_id' => $sale->id,
                         'customer_id' => $validated['customer_id'],
                     ]);
                 }
 
-                return redirect()->route('pos.index')->with('success', 'Transaksi berhasil. No Invoice: ' . $sale->invoice_number);
+                return redirect()->route('pos.index')->with('success', 'Transaksi berhasil. No Invoice: '.$sale->invoice_number);
             });
         } catch (\Exception $e) {
             return back()->withErrors(['checkout' => $e->getMessage()]);

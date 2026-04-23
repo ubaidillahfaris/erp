@@ -3,9 +3,10 @@
 namespace App\Actions;
 
 use App\Models\Bom;
+use App\Models\BomItem;
 use App\Models\Price;
 use App\Models\Produk;
-use App\Models\SatuanConversion;
+use App\Services\SatuanService;
 use Illuminate\Support\Facades\DB;
 
 class RecalculateHpp
@@ -19,7 +20,7 @@ class RecalculateHpp
      */
     public function handle(Produk $produk, bool $isCascade = false): float
     {
-        if (!$isCascade) {
+        if (! $isCascade) {
             static::$visited = [];
         }
 
@@ -39,7 +40,7 @@ class RecalculateHpp
 
         // 2. If Finished or Semi-Finished, calculate from BOM
         $bom = $produk->bom()->where('is_active', true)->first();
-        if (!$bom) {
+        if (! $bom) {
             return 0;
         }
 
@@ -53,7 +54,7 @@ class RecalculateHpp
 
             // Unit Conversion Ratio
             $fromUnitId = $ingredient->satuan_id ?? ($ingredient->currentPrice->satuan_id ?? null);
-            $ratio = app(\App\Services\SatuanService::class)->getConversionRatio($fromUnitId, $item->satuan_id);
+            $ratio = app(SatuanService::class)->getConversionRatio($fromUnitId, $item->satuan_id);
 
             $itemCost = ($ingredientHppPerUnit / ($ratio ?: 1)) * (float) $item->jumlah;
 
@@ -81,7 +82,6 @@ class RecalculateHpp
 
         return (float) ($price ? $price->purchase_price : 0);
     }
-
 
     protected function updateProductHppPrice(Produk $produk, float $totalHpp): void
     {
@@ -113,7 +113,7 @@ class RecalculateHpp
     protected function cascadeUpdate(Produk $produk): void
     {
         // Find all BOM items where this product is an ingredient
-        $affectedBoms = \App\Models\BomItem::where('produk_id', $produk->id)
+        $affectedBoms = BomItem::where('produk_id', $produk->id)
             ->with('bom.produk')
             ->get()
             ->pluck('bom')

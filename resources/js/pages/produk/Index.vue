@@ -186,7 +186,7 @@ const formatCurrency = (value: number) => {
                 <div class="flex flex-col gap-0.5">
                     <span class="text-xs font-mono font-bold text-foreground/70">#{{ row.sku || '--' }}</span>
                     <span class="text-xs font-bold text-muted-foreground uppercase tracking-widest italic">{{
-                        (row.kategori || 'Inventory') }}</span>
+                        (row.category?.name || 'Inventory') }}</span>
                 </div>
             </template>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProdukRequest;
 use App\Http\Requests\UpdateProdukRequest;
+use App\Models\Category;
 use App\Models\Produk;
 use App\Models\Satuan;
 use Illuminate\Http\Request;
@@ -24,14 +25,14 @@ class ProdukController extends Controller
                 ->when($request->filled('jenis') && $jenis !== 'all', function ($query) use ($jenis) {
                     $query->where('type', $jenis);
                 })
-                ->query(fn ($q) => $q->with(['satuan', 'currentPrice'])->orderBy($sort, $direction))
+                ->query(fn ($q) => $q->with(['satuan', 'currentPrice', 'category'])->orderBy($sort, $direction))
                 ->paginate($perPage);
         } else {
             $produks = Produk::query()
                 ->when($request->filled('jenis') && $jenis !== 'all', function ($query) use ($jenis) {
                     $query->where('type', $jenis);
                 })
-                ->with(['satuan', 'currentPrice'])
+                ->with(['satuan', 'currentPrice', 'category'])
                 ->orderBy($sort, $direction)
                 ->paginate($perPage);
         }
@@ -46,6 +47,7 @@ class ProdukController extends Controller
     {
         return inertia('produk/Create', [
             'satuans' => Satuan::all(['id', 'nama', 'simbol']),
+            'categories' => Category::all(['id', 'name']),
         ]);
     }
 
@@ -89,7 +91,7 @@ class ProdukController extends Controller
     public function show(Produk $produk)
     {
         return inertia('produk/Show', [
-            'produk' => $produk->load('satuan'),
+            'produk' => $produk->load(['satuan', 'category']),
             'overhead_rate' => $produk->overhead_rate_per_unit ? $produk->overhead_rate_per_unit / 100 : null,
         ]);
     }
@@ -99,11 +101,12 @@ class ProdukController extends Controller
      */
     public function edit(Produk $produk)
     {
-        $produk->load(['bom.items.produk.satuan', 'bom.items.satuan', 'currentPrice.satuan', 'prices.satuan']);
+        $produk->load(['bom.items.produk.satuan', 'bom.items.satuan', 'currentPrice.satuan', 'prices.satuan', 'category']);
 
         return inertia('produk/Edit', [
             'produk' => $produk,
             'satuans' => Satuan::all(['id', 'nama', 'simbol']),
+            'categories' => Category::all(['id', 'name']),
             'overhead_rate' => $produk->overhead_rate_per_unit ? $produk->overhead_rate_per_unit / 100 : null,
         ]);
     }
@@ -163,6 +166,6 @@ class ProdukController extends Controller
         Produk::whereIn('id', $request->ids)->delete();
 
         return redirect()->route('produk.index')
-            ->with('success', count($request->ids) . ' produk berhasil dihapus.');
+            ->with('success', count($request->ids).' produk berhasil dihapus.');
     }
 }

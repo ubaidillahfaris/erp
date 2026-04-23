@@ -21,6 +21,7 @@ class TrialBalanceTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private $journalService;
 
     protected function setUp(): void
@@ -30,7 +31,7 @@ class TrialBalanceTest extends TestCase
         $this->user = User::factory()->create();
         Permission::findOrCreate('view reports');
         $this->user->givePermissionTo('view reports');
-        
+
         $this->journalService = app(JournalService::class);
         Cache::forget('trial_balance_current');
     }

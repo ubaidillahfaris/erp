@@ -26,7 +26,7 @@ class AccountingMenuSeeder extends Seeder
             '/accounting/journal',
             '/accounting/trial-balance',
             '/accounting/aging',
-            '/pengeluaran'
+            '/pengeluaran',
         ];
 
         $menuIds = Menu::whereIn('path', $accountingMenus)->pluck('id')->toArray();

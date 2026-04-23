@@ -20,12 +20,12 @@ class SalesProcessTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        \App\Models\Account::create(['code' => '1101', 'name' => 'Cash', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '1102', 'name' => 'Receivable', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '1302', 'name' => 'Finished Goods', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '4101', 'name' => 'Sales', 'type' => 'income', 'balance_type' => 'credit']);
-        \App\Models\Account::create(['code' => '5101', 'name' => 'COGS', 'type' => 'expense', 'balance_type' => 'debit']);
+
+        Account::create(['code' => '1101', 'name' => 'Cash', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1102', 'name' => 'Receivable', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1302', 'name' => 'Finished Goods', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '4101', 'name' => 'Sales', 'type' => 'income', 'balance_type' => 'credit']);
+        Account::create(['code' => '5101', 'name' => 'COGS', 'type' => 'expense', 'balance_type' => 'debit']);
     }
 
     public function test_can_process_sale_and_automate_everything()
@@ -110,7 +110,7 @@ class SalesProcessTest extends TestCase
         $revenueEntry = JournalEntry::where('journalable_id', $sale->id)
             ->where('description', 'LIKE', '%Revenue%')
             ->first();
-        
+
         $this->assertDatabaseHas('journal_items', [
             'journal_entry_id' => $revenueEntry->id,
             'account_id' => Account::where('code', '4101')->first()->id,

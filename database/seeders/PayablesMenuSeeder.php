@@ -21,7 +21,7 @@ class PayablesMenuSeeder extends Seeder
                 'name' => 'Finance',
                 'slug' => 'finance',
                 'order_priority' => 5,
-                'is_active' => true
+                'is_active' => true,
             ]
         );
 

@@ -60,17 +60,19 @@ const groupedMenus = computed(() => {
     <!-- ── HEADER: Logo ── -->
     <SidebarHeader class="px-5 pt-8 pb-6 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:pt-6">
         <div class="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
-            <Link href="/dashboard" class="flex items-center gap-3 group transition-transform active:scale-95 group-data-[collapsible=icon]:hidden">
+            <Link href="/dashboard"
+                class="flex items-center gap-3 group transition-transform active:scale-95 group-data-[collapsible=icon]:hidden">
                 <div
                     class="h-9 w-9 shrink-0 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-none ">
                     <Store class="h-5 w-5" />
                 </div>
                 <span
                     class="text-xl font-black tracking-tighter text-slate-900 group-data-[collapsible=icon]:hidden dark:text-white">
-                    Warung<span class="text-blue-600">.ERP</span>
+                    {{ $page.props.name }}
                 </span>
             </Link>
-            <button @click="toggleSidebar" class="h-9 w-9 shrink-0 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-500">
+            <button @click="toggleSidebar"
+                class="h-9 w-9 shrink-0 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-500">
                 <Menu class="h-5 w-5" />
             </button>
         </div>

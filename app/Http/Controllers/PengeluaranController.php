@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Account;
 use App\Models\Pengeluaran;
 use Illuminate\Http\Request;
 
@@ -20,9 +21,9 @@ class PengeluaranController extends Controller
 
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('nama_pengeluaran', 'like', '%' . $request->search . '%')
-                  ->orWhere('keterangan', 'like', '%' . $request->search . '%')
-                  ->orWhere('jenis_pengeluaran', 'like', '%' . $request->search . '%');
+                $q->where('nama_pengeluaran', 'like', '%'.$request->search.'%')
+                    ->orWhere('keterangan', 'like', '%'.$request->search.'%')
+                    ->orWhere('jenis_pengeluaran', 'like', '%'.$request->search.'%');
             });
         }
 
@@ -31,7 +32,7 @@ class PengeluaranController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $accounts = \App\Models\Account::where('type', 'expense')->orderBy('code')->get();
+        $accounts = Account::where('type', 'expense')->orderBy('code')->get();
 
         return inertia('pengeluaran/Index', [
             'pengeluarans' => $pengeluarans,
@@ -42,9 +43,10 @@ class PengeluaranController extends Controller
 
     public function create()
     {
-        $accounts = \App\Models\Account::where('type', 'expense')->orderBy('code')->get();
+        $accounts = Account::where('type', 'expense')->orderBy('code')->get();
+
         return inertia('pengeluaran/Create', [
-            'accounts' => $accounts
+            'accounts' => $accounts,
         ]);
     }
 
@@ -97,6 +99,6 @@ class PengeluaranController extends Controller
 
         Pengeluaran::whereIn('id', $request->ids)->delete();
 
-        return to_route('pengeluaran.index')->with('success', count($request->ids) . ' catatan pengeluaran berhasil dihapus.');
+        return to_route('pengeluaran.index')->with('success', count($request->ids).' catatan pengeluaran berhasil dihapus.');
     }
 }

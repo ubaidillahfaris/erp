@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Journal;
 use App\Models\FinancialSummary;
+use App\Models\Journal;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Carbon\Carbon;
 
 class JournalController extends Controller
 {

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Purchase extends Model
 {
@@ -30,17 +32,17 @@ class Purchase extends Model
         ];
     }
 
-    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(PurchaseItem::class);
     }
 
-    public function attachments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function attachments(): HasMany
     {
         return $this->hasMany(PurchaseAttachment::class);
     }
 
-    public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function vendor(): BelongsTo
     {
         return $this->belongsTo(Vendor::class);
     }

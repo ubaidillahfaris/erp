@@ -21,7 +21,7 @@ return new class extends Migration
         });
 
         Schema::table('productions', function (Blueprint $table) {
-             $table->string('status')->default('draft')->change();
+            $table->string('status')->default('draft')->change();
         });
     }
 

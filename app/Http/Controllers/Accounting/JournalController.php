@@ -24,7 +24,7 @@ class JournalController extends Controller
         // Filters
         $query->when($request->search, function ($q, $search) {
             $q->where('ref_number', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%");
+                ->orWhere('description', 'like', "%{$search}%");
         });
 
         $query->when($request->date_start, function ($q, $date) {
@@ -41,7 +41,7 @@ class JournalController extends Controller
                 'PRD' => 'App\Models\Production',
                 'PUR' => 'App\Models\Purchase',
             ];
-            
+
             if (isset($modelMap[strtoupper($type)])) {
                 $q->where('journalable_type', $modelMap[strtoupper($type)]);
             }

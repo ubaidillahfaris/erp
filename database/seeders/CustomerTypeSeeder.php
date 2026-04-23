@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\CustomerType;
 use Illuminate\Database\Seeder;
 
 class CustomerTypeSeeder extends Seeder
@@ -15,7 +15,7 @@ class CustomerTypeSeeder extends Seeder
         $types = ['Regular', 'Wholesaler', 'Drop-shipper'];
 
         foreach ($types as $type) {
-            \App\Models\CustomerType::updateOrCreate(['name' => $type]);
+            CustomerType::updateOrCreate(['name' => $type]);
         }
     }
 }

@@ -36,10 +36,10 @@ class CustomerPrice extends Model
 
         static::updated(function (CustomerPrice $customerPrice) {
             // Detect if is_active was changed to false, treating it as 'deleted' action
-            $action = ($customerPrice->wasChanged('is_active') && !$customerPrice->is_active) 
-                ? 'deleted' 
+            $action = ($customerPrice->wasChanged('is_active') && ! $customerPrice->is_active)
+                ? 'deleted'
                 : 'updated';
-            
+
             $customerPrice->recordHistory($action);
         });
 
@@ -55,15 +55,15 @@ class CustomerPrice extends Model
     {
         CustomerPriceHistory::create([
             'customer_price_id' => $this->id,
-            'customer_id'       => $this->customer_id,
-            'produk_id'         => $this->produk_id,
-            'satuan_id'         => $this->satuan_id,
-            'old_price'         => $action === 'created' ? null : $this->getOriginal('custom_price'),
-            'new_price'         => $action === 'deleted' ? null : $this->custom_price,
-            'old_valid_until'   => $action === 'created' ? null : $this->getOriginal('valid_until'),
-            'new_valid_until'   => $action === 'deleted' ? null : $this->valid_until,
-            'action'            => $action,
-            'changed_by'        => auth()->id(),
+            'customer_id' => $this->customer_id,
+            'produk_id' => $this->produk_id,
+            'satuan_id' => $this->satuan_id,
+            'old_price' => $action === 'created' ? null : $this->getOriginal('custom_price'),
+            'new_price' => $action === 'deleted' ? null : $this->custom_price,
+            'old_valid_until' => $action === 'created' ? null : $this->getOriginal('valid_until'),
+            'new_valid_until' => $action === 'deleted' ? null : $this->valid_until,
+            'action' => $action,
+            'changed_by' => auth()->id(),
         ]);
     }
 

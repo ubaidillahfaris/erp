@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
+use App\Models\Produk;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Produk>
+ * @extends Factory<Produk>
  */
 class ProdukFactory extends Factory
 {
@@ -20,7 +22,7 @@ class ProdukFactory extends Factory
             'sku' => fake()->unique()->bothify('SKU-####-??'),
             'barcode' => fake()->ean13(),
             'nama' => fake()->words(3, true),
-            'kategori' => fake()->randomElement(['Makanan', 'Minuman', 'Sembako']),
+            'category_id' => Category::factory(),
             'deskripsi' => fake()->sentence(),
             'stok_minimal' => fake()->numberBetween(5, 50),
             'is_active' => true,

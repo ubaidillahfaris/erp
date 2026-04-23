@@ -50,7 +50,7 @@ withDefaults(
                     <Store class="h-5 w-5" />
                 </div>
                 <span class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                    Warung<span class="text-blue-600">.ERP</span>
+                    {{ $page.props.name }}
                 </span>
             </div>
 
@@ -231,7 +231,7 @@ withDefaults(
         <div class="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
             <div class="flex items-center justify-center gap-2 mb-8">
                 <span class="text-2xl font-black tracking-tighter text-slate-900 dark:text-white">
-                    Warung<span class="text-blue-600">.ERP</span>
+                    {{ $page.props.name }}
                 </span>
             </div>
             <div

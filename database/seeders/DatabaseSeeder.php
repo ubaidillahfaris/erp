@@ -17,7 +17,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             ModuleSeeder::class,
-            MenuModuleSeeder::class,
             CustomerTypeSeeder::class,
             CustomerStatusSeeder::class,
             NasabahStatusSeeder::class,
@@ -26,9 +25,10 @@ class DatabaseSeeder extends Seeder
             MenuRoleSeeder::class,
             SatuanConversionSeeder::class,
             // BakeryStoreSeeder::class,
+            ChartOfAccountsSeeder::class,
+            AccountingMenuSeeder::class,
             MaterialAndPlasticSeeder::class,
             UserSeeder::class,
-            CustomerMenuSeeder::class,
             SalesMenuSeeder::class,
             PayableSeeder::class,
             TransaksiModuleSeeder::class,

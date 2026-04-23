@@ -6,6 +6,7 @@ use App\Actions\CompleteProduction;
 use App\Actions\RecalculateHpp;
 use App\Models\Bom;
 use App\Models\BomItem;
+use App\Models\Category;
 use App\Models\Price;
 use App\Models\Production;
 use App\Models\ProductionItem;
@@ -51,7 +52,13 @@ class BakeryStoreSeeder extends Seeder
                 ['nama' => 'Box', 'deskripsi' => 'Satuan kotak/kemasan'],
             );
 
-            // ─── 2. Vendors (Suppliers) ──────────────────────────────
+            // ─── 2. Categories ──────────────────────────────────────
+            $catBahanBaku = Category::firstOrCreate(['name' => 'Bahan Baku'], ['slug' => 'bahan-baku']);
+            $catAdonan = Category::firstOrCreate(['name' => 'Adonan'], ['slug' => 'adonan']);
+            $catRoti = Category::firstOrCreate(['name' => 'Roti'], ['slug' => 'roti']);
+            $catKue = Category::firstOrCreate(['name' => 'Kue'], ['slug' => 'kue']);
+
+            // ─── 3. Vendors (Suppliers) ──────────────────────────────
             $vendorSembako = Vendor::create([
                 'nama' => 'Sembako Jaya Utama',
                 'alamat' => 'Jl. Pasar Baru No. 12, Jakarta',
@@ -81,7 +88,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-TEPUNG-001',
                     'nama' => 'Tepung Terigu Cakra Kembar',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Tepung protein tinggi untuk roti dan pastry',
                     'satuan' => $satuanKg,
                     'purchase_price' => 12500,
@@ -91,7 +98,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-TEPUNG-002',
                     'nama' => 'Tepung Terigu Segitiga Biru',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Tepung protein sedang untuk kue dan donat',
                     'satuan' => $satuanKg,
                     'purchase_price' => 11000,
@@ -101,7 +108,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-GULA-001',
                     'nama' => 'Gula Pasir Rose Brand',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Gula pasir halus untuk adonan roti',
                     'satuan' => $satuanKg,
                     'purchase_price' => 16000,
@@ -111,7 +118,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-GULA-002',
                     'nama' => 'Gula Halus / Icing Sugar',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Gula halus untuk topping dan glaze',
                     'satuan' => $satuanKg,
                     'purchase_price' => 22000,
@@ -121,7 +128,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-MARGARIN-001',
                     'nama' => 'Margarin Blue Band',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Margarin serbaguna untuk adonan roti',
                     'satuan' => $satuanKg,
                     'purchase_price' => 45000,
@@ -131,7 +138,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-BUTTER-001',
                     'nama' => 'Butter Anchor Unsalted',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Mentega impor untuk croissant dan danish',
                     'satuan' => $satuanKg,
                     'purchase_price' => 120000,
@@ -141,7 +148,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-RAGI-001',
                     'nama' => 'Ragi Instan Fermipan',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Ragi instan untuk fermentasi adonan roti',
                     'satuan' => $satuanGr,
                     'purchase_price' => 500, // per gram
@@ -151,7 +158,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-TELUR-001',
                     'nama' => 'Telur Ayam Fresh',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Telur ayam segar untuk adonan',
                     'satuan' => $satuanButir,
                     'purchase_price' => 2500, // per butir
@@ -161,7 +168,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-SUSU-001',
                     'nama' => 'Susu Cair Full Cream',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Susu cair untuk adonan roti dan kue',
                     'satuan' => $satuanMl,
                     'purchase_price' => 20, // per ml
@@ -171,7 +178,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-COKELAT-001',
                     'nama' => 'Dark Chocolate Compound',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Cokelat compound untuk coating dan filling',
                     'satuan' => $satuanKg,
                     'purchase_price' => 85000,
@@ -181,7 +188,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-KEJU-001',
                     'nama' => 'Keju Cheddar Kraft',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Keju cheddar untuk filling roti',
                     'satuan' => $satuanKg,
                     'purchase_price' => 95000,
@@ -191,7 +198,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-GARAM-001',
                     'nama' => 'Garam Halus Refina',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Garam halus untuk adonan roti',
                     'satuan' => $satuanGr,
                     'purchase_price' => 15, // per gram
@@ -201,7 +208,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-SUSU-002',
                     'nama' => 'Susu Bubuk Full Cream',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Susu bubuk untuk memperkaya rasa roti',
                     'satuan' => $satuanGr,
                     'purchase_price' => 120, // per gram
@@ -211,7 +218,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-VANILI-001',
                     'nama' => 'Vanili Bubuk',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Perasa vanili untuk adonan kue dan roti',
                     'satuan' => $satuanGr,
                     'purchase_price' => 200, // per gram
@@ -221,7 +228,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-MINYAK-001',
                     'nama' => 'Minyak Goreng Bimoli',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Minyak goreng untuk menggoreng donat',
                     'satuan' => $satuanMl,
                     'purchase_price' => 18, // per ml
@@ -231,7 +238,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-SELAI-001',
                     'nama' => 'Selai Strawberry',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Selai buah untuk isian roti',
                     'satuan' => $satuanGr,
                     'purchase_price' => 60, // per gram
@@ -241,7 +248,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-SELAI-002',
                     'nama' => 'Selai Cokelat Nutella',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Selai cokelat hazelnut premium',
                     'satuan' => $satuanGr,
                     'purchase_price' => 150, // per gram
@@ -251,7 +258,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-ALMOND-001',
                     'nama' => 'Almond Slice',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Irisan almond untuk topping pastry',
                     'satuan' => $satuanGr,
                     'purchase_price' => 250, // per gram
@@ -261,7 +268,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'RAW-WIJEN-001',
                     'nama' => 'Biji Wijen Putih',
-                    'kategori' => 'Bahan Baku',
+                    'category_id' => $catBahanBaku->id,
                     'deskripsi' => 'Wijen untuk taburan roti',
                     'satuan' => $satuanGr,
                     'purchase_price' => 80, // per gram
@@ -306,7 +313,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'INT-ADONAN-001',
                     'nama' => 'Adonan Dasar Roti Manis',
-                    'kategori' => 'Adonan',
+                    'category_id' => $catAdonan->id,
                     'deskripsi' => 'Adonan dasar siap bentuk untuk aneka roti manis',
                     'satuan_id' => $satuanGr->id,
                     'initial_stock' => 0,
@@ -321,14 +328,14 @@ class BakeryStoreSeeder extends Seeder
                         'RAW-SUSU-001' => ['jumlah' => 200],
                         'RAW-GARAM-001' => ['jumlah' => 5],
                     ],
-                ]
+                ],
             ];
 
             $finishedGoods = [
                 [
                     'sku' => 'FG-ROTITAWAR-001',
                     'nama' => 'Roti Tawar Spesial',
-                    'kategori' => 'Roti',
+                    'category_id' => $catRoti->id,
                     'deskripsi' => 'Roti tawar premium lembut, 1 loyang isi 10 slice',
                     'retail_price' => 18000,
                     'initial_stock' => 10,
@@ -348,7 +355,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'FG-ROTITAWAR-002',
                     'nama' => 'Roti Tawar Gandum',
-                    'kategori' => 'Roti',
+                    'category_id' => $catRoti->id,
                     'deskripsi' => 'Roti tawar whole wheat untuk pilihan sehat',
                     'retail_price' => 22000,
                     'initial_stock' => 8,
@@ -369,7 +376,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'FG-ROTISOBEK-001',
                     'nama' => 'Roti Sobek Cokelat',
-                    'kategori' => 'Roti',
+                    'category_id' => $catRoti->id,
                     'deskripsi' => 'Roti sobek lembut dengan isian cokelat, isi 6 potong',
                     'retail_price' => 25000,
                     'initial_stock' => 12,
@@ -388,7 +395,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'FG-ROTIMANIS-001',
                     'nama' => 'Roti Manis Isi Keju',
-                    'kategori' => 'Roti',
+                    'category_id' => $catRoti->id,
                     'deskripsi' => 'Roti manis empuk dengan isian keju leleh',
                     'retail_price' => 7000,
                     'initial_stock' => 20,
@@ -422,7 +429,7 @@ class BakeryStoreSeeder extends Seeder
                 [
                     'sku' => 'FG-DONAT-001',
                     'nama' => 'Donat Chocolate Glaze',
-                    'kategori' => 'Kue',
+                    'category_id' => $catKue->id,
                     'deskripsi' => 'Donat empuk dengan lapisan cokelat glaze',
                     'retail_price' => 8500,
                     'initial_stock' => 24,
@@ -557,7 +564,7 @@ class BakeryStoreSeeder extends Seeder
                 foreach ($m['bom']->items as $item) {
                     $itemPrice = $item->produk->currentPrice->purchase_price ?? 0;
                     $qty = $item->jumlah * $scale;
-                    
+
                     if ($pd['status'] === 'completed') {
                         $costSum += ($itemPrice * $qty);
                     }

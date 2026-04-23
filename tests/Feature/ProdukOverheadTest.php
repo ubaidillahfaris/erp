@@ -6,6 +6,7 @@ use App\Models\Produk;
 use App\Models\Satuan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 use Tests\TestCase;
 
 class ProdukOverheadTest extends TestCase
@@ -13,6 +14,7 @@ class ProdukOverheadTest extends TestCase
     use RefreshDatabase;
 
     protected Satuan $satuan;
+
     protected User $user;
 
     protected function setUp(): void
@@ -28,7 +30,7 @@ class ProdukOverheadTest extends TestCase
     public function test_store_produk_with_overhead_rate_converts_to_cents(): void
     {
         $response = $this->actingAs($this->user)
-            ->withoutMiddleware(\Spatie\Permission\Middleware\PermissionMiddleware::class)
+            ->withoutMiddleware(PermissionMiddleware::class)
             ->post(route('produk.store'), [
                 'sku' => 'SKU-OH-1',
                 'nama' => 'Produk Jadi A',
@@ -39,7 +41,7 @@ class ProdukOverheadTest extends TestCase
             ]);
 
         $response->assertStatus(302);
-        
+
         $produk = Produk::where('sku', 'SKU-OH-1')->first();
         $this->assertNotNull($produk, 'Produk should be created');
         $this->assertEquals(50050, $produk->overhead_rate_per_unit);
@@ -60,7 +62,7 @@ class ProdukOverheadTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->withoutMiddleware(\Spatie\Permission\Middleware\PermissionMiddleware::class)
+            ->withoutMiddleware(PermissionMiddleware::class)
             ->put(route('produk.update', $produk), [
                 'sku' => 'SKU-OH-2',
                 'nama' => 'Produk Jadi B Updated',
@@ -72,7 +74,7 @@ class ProdukOverheadTest extends TestCase
             ]);
 
         $response->assertStatus(302);
-        
+
         $this->assertEquals(75025, $produk->fresh()->overhead_rate_per_unit);
     }
 
@@ -82,7 +84,7 @@ class ProdukOverheadTest extends TestCase
     public function test_produk_type_bukan_finished_good_overhead_rate_nullable(): void
     {
         $response = $this->actingAs($this->user)
-            ->withoutMiddleware(\Spatie\Permission\Middleware\PermissionMiddleware::class)
+            ->withoutMiddleware(PermissionMiddleware::class)
             ->post(route('produk.store'), [
                 'sku' => 'SKU-RAW-1',
                 'nama' => 'Bahan Baku A',
@@ -111,7 +113,7 @@ class ProdukOverheadTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->withoutMiddleware(\Spatie\Permission\Middleware\PermissionMiddleware::class)
+            ->withoutMiddleware(PermissionMiddleware::class)
             ->get(route('produk.show', $produk));
 
         $response->assertStatus(200);

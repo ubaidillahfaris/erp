@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Api;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Journal;
-use Spatie\Permission\Models\Role;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class ProfitLossApiTest extends TestCase
 {
@@ -51,8 +51,8 @@ class ProfitLossApiTest extends TestCase
                         'total_income' => 5000,
                         'total_expense' => 2000,
                         'net_profit' => 3000,
-                    ]
-                ]
+                    ],
+                ],
             ]);
     }
 

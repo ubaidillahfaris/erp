@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Module;
 use Illuminate\Database\Seeder;
 
 class ModuleSeeder extends Seeder
@@ -26,7 +26,7 @@ class ModuleSeeder extends Seeder
         ];
 
         foreach ($modules as $module) {
-            \App\Models\Module::updateOrCreate(['id' => $module['id']], $module);
+            Module::updateOrCreate(['id' => $module['id']], $module);
         }
     }
 }

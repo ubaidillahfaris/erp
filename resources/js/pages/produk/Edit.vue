@@ -10,6 +10,7 @@ const formatCurrency = (value: number | string) => {
 const props = defineProps<{
     produk: any;
     satuans: any[];
+    categories: any[];
     overhead_rate: number | null;
 }>();
 
@@ -31,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import type { BreadcrumbItem } from '@/types';
 
@@ -44,7 +46,7 @@ const form = useForm({
     sku: props.produk.sku,
     barcode: props.produk.barcode || '',
     nama: props.produk.nama,
-    kategori: props.produk.kategori || '',
+    category_id: props.produk.category_id?.toString() || '',
     deskripsi: props.produk.deskripsi || '',
     stok_minimal: props.produk.stok_minimal,
     satuan_id: props.produk.satuan_id?.toString() || '',
@@ -135,9 +137,18 @@ const handleCreateSatuan = async (nama: string, onCreated?: (id: number) => void
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="flex flex-col gap-2">
-                                    <Label for="kategori">Kategori</Label>
-                                    <Input id="kategori" v-model="form.kategori" placeholder="Contoh: Makanan" />
-                                    <InputError :message="form.errors.kategori" />
+                                    <Label for="category_id">Kategori</Label>
+                                    <Select v-model="form.category_id">
+                                        <SelectTrigger class="w-full">
+                                            <SelectValue placeholder="Pilih Kategori" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem v-for="cat in categories" :key="cat.id" :value="String(cat.id)">
+                                                {{ cat.name }}
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError :message="form.errors.category_id" />
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <Label for="stok_minimal">Stok Minimal Alert</Label>

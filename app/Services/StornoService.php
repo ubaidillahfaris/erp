@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Actions\RecordStockMovement;
 use App\Models\Sale;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
-use App\Actions\RecordStockMovement;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,9 +19,9 @@ class StornoService
     /**
      * Perform storno (reversal) for a given model.
      *
-     * @param Model $model The transaction model to be stornoed
-     * @param string|null $reason Reason for the storno
-     * @return bool
+     * @param  Model  $model  The transaction model to be stornoed
+     * @param  string|null  $reason  Reason for the storno
+     *
      * @throws \Exception
      */
     public function perform(Model $model, ?string $reason = null): bool
@@ -36,8 +36,8 @@ class StornoService
             }
 
             // Future modules can be added here (Purchasing, etc.)
-            
-            throw new \Exception("Model " . get_class($model) . " does not support storno yet.");
+
+            throw new \Exception('Model '.get_class($model).' does not support storno yet.');
         });
     }
 
@@ -102,7 +102,7 @@ class StornoService
                 'jumlah' => $item->qty,
                 'reference_type' => 'sale',
                 'reference_id' => $sale->id,
-                'keterangan' => "STORNO: " . ($reason ?: "Pembatalan penjualan #{$sale->invoice_number}"),
+                'keterangan' => 'STORNO: '.($reason ?: "Pembatalan penjualan #{$sale->invoice_number}"),
             ]);
         }
     }
@@ -126,7 +126,7 @@ class StornoService
                 'jumlah' => $movement->jumlah,
                 'reference_type' => $movement->reference_type,
                 'reference_id' => $movement->reference_id,
-                'keterangan' => "STORNO: " . ($reason ?: "Pembatalan transaksi #{$model->id}"),
+                'keterangan' => 'STORNO: '.($reason ?: "Pembatalan transaksi #{$model->id}"),
             ]);
         }
     }

@@ -9,14 +9,14 @@ use App\Models\Account;
 use App\Models\Production;
 use App\Models\Produk;
 use App\Services\JournalService;
+use App\Services\SatuanService;
 use Illuminate\Support\Facades\DB;
 
 class CompleteProduction
 {
     public function __construct(
         protected JournalService $journalService
-    ) {
-    }
+    ) {}
 
     /**
      * Handle the completion of a Production Run.
@@ -33,12 +33,12 @@ class CompleteProduction
                 // Calculate stock deduction (convert used unit to base unit if necessary)
                 $qtyToDeduct = $item->actual_qty;
                 if ($ingredientProduk->satuan_id !== $item->satuan_id) {
-                    $ratio = app(\App\Services\SatuanService::class)->getConversionRatio($ingredientProduk->satuan_id, $item->satuan_id);
+                    $ratio = app(SatuanService::class)->getConversionRatio($ingredientProduk->satuan_id, $item->satuan_id);
                     $qtyToDeduct = $item->actual_qty / ($ratio ?: 1);
                 }
 
                 // Record Stock Movement for Ingredient Usage
-                app(\App\Actions\RecordStockMovement::class)->handle([
+                app(RecordStockMovement::class)->handle([
                     'produk_id' => $item->produk_id,
                     'satuan_id' => $item->satuan_id,
                     'type' => 'out',
@@ -50,7 +50,7 @@ class CompleteProduction
             }
 
             // 2. Add Stock for Finished Product
-            app(\App\Actions\RecordStockMovement::class)->handle([
+            app(RecordStockMovement::class)->handle([
                 'produk_id' => $production->produk_id,
                 'satuan_id' => $production->produk->satuan_id,
                 'type' => 'in',
@@ -62,7 +62,7 @@ class CompleteProduction
 
             // 3. Update the HPP of the finished product based on actual yield
             $finishedProduk = Produk::with('currentPrice')->find($production->produk_id);
-            
+
             // Hard Constraint: Overhead Rate Validation
             if (($finishedProduk->overhead_rate_per_unit ?? 0) <= 0) {
                 throw new MissingOverheadRateException($finishedProduk->nama);

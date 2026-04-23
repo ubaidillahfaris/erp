@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StockOpname extends Model
 {
@@ -25,7 +26,7 @@ class StockOpname extends Model
     /**
      * Get the items for the stock opname.
      */
-    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(StockOpnameItem::class);
     }

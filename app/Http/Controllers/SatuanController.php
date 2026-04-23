@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\RecalculateHpp;
 use App\Http\Requests\StoreSatuanRequest;
 use App\Http\Requests\UpdateSatuanRequest;
+use App\Models\Produk;
 use App\Models\Satuan;
-use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 class SatuanController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(\Illuminate\Http\Request $request)
+    public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
         $sort = $request->input('sort') ?: 'created_at';
@@ -113,9 +115,9 @@ class SatuanController extends Controller
 
         // Potential ratio change: trigger HPP recalculation for all manufactured products
         // This is a "heavy" but safe way to ensure global consistency.
-        \App\Models\Produk::whereIn('type', ['semi_finished', 'finished_good'])
+        Produk::whereIn('type', ['semi_finished', 'finished_good'])
             ->get()
-            ->each(fn($p) => app(\App\Actions\RecalculateHpp::class)->handle($p));
+            ->each(fn ($p) => app(RecalculateHpp::class)->handle($p));
 
         return redirect()->route('satuan.index')
             ->with('success', 'Satuan berhasil diperbarui.');
@@ -136,7 +138,7 @@ class SatuanController extends Controller
             ->with('success', 'Satuan berhasil dihapus.');
     }
 
-    public function bulkDestroy(\Illuminate\Http\Request $request)
+    public function bulkDestroy(Request $request)
     {
         $request->validate([
             'ids' => 'required|array',
@@ -148,7 +150,7 @@ class SatuanController extends Controller
 
         foreach ($request->ids as $id) {
             $satuan = Satuan::find($id);
-            if ($satuan && !$satuan->produks()->exists()) {
+            if ($satuan && ! $satuan->produks()->exists()) {
                 $satuan->delete();
                 $deletedCount++;
             } else {

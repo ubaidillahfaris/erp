@@ -6,13 +6,12 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\JournalEntry;
-use App\Models\Sale;
 use App\Models\Production;
-use App\Models\Purchase;
+use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Spatie\Permission\Models\Permission;
+use Tests\TestCase;
 
 class JournalLedgerTest extends TestCase
 {
@@ -25,7 +24,7 @@ class JournalLedgerTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        
+
         // Ensure permission exists for middleware check
         Permission::findOrCreate('view reports');
         $this->user->givePermissionTo('view reports');

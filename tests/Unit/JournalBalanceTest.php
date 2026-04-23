@@ -31,12 +31,12 @@ class JournalBalanceTest extends TestCase
         $j1 = Journal::factory()->create(['tanggal' => '2023-01-01', 'type' => 'debit', 'amount' => 1000]);
         // Entry 3
         $j3 = Journal::factory()->create(['tanggal' => '2023-01-03', 'type' => 'debit', 'amount' => 500]);
-        
+
         $this->assertEquals(1500, $j3->fresh()->balance);
 
         // Insert Entry 2 (Middle)
         $j2 = Journal::factory()->create(['tanggal' => '2023-01-02', 'type' => 'kredit', 'amount' => 300]);
-        
+
         $this->assertEquals(700, $j2->fresh()->balance);
         $this->assertEquals(1200, $j3->fresh()->balance);
     }
@@ -66,7 +66,7 @@ class JournalBalanceTest extends TestCase
         foreach ($journals as $journal) {
             $impact = ($journal->type === 'debit' ? (float) $journal->amount : -(float) $journal->amount);
             $currentBalance += $impact;
-            
+
             $journal->updateQuietly(['balance' => $currentBalance]);
         }
     }

@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Produk;
-use App\Models\StockMovement;
-use App\Models\Satuan;
 use App\Actions\RecordStockMovement;
+use App\Jobs\GenerateStockMutationPdfJob;
+use App\Models\Produk;
+use App\Models\Satuan;
+use App\Models\SatuanConversion;
+use App\Models\StockMovement;
+use App\Services\SatuanService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use App\Jobs\GenerateStockMutationPdfJob;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
 
 class StockController extends Controller
 {
@@ -23,18 +24,18 @@ class StockController extends Controller
             ->withCount('stockMovements');
         $perPage = $request->input('per_page', 10);
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->where('nama', 'like', "%{$request->search}%")
                 ->orWhere('sku', 'like', "%{$request->search}%");
         }
 
-        if ($request->has('type') && !empty($request->type)) {
+        if ($request->has('type') && ! empty($request->type)) {
             $query->where('type', $request->type);
         }
 
         $produks = $query->paginate($perPage)->withQueryString();
         $satuans = Satuan::all();
-        $conversions = \App\Models\SatuanConversion::all();
+        $conversions = SatuanConversion::all();
 
         return Inertia::render('stock/Index', [
             'produks' => $produks,
@@ -79,7 +80,7 @@ class StockController extends Controller
             $currentBalance = (float) ($produk->stock->balance ?? 0);
 
             // Convert physical_qty to base unit
-            $ratio = app(\App\Services\SatuanService::class)->getConversionRatio($produk->satuan_id, $request->satuan_id);
+            $ratio = app(SatuanService::class)->getConversionRatio($produk->satuan_id, $request->satuan_id);
             $physicalQtyBase = (float) $request->physical_qty / ($ratio ?: 1);
 
             $diff = $physicalQtyBase - $currentBalance;

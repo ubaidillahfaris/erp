@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProdukResource;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 
@@ -15,9 +16,9 @@ class MobileStockController extends Controller
 {
     /**
      * Lookup Barcode
-     * 
+     *
      * Mencari detail produk berdasarkan Barcode atau ID untuk cek harga & stok kilat.
-     * 
+     *
      * @queryParam barcode string Barcode produk (required jika ID kosong). Example: 899123456789
      * @queryParam id int ID produk (required jika Barcode kosong). Example: 5
      */
@@ -38,14 +39,14 @@ class MobileStockController extends Controller
 
         $produk = $query->first();
 
-        if (!$produk) {
+        if (! $produk) {
             return response()->json([
                 'success' => false,
-                'message' => 'Produk tidak ditemukan'
+                'message' => 'Produk tidak ditemukan',
             ], 404);
         }
 
-        return new \App\Http\Resources\ProdukResource($produk);
+        return new ProdukResource($produk);
     }
 
     public function adjustment(Request $request)

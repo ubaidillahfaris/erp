@@ -58,11 +58,12 @@ const props = defineProps<{
     } | null;
     categoryDiscounts: Array<{ 
         id: number; 
-        kategori: string; 
+        category_id: number;
+        category: { name: string };
         discount_rate: number; 
         is_active: boolean; 
     }>;
-    kategoriList: string[];
+    kategoriList: Array<{ id: number; name: string }>;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -92,7 +93,7 @@ const creditForm = useForm({
 });
 
 const categoryForm = useForm({
-    kategori: '',
+    category_id: '',
     discount_rate: 0,
 });
 
@@ -552,7 +553,7 @@ const actionLabel: Record<string, string> = {
                                     <div class="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
                                         <Tag class="h-4 w-4" />
                                     </div>
-                                    {{ discount.kategori }}
+                                    {{ discount.category?.name }}
                                 </div>
                             </TableCell>
                             <TableCell class="text-center">
@@ -689,11 +690,11 @@ const actionLabel: Record<string, string> = {
                 <div class="flex flex-col gap-1.5">
                     <Label class="text-xs font-bold uppercase tracking-widest text-slate-500">Kategori</Label>
                     <Combobox 
-                        v-model="categoryForm.kategori" 
-                        :options="kategoriList.map(k => ({ label: k, value: k }))"
+                        v-model="categoryForm.category_id" 
+                        :options="kategoriList.map(k => ({ label: k.name, value: String(k.id) }))"
                         placeholder="Cari atau pilih kategori..."
                     />
-                    <span v-if="categoryForm.errors.kategori" class="text-xs text-destructive">{{ categoryForm.errors.kategori }}</span>
+                    <span v-if="categoryForm.errors.category_id" class="text-xs text-destructive">{{ categoryForm.errors.category_id }}</span>
                 </div>
 
                 <div class="flex flex-col gap-1.5">

@@ -2,10 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Produk;
-use App\Models\Satuan;
 use App\Jobs\GenerateStockMutationPdfJob;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -19,7 +17,7 @@ class StockExportTest extends TestCase
         Queue::fake();
 
         $user = User::factory()->superadmin()->create();
-        
+
         $response = $this->actingAs($user)->post(route('stock.export-pdf'), [
             'start_date' => now()->subDays(7)->format('Y-m-d'),
             'end_date' => now()->format('Y-m-d'),

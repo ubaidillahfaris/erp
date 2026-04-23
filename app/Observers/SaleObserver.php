@@ -6,9 +6,12 @@ use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
 use App\Exceptions\MissingCOGSException;
 use App\Models\Account;
+use App\Models\Customer;
 use App\Models\Payable;
 use App\Models\Sale;
+use App\Models\StockMovement;
 use App\Services\JournalService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +26,7 @@ class SaleObserver
      */
     public function created(Sale $sale): void
     {
-        /** @var \Carbon\Carbon $tanggal */
+        /** @var Carbon $tanggal */
         $tanggal = $sale->tanggal;
 
         // 1. Record Revenue Journal (DISABLED - Journals are now read-only)
@@ -42,22 +45,22 @@ class SaleObserver
         if ($sale->payment_method === 'credit') {
             // Check relationship first, fallback to request if not yet created (race condition)
             $customer = $sale->saleCustomer?->customer;
-            
-            if (!$customer && request()->has('customer_id')) {
-                $customer = \App\Models\Customer::find(request()->input('customer_id'));
+
+            if (! $customer && request()->has('customer_id')) {
+                $customer = Customer::find(request()->input('customer_id'));
             }
 
-            if (!$customer) {
+            if (! $customer) {
                 throw new Exception('Credit sale harus ada customer');
             }
 
             $creditSetting = $customer->creditSetting;
 
-            if (!$creditSetting) {
+            if (! $creditSetting) {
                 throw new Exception('Customer ini belum memiliki izin kredit. Aktifkan kredit di halaman Master Customer.');
             }
 
-            if (!$creditSetting->allow_credit) {
+            if (! $creditSetting->allow_credit) {
                 throw new Exception('Customer tidak diizinkan kredit');
             }
 
@@ -101,7 +104,7 @@ class SaleObserver
             $sale->loadMissing('items');
 
             if ($sale->items->isEmpty()) {
-                throw new MissingCOGSException("Penjualan tanpa item tidak dapat diselesaikan.");
+                throw new MissingCOGSException('Penjualan tanpa item tidak dapat diselesaikan.');
             }
 
             $cogsTotal = $sale->items->sum(fn ($item) => $item->cost * $item->qty);
@@ -112,16 +115,16 @@ class SaleObserver
 
             // Rule: sale.cogs_amount null atau zero -> throw MissingCOGSException (Blocking Safety Net)
             if (($sale->cogs_amount ?? 0) <= 0) {
-                throw new MissingCOGSException();
+                throw new MissingCOGSException;
             }
 
             // Journaling logic (Non-blocking)
             try {
                 $this->recordSaleJournals($sale);
-            } catch (\Exception $e) {
-                Log::error("Sale Double-Entry Journaling failed for Sale [{$sale->id}]: " . $e->getMessage(), [
+            } catch (Exception $e) {
+                Log::error("Sale Double-Entry Journaling failed for Sale [{$sale->id}]: ".$e->getMessage(), [
                     'sale_id' => $sale->id,
-                    'exception' => $e
+                    'exception' => $e,
                 ]);
             }
         }
@@ -144,9 +147,9 @@ class SaleObserver
             // 1. Revenue Entry: Debit 1102 (Receiv) vs Credit 4101 (Revenue)
             $receivableAcc = Account::findByCode('1102');
             $revenueAcc = Account::findByCode('4101');
-            
+
             $revenueAmountCents = (int) round((float) $sale->total_amount * 100);
-            
+
             $this->journalService->record(new JournalEntryData(
                 items: [
                     new JournalItemData($receivableAcc->id, $revenueAmountCents, 'debit'),
@@ -161,7 +164,7 @@ class SaleObserver
             // 2. COGS Entry: Debit 5101 (COGS) vs Credit 1302 (Finished Goods)
             $cogsAcc = Account::findByCode('5101');
             $finishedGoodsAcc = Account::findByCode('1302');
-            
+
             // Logic: sale->cogs_amount is already BIGINT cents in Database
             $cogsAmountCents = (int) $sale->cogs_amount;
 
@@ -187,7 +190,7 @@ class SaleObserver
         // $sale->journals()->get()->each->delete();
 
         // Delete associated stock movements
-        \App\Models\StockMovement::where('reference_type', Sale::class)
+        StockMovement::where('reference_type', Sale::class)
             ->where('reference_id', $sale->id)
             ->get()
             ->each

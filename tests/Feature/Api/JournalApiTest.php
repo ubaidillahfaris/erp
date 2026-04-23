@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Api;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\User;
 use App\Models\Journal;
-use Spatie\Permission\Models\Role;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class JournalApiTest extends TestCase
 {
@@ -45,12 +45,12 @@ class JournalApiTest extends TestCase
                         'amount',
                         'category',
                         'balance',
-                    ]
+                    ],
                 ],
                 'links',
                 'meta',
             ]);
-        
+
         $this->assertEquals(1000, $response->json('data.0.balance'));
     }
 
@@ -70,19 +70,19 @@ class JournalApiTest extends TestCase
         $response = $this->getJson('/api/v1/journal?per_page=2&page=1');
 
         $response->assertStatus(200);
-        
+
         // Items on page 1 (Newest first): Entry 3, Entry 2
         // Total balance = 1000 - 300 + 500 = 1200
         // Entry 3 balance = 1200
         // Entry 2 balance = 1200 - 500 = 700
-        
+
         $this->assertEquals(1200, $response->json('data.0.balance'));
         $this->assertEquals(700, $response->json('data.1.balance'));
 
         // Page 2: Entry 1
         $response = $this->getJson('/api/v1/journal?per_page=2&page=2');
         $response->assertStatus(200);
-        
+
         // Entry 1 balance = 700 - (-300) = 1000
         $this->assertEquals(1000, $response->json('data.0.balance'));
     }

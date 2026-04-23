@@ -12,14 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         // Index already exists — skip silently
-        if (\DB::connection()->getDriverName() === 'pgsql') {
-            if (collect(\DB::select("SELECT indexname FROM pg_indexes WHERE tablename = 'journal_items' AND indexname = 'journal_items_account_id_index'"))->isNotEmpty()) {
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            if (collect(DB::select("SELECT indexname FROM pg_indexes WHERE tablename = 'journal_items' AND indexname = 'journal_items_account_id_index'"))->isNotEmpty()) {
                 return;
             }
-        } else if (\DB::connection()->getDriverName() === 'sqlite') {
+        } elseif (DB::connection()->getDriverName() === 'sqlite') {
             // Check sqlite sqlite_master for index
-            $exists = \DB::select("SELECT name FROM sqlite_master WHERE type='index' AND name='journal_items_account_id_index'");
-            if (!empty($exists)) return;
+            $exists = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND name='journal_items_account_id_index'");
+            if (! empty($exists)) {
+                return;
+            }
         }
         Schema::table('journal_items', function (Blueprint $table) {
             $table->index('account_id');

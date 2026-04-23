@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Satuan;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class QuickCreateSatuanController extends Controller
@@ -10,7 +11,7 @@ class QuickCreateSatuanController extends Controller
     /**
      * Handle the incoming request.
      */
-    public function __invoke(Request $request): \Illuminate\Http\JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255', 'unique:satuans,nama'],

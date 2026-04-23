@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\JournalEntry;
-use App\Models\Journalable;
 use App\Models\Purchase;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,12 +17,12 @@ class PurchaseJournalTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Setup COA required for purchase integration
         Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
         Account::create(['code' => '1301', 'name' => 'Persediaan', 'type' => 'asset', 'balance_type' => 'debit']);
         Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
-        
+
         $this->vendor = Vendor::factory()->create(['nama' => 'Vendor Test']);
     }
 
@@ -47,7 +46,7 @@ class PurchaseJournalTest extends TestCase
         $this->assertDatabaseHas('journal_entries', [
             'journalable_type' => Purchase::class,
             'journalable_id' => $purchase->id,
-            'ref_number' => 'PUR-20240419-' . $purchase->id,
+            'ref_number' => 'PUR-20240419-'.$purchase->id,
         ]);
 
         $journal = JournalEntry::where('journalable_id', $purchase->id)->firstOrFail();
@@ -75,7 +74,7 @@ class PurchaseJournalTest extends TestCase
     {
         Log::shouldReceive('error')
             ->once()
-            ->withArgs(fn($message) => str_contains($message, 'Double-Entry Journaling failed'));
+            ->withArgs(fn ($message) => str_contains($message, 'Double-Entry Journaling failed'));
 
         $purchase = Purchase::factory()->create([
             'status' => 'draft',
@@ -98,7 +97,7 @@ class PurchaseJournalTest extends TestCase
     {
         // Simulate missing accounts failure
         Account::whereIn('code', ['1301', '2101'])->delete();
-        
+
         Log::shouldReceive('error')->atLeast()->once();
 
         $purchase = Purchase::factory()->create([

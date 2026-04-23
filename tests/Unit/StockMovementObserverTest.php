@@ -4,9 +4,9 @@ namespace Tests\Unit;
 
 use App\Models\Produk;
 use App\Models\Satuan;
+use App\Models\SatuanConversion;
 use App\Models\Stock;
 use App\Models\StockMovement;
-use App\Models\SatuanConversion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,21 +14,24 @@ class StockMovementObserverTest extends TestCase
 {
     use RefreshDatabase;
 
-    private Satuan $pcs, $box;
+    private Satuan $pcs;
+
+    private Satuan $box;
+
     private Produk $produk;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->pcs = Satuan::create(['nama' => 'Pieces', 'simbol' => 'pcs']);
         $this->box = Satuan::create(['nama' => 'Box', 'simbol' => 'box']);
-        
+
         // 1 box = 10 pcs
         SatuanConversion::create([
             'satuan_id' => $this->box->id,
             'to_satuan_id' => $this->pcs->id,
-            'rasio' => 10
+            'rasio' => 10,
         ]);
 
         // Product base unit is PCS

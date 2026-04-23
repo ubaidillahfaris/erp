@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchase_attachments', function (Illuminate\Database\Schema\Blueprint $table) {
+        Schema::create('purchase_attachments', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignId('purchase_id')->constrained()->onDelete('cascade');
             $table->string('file_path');

@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Actions\RecordStockMovement;
+use App\Models\Account;
 use App\Models\Produk;
 use App\Models\Restock;
 use App\Models\Satuan;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,22 +22,22 @@ class StockManagementTest extends TestCase
 
     protected Satuan $satuan;
 
-    protected \App\Models\Vendor $vendor;
+    protected Vendor $vendor;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         // Seed required COA for restock journaling
-        \App\Models\Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
+        Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
 
         $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
 
         $this->satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
-        $this->vendor = \App\Models\Vendor::factory()->create();
+        $this->vendor = Vendor::factory()->create();
     }
 
     public function test_restock_creates_stock_movement_and_updates_balance()

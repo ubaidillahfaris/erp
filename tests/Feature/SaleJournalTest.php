@@ -18,13 +18,15 @@ class SaleJournalTest extends TestCase
     use RefreshDatabase;
 
     protected Satuan $satuan;
+
     protected Produk $produk1;
+
     protected Produk $produk2;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Setup COA required for sales integration
         Account::create(['code' => '1102', 'name' => 'Piutang Usaha', 'type' => 'asset', 'balance_type' => 'debit']);
         Account::create(['code' => '4101', 'name' => 'Penjualan', 'type' => 'income', 'balance_type' => 'credit']);
@@ -32,7 +34,7 @@ class SaleJournalTest extends TestCase
         Account::create(['code' => '1302', 'name' => 'Persediaan Barang Jadi', 'type' => 'asset', 'balance_type' => 'debit']);
 
         $this->satuan = Satuan::create(['nama' => 'PCS', 'simbol' => 'PCS']);
-        
+
         // Ensure Produk has satuan_id to satisfy StockMovementObserver
         $this->produk1 = Produk::create(['sku' => 'SKU-001', 'nama' => 'Produk 1', 'satuan_id' => $this->satuan->id]);
         $this->produk2 = Produk::create(['sku' => 'SKU-002', 'nama' => 'Produk 2', 'satuan_id' => $this->satuan->id]);
@@ -51,13 +53,13 @@ class SaleJournalTest extends TestCase
             'tanggal' => '2024-04-19',
             'total_amount' => 1000.00,
             'status' => 'draft',
-            'payment_method' => 'cash'
+            'payment_method' => 'cash',
         ]);
 
         // Add items to trigger computation
         SaleItem::create(['sale_id' => $sale->id, 'produk_id' => $this->produk1->id, 'satuan_id' => $this->satuan->id, 'qty' => 2, 'cost' => 150.00, 'price' => 200, 'subtotal' => 400]);
         SaleItem::create(['sale_id' => $sale->id, 'produk_id' => $this->produk2->id, 'satuan_id' => $this->satuan->id, 'qty' => 1, 'cost' => 100.50, 'price' => 150, 'subtotal' => 150]);
-        
+
         $sale->update(['status' => 'completed']);
 
         // Verify cogs_amount was computed and saved
@@ -82,11 +84,11 @@ class SaleJournalTest extends TestCase
             'tanggal' => '2024-04-19',
             'total_amount' => 1000.00,
             'status' => 'draft',
-            'payment_method' => 'cash'
+            'payment_method' => 'cash',
         ]);
 
         $this->expectException(MissingCOGSException::class);
-        $this->expectExceptionMessage("Penjualan tanpa item tidak dapat diselesaikan.");
+        $this->expectExceptionMessage('Penjualan tanpa item tidak dapat diselesaikan.');
 
         $sale->update(['status' => 'completed']);
     }
@@ -104,11 +106,11 @@ class SaleJournalTest extends TestCase
             'total_amount' => 500.00,
             'cogs_amount' => 99999, // Manual/junk value
             'status' => 'draft',
-            'payment_method' => 'cash'
+            'payment_method' => 'cash',
         ]);
 
         SaleItem::create(['sale_id' => $sale->id, 'produk_id' => $this->produk1->id, 'satuan_id' => $this->satuan->id, 'qty' => 1, 'cost' => 100.00, 'price' => 150, 'subtotal' => 150]);
-        
+
         $sale->update(['status' => 'completed']);
 
         $this->assertEquals(10000, $sale->fresh()->cogs_amount);
@@ -120,15 +122,15 @@ class SaleJournalTest extends TestCase
     public function test_sale_does_not_rollback_on_journal_failure_with_auto_compute(): void
     {
         Log::spy();
-        
+
         Account::where('code', '1102')->delete();
-        
+
         $sale = Sale::create([
             'invoice_number' => 'INV-FAIL-SAFE',
             'tanggal' => '2024-04-19',
             'total_amount' => 500.00,
             'status' => 'draft',
-            'payment_method' => 'cash'
+            'payment_method' => 'cash',
         ]);
 
         SaleItem::create(['sale_id' => $sale->id, 'produk_id' => $this->produk1->id, 'satuan_id' => $this->satuan->id, 'qty' => 1, 'cost' => 100.00, 'price' => 150, 'subtotal' => 150]);
@@ -138,7 +140,7 @@ class SaleJournalTest extends TestCase
         // Check if computation happened despite journaling failure
         $this->assertEquals(10000, $sale->fresh()->cogs_amount);
         $this->assertEquals('completed', $sale->fresh()->status);
-        
+
         // Check that at least one journal error was logged (using the spy)
         Log::shouldHaveReceived('error')->atLeast()->once();
     }

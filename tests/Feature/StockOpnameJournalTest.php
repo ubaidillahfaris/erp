@@ -3,14 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
-use App\Models\Produk;
+use App\Models\JournalEntry;
 use App\Models\ProductPriceStat;
+use App\Models\Produk;
 use App\Models\Satuan;
 use App\Models\StockOpname;
 use App\Models\User;
-use App\Models\JournalEntry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class StockOpnameJournalTest extends TestCase
@@ -18,7 +18,9 @@ class StockOpnameJournalTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected Produk $produk;
+
     protected Satuan $satuan;
 
     protected function setUp(): void
@@ -26,8 +28,8 @@ class StockOpnameJournalTest extends TestCase
         parent::setUp();
 
         $this->user = User::factory()->create();
-        \Spatie\Permission\Models\Role::create(['name' => 'superadmin']);
-        $this->user->assignRole('superadmin'); 
+        Role::create(['name' => 'superadmin']);
+        $this->user->assignRole('superadmin');
 
         $this->satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
 
@@ -66,8 +68,8 @@ class StockOpnameJournalTest extends TestCase
                     'satuan_id' => $this->satuan->id,
                     'system_qty' => 10,
                     'physical_qty' => 12, // +2 surplus
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->post(route('stock-opname.store'), $payload);
@@ -106,8 +108,8 @@ class StockOpnameJournalTest extends TestCase
                     'satuan_id' => $this->satuan->id,
                     'system_qty' => 10,
                     'physical_qty' => 8, // -2 shrinkage
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->post(route('stock-opname.store'), $payload);
@@ -146,8 +148,8 @@ class StockOpnameJournalTest extends TestCase
                     'satuan_id' => $this->satuan->id,
                     'system_qty' => 10,
                     'physical_qty' => 8, // -2 shrinkage, but 0 value
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->post(route('stock-opname.store'), $payload);
@@ -176,8 +178,8 @@ class StockOpnameJournalTest extends TestCase
                     'satuan_id' => $this->satuan->id,
                     'system_qty' => 10,
                     'physical_qty' => 12, // +2 surplus
-                ]
-            ]
+                ],
+            ],
         ];
 
         // Should still succeed the finalization
@@ -210,9 +212,9 @@ class StockOpnameJournalTest extends TestCase
                     'produk_id' => $this->produk->id,
                     'satuan_id' => $this->satuan->id,
                     'system_qty' => 10,
-                    'physical_qty' => 12, 
-                ]
-            ]
+                    'physical_qty' => 12,
+                ],
+            ],
         ];
 
         $this->post(route('stock-opname.store'), $payload);

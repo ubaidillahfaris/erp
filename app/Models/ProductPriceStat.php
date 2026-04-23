@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProductPriceStat extends Model
 {
@@ -25,12 +26,12 @@ class ProductPriceStat extends Model
         ];
     }
 
-    public function produk(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function produk(): BelongsTo
     {
         return $this->belongsTo(Produk::class);
     }
 
-    public function satuan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function satuan(): BelongsTo
     {
         return $this->belongsTo(Satuan::class);
     }

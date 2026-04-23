@@ -7,8 +7,10 @@ namespace Tests\Feature;
 use App\Actions\CompleteProduction;
 use App\Exceptions\MissingOverheadRateException;
 use App\Models\Account;
+use App\Models\Bom;
 use App\Models\JournalEntry;
 use App\Models\Production;
+use App\Models\ProductionItem;
 use App\Models\Produk;
 use App\Models\Satuan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,7 +21,9 @@ class ProductionJournalTest extends TestCase
     use RefreshDatabase;
 
     private Account $rawMaterialAcc;
+
     private Account $finishedGoodAcc;
+
     private Account $overheadAcc;
 
     protected function setUp(): void
@@ -52,7 +56,7 @@ class ProductionJournalTest extends TestCase
     public function test_complete_production_records_balanced_journal_with_overhead(): void
     {
         $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
-        
+
         $fgProduct = Produk::create([
             'sku' => 'FG-001',
             'nama' => 'Finished Good',
@@ -62,7 +66,7 @@ class ProductionJournalTest extends TestCase
             'is_active' => true,
         ]);
 
-        $bom = \App\Models\Bom::create([
+        $bom = Bom::create([
             'produk_id' => $fgProduct->id,
             'sku' => 'BOM-001',
             'nama' => 'BOM 001',
@@ -87,7 +91,7 @@ class ProductionJournalTest extends TestCase
             'satuan_id' => $satuan->id,
         ]);
 
-        \App\Models\ProductionItem::create([
+        ProductionItem::create([
             'production_id' => $production->id,
             'produk_id' => $rawMaterial->id,
             'satuan_id' => $satuan->id,
@@ -139,7 +143,7 @@ class ProductionJournalTest extends TestCase
     public function test_complete_production_throws_exception_if_overhead_missing(): void
     {
         $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
-        
+
         $fgProduct = Produk::create([
             'sku' => 'FG-002',
             'nama' => 'Finished Good No Overhead',
@@ -149,7 +153,7 @@ class ProductionJournalTest extends TestCase
             'is_active' => true,
         ]);
 
-        $bom = \App\Models\Bom::create([
+        $bom = Bom::create([
             'produk_id' => $fgProduct->id,
             'sku' => 'BOM-002',
             'nama' => 'BOM 002',
@@ -168,7 +172,7 @@ class ProductionJournalTest extends TestCase
         ]);
 
         $this->expectException(MissingOverheadRateException::class);
-        
+
         app(CompleteProduction::class)->handle($production);
     }
 }

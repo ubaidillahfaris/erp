@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\Customer;
+use App\Models\InterestSchedule;
 use App\Models\Payable;
 use App\Models\Payment;
-use App\Models\InterestSchedule;
-use App\Models\Customer;
-use App\Models\Vendor;
 use App\Models\User;
-use Illuminate\Database\Seeder;
+use App\Models\Vendor;
 use Carbon\Carbon;
+use Illuminate\Database\Seeder;
 
 class PayableSeeder extends Seeder
 {

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockOpnameItem extends Model
 {
@@ -24,17 +25,17 @@ class StockOpnameItem extends Model
         ];
     }
 
-    public function stockOpname(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function stockOpname(): BelongsTo
     {
         return $this->belongsTo(StockOpname::class);
     }
 
-    public function produk(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function produk(): BelongsTo
     {
         return $this->belongsTo(Produk::class);
     }
 
-    public function satuan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function satuan(): BelongsTo
     {
         return $this->belongsTo(Satuan::class);
     }

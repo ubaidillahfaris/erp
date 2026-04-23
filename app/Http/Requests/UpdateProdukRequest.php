@@ -20,7 +20,7 @@ class UpdateProdukRequest extends FormRequest
             'sku' => ['required', 'string', 'max:255', 'unique:produks,sku,'.$this->produk->id],
             'barcode' => ['nullable', 'string', 'max:255'],
             'nama' => ['required', 'string', 'max:255'],
-            'kategori' => ['nullable', 'string', 'max:255'],
+            'category_id' => ['nullable', 'exists:categories,id'],
             'deskripsi' => ['nullable', 'string'],
             'stok_minimal' => ['required', 'integer', 'min:0'],
             'is_active' => ['required', 'boolean'],

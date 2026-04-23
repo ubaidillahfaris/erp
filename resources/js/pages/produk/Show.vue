@@ -90,7 +90,7 @@ const formatDate = (dateString: string) => {
                                 </TableRow>
                                 <TableRow>
                                     <TableCell class="bg-slate-50/50 font-medium text-slate-500">Kategori</TableCell>
-                                    <TableCell><Badge variant="outline" class="font-bold py-0 h-5">{{ produk.kategori || 'General' }}</Badge></TableCell>
+                                    <TableCell><Badge variant="outline" class="font-bold py-0 h-5">{{ produk.category?.name || 'General' }}</Badge></TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell class="bg-slate-50/50 font-medium text-slate-500">Tipe Barang</TableCell>

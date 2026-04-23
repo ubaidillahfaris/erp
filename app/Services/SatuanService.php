@@ -13,7 +13,7 @@ class SatuanService
      */
     public function getConversionRatio($fromSatuanId, $toSatuanId, $produkId = null): float
     {
-        if ($fromSatuanId == $toSatuanId || !$toSatuanId || !$fromSatuanId) {
+        if ($fromSatuanId == $toSatuanId || ! $toSatuanId || ! $fromSatuanId) {
             return 1.0;
         }
 
@@ -37,7 +37,7 @@ class SatuanService
         $queue = [[$fromSatuanId, 1.0]];
         $visited = [$fromSatuanId];
 
-        while (!empty($queue)) {
+        while (! empty($queue)) {
             [$currentId, $currentRatio] = array_shift($queue);
 
             if ($currentId == $toSatuanId) {
@@ -49,7 +49,7 @@ class SatuanService
                 ->where('produk_id', $produkId)
                 ->get();
             foreach ($directs as $conv) {
-                if (!in_array($conv->to_satuan_id, $visited)) {
+                if (! in_array($conv->to_satuan_id, $visited)) {
                     $visited[] = $conv->to_satuan_id;
                     $queue[] = [$conv->to_satuan_id, $currentRatio * (float) $conv->rasio];
                 }
@@ -60,7 +60,7 @@ class SatuanService
                 ->where('produk_id', $produkId)
                 ->get();
             foreach ($inverses as $inv) {
-                if ($inv->rasio != 0 && !in_array($inv->satuan_id, $visited)) {
+                if ($inv->rasio != 0 && ! in_array($inv->satuan_id, $visited)) {
                     $visited[] = $inv->satuan_id;
                     $queue[] = [$inv->satuan_id, $currentRatio * (1.0 / (float) $inv->rasio)];
                 }

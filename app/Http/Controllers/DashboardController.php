@@ -42,31 +42,31 @@ class DashboardController extends Controller
             ->get();
 
         // 5. Shared Chart Configuration Grouping (H, D, W, M, Y)
-        $chartConfig = match($interval) {
+        $chartConfig = match ($interval) {
             'H' => [
                 'range' => now()->subHours(24),
                 'col' => 'created_at',
-                'trunc' => 'hour'
+                'trunc' => 'hour',
             ],
             'W' => [
                 'range' => now()->subWeeks(12),
                 'col' => 'tanggal',
-                'trunc' => 'week'
+                'trunc' => 'week',
             ],
             'M' => [
                 'range' => now()->subMonths(12),
                 'col' => 'tanggal',
-                'trunc' => 'month'
+                'trunc' => 'month',
             ],
             'Y' => [
                 'range' => now()->subYears(5),
                 'col' => 'tanggal',
-                'trunc' => 'year'
+                'trunc' => 'year',
             ],
             default => [
                 'range' => now()->subDays(30),
                 'col' => 'tanggal',
-                'trunc' => 'day'
+                'trunc' => 'day',
             ],
         };
 
@@ -76,7 +76,7 @@ class DashboardController extends Controller
         $col = $chartConfig['col'];
 
         if ($dbDriver === 'sqlite') {
-            $format = match($trunc) {
+            $format = match ($trunc) {
                 'hour' => '%Y-%m-%d %H:00:00',
                 'day' => '%Y-%m-%d',
                 'week' => '%Y-%W',
@@ -125,9 +125,9 @@ class DashboardController extends Controller
             ->groupBy('date')
             ->orderBy('date', 'asc')
             ->get()
-            ->map(fn($item) => [
+            ->map(fn ($item) => [
                 'date' => $item->date,
-                'count' => (int) $item->count
+                'count' => (int) $item->count,
             ]);
 
         return Inertia::render('dashboard/Dashboard', [

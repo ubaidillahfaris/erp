@@ -2,6 +2,7 @@
 
 use App\Models\Menu;
 use App\Models\Module;
+use App\Services\RoleService;
 use Illuminate\Database\Migrations\Migration;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -44,9 +45,9 @@ return new class extends Migration
         if ($role && method_exists($role, 'menus')) {
             $role->menus()->syncWithoutDetaching([$menu->id]);
         }
-        
+
         // 6. Clear Cache
-        app(\App\Services\RoleService::class)->clearAllMenuCaches();
+        app(RoleService::class)->clearAllMenuCaches();
     }
 
     /**

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Customer;
+use App\Models\CustomerCategoryDiscount;
 use App\Models\CustomerPrice;
 use App\Models\Produk;
 use App\Models\Satuan;
-use App\Models\CustomerCreditSetting;
-use App\Models\CustomerCategoryDiscount;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -19,7 +19,7 @@ class CustomerPriceController extends Controller
     public function listAll(Request $request)
     {
         $search = $request->input('search');
-        
+
         $customers = Customer::query()
             ->withCount(['customerPrices as active_prices_count' => function ($query) {
                 $query->where('is_active', true);
@@ -52,8 +52,8 @@ class CustomerPriceController extends Controller
             'produks' => Produk::all(['id', 'nama']),
             'satuans' => Satuan::all(['id', 'nama']),
             'creditSetting' => $customer->creditSetting,
-            'categoryDiscounts' => $customer->categoryDiscounts()->where('is_active', true)->get(),
-            'kategoriList' => Produk::whereNotNull('kategori')->distinct()->pluck('kategori'),
+            'categoryDiscounts' => $customer->categoryDiscounts()->with('category')->where('is_active', true)->get(),
+            'kategoriList' => Category::all(['id', 'name']),
         ]);
     }
 
@@ -140,12 +140,12 @@ class CustomerPriceController extends Controller
     public function storeCategoryDiscount(Request $request, Customer $customer)
     {
         $validated = $request->validate([
-            'kategori' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
             'discount_rate' => 'required|numeric|min:0|max:100',
         ]);
 
         $customer->categoryDiscounts()->create([
-            'kategori' => $validated['kategori'],
+            'category_id' => $validated['category_id'],
             'discount_rate' => $validated['discount_rate'],
             'is_active' => true,
         ]);

@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 const props = defineProps<{
@@ -19,6 +20,10 @@ const props = defineProps<{
         id: number;
         nama: string;
         simbol: string;
+    }>;
+    categories: Array<{
+        id: number;
+        name: string;
     }>;
 }>();
 
@@ -38,7 +43,7 @@ const form = useForm({
     sku: '',
     barcode: '',
     nama: '',
-    kategori: '',
+    category_id: '',
     deskripsi: '',
     stok_minimal: 0,
     satuan_id: '',
@@ -128,9 +133,18 @@ const handleCreateSatuan = async (nama: string) => {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <Label for="kategori">Kategori</Label>
-                            <Input id="kategori" v-model="form.kategori" placeholder="Contoh: Makanan" />
-                            <InputError :message="form.errors.kategori" />
+                            <Label for="category_id">Kategori</Label>
+                            <Select v-model="form.category_id">
+                                <SelectTrigger class="w-full">
+                                    <SelectValue placeholder="Pilih Kategori" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem v-for="cat in categories" :key="cat.id" :value="String(cat.id)">
+                                        {{ cat.name }}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <InputError :message="form.errors.category_id" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <Label for="stok_minimal">Stok Minimal Alert</Label>

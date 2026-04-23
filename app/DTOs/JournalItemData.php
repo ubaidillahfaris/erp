@@ -10,6 +10,5 @@ class JournalItemData
         public int $account_id,
         public int $amount, // Stored in cents
         public string $type, // 'debit' or 'credit'
-    ) {
-    }
+    ) {}
 }

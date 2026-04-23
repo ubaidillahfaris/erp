@@ -6,6 +6,7 @@ use App\Actions\CompleteProduction;
 use App\Actions\RecalculateHpp;
 use App\Models\Bom;
 use App\Models\BomItem;
+use App\Models\Category;
 use App\Models\Price;
 use App\Models\Production;
 use App\Models\ProductionItem;
@@ -85,13 +86,20 @@ class MaterialAndPlasticSeeder extends Seeder
                 'keterangan' => 'Importir biji plastik HDPE, LDPE, PP',
             ]);
 
-            // ─── 3. Products — Raw Materials & Retail Items ─────────
+            // ─── 3. Categories ──────────────────────────────────────
+            $catMaterial = Category::firstOrCreate(['name' => 'Material Bangunan'], ['slug' => 'material-bangunan']);
+            $catCatFinishing = Category::firstOrCreate(['name' => 'Cat & Finishing'], ['slug' => 'cat-finishing']);
+            $catBahanBakuPlastik = Category::firstOrCreate(['name' => 'Bahan Baku Plastik'], ['slug' => 'bahan-baku-plastik']);
+            $catBahanPenolong = Category::firstOrCreate(['name' => 'Bahan Penolong'], ['slug' => 'bahan-penolong']);
+            $catProdukPlastik = Category::firstOrCreate(['name' => 'Produk Plastik'], ['slug' => 'produk-plastik']);
+
+            // ─── 4. Products — Raw Materials & Retail Items ─────────
             $products = [
                 // Building Materials (Retail & Stockable)
                 [
                     'sku' => 'MAT-SEMEN-001',
                     'nama' => 'Semen Tiga Roda 40kg',
-                    'kategori' => 'Material Bangunan',
+                    'category_id' => $catMaterial->id,
                     'deskripsi' => 'Semen Portland berkualitas tinggi untuk konstruksi',
                     'satuan' => $satuanSak,
                     'purchase_price' => 58000,
@@ -103,7 +111,7 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'MAT-PASIR-001',
                     'nama' => 'Pasir Muntilan (Super)',
-                    'kategori' => 'Material Bangunan',
+                    'category_id' => $catMaterial->id,
                     'deskripsi' => 'Pasir hitam vulkanik dari lereng Merapi',
                     'satuan' => $satuanM3,
                     'purchase_price' => 220000,
@@ -115,7 +123,7 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'MAT-BESI-001',
                     'nama' => 'Besi Beton 8mm (Polos)',
-                    'kategori' => 'Material Bangunan',
+                    'category_id' => $catMaterial->id,
                     'deskripsi' => 'Besi beton standar SNI, panjang 12m',
                     'satuan' => $satuanLonjor,
                     'purchase_price' => 45000,
@@ -127,7 +135,7 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'MAT-CAT-001',
                     'nama' => 'Avian Emulsion White 5kg',
-                    'kategori' => 'Cat & Finishing',
+                    'category_id' => $catCatFinishing->id,
                     'deskripsi' => 'Cat tembok interior warna putih bersih',
                     'satuan' => $satuanGalon,
                     'purchase_price' => 125000,
@@ -141,7 +149,7 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'RAW-PLAS-HDPE',
                     'nama' => 'Biji Plastik HDPE Virgin',
-                    'kategori' => 'Bahan Baku Plastik',
+                    'category_id' => $catBahanBakuPlastik->id,
                     'deskripsi' => 'High Density Polyethylene untuk kantong kresek',
                     'satuan' => $satuanKg,
                     'purchase_price' => 18500,
@@ -153,7 +161,7 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'RAW-PLAS-LDPE',
                     'nama' => 'Biji Plastik LDPE Virgin',
-                    'kategori' => 'Bahan Baku Plastik',
+                    'category_id' => $catBahanBakuPlastik->id,
                     'deskripsi' => 'Low Density Polyethylene untuk botol dan plastik lentur',
                     'satuan' => $satuanKg,
                     'purchase_price' => 19500,
@@ -165,7 +173,7 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'RAW-PIGM-WHT',
                     'nama' => 'Pigmen Putih (Titanium Dioxide)',
-                    'kategori' => 'Bahan Penolong',
+                    'category_id' => $catBahanPenolong->id,
                     'deskripsi' => 'Pewarna putih untuk produk plastik',
                     'satuan' => $satuanGr,
                     'purchase_price' => 150, // per gram
@@ -177,7 +185,7 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'RAW-PIGM-BLK',
                     'nama' => 'Pigmen Hitam (Carbon Black)',
-                    'kategori' => 'Bahan Penolong',
+                    'category_id' => $catBahanPenolong->id,
                     'deskripsi' => 'Pewarna hitam untuk produk plastik',
                     'satuan' => $satuanGr,
                     'purchase_price' => 120, // per gram
@@ -193,13 +201,14 @@ class MaterialAndPlasticSeeder extends Seeder
                 $produk = Produk::create([
                     'sku' => $data['sku'],
                     'nama' => $data['nama'],
-                    'kategori' => $data['kategori'],
+                    'category_id' => $data['category_id'],
                     'deskripsi' => $data['deskripsi'],
                     'satuan_id' => $data['satuan']->id,
                     'type' => $data['type'],
                     'track_stock' => true,
                     'is_active' => true,
                     'stok_minimal' => $data['stok_minimal'],
+                    'overhead_rate_per_unit' => 0,
                 ]);
 
                 Price::create([
@@ -224,13 +233,14 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'FG-PLAS-WHT24',
                     'nama' => 'Kantong Kresek HD Putih Uk. 24',
-                    'kategori' => 'Produk Plastik',
+                    'category_id' => $catProdukPlastik->id,
                     'deskripsi' => 'Kantong plastik putih ukuran 24 (isi ±50 lembar)',
                     'retail_price' => 12500,
                     'initial_stock' => 50,
                     'stok_minimal' => 20,
                     'satuan_id' => $satuanPack->id,
                     'expected_yield' => 1,
+                    'overhead_rate_per_unit' => 500,
                     'recipe' => [
                         'RAW-PLAS-HDPE' => ['jumlah' => 0.480], // 480 grams
                         'RAW-PIGM-WHT' => ['jumlah' => 20],   // 20 grams
@@ -239,13 +249,14 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'FG-PLAS-BLK24',
                     'nama' => 'Kantong Kresek HD Hitam Uk. 24',
-                    'kategori' => 'Produk Plastik',
+                    'category_id' => $catProdukPlastik->id,
                     'deskripsi' => 'Kantong plastik hitam ukuran 24 (isi ±50 lembar)',
                     'retail_price' => 10500,
                     'initial_stock' => 80,
                     'stok_minimal' => 20,
                     'satuan_id' => $satuanPack->id,
                     'expected_yield' => 1,
+                    'overhead_rate_per_unit' => 500,
                     'recipe' => [
                         'RAW-PLAS-HDPE' => ['jumlah' => 0.490], // 490 grams
                         'RAW-PIGM-BLK' => ['jumlah' => 10],   // 10 grams
@@ -254,13 +265,14 @@ class MaterialAndPlasticSeeder extends Seeder
                 [
                     'sku' => 'FG-BOTL-600',
                     'nama' => 'Botol Plastik PET 600ml',
-                    'kategori' => 'Produk Plastik',
+                    'category_id' => $catProdukPlastik->id,
                     'deskripsi' => 'Botol transparan polos 600ml untuk minuman',
                     'retail_price' => 1200,
                     'initial_stock' => 1000,
                     'stok_minimal' => 500,
                     'satuan_id' => $satuanPcs->id,
                     'expected_yield' => 100, // Produced in batches of 100
+                    'overhead_rate_per_unit' => 50,
                     'recipe' => [
                         'RAW-PLAS-LDPE' => ['jumlah' => 3.0], // 3kg for 100 bottles -> 30g/bottle
                     ],
@@ -273,13 +285,14 @@ class MaterialAndPlasticSeeder extends Seeder
                 $produk = Produk::create([
                     'sku' => $data['sku'],
                     'nama' => $data['nama'],
-                    'kategori' => $data['kategori'],
+                    'category_id' => $data['category_id'],
                     'deskripsi' => $data['deskripsi'],
                     'satuan_id' => $data['satuan_id'],
                     'type' => 'finished_good',
                     'track_stock' => true,
                     'is_active' => true,
                     'stok_minimal' => $data['stok_minimal'],
+                    'overhead_rate_per_unit' => $data['overhead_rate_per_unit'] ?? 0,
                 ]);
 
                 Price::create([
@@ -361,7 +374,7 @@ class MaterialAndPlasticSeeder extends Seeder
                 foreach ($m['bom']->items as $item) {
                     $itemPrice = $item->produk->currentPrice->purchase_price ?? 0;
                     $qty = $item->jumlah * $scale;
-                    
+
                     if ($pd['status'] === 'completed') {
                         $costSum += ($itemPrice * $qty);
                     }

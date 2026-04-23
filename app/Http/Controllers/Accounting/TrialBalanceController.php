@@ -24,7 +24,7 @@ class TrialBalanceController extends Controller
         });
 
         $accounts = collect($accountsData);
-        
+
         if ($accounts->isEmpty()) {
             Cache::forget('trial_balance_current');
             $accounts = Account::query()
@@ -59,6 +59,7 @@ class TrialBalanceController extends Controller
     public function refresh(): RedirectResponse
     {
         Cache::forget('trial_balance_current');
+
         return redirect()->route('accounting.trial-balance.index')
             ->with('success', 'Trial Balance berhasil diperbarui.');
     }

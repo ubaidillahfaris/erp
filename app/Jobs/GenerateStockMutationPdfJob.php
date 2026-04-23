@@ -23,22 +23,22 @@ class GenerateStockMutationPdfJob implements ShouldQueue
     {
         $query = StockMovement::with(['produk', 'satuan'])->latest();
 
-        if (!empty($this->filters['start_date'])) {
+        if (! empty($this->filters['start_date'])) {
             $query->whereDate('created_at', '>=', $this->filters['start_date']);
         }
 
-        if (!empty($this->filters['end_date'])) {
+        if (! empty($this->filters['end_date'])) {
             $query->whereDate('created_at', '<=', $this->filters['end_date']);
         }
 
-        if (!empty($this->filters['produk_id'])) {
+        if (! empty($this->filters['produk_id'])) {
             $query->where('produk_id', $this->filters['produk_id']);
         }
 
         $movements = $query->get();
 
-        $filename = 'stock_mutation_' . now()->format('Ymd_His') . '.pdf';
-        
+        $filename = 'stock_mutation_'.now()->format('Ymd_His').'.pdf';
+
         $pdf = Pdf::view('pdf.stock-mutation', [
             'movements' => $movements,
             'filters' => $this->filters,
@@ -46,10 +46,10 @@ class GenerateStockMutationPdfJob implements ShouldQueue
         ]);
 
         $directory = 'reports/mutations';
-        if (!Storage::disk('private')->exists($directory)) {
+        if (! Storage::disk('private')->exists($directory)) {
             Storage::disk('private')->makeDirectory($directory);
         }
 
-        Storage::disk('private')->put($directory . '/' . $filename, $pdf->generatePdfContent());
+        Storage::disk('private')->put($directory.'/'.$filename, $pdf->generatePdfContent());
     }
 }

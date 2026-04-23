@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Sale extends Model
 {
@@ -32,22 +35,22 @@ class Sale extends Model
         ];
     }
 
-    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function items(): HasMany
     {
         return $this->hasMany(SaleItem::class);
     }
 
-    public function journals(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function journals(): MorphMany
     {
         return $this->morphMany(Journal::class, 'reference');
     }
 
-    public function saleCustomer(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function saleCustomer(): HasOne
     {
         return $this->hasOne(SaleCustomer::class);
     }
 
-    public function payable(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function payable(): HasOne
     {
         return $this->hasOne(Payable::class, 'reference_id')
             ->where('reference_type', 'sale');

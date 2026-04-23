@@ -2,13 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\Produk;
-use App\Models\Satuan;
+use App\Models\Category;
 use App\Models\Pengeluaran;
+use App\Models\Price;
+use App\Models\Produk;
 use App\Models\Restock;
 use App\Models\RestockItem;
+use App\Models\Satuan;
 use App\Models\SatuanConversion;
-use App\Models\Price;
 use Illuminate\Database\Seeder;
 
 class WarkopSeeder extends Seeder
@@ -39,10 +40,17 @@ class WarkopSeeder extends Seeder
             ['rasio' => 40]
         );
 
-        // 3. Packaging items
+        // 3. Categories
+        $catPackaging = Category::firstOrCreate(['name' => 'Packaging'], ['slug' => 'packaging']);
+        $catSusu = Category::firstOrCreate(['name' => 'Susu'], ['slug' => 'susu']);
+        $catSachet = Category::firstOrCreate(['name' => 'Sachet'], ['slug' => 'sachet']);
+        $catMieInstan = Category::firstOrCreate(['name' => 'Mie Instan'], ['slug' => 'mie-instan']);
+        $catMinuman = Category::firstOrCreate(['name' => 'Minuman'], ['slug' => 'minuman']);
+
+        // 4. Packaging items
         $gelas = Produk::firstOrCreate(['sku' => 'PKG-GELAS-01'], [
             'nama' => 'Gelas Kaca Warkop',
-            'kategori' => 'Packaging',
+            'category_id' => $catPackaging->id,
             'stok_minimal' => 12,
             'satuan_id' => $pcs->id,
             'type' => 'raw_material',
@@ -51,12 +59,12 @@ class WarkopSeeder extends Seeder
         Price::updateOrCreate(['produk_id' => $gelas->id, 'is_current' => true], [
             'satuan_id' => $pcs->id,
             'purchase_price' => 5000,
-            'retail_price' => 0
+            'retail_price' => 0,
         ]);
 
         $cup = Produk::firstOrCreate(['sku' => 'PKG-CUP-01'], [
             'nama' => 'Cup Plastik Es Kopi',
-            'kategori' => 'Packaging',
+            'category_id' => $catPackaging->id,
             'stok_minimal' => 50,
             'satuan_id' => $pcs->id,
             'type' => 'raw_material',
@@ -65,13 +73,13 @@ class WarkopSeeder extends Seeder
         Price::updateOrCreate(['produk_id' => $cup->id, 'is_current' => true], [
             'satuan_id' => $pcs->id,
             'purchase_price' => 23000 / 25,
-            'retail_price' => 0
+            'retail_price' => 0,
         ]);
 
         // 4. Dairy items
         $susuDiamond = Produk::firstOrCreate(['sku' => 'RAW-SUSU-01'], [
             'nama' => 'Susu Diamond Fresh Milk',
-            'kategori' => 'Susu',
+            'category_id' => $catSusu->id,
             'stok_minimal' => 5,
             'satuan_id' => $liter->id,
             'type' => 'raw_material',
@@ -80,12 +88,12 @@ class WarkopSeeder extends Seeder
         Price::updateOrCreate(['produk_id' => $susuDiamond->id, 'is_current' => true], [
             'satuan_id' => $liter->id,
             'purchase_price' => 23000,
-            'retail_price' => 0
+            'retail_price' => 0,
         ]);
 
         $skmCarnation = Produk::firstOrCreate(['sku' => 'RAW-SKM-01'], [
             'nama' => 'SKM Carnation',
-            'kategori' => 'Susu',
+            'category_id' => $catSusu->id,
             'stok_minimal' => 6,
             'satuan_id' => $can->id,
             'type' => 'raw_material',
@@ -94,12 +102,12 @@ class WarkopSeeder extends Seeder
         Price::updateOrCreate(['produk_id' => $skmCarnation->id, 'is_current' => true], [
             'satuan_id' => $can->id,
             'purchase_price' => 15000,
-            'retail_price' => 0
+            'retail_price' => 0,
         ]);
 
         $skmTigaSapi = Produk::firstOrCreate(['sku' => 'RAW-SKM-02'], [
             'nama' => 'SKM Tiga Sapi',
-            'kategori' => 'Susu',
+            'category_id' => $catSusu->id,
             'stok_minimal' => 6,
             'satuan_id' => $can->id,
             'type' => 'raw_material',
@@ -108,7 +116,7 @@ class WarkopSeeder extends Seeder
         Price::updateOrCreate(['produk_id' => $skmTigaSapi->id, 'is_current' => true], [
             'satuan_id' => $can->id,
             'purchase_price' => 11500,
-            'retail_price' => 0
+            'retail_price' => 0,
         ]);
 
         // 5. Instant Food & Drinks
@@ -128,7 +136,7 @@ class WarkopSeeder extends Seeder
         foreach ($sachetItems as $sku => $nama) {
             $p = Produk::firstOrCreate(['sku' => $sku], [
                 'nama' => $nama,
-                'kategori' => 'Sachet',
+                'category_id' => $catSachet->id,
                 'stok_minimal' => 20,
                 'satuan_id' => $sachet->id,
                 'type' => 'raw_material',
@@ -137,13 +145,13 @@ class WarkopSeeder extends Seeder
             Price::updateOrCreate(['produk_id' => $p->id, 'is_current' => true], [
                 'satuan_id' => $sachet->id,
                 'purchase_price' => 23000 / 10,
-                'retail_price' => 0
+                'retail_price' => 0,
             ]);
         }
 
         $mieGoreng = Produk::firstOrCreate(['sku' => 'RAW-MIE-01'], [
             'nama' => 'Indomie Goreng',
-            'kategori' => 'Mie Instan',
+            'category_id' => $catMieInstan->id,
             'stok_minimal' => 40,
             'satuan_id' => $pcs->id,
             'type' => 'raw_material',
@@ -152,12 +160,12 @@ class WarkopSeeder extends Seeder
         Price::updateOrCreate(['produk_id' => $mieGoreng->id, 'is_current' => true], [
             'satuan_id' => $pcs->id,
             'purchase_price' => 114000 / 40,
-            'retail_price' => 0
+            'retail_price' => 0,
         ]);
 
         $mieSoto = Produk::firstOrCreate(['sku' => 'RAW-MIE-02'], [
             'nama' => 'Indomie Soto Spesial',
-            'kategori' => 'Mie Instan',
+            'category_id' => $catMieInstan->id,
             'stok_minimal' => 40,
             'satuan_id' => $pcs->id,
             'type' => 'raw_material',
@@ -166,12 +174,12 @@ class WarkopSeeder extends Seeder
         Price::updateOrCreate(['produk_id' => $mieSoto->id, 'is_current' => true], [
             'satuan_id' => $pcs->id,
             'purchase_price' => 114000 / 40,
-            'retail_price' => 0
+            'retail_price' => 0,
         ]);
 
         $aqua = Produk::firstOrCreate(['sku' => 'RAW-AQUA-01'], [
             'nama' => 'Aqua Tanggung 600ml',
-            'kategori' => 'Minuman',
+            'category_id' => $catMinuman->id,
             'stok_minimal' => 2,
             'satuan_id' => $box->id,
             'type' => 'raw_material',
@@ -181,11 +189,11 @@ class WarkopSeeder extends Seeder
         Price::updateOrCreate(['produk_id' => $aqua->id, 'is_current' => true], [
             'satuan_id' => $box->id,
             'purchase_price' => 48000,
-            'retail_price' => 0
+            'retail_price' => 0,
         ]);
 
         // 6. Create initial Restocks to set HPP
-        if (!Restock::where('keterangan', 'Initial Stock Setup for Warkop')->exists()) {
+        if (! Restock::where('keterangan', 'Initial Stock Setup for Warkop')->exists()) {
             $restockItems = [
                 ['produk_id' => $cup->id, 'jumlah' => 1, 'harga_satuan' => 23000, 'satuan_id' => $slop->id],
                 ['produk_id' => $susuDiamond->id, 'jumlah' => 10, 'harga_satuan' => 23000, 'satuan_id' => $liter->id],
@@ -201,7 +209,7 @@ class WarkopSeeder extends Seeder
                 $restockItems[] = ['produk_id' => $p->id, 'jumlah' => 1, 'harga_satuan' => 23000, 'satuan_id' => $renteng->id];
             }
 
-            $totalRestockCost = collect($restockItems)->sum(fn($i) => $i['jumlah'] * $i['harga_satuan']);
+            $totalRestockCost = collect($restockItems)->sum(fn ($i) => $i['jumlah'] * $i['harga_satuan']);
 
             $restock = Restock::create([
                 'tanggal' => now(),
@@ -215,7 +223,7 @@ class WarkopSeeder extends Seeder
         }
 
         // 7. Regular Expenses
-        if (!Pengeluaran::where('nama_pengeluaran', 'Token PLN Mingguan')->whereDate('tanggal', now()->toDateString())->exists()) {
+        if (! Pengeluaran::where('nama_pengeluaran', 'Token PLN Mingguan')->whereDate('tanggal', now()->toDateString())->exists()) {
             Pengeluaran::create([
                 'jenis_pengeluaran' => 'Listrik',
                 'nama_pengeluaran' => 'Token PLN Mingguan',
@@ -225,7 +233,7 @@ class WarkopSeeder extends Seeder
             ]);
         }
 
-        if (!Pengeluaran::where('nama_pengeluaran', 'Iuran Kebersihan')->whereDate('tanggal', now()->toDateString())->exists()) {
+        if (! Pengeluaran::where('nama_pengeluaran', 'Iuran Kebersihan')->whereDate('tanggal', now()->toDateString())->exists()) {
             Pengeluaran::create([
                 'jenis_pengeluaran' => 'Kebersihan',
                 'nama_pengeluaran' => 'Iuran Kebersihan',

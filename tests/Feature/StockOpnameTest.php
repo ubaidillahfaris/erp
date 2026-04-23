@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Actions\RecordStockMovement;
+use App\Models\Account;
 use App\Models\Produk;
 use App\Models\Restock;
 use App\Models\Satuan;
 use App\Models\Stock;
+use App\Models\StockOpname;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,12 +21,12 @@ class StockOpnameTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed required accounts for integration
-        \App\Models\Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '1302', 'name' => 'Persediaan FG', 'type' => 'asset', 'balance_type' => 'debit']);
-        \App\Models\Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
+        Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1301', 'name' => 'Persediaan Materi', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1302', 'name' => 'Persediaan FG', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
     }
 
     public function test_can_save_stock_opname_as_draft(): void
@@ -109,8 +112,8 @@ class StockOpnameTest extends TestCase
     public function test_can_settle_restock_debt(): void
     {
         $user = User::factory()->superadmin()->create();
-        $vendor = \App\Models\Vendor::factory()->create();
-        $restock = \App\Models\Restock::create([
+        $vendor = Vendor::factory()->create();
+        $restock = Restock::create([
             'tanggal' => now(),
             'total_biaya' => 100000,
             'total_bayar' => 0,
@@ -156,7 +159,7 @@ class StockOpnameTest extends TestCase
         ]);
 
         $this->assertEquals(15, (float) Stock::where('produk_id', $produk->id)->first()->balance);
-        $opname = \App\Models\StockOpname::latest()->first();
+        $opname = StockOpname::latest()->first();
 
         // Perform Storno
         $response = $this->actingAs($user)->post(route('stock-opname.storno', $opname), [
@@ -207,7 +210,7 @@ class StockOpnameTest extends TestCase
         ]);
 
         $this->assertEquals(12, (float) Stock::where('produk_id', $produk->id)->first()->balance);
-        $opname = \App\Models\StockOpname::latest()->first();
+        $opname = StockOpname::latest()->first();
 
         // Reopen (Edit Kembali)
         $response = $this->actingAs($user)->post(route('stock-opname.reopen', $opname));

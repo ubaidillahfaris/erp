@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PurchaseItem extends Model
 {
@@ -22,17 +23,17 @@ class PurchaseItem extends Model
         ];
     }
 
-    public function purchase(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class);
     }
 
-    public function produk(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function produk(): BelongsTo
     {
         return $this->belongsTo(Produk::class);
     }
 
-    public function satuan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function satuan(): BelongsTo
     {
         return $this->belongsTo(Satuan::class);
     }

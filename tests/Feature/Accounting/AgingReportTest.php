@@ -3,12 +3,14 @@
 namespace Tests\Feature\Accounting;
 
 use App\Models\Payable;
-use App\Models\Vendor;
 use App\Models\User;
+use App\Models\Vendor;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
+use Tests\TestCase;
 
 class AgingReportTest extends TestCase
 {
@@ -20,17 +22,17 @@ class AgingReportTest extends TestCase
     {
         parent::setUp();
         // Clear cached permissions
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $this->user = User::factory()->create();
-        $permission = \Spatie\Permission\Models\Permission::create(['name' => 'view reports']);
+        $permission = Permission::create(['name' => 'view reports']);
         $this->user->givePermissionTo($permission);
     }
 
     public function test_payable_without_installment_uses_due_date()
     {
         $vendor = Vendor::factory()->create(['nama' => 'Test Vendor']);
-        
+
         Payable::create([
             'type' => 'payable',
             'party_type' => 'vendor',
@@ -51,7 +53,7 @@ class AgingReportTest extends TestCase
 
         $response->assertStatus(200);
         $data = $response->inertiaPage()['props']['aging_lines'];
-        
+
         $this->assertCount(1, $data);
         $this->assertEquals(10, $data[0]['days_overdue']);
         $this->assertEquals('days_30', $data[0]['bucket']);
@@ -60,7 +62,7 @@ class AgingReportTest extends TestCase
     public function test_payable_with_installment_uses_schedule_due_date()
     {
         $vendor = Vendor::factory()->create();
-        
+
         $payable = Payable::create([
             'type' => 'payable',
             'party_type' => 'vendor',
@@ -77,23 +79,23 @@ class AgingReportTest extends TestCase
             'status' => 'open',
             'created_by' => $this->user->id,
         ]);
-        
+
         // Manual update schedules for predictable test
         $schedules = $payable->interestSchedules;
         $this->assertCount(2, $schedules);
-        
+
         $schedules[0]->update(['due_date' => Carbon::now()->subDays(5)->toDateString()]); // 5 days overdue
         $schedules[1]->update(['due_date' => Carbon::now()->addDays(5)->toDateString()]); // 5 days current
-        
+
         $response = $this->actingAs($this->user)
             ->get('/accounting/aging');
 
         $data = $response->inertiaPage()['props']['aging_lines'];
         $this->assertCount(2, $data);
-        
+
         $overdue = collect($data)->where('days_overdue', 5)->first();
         $current = collect($data)->where('days_overdue', -5)->first();
-        
+
         $this->assertNotNull($overdue);
         $this->assertNotNull($current);
         $this->assertEquals('days_30', $overdue['bucket']);
@@ -119,7 +121,7 @@ class AgingReportTest extends TestCase
 
         $response = $this->actingAs($this->user)->get('/accounting/aging');
         $data = $response->inertiaPage()['props']['aging_lines'];
-        
+
         $this->assertEquals('current', $data[0]['bucket']);
         $this->assertEquals(-10, $data[0]['days_overdue']);
     }
@@ -143,7 +145,7 @@ class AgingReportTest extends TestCase
 
         $response = $this->actingAs($this->user)->get('/accounting/aging');
         $data = $response->inertiaPage()['props']['aging_lines'];
-        
+
         $this->assertEquals('over_90', $data[0]['bucket']);
         $this->assertEquals(100, $data[0]['days_overdue']);
     }
@@ -151,11 +153,11 @@ class AgingReportTest extends TestCase
     public function test_as_of_date_filter_skips_cache()
     {
         $spy = Cache::spy();
-            
+
         // Call with a date that is NOT today should NOT use cache
-        $this->actingAs($this->user)->get('/accounting/aging?as_of_date=' . Carbon::now()->addDay()->toDateString());
+        $this->actingAs($this->user)->get('/accounting/aging?as_of_date='.Carbon::now()->addDay()->toDateString());
         $spy->shouldNotHaveReceived('remember', ['aging_report', \Mockery::any(), \Mockery::any()]);
-        
+
         // Call with today (default) should use cache
         $this->actingAs($this->user)->get('/accounting/aging');
         $spy->shouldHaveReceived('remember')->with('aging_report', 300, \Mockery::type('Closure'));
@@ -177,7 +179,7 @@ class AgingReportTest extends TestCase
             'status' => 'open',
             'created_by' => $this->user->id,
         ]);
-        
+
         Payable::create([
             'type' => 'receivable',
             'party_type' => 'vendor',
@@ -194,7 +196,7 @@ class AgingReportTest extends TestCase
 
         $response = $this->actingAs($this->user)->get('/accounting/aging');
         $summary = $response->inertiaPage()['props']['summary'];
-        
+
         $this->assertEquals(150000, $summary['payable']['days_30']);
         $this->assertEquals(150000, $summary['payable']['total']);
         $this->assertEquals(50000, $summary['receivable']['days_60']);

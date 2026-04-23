@@ -2,6 +2,9 @@
 
 namespace App\Observers;
 
+use App\Actions\RecordStockMovement;
+use App\Models\Journal;
+use App\Models\Sale;
 use App\Models\SaleItem;
 
 class SaleItemObserver
@@ -13,12 +16,12 @@ class SaleItemObserver
         // 1. Deduct Ingredients (BOM) if configured
         if ($produk->bom && $produk->bom->auto_deduct_on_sale && $produk->bom->is_active) {
             foreach ($produk->bom->items as $bomItem) {
-                (new \App\Actions\RecordStockMovement())->handle([
+                (new RecordStockMovement)->handle([
                     'produk_id' => $bomItem->produk_id,
                     'satuan_id' => $bomItem->satuan_id,
                     'type' => 'out',
                     'jumlah' => $bomItem->jumlah * $saleItem->qty,
-                    'reference_type' => \App\Models\Sale::class,
+                    'reference_type' => Sale::class,
                     'reference_id' => $saleItem->sale_id,
                     'keterangan' => "Auto BOM: Penjualan INV-{$saleItem->sale->invoice_number} ({$produk->nama})",
                 ]);
@@ -27,12 +30,12 @@ class SaleItemObserver
 
         // 2. Deduct Product Stock if configured
         if ($produk->track_stock) {
-            (new \App\Actions\RecordStockMovement())->handle([
+            (new RecordStockMovement)->handle([
                 'produk_id' => $saleItem->produk_id,
                 'satuan_id' => $saleItem->satuan_id,
                 'type' => 'out',
                 'jumlah' => $saleItem->qty,
-                'reference_type' => \App\Models\Sale::class,
+                'reference_type' => Sale::class,
                 'reference_id' => $saleItem->sale_id,
                 'keterangan' => "Penjualan INV-{$saleItem->sale->invoice_number}",
             ]);
@@ -40,14 +43,14 @@ class SaleItemObserver
 
         // 2. Record COGS Journal per item
         if ($saleItem->cost > 0) {
-            \App\Models\Journal::create([
+            Journal::create([
                 'tanggal' => $saleItem->sale->tanggal->format('Y-m-d'),
                 'type' => 'kredit',
                 'amount' => $saleItem->cost * $saleItem->qty,
                 'category' => 'hpp',
                 'payment_method' => 'stok',
                 'description' => "HPP {$saleItem->produk->nama} INV-{$saleItem->sale->invoice_number}",
-                'reference_type' => \App\Models\Sale::class,
+                'reference_type' => Sale::class,
                 'reference_id' => $saleItem->sale_id,
             ]);
         }

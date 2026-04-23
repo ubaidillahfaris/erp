@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PurchaseAttachment extends Model
 {
     protected $keyType = 'string';
+
     public $incrementing = false;
 
     protected $fillable = [
@@ -18,7 +20,7 @@ class PurchaseAttachment extends Model
         'file_size',
     ];
 
-    public function purchase(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class);
     }

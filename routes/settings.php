@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
+use App\Http\Controllers\Settings\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -28,10 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Management Routes (Admin Permissions)
     Route::middleware('permission:manage users')->group(function () {
-        Route::resource('settings/users', \App\Http\Controllers\Settings\UserController::class)->names('users');
+        Route::resource('settings/users', UserController::class)->names('users');
     });
 
     Route::middleware('permission:manage roles')->group(function () {
-        Route::resource('settings/roles', \App\Http\Controllers\Settings\RoleController::class)->names('roles');
+        Route::resource('settings/roles', RoleController::class)->names('roles');
     });
 });

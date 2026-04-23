@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\NasabahStatus;
 use Illuminate\Database\Seeder;
 
 class NasabahStatusSeeder extends Seeder
@@ -15,7 +15,7 @@ class NasabahStatusSeeder extends Seeder
         $statuses = ['Active', 'Locked', 'Closed'];
 
         foreach ($statuses as $status) {
-            \App\Models\NasabahStatus::updateOrCreate(['name' => $status]);
+            NasabahStatus::updateOrCreate(['name' => $status]);
         }
     }
 }

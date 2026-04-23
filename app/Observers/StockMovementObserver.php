@@ -4,8 +4,7 @@ namespace App\Observers;
 
 use App\Models\Stock;
 use App\Models\StockMovement;
-use App\Models\SatuanConversion;
-use Illuminate\Support\Facades\Log;
+use App\Services\SatuanService;
 
 class StockMovementObserver
 {
@@ -37,7 +36,7 @@ class StockMovementObserver
         $amountInBaseUnit = (float) $movement->jumlah;
 
         if ($movement->satuan_id !== $baseSatuanId) {
-            $ratio = app(\App\Services\SatuanService::class)->getConversionRatio($baseSatuanId, $movement->satuan_id, $produk->id);
+            $ratio = app(SatuanService::class)->getConversionRatio($baseSatuanId, $movement->satuan_id, $produk->id);
             if ($ratio != 0) {
                 $amountInBaseUnit /= $ratio;
             }

@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Menu;
+use App\Models\Module;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleService
 {
@@ -21,7 +23,7 @@ class RoleService
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($user) {
             // 0. Ensure user roles are loaded for reliable checking
-            if (!$user->relationLoaded('roles')) {
+            if (! $user->relationLoaded('roles')) {
                 $user->load('roles');
             }
 
@@ -37,7 +39,7 @@ class RoleService
 
             // 2. Identify authorized menu IDs for filtering (if not superadmin)
             $authorizedMenuIds = [];
-            if (!$user->hasRole('superadmin')) {
+            if (! $user->hasRole('superadmin')) {
                 $authorizedMenuIds = \DB::table('menu_role')
                     ->whereIn('role_id', $user->roles->pluck('id'))
                     ->pluck('menu_id')
@@ -50,9 +52,9 @@ class RoleService
             // 4. GROUPING LOGIC
             // Get authorized modules for the user
             if ($user->hasRole('superadmin')) {
-                $authorizedModules = \App\Models\Module::active()->orderBy('order_priority')->get();
+                $authorizedModules = Module::active()->orderBy('order_priority')->get();
             } else {
-                $authorizedModules = \App\Models\Module::active()
+                $authorizedModules = Module::active()
                     ->whereHas('roles', function ($query) use ($user) {
                         $query->whereIn('roles.id', $user->roles->pluck('id'));
                     })
@@ -68,7 +70,7 @@ class RoleService
             // Add authorized modules that have at least one authorized menu
             foreach ($authorizedModules as $module) {
                 $moduleMenus = $grouped->get($module->id, collect());
-                
+
                 // Show module if there are menus, or if user is superadmin (show empty shell if requested)
                 if ($moduleMenus->isNotEmpty() || $user->hasRole('superadmin')) {
                     $result[] = [
@@ -137,7 +139,7 @@ class RoleService
     public function clearAllMenuCaches(): void
     {
         // Clear global Spatie permission cache
-        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         // Surgical clear for all users since user count is low (5 users found in audit)
         User::all()->each(function (User $user) {

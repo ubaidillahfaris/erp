@@ -127,7 +127,7 @@ class CustomerController extends Controller
 
         foreach ($request->ids as $id) {
             $customer = Customer::find($id);
-            if ($customer && !$customer->sales()->exists()) {
+            if ($customer && ! $customer->sales()->exists()) {
                 $customer->delete();
                 $deletedCount++;
             } else {

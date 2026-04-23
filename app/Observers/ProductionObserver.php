@@ -16,7 +16,7 @@ class ProductionObserver
             ->where('reference_id', $production->id)
             ->get();
 
-        /** @var \App\Models\StockMovement $m */
+        /** @var StockMovement $m */
         foreach ($movements as $m) {
             $m->delete();
         }

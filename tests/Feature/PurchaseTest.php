@@ -4,10 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Produk;
 use App\Models\Purchase;
-use App\Models\PurchaseItem;
 use App\Models\Satuan;
-use App\Models\Vendor;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -146,14 +145,14 @@ class PurchaseTest extends TestCase
 
         $response->assertRedirect(route('purchasing.index'));
         $this->assertDatabaseHas('purchases', [
-            'transaction_type' => 'gift', 
+            'transaction_type' => 'gift',
             'status' => 'draft',
             'vendor_id' => null, // Should be forced to null
-            'total_biaya' => 0 // Should be computed as 0
+            'total_biaya' => 0, // Should be computed as 0
         ]);
         $this->assertDatabaseHas('purchase_items', [
             'jumlah' => 5,
-            'harga_satuan' => 0 // Should be forced to 0
+            'harga_satuan' => 0, // Should be forced to 0
         ]);
     }
 
@@ -161,7 +160,7 @@ class PurchaseTest extends TestCase
     {
         $vendor = Vendor::factory()->create();
         $purchase = Purchase::factory()->create(['vendor_id' => $vendor->id]);
-        
+
         $satuan = Satuan::factory()->create();
         $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
 
@@ -197,7 +196,7 @@ class PurchaseTest extends TestCase
     {
         $vendor = Vendor::factory()->create();
         $purchase = Purchase::factory()->finalized()->create(['vendor_id' => $vendor->id]);
-        
+
         $satuan = Satuan::factory()->create();
         $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
 
@@ -215,11 +214,9 @@ class PurchaseTest extends TestCase
             ],
         ]);
 
-
         $response->assertRedirect(route('purchasing.index'));
         $response->assertSessionHas('error');
     }
-
 
     // ---------------------
     // FAILURE PATH TESTS

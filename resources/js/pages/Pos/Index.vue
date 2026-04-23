@@ -7,9 +7,10 @@ import {
     Receipt, Users, Split, Merge, ArrowLeftRight, ChevronRight, Lock, Unlock,
     CircleDollarSign, Percent, UserPlus, MessageSquare, X, Check, Clock,
     ArrowLeft, AlertTriangle, History, LayoutGrid,
-    LogIn, LogOut, ShoppingBag, Store, Fingerprint, Package, Info
+    LogIn, LogOut, ShoppingBag, Store, Fingerprint, Package, Info,
+    HardHat, Paintbrush, Layers, Box, Settings
 } from 'lucide-vue-next';
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { toast } from 'vue-sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import {
 import AppLayout from '@/layouts/AppLayout.vue';
 import { cn } from '@/lib/utils';
 import CreatableSelect from '@/components/CreatableSelect.vue';
+import { useSidebar } from '@/components/ui/sidebar';
 
 // Persistent Layout Fix
 defineOptions({ layout: AppLayout });
@@ -28,22 +30,32 @@ defineOptions({ layout: AppLayout });
 const props = defineProps<{
     produks: any[];
     customers: any[];
+    categories: any[];
 }>();
 
 // ============ Types & Constants ============
-type Category = "all" | "coffee" | "tea" | "pastry" | "main" | "dessert" | "snack";
 type PaymentMethod = "cash" | "qris" | "transfer" | "credit";
 type OrderType = "dine-in" | "takeaway" | "counter";
 
-const CATEGORIES: { id: Category; label: string; icon: any }[] = [
-    { id: "all", label: "Semua", icon: LayoutGrid },
-    { id: "coffee", label: "Kopi", icon: Coffee },
-    { id: "tea", label: "Teh", icon: Soup },
-    { id: "pastry", label: "Pastry", icon: Cookie },
-    { id: "main", label: "Main", icon: Pizza },
-    { id: "dessert", label: "Dessert", icon: IceCream2 },
-    { id: "snack", label: "Snack", icon: Sandwich },
-];
+const getCategoryIcon = (name: string) => {
+    const n = name.toLowerCase();
+    if (n.includes('material') || n.includes('bangunan')) return HardHat;
+    if (n.includes('cat') || n.includes('finish')) return Paintbrush;
+    if (n.includes('plastik') || n.includes('produk')) return Layers;
+    if (n.includes('baku')) return Box;
+    if (n.includes('penolong')) return Settings;
+    return Package;
+};
+
+const dynamicCategories = computed(() => {
+    return [
+        { id: 'all', name: 'Semua', icon: LayoutGrid },
+        ...props.categories.map(c => ({
+            ...c,
+            icon: getCategoryIcon(c.name)
+        }))
+    ];
+});
 
 const TABLES = [
     { id: "t1", label: "T-01", seats: 2, status: "open", bill: 86000, guests: 2, openedAt: "14:02" },
@@ -86,7 +98,7 @@ const IconBtn = {
 };
 
 // ============ State ============
-const activeCat = ref<Category>("all");
+const activeCat = ref<string | number>("all");
 const searchQuery = ref("");
 const cart = ref<any[]>([]);
 const orderType = ref<OrderType>("counter");
@@ -99,6 +111,12 @@ const showPayment = ref(false);
 const showVoid = ref(false);
 const showTables = ref(false);
 const showShift = ref(false);
+
+const { setOpen } = useSidebar();
+
+onMounted(() => {
+    setOpen(false);
+});
 
 // Environment states (Mock)
 const online = ref(true);
@@ -120,14 +138,7 @@ const filteredProduks = computed(() => {
 
         if (activeCat.value === "all") return true;
 
-        const catMap: Record<string, string> = {
-            'makanan': 'main',
-            'minuman': 'coffee',
-            'snack': 'snack',
-            'roti': 'pastry'
-        };
-        const mappedCat = catMap[p.kategori?.toLowerCase()] || 'all';
-        return mappedCat === activeCat.value;
+        return p.category_id === activeCat.value;
     });
 });
 
@@ -267,11 +278,8 @@ const handleCheckout = () => {
                     <ArrowLeft class="h-4 w-4" />
                 </Link>
                 <div class="flex items-center gap-3">
-                    <div
-                        class="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold">
-                        №</div>
                     <div class="leading-tight">
-                        <h1 class="text-base font-bold">Cangkir POS</h1>
+                        <h1 class="text-base font-bold">{{ $page.props.name }}</h1>
                         <p class="text-xs text-slate-400 font-medium -mt-0.5">Cabang Utama · Terminal #02</p>
                     </div>
                 </div>
@@ -303,11 +311,6 @@ const handleCheckout = () => {
                         <History class="h-4 w-4" /> Riwayat
                     </Button>
                 </Link>
-
-                <div
-                    class="h-9 w-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold ml-1">
-                    {{ employee?.initial ?? '—' }}
-                </div>
             </div>
         </div>
     </header>
@@ -316,7 +319,7 @@ const handleCheckout = () => {
     <main class="mx-auto p-4 grid grid-cols-9 gap-6">
         <!-- ====== LEFT: Catalog & Tables ====== -->
         <section class="col-span-6 space-y-5">
-            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 space-y-4">
+            <div class="bg-white rounded-3xl  border border-slate-200 p-4 space-y-4">
                 <div class="flex flex-col md:flex-row gap-3">
                     <div class="relative flex-1">
                         <Search class="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -328,7 +331,7 @@ const handleCheckout = () => {
                             <button v-for="opt in (['counter', 'dine-in', 'takeaway'] as OrderType[])" :key="opt"
                                 @click="orderType = opt" :class="cn(
                                     'h-full px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition',
-                                    orderType === opt ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'
+                                    orderType === opt ? 'bg-white text-slate-900 ' : 'text-slate-500 hover:text-slate-900'
                                 )">
                                 {{ opt.replace('-', ' ') }}
                             </button>
@@ -343,14 +346,14 @@ const handleCheckout = () => {
                 </div>
 
                 <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
-                    <button v-for="cat in CATEGORIES" :key="cat.id" @click="activeCat = cat.id" :class="cn(
+                    <button v-for="cat in dynamicCategories" :key="cat.id" @click="activeCat = cat.id" :class="cn(
                         'shrink-0 h-11 px-4 rounded-2xl flex items-center gap-2 text-sm font-bold transition border',
                         activeCat === cat.id
                             ? 'bg-slate-900 text-white border-slate-900'
                             : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     )">
                         <component :is="cat.icon" class="h-4 w-4" />
-                        {{ cat.label }}
+                        {{ cat.name }}
                     </button>
                 </div>
             </div>
@@ -391,7 +394,7 @@ const handleCheckout = () => {
 
         <!-- ====== RIGHT: Cart ====== -->
         <aside
-            class="col-span-3 lg:sticky lg:top-20 lg:h-[calc(100vh-100px)] bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+            class="col-span-3 lg:sticky lg:top-20 lg:h-[calc(100vh-100px)] bg-white rounded-3xl border border-slate-200  flex flex-col overflow-hidden">
             <div class="p-5 border-b border-slate-200">
                 <div class="flex items-center justify-between mb-3">
                     <div>
@@ -463,11 +466,11 @@ const handleCheckout = () => {
                         <div class="mt-2 flex items-center justify-between">
                             <div class="flex items-center gap-1 bg-slate-100 rounded-full p-0.5">
                                 <button @click="updateQty(line.produk_id, -1)"
-                                    class="h-7 w-7 rounded-full bg-white hover:bg-slate-50 shadow-sm flex items-center justify-center text-slate-600">
+                                    class="h-7 w-7 rounded-full bg-white hover:bg-slate-50  flex items-center justify-center text-slate-600">
                                     <Minus class="h-3 w-3" />
                                 </button>
                                 <span class="w-7 text-center text-sm font-bold tabular-nums text-slate-800">{{ line.qty
-                                    }}</span>
+                                }}</span>
                                 <button @click="updateQty(line.produk_id, 1)"
                                     class="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center">
                                     <Plus class="h-3 w-3" />

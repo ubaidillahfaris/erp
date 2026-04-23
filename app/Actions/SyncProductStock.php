@@ -2,11 +2,10 @@
 
 namespace App\Actions;
 
-use App\Models\Produk;
-use App\Models\Restock;
 use App\Models\Production;
+use App\Models\Purchase;
+use App\Models\Restock;
 use App\Models\Stock;
-use App\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
 
 class SyncProductStock
@@ -32,7 +31,7 @@ class SyncProductStock
             });
 
             // Primary Purchases (Finalized only)
-            $purchases = \App\Models\Purchase::where('status', 'finalized')
+            $purchases = Purchase::where('status', 'finalized')
                 ->with('items')
                 ->get()
                 ->map(function ($purchase) {

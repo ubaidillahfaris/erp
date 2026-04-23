@@ -29,13 +29,13 @@ class Restock extends Model
     protected static function booted(): void
     {
         static::creating(function () {
-            if (!app()->runningUnitTests()) {
+            if (! app()->runningUnitTests()) {
                 throw new \LogicException('Restock module is deprecated. Please use the Purchasing module.');
             }
         });
-  
+
         static::updating(function () {
-            if (!app()->runningUnitTests()) {
+            if (! app()->runningUnitTests()) {
                 throw new \LogicException('Restock module is deprecated and records are now read-only.');
             }
         });

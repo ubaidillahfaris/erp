@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use Database\Factories\SatuanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Satuan extends Model
 {
-    /** @use HasFactory<\Database\Factories\SatuanFactory> */
+    /** @use HasFactory<SatuanFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -20,7 +21,7 @@ class Satuan extends Model
     /**
      * Get the products for the unit.
      */
-    public function produks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function produks(): HasMany
     {
         return $this->hasMany(Produk::class);
     }

@@ -6,6 +6,7 @@ use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
 use App\Exceptions\InvalidPurchaseAmountException;
 use App\Models\Account;
+use App\Models\Payable;
 use App\Models\Purchase;
 use App\Services\JournalService;
 use Illuminate\Support\Facades\Log;
@@ -25,9 +26,9 @@ class PurchaseObserver
                 $this->recordJournal($purchase);
             } catch (\Exception $e) {
                 // Decision Phase 3/5A: Non-blocking failures
-                Log::error("Double-Entry Journaling failed for Purchase [{$purchase->id}]: " . $e->getMessage(), [
+                Log::error("Double-Entry Journaling failed for Purchase [{$purchase->id}]: ".$e->getMessage(), [
                     'purchase_id' => $purchase->id,
-                    'exception' => $e
+                    'exception' => $e,
                 ]);
             }
         }
@@ -44,7 +45,7 @@ class PurchaseObserver
         $amount = (float) ($purchase->total_biaya ?? 0);
 
         if ($amount <= 0) {
-            throw new InvalidPurchaseAmountException();
+            throw new InvalidPurchaseAmountException;
         }
 
         $tanggal = $purchase->tanggal;
@@ -64,13 +65,13 @@ class PurchaseObserver
         // Credit: depends on payment method
         $creditAcc = match ($paymentMethod) {
             'credit' => Account::findByCode('2101'), // Hutang Usaha
-            default  => Account::findByCode('1101'), // Kas & Bank
+            default => Account::findByCode('1101'), // Kas & Bank
         };
 
         $description = match ($paymentMethod) {
-            'credit'   => "Pembelian kredit dari vendor: {$vendorName}",
+            'credit' => "Pembelian kredit dari vendor: {$vendorName}",
             'transfer' => "Pembelian via transfer dari vendor: {$vendorName}",
-            default    => "Pembelian tunai dari vendor: {$vendorName}",
+            default => "Pembelian tunai dari vendor: {$vendorName}",
         };
 
         $amountCents = (int) round($amount * 100);
@@ -98,19 +99,19 @@ class PurchaseObserver
 
         // Only create Payable for credit purchases
         if ($paymentMethod === 'credit' && $purchase->vendor_id) {
-            \App\Models\Payable::firstOrCreate(
+            Payable::firstOrCreate(
                 ['reference_type' => 'purchase', 'reference_id' => $purchase->id],
                 [
-                    'type'             => 'payable',
-                    'party_type'       => 'vendor',
-                    'party_id'         => $purchase->vendor_id,
+                    'type' => 'payable',
+                    'party_type' => 'vendor',
+                    'party_id' => $purchase->vendor_id,
                     'principal_amount' => $amount,
-                    'total_amount'     => $amount,
-                    'total_interest'   => 0,
-                    'paid_amount'      => 0,
+                    'total_amount' => $amount,
+                    'total_interest' => 0,
+                    'paid_amount' => 0,
                     'remaining_amount' => $amount,
-                    'status'           => 'open',
-                    'created_by'       => auth()->id(),
+                    'status' => 'open',
+                    'created_by' => auth()->id(),
                 ]
             );
         }

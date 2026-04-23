@@ -113,7 +113,7 @@ class VendorController extends Controller
 
         foreach ($request->ids as $id) {
             $vendor = Vendor::find($id);
-            if ($vendor && !$vendor->restocks()->exists()) {
+            if ($vendor && ! $vendor->restocks()->exists()) {
                 $vendor->delete();
                 $deletedCount++;
             } else {

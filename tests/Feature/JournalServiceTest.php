@@ -11,6 +11,7 @@ use App\Models\Account;
 use App\Models\JournalEntry;
 use App\Models\JournalItem;
 use App\Services\JournalService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -20,13 +21,15 @@ class JournalServiceTest extends TestCase
     use RefreshDatabase;
 
     private JournalService $service;
+
     private Account $cash;
+
     private Account $revenue;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new JournalService();
+        $this->service = new JournalService;
 
         $this->cash = Account::create([
             'code' => '1101',
@@ -58,7 +61,7 @@ class JournalServiceTest extends TestCase
 
         $this->assertInstanceOf(JournalEntry::class, $entry);
         $this->assertDatabaseHas('journal_entries', ['id' => $entry->id]);
-        
+
         // Verify cents storage
         $this->assertDatabaseHas('journal_items', [
             'journal_entry_id' => $entry->id,
@@ -66,7 +69,7 @@ class JournalServiceTest extends TestCase
             'debit' => 100050,
             'credit' => 0,
         ]);
-        
+
         $this->assertDatabaseHas('journal_items', [
             'journal_entry_id' => $entry->id,
             'account_id' => $this->revenue->id,
@@ -101,9 +104,9 @@ class JournalServiceTest extends TestCase
                         new JournalItemData(account_id: $this->revenue->id, amount: 10000, type: 'credit'),
                     ]
                 );
-                
+
                 $this->service->record($data);
-                
+
                 // Simulate failure after service call
                 throw new \RuntimeException('Manual crash');
             });
@@ -127,7 +130,7 @@ class JournalServiceTest extends TestCase
 
         $this->service->record($data);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         $this->service->record($data);
     }
 }

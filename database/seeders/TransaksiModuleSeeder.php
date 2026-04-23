@@ -22,7 +22,7 @@ class TransaksiModuleSeeder extends Seeder
                 'slug' => 'transaksi',
                 'icon' => 'ReceiptText',
                 'order_priority' => 5,
-                'is_active' => true
+                'is_active' => true,
             ]
         );
 

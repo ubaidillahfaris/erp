@@ -71,7 +71,7 @@ class Payment extends Model
             if ($restockStatus) {
                 Restock::withoutEvents(function () use ($payable, $restockStatus) {
                     Restock::where('id', $payable->reference_id)->update([
-                        'status_pembayaran' => $restockStatus
+                        'status_pembayaran' => $restockStatus,
                     ]);
                 });
             }

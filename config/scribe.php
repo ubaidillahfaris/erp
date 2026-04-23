@@ -1,5 +1,6 @@
 <?php
 
+use App\Scribe\SanctumAuthenticator;
 use Knuckles\Scribe\Config\AuthIn;
 use Knuckles\Scribe\Config\Defaults;
 use Knuckles\Scribe\Extracting\Strategies;
@@ -241,7 +242,7 @@ return [
                     'config' => [
                         'app.debug' => false,
                     ],
-                    'authenticator' => \App\Scribe\SanctumAuthenticator::class,
+                    'authenticator' => SanctumAuthenticator::class,
                 ],
             ],
         ],

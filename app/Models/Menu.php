@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Menu extends Model
 {
@@ -62,7 +63,7 @@ class Menu extends Model
     /**
      * Get the roles that have access to this menu.
      */
-    public function roles(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
     }

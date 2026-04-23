@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Satuan;
 use App\Models\SatuanConversion;
+use Illuminate\Database\Seeder;
 
 class SatuanConversionSeeder extends Seeder
 {
@@ -64,9 +64,9 @@ class SatuanConversionSeeder extends Seeder
             if (isset($unitIds[$conv['from']]) && isset($unitIds[$conv['to']])) {
                 SatuanConversion::updateOrCreate([
                     'satuan_id' => $unitIds[$conv['from']],
-                    'to_satuan_id' => $unitIds[$conv['to']]
+                    'to_satuan_id' => $unitIds[$conv['to']],
                 ], [
-                    'rasio' => $conv['ratio']
+                    'rasio' => $conv['ratio'],
                 ]);
             }
         }

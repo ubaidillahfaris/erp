@@ -2,33 +2,33 @@
 
 namespace App\Providers;
 
-use App\Models\Produk;
-use Illuminate\Support\Facades\Gate;
-use App\Models\Restock;
-use App\Models\Production;
-use App\Models\StockMovement;
+use App\Models\Customer;
 use App\Models\Journal;
 use App\Models\Pengeluaran;
+use App\Models\Production;
+use App\Models\Produk;
 use App\Models\Purchase;
+use App\Models\Restock;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Observers\ProdukObserver;
-use App\Observers\RestockObserver;
-use App\Observers\ProductionObserver;
-use App\Observers\StockMovementObserver;
+use App\Models\StockMovement;
+use App\Models\Vendor;
 use App\Observers\JournalObserver;
 use App\Observers\PengeluaranObserver;
-use App\Observers\SaleObserver;
-use App\Observers\SaleItemObserver;
+use App\Observers\ProductionObserver;
+use App\Observers\ProdukObserver;
 use App\Observers\PurchaseObserver;
+use App\Observers\RestockObserver;
+use App\Observers\SaleItemObserver;
+use App\Observers\SaleObserver;
+use App\Observers\StockMovementObserver;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use App\Models\Customer;
-use App\Models\Vendor;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -81,7 +81,7 @@ class AppServiceProvider extends ServiceProvider
         );
 
         Password::defaults(
-            fn(): ?Password => app()->isProduction()
+            fn (): ?Password => app()->isProduction()
             ? Password::min(12)
                 ->mixedCase()
                 ->letters()

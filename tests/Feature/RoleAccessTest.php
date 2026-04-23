@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Database\Seeders\MenuRoleSeeder;
 use Database\Seeders\MenuSeeder;
+use Database\Seeders\ModuleSeeder;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -18,10 +20,10 @@ class RoleAccessTest extends TestCase
         parent::setUp();
 
         // Seed roles, permissions, modules and menus
-        $this->seed(\Database\Seeders\ModuleSeeder::class);
-        $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
-        $this->seed(\Database\Seeders\MenuSeeder::class);
-        $this->seed(\Database\Seeders\MenuRoleSeeder::class);
+        $this->seed(ModuleSeeder::class);
+        $this->seed(RoleAndPermissionSeeder::class);
+        $this->seed(MenuSeeder::class);
+        $this->seed(MenuRoleSeeder::class);
     }
 
     public function test_superadmin_sees_all_menus_in_inertia_props()
@@ -33,7 +35,7 @@ class RoleAccessTest extends TestCase
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->has('menus')
-                ->where('menus', fn($menus) => count($menus) > 0)
+                ->where('menus', fn ($menus) => count($menus) > 0)
                 ->etc()
             );
     }

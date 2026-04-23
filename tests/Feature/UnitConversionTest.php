@@ -7,7 +7,6 @@ use App\Models\Satuan;
 use App\Models\SatuanConversion;
 use App\Models\Stock;
 use App\Models\StockMovement;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

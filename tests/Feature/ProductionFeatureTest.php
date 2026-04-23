@@ -65,11 +65,11 @@ class ProductionFeatureTest extends TestCase
 
         // 2. Setup Finished Good
         $baseKopi = Produk::create([
-            'nama' => 'Base Kopi', 
-            'type' => 'intermediate_good', 
-            'satuan_id' => $this->liter->id, 
+            'nama' => 'Base Kopi',
+            'type' => 'intermediate_good',
+            'satuan_id' => $this->liter->id,
             'sku' => '125',
-            'overhead_rate_per_unit' => 100
+            'overhead_rate_per_unit' => 100,
         ]);
 
         // 3. Setup BOM (requires 100gr kopi, 500ml air, expecting 400ml yield representing 0.4L)

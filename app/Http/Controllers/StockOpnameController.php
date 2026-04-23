@@ -2,20 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Produk;
-use App\Models\StockOpname;
-use App\Models\StockOpnameItem;
 use App\Actions\RecordStockMovement;
-use App\Services\StornoService;
-use App\Models\ProductPriceStat;
-use App\Services\JournalService;
 use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
 use App\Models\Account;
-use Illuminate\Support\Facades\Log;
+use App\Models\ProductPriceStat;
+use App\Models\Produk;
+use App\Models\StockOpname;
+use App\Services\JournalService;
+use App\Services\StornoService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,7 +29,7 @@ class StockOpnameController extends Controller
     {
         $query = StockOpname::withCount('items');
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->where('keterangan', 'like', "%{$request->search}%");
         }
 
@@ -45,12 +45,12 @@ class StockOpnameController extends Controller
     {
         $query = Produk::with(['stock', 'satuan']);
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->where('nama', 'like', "%{$request->search}%");
         }
 
         $produks = $query->paginate(10)->withQueryString();
-        
+
         return Inertia::render('stock-opname/Create', [
             'produks' => $produks,
             'filters' => $request->only(['search']),
@@ -79,16 +79,16 @@ class StockOpnameController extends Controller
             ]);
 
             foreach ($validated['items'] as &$item) {
-                if (!isset($item['harga_satuan']) || $item['harga_satuan'] === null) {
+                if (! isset($item['harga_satuan']) || $item['harga_satuan'] === null) {
                     $avgPrice = ProductPriceStat::where('produk_id', $item['produk_id'])->value('avg_price');
                     if ($avgPrice === null) {
                         Log::warning("harga_satuan not found for produk_id {$item['produk_id']}");
                         $item['harga_satuan'] = 0;
                     } else {
-                        $item['harga_satuan'] = (int) round(((float)$avgPrice) * 100);
+                        $item['harga_satuan'] = (int) round(((float) $avgPrice) * 100);
                     }
                 } else {
-                    $item['harga_satuan'] = (int) round(((float)$item['harga_satuan']) * 100);
+                    $item['harga_satuan'] = (int) round(((float) $item['harga_satuan']) * 100);
                 }
                 $opname->items()->create($item);
             }
@@ -118,10 +118,10 @@ class StockOpnameController extends Controller
         }
 
         $stockOpname->load('items');
-        
+
         $query = Produk::with(['stock', 'satuan']);
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->where('nama', 'like', "%{$request->search}%");
         }
 
@@ -161,16 +161,16 @@ class StockOpnameController extends Controller
 
             $stockOpname->items()->delete();
             foreach ($validated['items'] as &$item) {
-                if (!isset($item['harga_satuan']) || $item['harga_satuan'] === null) {
+                if (! isset($item['harga_satuan']) || $item['harga_satuan'] === null) {
                     $avgPrice = ProductPriceStat::where('produk_id', $item['produk_id'])->value('avg_price');
                     if ($avgPrice === null) {
                         Log::warning("harga_satuan not found for produk_id {$item['produk_id']}");
                         $item['harga_satuan'] = 0;
                     } else {
-                        $item['harga_satuan'] = (int) round(((float)$avgPrice) * 100);
+                        $item['harga_satuan'] = (int) round(((float) $avgPrice) * 100);
                     }
                 } else {
-                    $item['harga_satuan'] = (int) round(((float)$item['harga_satuan']) * 100);
+                    $item['harga_satuan'] = (int) round(((float) $item['harga_satuan']) * 100);
                 }
                 $stockOpname->items()->create($item);
             }
@@ -208,7 +208,7 @@ class StockOpnameController extends Controller
 
             return redirect()->back()->with('success', 'Hasil opname berhasil dibatalkan.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal membatalkan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal membatalkan: '.$e->getMessage());
         }
     }
 
@@ -229,7 +229,7 @@ class StockOpnameController extends Controller
 
             return redirect()->route('stock-opname.edit', $stockOpname)->with('success', 'Opname telah dikembalikan ke Draft untuk diedit.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal membuka kembali: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal membuka kembali: '.$e->getMessage());
         }
     }
 
@@ -245,7 +245,7 @@ class StockOpnameController extends Controller
                     'jumlah' => abs($diff),
                     'reference_type' => 'stock_opname',
                     'reference_id' => $opname->id,
-                    'keterangan' => 'Penyesuaian stok dari Opname #' . $opname->id . ' tgl ' . ($opname->tanggal instanceof \Carbon\Carbon ? $opname->tanggal->format('d/m/Y') : $opname->tanggal),
+                    'keterangan' => 'Penyesuaian stok dari Opname #'.$opname->id.' tgl '.($opname->tanggal instanceof Carbon ? $opname->tanggal->format('d/m/Y') : $opname->tanggal),
                 ]);
 
                 // Journal Logic
@@ -256,8 +256,8 @@ class StockOpnameController extends Controller
 
                     if ($nilaiSelisih > 0) {
                         $journalService = app(JournalService::class);
-                        $refNumber = "OPN-" . ($opname->tanggal instanceof \Carbon\Carbon ? $opname->tanggal->format('Ymd') : date('Ymd', strtotime((string)$opname->tanggal))) . "-{$opname->id}-{$item->id}";
-                        
+                        $refNumber = 'OPN-'.($opname->tanggal instanceof Carbon ? $opname->tanggal->format('Ymd') : date('Ymd', strtotime((string) $opname->tanggal)))."-{$opname->id}-{$item->id}";
+
                         $persediaanAccount = Account::where('code', '1301')->first();
                         $itemsData = [];
 
@@ -281,7 +281,7 @@ class StockOpnameController extends Controller
                             }
                         }
 
-                        if (!empty($itemsData)) {
+                        if (! empty($itemsData)) {
                             $journalData = new JournalEntryData(
                                 items: $itemsData,
                                 description: "Penyesuaian stok Opname #{$opname->id} item {$item->produk_id}",
@@ -293,7 +293,7 @@ class StockOpnameController extends Controller
                         }
                     }
                 } catch (\Exception $e) {
-                    Log::error("Failed to record journal for Opname item #{$item->id}: " . $e->getMessage());
+                    Log::error("Failed to record journal for Opname item #{$item->id}: ".$e->getMessage());
                 }
             }
         }

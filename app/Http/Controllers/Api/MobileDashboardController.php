@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Sale;
 use App\Models\Pengeluaran;
-use Illuminate\Http\Request;
+use App\Models\Sale;
 use Carbon\Carbon;
 
 /**
@@ -17,7 +16,7 @@ class MobileDashboardController extends Controller
 {
     /**
      * Ringkasan Dashboard (Harian)
-     * 
+     *
      * Mengambil total penjualan, jumlah transaksi, dan estimasi laba kotor hari ini.
      */
     public function summary()
@@ -45,8 +44,8 @@ class MobileDashboardController extends Controller
                 'transaction_count' => $transactionCount,
                 'gross_profit' => (float) $grossProfit,
                 'total_expenses' => (float) $expensesToday,
-                'net_income_estimate' => (float) ($grossProfit - $expensesToday)
-            ]
+                'net_income_estimate' => (float) ($grossProfit - $expensesToday),
+            ],
         ]);
     }
 }

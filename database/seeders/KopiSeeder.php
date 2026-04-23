@@ -2,6 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
+use App\Models\Produk;
+use App\Models\Restock;
+use App\Models\RestockItem;
+use App\Models\Satuan;
 use Illuminate\Database\Seeder;
 
 class KopiSeeder extends Seeder
@@ -12,17 +17,19 @@ class KopiSeeder extends Seeder
     public function run(): void
     {
         // 1. Create or get 'Kilogram' unit
-        $satuanKg = \App\Models\Satuan::firstOrCreate(
+        $satuanKg = Satuan::firstOrCreate(
             ['simbol' => 'kg'],
             ['nama' => 'Kilogram', 'deskripsi' => 'Satuan berat (Kilogram)']
         );
 
+        $catBahanBaku = Category::firstOrCreate(['name' => 'Bahan Baku'], ['slug' => 'bahan-baku']);
+
         // 2. Create or get 'Kopi Bubuk' raw material
-        $kopi = \App\Models\Produk::firstOrCreate(
+        $kopi = Produk::firstOrCreate(
             ['sku' => 'RAW-KOPI-01'],
             [
                 'nama' => 'Kopi Bubuk House Blend',
-                'kategori' => 'Bahan Baku',
+                'category_id' => $catBahanBaku->id,
                 'stok_minimal' => 2,
                 'satuan_id' => $satuanKg->id,
                 'type' => 'raw_material',
@@ -36,14 +43,14 @@ class KopiSeeder extends Seeder
         $ongkir = 15000;
         $totalBiaya = $hargaKopi + $ongkir;
 
-        $restock = \App\Models\Restock::create([
+        $restock = Restock::create([
             'tanggal' => now(),
             'keterangan' => 'Restock Kopi 1kg + Ongkir 15rb',
             'total_biaya' => $totalBiaya,
         ]);
 
         // 4. Create Restock Item
-        \App\Models\RestockItem::create([
+        RestockItem::create([
             'restock_id' => $restock->id,
             'produk_id' => $kopi->id,
             'jumlah' => 1,

@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Api\MobilePosController;
-use App\Http\Controllers\Api\MobileStockController;
-use App\Http\Controllers\Api\MobileDashboardController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\JournalController;
+use App\Http\Controllers\Api\MobileDashboardController;
+use App\Http\Controllers\Api\MobilePosController;
+use App\Http\Controllers\Api\MobileStockController;
 use App\Http\Controllers\Api\ProfitLossController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,8 +21,9 @@ use Illuminate\Support\Facades\Route;
 
 /**
  * Health Check API
- * 
+ *
  * Mengecek status koneksi ke server Warung.
+ *
  * @unauthenticated
  */
 Route::get('/status', function () {
@@ -43,12 +44,12 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     // POS & Scanner
     Route::get('/pos/products', [MobilePosController::class, 'products']);
     Route::post('/pos/checkout', [MobilePosController::class, 'checkout']);
-    
+
     // Inventory & Stock Opname
     Route::get('/stock/lookup', [MobileStockController::class, 'lookup']);
     Route::post('/stock/adjustment', [MobileStockController::class, 'adjustment']);
     Route::post('/stock/opname', [MobileStockController::class, 'opname']);
-    
+
     // Owner Dashboard
     Route::get('/dashboard/summary', [MobileDashboardController::class, 'summary']);
 

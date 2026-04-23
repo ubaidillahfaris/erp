@@ -2,9 +2,9 @@
 
 namespace App\Observers;
 
-use App\Models\Journal;
-
 use App\Models\FinancialSummary;
+use App\Models\Journal;
+use Carbon\CarbonInterface;
 
 class JournalObserver
 {
@@ -21,7 +21,7 @@ class JournalObserver
     {
         $this->updateBalances($journal->tanggal, $journal->id);
         $this->updateSummary($journal->tanggal);
-        
+
         if ($journal->wasChanged('tanggal')) {
             $this->updateBalances($journal->getOriginal('tanggal'));
             $this->updateSummary($journal->getOriginal('tanggal'));
@@ -47,12 +47,14 @@ class JournalObserver
 
         // Calculate starting balance from the record just before the first one in our list
         $firstJournal = $journals->first();
-        if (!$firstJournal) return;
+        if (! $firstJournal) {
+            return;
+        }
 
         $previousJournal = Journal::where('tanggal', '<', $firstJournal->tanggal)
             ->orWhere(function ($query) use ($firstJournal) {
                 $query->where('tanggal', $firstJournal->tanggal)
-                      ->where('id', '<', $firstJournal->id);
+                    ->where('id', '<', $firstJournal->id);
             })
             ->orderBy('tanggal', 'desc')
             ->orderBy('id', 'desc')
@@ -63,7 +65,7 @@ class JournalObserver
         foreach ($journals as $item) {
             $impact = ($item->type === 'debit' ? (float) $item->amount : -(float) $item->amount);
             $currentBalance += $impact;
-            
+
             // Update without triggering observers again to avoid infinite loop
             Journal::where('id', $item->id)->update(['balance' => (int) round($currentBalance)]);
         }
@@ -74,10 +76,12 @@ class JournalObserver
      */
     private function updateSummary($date): void
     {
-        if (!$date) return;
+        if (! $date) {
+            return;
+        }
 
         // Ensure date is in Y-m-d format
-        $dateString = $date instanceof \Carbon\CarbonInterface ? $date->format('Y-m-d') : $date;
+        $dateString = $date instanceof CarbonInterface ? $date->format('Y-m-d') : $date;
 
         $stats = Journal::where('tanggal', $dateString)
             ->selectRaw("SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as total_debit")
@@ -86,7 +90,7 @@ class JournalObserver
 
         $totalDebit = (float) ($stats->total_debit ?? 0);
         $totalKredit = (float) ($stats->total_kredit ?? 0);
-        
+
         // Debit = Money In, Kredit = Money Out
         $balance = $totalDebit - $totalKredit;
 

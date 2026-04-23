@@ -6,6 +6,7 @@ use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
 use App\Models\Account;
 use App\Models\JournalEntry;
+use App\Models\Pengeluaran;
 use App\Models\Purchase;
 use App\Models\Sale;
 use App\Services\JournalService;
@@ -39,8 +40,8 @@ class BackfillJournalEntries extends Command
         $accounts = Account::whereIn('code', $requiredCodes)->pluck('id', 'code');
         $missingCodes = array_diff($requiredCodes, $accounts->keys()->toArray());
 
-        if (!empty($missingCodes)) {
-            $this->error('Missing required accounts: ' . implode(', ', $missingCodes));
+        if (! empty($missingCodes)) {
+            $this->error('Missing required accounts: '.implode(', ', $missingCodes));
             $this->error('Run: php artisan db:seed --class=ChartOfAccountsSeeder');
 
             return self::FAILURE;
@@ -73,8 +74,9 @@ class BackfillJournalEntries extends Command
             $refNumber = sprintf('PUR-%s-%d', $purchase->tanggal->format('Ymd'), $purchase->id);
 
             // Skip if already journaled (unless force)
-            if (!$force && JournalEntry::where('ref_number', $refNumber)->exists()) {
+            if (! $force && JournalEntry::where('ref_number', $refNumber)->exists()) {
                 $skipped++;
+
                 continue;
             }
 
@@ -82,6 +84,7 @@ class BackfillJournalEntries extends Command
 
             if ($amount <= 0) {
                 $this->warn("  Skipping Purchase #{$purchase->id}: amount is zero.");
+
                 continue;
             }
 
@@ -92,17 +95,17 @@ class BackfillJournalEntries extends Command
             // Credit account depends on payment_method
             $creditAccCode = $paymentMethod === 'credit' ? '2101' : '1101';
             $description = match ($paymentMethod) {
-                'credit'   => "Pembelian kredit dari vendor: {$vendorName}",
+                'credit' => "Pembelian kredit dari vendor: {$vendorName}",
                 'transfer' => "Pembelian via transfer dari vendor: {$vendorName}",
-                default    => "Pembelian tunai dari vendor: {$vendorName}",
+                default => "Pembelian tunai dari vendor: {$vendorName}",
             };
 
-            $this->line("  Creating: {$refNumber} [{$paymentMethod}] — Rp " . number_format($amount, 0, ',', '.'));
+            $this->line("  Creating: {$refNumber} [{$paymentMethod}] — Rp ".number_format($amount, 0, ',', '.'));
 
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 // Delete old entry if force
                 if ($force) {
-                    \App\Models\JournalEntry::where('ref_number', $refNumber)->delete();
+                    JournalEntry::where('ref_number', $refNumber)->delete();
                 }
 
                 $this->journalService->record(new JournalEntryData(
@@ -140,8 +143,9 @@ class BackfillJournalEntries extends Command
             $refCogs = "{$refBase}-COGS";
 
             // Skip if already journaled (unless force)
-            if (!$force && JournalEntry::where('ref_number', $refRev)->exists()) {
+            if (! $force && JournalEntry::where('ref_number', $refRev)->exists()) {
                 $skipped++;
+
                 continue;
             }
 
@@ -149,6 +153,7 @@ class BackfillJournalEntries extends Command
 
             if ($revenueAmount <= 0) {
                 $this->warn("  Skipping Sale #{$sale->id}: revenue amount is zero.");
+
                 continue;
             }
 
@@ -163,9 +168,9 @@ class BackfillJournalEntries extends Command
             }
 
             $invoiceNumber = $sale->invoice_number ?? "SALE-{$sale->id}";
-            $this->line("  Creating Revenue: {$refRev} — Rp " . number_format($revenueAmount, 0, ',', '.'));
+            $this->line("  Creating Revenue: {$refRev} — Rp ".number_format($revenueAmount, 0, ',', '.'));
 
-            if (!$isDryRun) {
+            if (! $isDryRun) {
                 // Delete old entries if force
                 if ($force) {
                     JournalEntry::whereIn('ref_number', [$refRev, $refCogs])->delete();
@@ -186,7 +191,7 @@ class BackfillJournalEntries extends Command
 
                     // 2. COGS Entry (only if COGS can be determined)
                     if ($cogsAmount > 0) {
-                        $this->line("  Creating COGS:    {$refCogs} — Rp " . number_format($cogsAmount / 100, 0, ',', '.'));
+                        $this->line("  Creating COGS:    {$refCogs} — Rp ".number_format($cogsAmount / 100, 0, ',', '.'));
                         $this->journalService->record(new JournalEntryData(
                             items: [
                                 new JournalItemData($accounts['5101'], $cogsAmount, 'debit'),
@@ -211,7 +216,7 @@ class BackfillJournalEntries extends Command
     {
         $this->info('--- [3/3] Backfilling Expenses ---');
 
-        $expenses = \App\Models\Pengeluaran::all();
+        $expenses = Pengeluaran::all();
 
         $this->line("Found {$expenses->count()} operational expenses.");
 
@@ -222,22 +227,25 @@ class BackfillJournalEntries extends Command
             $refNumber = sprintf('EXP-%s-%04d', $expense->tanggal->format('Ymd'), $expense->id);
 
             // Skip if already journaled (unless force)
-            if (!$force && JournalEntry::where('ref_number', $refNumber)->exists()) {
+            if (! $force && JournalEntry::where('ref_number', $refNumber)->exists()) {
                 $skipped++;
+
                 continue;
             }
 
             $amount = (float) $expense->nominal;
-            if ($amount <= 0) continue;
+            if ($amount <= 0) {
+                continue;
+            }
 
             $amountCents = (int) round($amount * 100);
 
             // Determine Debit Account (Expense)
             $expenseAccId = $expense->account_id ?? $accounts['6101'];
-            
-            $this->line("  Creating: {$refNumber} — Rp " . number_format($amount, 0, ',', '.'));
 
-            if (!$isDryRun) {
+            $this->line("  Creating: {$refNumber} — Rp ".number_format($amount, 0, ',', '.'));
+
+            if (! $isDryRun) {
                 if ($force) {
                     JournalEntry::where('ref_number', $refNumber)->delete();
                 }

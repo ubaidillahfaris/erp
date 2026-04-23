@@ -2,10 +2,11 @@
 
 namespace App\Actions\Purchasing;
 
-use App\Models\Purchase;
-use App\Models\Price;
-use App\Actions\RecordStockMovement;
 use App\Actions\RecalculateHpp;
+use App\Actions\RecordStockMovement;
+use App\Models\Journal;
+use App\Models\Price;
+use App\Models\Purchase;
 use Illuminate\Support\Facades\DB;
 
 class FinalizePurchase
@@ -62,15 +63,15 @@ class FinalizePurchase
 
             // 6. Record Financial Journal (only for purchase type)
             if ($purchase->transaction_type === 'purchase' && (float) $purchase->total_biaya > 0) {
-                \App\Models\Journal::create([
+                Journal::create([
                     'tanggal' => $purchase->tanggal->format('Y-m-d'),
                     'type' => 'kredit',
                     'amount' => $purchase->total_biaya,
                     'category' => 'persediaan',
                     'payment_method' => 'hutang',
-                    'reference_type' => \App\Models\Purchase::class,
+                    'reference_type' => Purchase::class,
                     'reference_id' => $purchase->id,
-                    'description' => "Pembelian (Auto-Journal): " . ($purchase->keterangan ?? "Inbound #{$purchase->id}"),
+                    'description' => 'Pembelian (Auto-Journal): '.($purchase->keterangan ?? "Inbound #{$purchase->id}"),
                 ]);
             }
         });
@@ -87,7 +88,7 @@ class FinalizePurchase
             ->first();
 
         // If price is different or doesn't exist, create a new history record
-        if (!$currentPrice || (float) $currentPrice->purchase_price !== (float) $purchasePrice) {
+        if (! $currentPrice || (float) $currentPrice->purchase_price !== (float) $purchasePrice) {
             if ($currentPrice) {
                 $currentPrice->update(['is_current' => false]);
             }

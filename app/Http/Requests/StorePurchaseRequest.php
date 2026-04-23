@@ -14,7 +14,7 @@ class StorePurchaseRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Default payment_method to cash if not provided
-        if (!$this->payment_method) {
+        if (! $this->payment_method) {
             $this->merge(['payment_method' => 'cash']);
         }
 

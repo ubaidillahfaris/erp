@@ -7,6 +7,7 @@ use App\Http\Requests\Accounting\StoreAccountRequest;
 use App\Http\Requests\Accounting\UpdateAccountRequest;
 use App\Models\Account;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,7 +26,7 @@ class AccountController extends Controller
         // Filters
         $query->when($request->search, function ($q, $search) {
             $q->where('code', 'like', "%{$search}%")
-              ->orWhere('name', 'like', "%{$search}%");
+                ->orWhere('name', 'like', "%{$search}%");
         });
 
         $query->when($request->type, function ($q, $type) {
@@ -55,7 +56,7 @@ class AccountController extends Controller
     {
         Account::create($request->validated());
 
-        \Illuminate\Support\Facades\Cache::forget('trial_balance_current');
+        Cache::forget('trial_balance_current');
 
         return redirect()->route('accounts.index')
             ->with('success', 'Akun berhasil ditambahkan.');
@@ -94,7 +95,7 @@ class AccountController extends Controller
 
         $account->update($request->validated());
 
-        \Illuminate\Support\Facades\Cache::forget('trial_balance_current');
+        Cache::forget('trial_balance_current');
 
         return redirect()->route('accounts.index')
             ->with('success', 'Akun berhasil diperbarui.');
@@ -116,7 +117,7 @@ class AccountController extends Controller
             $message = 'Akun dinonaktifkan.';
         }
 
-        \Illuminate\Support\Facades\Cache::forget('trial_balance_current');
+        Cache::forget('trial_balance_current');
 
         return redirect()->route('accounts.index')->with('success', $message);
     }

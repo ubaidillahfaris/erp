@@ -16,7 +16,7 @@ class AgingReportController extends Controller
         $asOfDateRaw = $request->as_of_date ?? now()->toDateString();
         $asOfDate = Carbon::parse($asOfDateRaw)->startOfDay();
         $isToday = $asOfDate->isToday();
-        
+
         $type = $request->type ?? 'all';
         $partyType = $request->party_type ?? 'all';
         $bucketFilter = $request->bucket ?? 'all';
@@ -27,7 +27,7 @@ class AgingReportController extends Controller
                 ->get();
 
             $lines = [];
-            
+
             foreach ($payables as $payable) {
                 if ($payable->installment_count > 1 && $payable->interestSchedules->isNotEmpty()) {
                     // Level 2: Schedule aging
@@ -35,18 +35,18 @@ class AgingReportController extends Controller
                         if ($schedule->status === 'paid') {
                             continue;
                         }
-                        
+
                         $dueDate = Carbon::parse($schedule->due_date);
                         // days_overdue = today.diffInDays(schedule.due_date, false)
                         // If as_of_date is 2026-04-21 and due_date is 2026-04-20 -> 1 day overdue
                         $daysOverdue = (int) $dueDate->diffInDays($asOfDate, false);
-                        
+
                         $bucket = $this->getBucket($daysOverdue);
-                        
+
                         $lines[] = [
                             'party_name' => $payable->party?->name ?? 'Unknown',
                             'party_type' => $payable->party_type,
-                            'reference' => $payable->reference_type . ' #' . $payable->reference_id,
+                            'reference' => $payable->reference_type.' #'.$payable->reference_id,
                             'type' => $payable->type,
                             'days_overdue' => $daysOverdue,
                             'bucket' => $bucket,
@@ -59,13 +59,13 @@ class AgingReportController extends Controller
                     // Level 1: Simple aging
                     $dueDate = Carbon::parse($payable->due_date);
                     $daysOverdue = (int) $dueDate->diffInDays($asOfDate, false);
-                    
+
                     $bucket = $this->getBucket($daysOverdue);
-                    
+
                     $lines[] = [
                         'party_name' => $payable->party?->name ?? 'Unknown',
                         'party_type' => $payable->party_type,
-                        'reference' => $payable->reference_type . ' #' . $payable->reference_id,
+                        'reference' => $payable->reference_type.' #'.$payable->reference_id,
                         'type' => $payable->type,
                         'days_overdue' => $daysOverdue,
                         'bucket' => $bucket,
@@ -75,7 +75,7 @@ class AgingReportController extends Controller
                     ];
                 }
             }
-            
+
             return $lines;
         };
 
@@ -87,7 +87,7 @@ class AgingReportController extends Controller
         }
 
         // Apply filters
-        $filteredLines = collect($allLines)->filter(function($line) use ($type, $partyType, $bucketFilter) {
+        $filteredLines = collect($allLines)->filter(function ($line) use ($type, $partyType, $bucketFilter) {
             if ($type !== 'all' && $line['type'] !== $type) {
                 return false;
             }
@@ -97,6 +97,7 @@ class AgingReportController extends Controller
             if ($bucketFilter !== 'all' && $line['bucket'] !== $bucketFilter) {
                 return false;
             }
+
             return true;
         })->sortByDesc('days_overdue')->values();
 
@@ -149,6 +150,7 @@ class AgingReportController extends Controller
         if ($days <= 90) {
             return 'days_90';
         }
+
         return 'over_90';
     }
 

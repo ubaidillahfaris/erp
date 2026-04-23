@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Actions\Purchasing\FinalizePurchase;
 use App\Http\Requests\StorePurchaseRequest;
+use App\Models\Produk;
 use App\Models\Purchase;
 use App\Models\PurchaseAttachment;
-use App\Models\Produk;
 use App\Models\Satuan;
 use App\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
@@ -31,8 +31,8 @@ class PurchaseController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('keterangan', 'like', "%{$search}%")
-                  ->orWhere('no_invoice', 'like', "%{$search}%")
-                  ->orWhereHas('vendor', fn ($qv) => $qv->where('nama', 'like', "%{$search}%"));
+                    ->orWhere('no_invoice', 'like', "%{$search}%")
+                    ->orWhereHas('vendor', fn ($qv) => $qv->where('nama', 'like', "%{$search}%"));
             });
         }
 

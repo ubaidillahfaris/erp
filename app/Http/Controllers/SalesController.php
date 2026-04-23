@@ -24,12 +24,12 @@ class SalesController extends Controller
 
         $query = Sale::query()
             ->with([
-                'saleCustomer.customer', 
-                'items.produk', 
+                'saleCustomer.customer',
+                'items.produk',
                 'items.satuan',
-                'payable' => function($q) {
+                'payable' => function ($q) {
                     $q->select('id', 'reference_id', 'reference_type', 'status', 'total_amount', 'remaining_amount');
-                }
+                },
             ])
             ->latest('tanggal');
 
@@ -72,8 +72,8 @@ class SalesController extends Controller
         $sale->load([
             'saleCustomer.customer',
             'items.produk',
-            'items.satuan', 
-            'payable.payments.createdBy'
+            'items.satuan',
+            'payable.payments.createdBy',
         ]);
 
         return Inertia::render('Sales/Show', [
@@ -88,7 +88,7 @@ class SalesController extends Controller
     public function void(Request $request, Sale $sale)
     {
         // Check permission
-        if (!$request->user()->can('void sales')) {
+        if (! $request->user()->can('void sales')) {
             abort(403, 'Anda tidak memiliki akses untuk membatalkan transaksi ini.');
         }
 
@@ -99,12 +99,12 @@ class SalesController extends Controller
         try {
             // Re-load items to ensure they are available for storno
             $sale->load('items');
-            
+
             $this->stornoService->perform($sale, $request->reason);
 
-            return back()->with('success', 'Transaksi penjualan #' . $sale->invoice_number . ' telah dibatalkan (voided).');
+            return back()->with('success', 'Transaksi penjualan #'.$sale->invoice_number.' telah dibatalkan (voided).');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal membatalkan transaksi: ' . $e->getMessage());
+            return back()->with('error', 'Gagal membatalkan transaksi: '.$e->getMessage());
         }
     }
 }

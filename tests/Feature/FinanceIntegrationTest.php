@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\JournalEntry;
-use App\Models\Restock;
 use App\Models\Pengeluaran;
+use App\Models\Restock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +16,7 @@ class FinanceIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Seed basic accounts for integration tests
         Account::create(['code' => '1101', 'name' => 'Kas', 'type' => 'asset', 'balance_type' => 'debit']);
         Account::create(['code' => '1301', 'name' => 'Persediaan', 'type' => 'asset', 'balance_type' => 'debit']);
@@ -41,7 +41,7 @@ class FinanceIntegrationTest extends TestCase
         ]);
 
         $entry = JournalEntry::where('journalable_id', $restock->id)->first();
-        
+
         // Verify Balanced Items (Debit Inventory vs Credit Cash)
         $this->assertDatabaseHas('journal_items', [
             'journal_entry_id' => $entry->id,

@@ -20,7 +20,7 @@ class StoreProdukRequest extends FormRequest
             'sku' => ['nullable', 'string', 'max:255', 'unique:produks,sku'],
             'barcode' => ['nullable', 'string', 'max:255'],
             'nama' => ['required', 'string', 'max:255'],
-            'kategori' => ['nullable', 'string', 'max:255'],
+            'category_id' => ['nullable', 'exists:categories,id'],
             'deskripsi' => ['nullable', 'string'],
             'stok_minimal' => ['required', 'integer', 'min:0'],
             'type' => ['required', 'string', 'in:raw_material,intermediate_good,finished_good'],

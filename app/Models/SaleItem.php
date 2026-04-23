@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SaleItem extends Model
 {
@@ -26,17 +27,17 @@ class SaleItem extends Model
         ];
     }
 
-    public function sale(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
     }
 
-    public function produk(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function produk(): BelongsTo
     {
         return $this->belongsTo(Produk::class);
     }
 
-    public function satuan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function satuan(): BelongsTo
     {
         return $this->belongsTo(Satuan::class);
     }

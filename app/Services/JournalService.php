@@ -7,6 +7,7 @@ namespace App\Services;
 use App\DTOs\JournalEntryData;
 use App\Exceptions\BalanceMismatchException;
 use App\Models\JournalEntry;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -15,8 +16,8 @@ class JournalService
     /**
      * Record a double-entry journal transaction.
      *
-     * @param \App\DTOs\JournalEntryData $data DTO containing journal items, description, date, and reference
-     * @return JournalEntry
+     * @param  JournalEntryData  $data  DTO containing journal items, description, date, and reference
+     *
      * @throws BalanceMismatchException if SUM(debit) !== SUM(credit)
      *
      * IMPORTANT: All monetary amounts in JournalItemData must be in
@@ -57,7 +58,7 @@ class JournalService
             }
 
             // Generate unique ref if not provided
-            $refNumber = $data->ref_number ?? 'JN-' . now()->format('ymd') . '-' . strtoupper(Str::random(6));
+            $refNumber = $data->ref_number ?? 'JN-'.now()->format('ymd').'-'.strtoupper(Str::random(6));
 
             /** @var JournalEntry $entry */
             $entry = JournalEntry::create([
@@ -73,7 +74,7 @@ class JournalService
                 $entry->items()->create($item);
             }
 
-            \Illuminate\Support\Facades\Cache::forget('trial_balance_current');
+            Cache::forget('trial_balance_current');
 
             return $entry;
         });

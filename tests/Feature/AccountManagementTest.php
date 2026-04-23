@@ -62,7 +62,7 @@ class AccountManagementTest extends TestCase
     public function test_can_update_account_name_when_has_journal_items(): void
     {
         $account = Account::factory()->create(['code' => '1101', 'name' => 'Old Name']);
-        
+
         // Create journal entry to trigger lock
         $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'tanggal' => now(), 'description' => 'Test']);
         $entry->items()->create([
@@ -90,7 +90,7 @@ class AccountManagementTest extends TestCase
     public function test_cannot_update_account_code_when_has_journal_items(): void
     {
         $account = Account::factory()->create(['code' => '1101', 'name' => 'Old Name', 'type' => 'asset', 'balance_type' => 'debit']);
-        
+
         // Create journal entry to trigger lock
         $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'tanggal' => now(), 'description' => 'Test']);
         $entry->items()->create([
@@ -118,7 +118,7 @@ class AccountManagementTest extends TestCase
     public function test_cannot_delete_account_with_journal_items(): void
     {
         $account = Account::factory()->create();
-        
+
         // Create journal entry to trigger block
         $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'tanggal' => now(), 'description' => 'Test']);
         $entry->items()->create([
@@ -146,7 +146,7 @@ class AccountManagementTest extends TestCase
             'id' => $account->id,
             'is_active' => false,
         ]);
-        
+
         // Verify it wasn't deleted
         $this->assertTrue(Account::where('id', $account->id)->exists());
     }

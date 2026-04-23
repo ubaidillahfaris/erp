@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchases', function (Illuminate\Database\Schema\Blueprint $table) {
+        Schema::create('purchases', function (Blueprint $table) {
             $table->id();
             $table->string('no_invoice')->nullable();
             $table->foreignId('vendor_id')->nullable()->constrained()->onDelete('set null');

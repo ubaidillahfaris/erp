@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CompleteProduction;
+use App\Exceptions\MissingOverheadRateException;
 use App\Http\Requests\StoreProductionRequest;
 use App\Http\Requests\UpdateProductionRequest;
-use App\Models\Bom;
 use App\Models\Production;
 use App\Models\Produk;
 use App\Models\Satuan;
 use App\Models\SatuanConversion;
+use App\Services\SatuanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,11 +27,11 @@ class ProductionController extends Controller
 
         $query = Production::with(['produk', 'bom', 'items.produk.currentPrice']);
 
-        if ($request->has('search') && !empty($request->search)) {
+        if ($request->has('search') && ! empty($request->search)) {
             $query->where('sku', 'like', "%{$request->search}%")
-                  ->orWhereHas('produk', function ($q) use ($request) {
-                      $q->where('nama', 'like', "%{$request->search}%");
-                  });
+                ->orWhereHas('produk', function ($q) use ($request) {
+                    $q->where('nama', 'like', "%{$request->search}%");
+                });
         }
 
         $paginator = $query->orderBy($sort, $direction)
@@ -47,13 +49,14 @@ class ProductionController extends Controller
                     }
                     $ratio = 1.0;
                     if ($item->produk && $item->produk->satuan_id !== $item->satuan_id) {
-                        $ratio = app(\App\Services\SatuanService::class)->getConversionRatio($item->produk->satuan_id, $item->satuan_id);
+                        $ratio = app(SatuanService::class)->getConversionRatio($item->produk->satuan_id, $item->satuan_id);
                     }
                     $estimatedCost += ($basePrice / ($ratio ?: 1)) * (float) $item->planned_qty;
                 }
                 $production->total_cost = $estimatedCost;
                 $production->is_estimated = true;
             }
+
             return $production;
         });
 
@@ -90,7 +93,7 @@ class ProductionController extends Controller
             if (empty($data['sku'])) {
                 $latest = Production::latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $data['sku'] = 'PRD-' . date('ym') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+                $data['sku'] = 'PRD-'.date('ym').'-'.str_pad($nextId, 4, '0', STR_PAD_LEFT);
             }
 
             $data['status'] = 'in_progress';
@@ -131,7 +134,7 @@ class ProductionController extends Controller
             $ratio = 1.0;
 
             if ($item->produk && $item->produk->satuan_id !== $item->satuan_id) {
-                $ratio = app(\App\Services\SatuanService::class)->getConversionRatio($item->produk->satuan_id, $item->satuan_id);
+                $ratio = app(SatuanService::class)->getConversionRatio($item->produk->satuan_id, $item->satuan_id);
             }
 
             // If in progress, use planned_qty for the "cost" attribute used in UI
@@ -187,7 +190,7 @@ class ProductionController extends Controller
 
                     $conversionRatio = 1;
                     if ($ingredientBaseSatuanId !== $usedSatuanId) {
-                        $conversionRatio = app(\App\Services\SatuanService::class)->getConversionRatio($ingredientBaseSatuanId, $usedSatuanId);
+                        $conversionRatio = app(SatuanService::class)->getConversionRatio($ingredientBaseSatuanId, $usedSatuanId);
                     }
 
                     // Cost for this ingredient = (price_per_base_unit / conversion_multiplier) * (qty_used)
@@ -209,9 +212,9 @@ class ProductionController extends Controller
 
                 // Note: Dedicated Action to recalculate HPP & update Stock goes here
                 // We can optionally use Observers or an Action class similar to RecalculateHpp
-                app(\App\Actions\CompleteProduction::class)->handle($production);
+                app(CompleteProduction::class)->handle($production);
             });
-        } catch (\App\Exceptions\MissingOverheadRateException $e) {
+        } catch (MissingOverheadRateException $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
 

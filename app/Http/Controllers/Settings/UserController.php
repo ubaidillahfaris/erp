@@ -7,10 +7,12 @@ use App\Http\Requests\Settings\StoreUserRequest;
 use App\Http\Requests\Settings\UpdateUserRequest;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\RoleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\PermissionRegistrar;
 
 class UserController extends Controller
 {
@@ -64,10 +66,10 @@ class UserController extends Controller
         $user->syncRoles([$request->role]);
 
         // Clear authorizaton cache (Spatie)
-        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         // Clear dynamic menu cache for this user
-        app(\App\Services\RoleService::class)->clearMenuCache($user);
+        app(RoleService::class)->clearMenuCache($user);
 
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
     }

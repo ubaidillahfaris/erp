@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProdukResource;
 use App\Models\Produk;
 use App\Models\Sale;
 use Illuminate\Http\Request;
@@ -17,9 +18,9 @@ class MobilePosController extends Controller
 {
     /**
      * List Produk POS
-     * 
+     *
      * Mengambil daftar produk yang aktif untuk dijual (finished_good).
-     * 
+     *
      * @queryParam search string Filter berdasarkan Nama, SKU, atau Barcode. Example: Kopi
      */
     public function products(Request $request)
@@ -30,23 +31,23 @@ class MobilePosController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%")
-                  ->orWhere('barcode', 'like', "%{$search}%");
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
 
         $produks = $query->paginate($request->integer('per_page', 10));
 
-        return \App\Http\Resources\ProdukResource::collection($produks);
+        return ProdukResource::collection($produks);
     }
 
     /**
      * Checkout Penjualan
-     * 
+     *
      * Menyimpan transaksi penjualan baru dari aplikasi mobile.
-     * 
+     *
      * @bodyParam tanggal date required Tanggal transaksi (YYYY-MM-DD). Example: 2024-03-18
      * @bodyParam payment_method string required Metode pembayaran (cash, qris, transfer, credit). Example: cash
      * @bodyParam received_amount number Jumlah uang diterima. Example: 50000
@@ -80,7 +81,7 @@ class MobilePosController extends Controller
                     return $item['qty'] * $item['price'];
                 });
 
-                $invoiceNumber = 'IVM' . now()->format('ymd') . strtoupper(bin2hex(random_bytes(2)));
+                $invoiceNumber = 'IVM'.now()->format('ymd').strtoupper(bin2hex(random_bytes(2)));
 
                 $sale = Sale::create([
                     'invoice_number' => $invoiceNumber,
@@ -108,14 +109,14 @@ class MobilePosController extends Controller
                     'message' => 'Transaksi berhasil',
                     'data' => [
                         'invoice_number' => $sale->invoice_number,
-                        'total_amount' => $sale->total_amount
-                    ]
+                        'total_amount' => $sale->total_amount,
+                    ],
                 ]);
             });
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal simpan transaksi: ' . $e->getMessage()
+                'message' => 'Gagal simpan transaksi: '.$e->getMessage(),
             ], 500);
         }
     }

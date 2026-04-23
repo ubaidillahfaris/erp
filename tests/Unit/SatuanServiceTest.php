@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\Produk;
 use App\Models\Satuan;
 use App\Models\SatuanConversion;
 use App\Services\SatuanService;
@@ -13,12 +14,17 @@ class SatuanServiceTest extends TestCase
     use RefreshDatabase;
 
     private SatuanService $service;
-    private Satuan $pcs, $box, $carton;
+
+    private Satuan $pcs;
+
+    private Satuan $box;
+
+    private Satuan $carton;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new SatuanService();
+        $this->service = new SatuanService;
 
         $this->pcs = Satuan::create(['nama' => 'Pieces', 'simbol' => 'pcs']);
         $this->box = Satuan::create(['nama' => 'Box', 'simbol' => 'box']);
@@ -37,12 +43,12 @@ class SatuanServiceTest extends TestCase
         SatuanConversion::create([
             'satuan_id' => $this->box->id,
             'to_satuan_id' => $this->pcs->id,
-            'rasio' => 12
+            'rasio' => 12,
         ]);
 
         // 1 box to pcs -> should be 12
         $this->assertEquals(12.0, $this->service->getConversionRatio($this->box->id, $this->pcs->id));
-        
+
         // 1 pcs to box -> should be 1/12
         $this->assertEquals(1 / 12, $this->service->getConversionRatio($this->pcs->id, $this->box->id));
     }
@@ -55,12 +61,12 @@ class SatuanServiceTest extends TestCase
         SatuanConversion::create([
             'satuan_id' => $this->carton->id,
             'to_satuan_id' => $this->box->id,
-            'rasio' => 4
+            'rasio' => 4,
         ]);
         SatuanConversion::create([
             'satuan_id' => $this->box->id,
             'to_satuan_id' => $this->pcs->id,
-            'rasio' => 12
+            'rasio' => 12,
         ]);
 
         $this->assertEquals(48.0, $this->service->getConversionRatio($this->carton->id, $this->pcs->id));
@@ -69,14 +75,14 @@ class SatuanServiceTest extends TestCase
 
     public function test_product_specific_priority(): void
     {
-        $produk = \App\Models\Produk::factory()->create();
+        $produk = Produk::factory()->create();
 
         // Global: 1 box = 10 pcs
         SatuanConversion::create([
             'satuan_id' => $this->box->id,
             'to_satuan_id' => $this->pcs->id,
             'rasio' => 10,
-            'produk_id' => null
+            'produk_id' => null,
         ]);
 
         // Product Specific: 1 box = 12 pcs
@@ -84,12 +90,12 @@ class SatuanServiceTest extends TestCase
             'satuan_id' => $this->box->id,
             'to_satuan_id' => $this->pcs->id,
             'rasio' => 12,
-            'produk_id' => $produk->id
+            'produk_id' => $produk->id,
         ]);
 
         // Without product -> global (10)
         $this->assertEquals(10.0, $this->service->getConversionRatio($this->box->id, $this->pcs->id));
-        
+
         // With product -> specific (12)
         $this->assertEquals(12.0, $this->service->getConversionRatio($this->box->id, $this->pcs->id, $produk->id));
     }
@@ -97,7 +103,7 @@ class SatuanServiceTest extends TestCase
     public function test_missing_path_returns_one(): void
     {
         $other = Satuan::create(['nama' => 'Kilogram', 'simbol' => 'kg']);
-        
+
         $ratio = $this->service->getConversionRatio($this->pcs->id, $other->id);
         $this->assertEquals(1.0, $ratio);
     }
