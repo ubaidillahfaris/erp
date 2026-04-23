@@ -142,6 +142,23 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
             Route::post('payables/{payable}/payments', [PayableController::class, 'storePayment'])->name('payables.payments.store');
         });
     });
+
+    // TEMPORARY: Employee Management UI Preview
+    Route::get('employees', function () {
+        return inertia('employees/Index');
+    })->name('employees.index');
+    
+    Route::get('employees/create', function () {
+        return inertia('employees/Create');
+    })->name('employees.create');
+
+    Route::get('employees/{id}', function () {
+        return inertia('employees/Show');
+    })->name('employees.show');
+
+    Route::get('employees/{id}/edit', function () {
+        return inertia('employees/Create'); // Using Create as a template for now
+    })->name('employees.edit');
 });
 
 require __DIR__.'/settings.php';
