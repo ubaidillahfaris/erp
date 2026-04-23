@@ -177,11 +177,11 @@ const isAbnormal = (account: Account) => {
                                 </td>
                             </tr>
                             <tr v-for="acc in group.accounts" :key="acc.id" class="hover:bg-slate-50/50 transition-colors">
-                                <td class="px-6 py-4 font-mono text-[13px] font-bold text-slate-400">{{ acc.code }}</td>
+                                <td class="px-6 py-4 font-mono text-[11px] font-bold text-slate-400 tracking-tighter">{{ acc.code }}</td>
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        <div class="h-1.5 w-1.5 rounded-full" :class="acc.balance_type === 'debit' ? 'bg-emerald-400' : 'bg-rose-400'"></div>
-                                        <span class="text-[13px] font-bold text-slate-800 leading-none">{{ acc.name }}</span>
+                                    <div class="flex items-center gap-3">
+                                        <div class="h-1.5 w-1.5 rounded-full shrink-0" :class="acc.balance_type === 'debit' ? 'bg-emerald-500' : 'bg-rose-500'"></div>
+                                        <span class="text-[13px] font-bold text-foreground leading-none">{{ acc.name }}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-right tabular-nums text-[13px] font-bold text-slate-600">

@@ -131,21 +131,21 @@ const formatCurrency = (value: number) => {
                     </Link>
                 </template>
                 <template #cell(reference)="{ row }">
-                    <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
-                            <BookOpen class="h-5 w-5" />
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
+                            <BookOpen class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.produk.nama }}</p>
-                            <p class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Ref: {{ row.sku }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.produk.nama }}</p>
+                            <p class="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-widest mt-1.5">Ref: {{ row.sku }}</p>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(info)="{ row }">
                     <div class="flex flex-col gap-0.5">
-                        <span class="text-[13px] font-semibold text-foreground/80">{{ row.nama || 'Unnamed recipe' }}</span>
-                        <div class="flex items-center gap-1.5 text-xs text-muted-foreground italic tracking-tight opacity-60">
+                        <span class="text-[13px] font-bold text-foreground">{{ row.nama || 'Unnamed recipe' }}</span>
+                        <div class="flex items-center gap-1.5 text-[10px] text-muted-foreground italic tracking-tight opacity-70">
                             <span class="font-bold text-foreground/70">{{ row.expected_yield }} {{ row.yield_satuan?.nama || row.produk?.satuan?.nama }}</span>
                             <span>•</span>
                             <span>SKU: {{ row.produk.sku }}</span>
@@ -160,8 +160,8 @@ const formatCurrency = (value: number) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all" :class="row.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-muted/50 text-muted-foreground border-transparent'">
-                        {{ row.is_active ? 'Production Ready' : 'Draft' }}
+                    <Badge variant="secondary" class="h-5 px-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all" :class="row.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-muted/50 text-muted-foreground border-transparent'">
+                        {{ row.is_active ? 'Active' : 'Draft' }}
                     </Badge>
                 </template>
 

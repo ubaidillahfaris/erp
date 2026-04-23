@@ -172,42 +172,42 @@ const getStatusStyles = (status: string) => {
                     </Link>
                 </template>
                 <template #cell(batch)="{ row }">
-                    <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
-                            <Boxes class="h-5 w-5" />
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
+                            <Boxes class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.bom?.nama }}</p>
-                            <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest">{{ row.sku }}</span>
-                                <span class="text-xs text-muted-foreground italic">•</span>
-                                <span class="text-xs font-medium text-muted-foreground">{{ formatDate(row.tanggal) }}</span>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.bom?.nama }}</p>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <span class="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-widest">{{ row.sku }}</span>
+                                <span class="text-[11px] text-muted-foreground italic">•</span>
+                                <span class="text-[11px] font-medium text-muted-foreground">{{ formatDate(row.tanggal) }}</span>
                             </div>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(yield)="{ row }">
-                    <div class="flex flex-col items-center">
+                    <div class="flex flex-col items-center gap-0.5">
                         <span class="text-[13px] font-bold text-foreground">
                             {{ parseFloat(row.actual_yield || 0).toLocaleString('id-ID') }}
                             <span class="text-muted-foreground font-medium">/ {{ parseFloat(row.target_yield).toLocaleString('id-ID') }}</span>
                         </span>
-                        <span class="text-xs font-bold uppercase tracking-tighter text-muted-foreground">Unit Yielded</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">Unit Yielded</span>
                     </div>
                 </template>
 
                 <template #cell(cost)="{ row }">
-                    <div class="flex flex-col items-end gap-0.5">
-                        <span class="text-[14px] font-bold text-foreground tabular-nums">
+                    <div class="flex flex-col items-end gap-1">
+                        <span class="text-[13px] font-bold text-foreground tabular-nums">
                             {{ formatCurrency(row.total_cost || 0) }}
                         </span>
-                        <Badge v-if="row.is_estimated" class="h-4 px-1 rounded text-xs font-bold uppercase bg-orange-50 text-orange-500 border-none shadow-none ">Estimasi</Badge>
+                        <Badge v-if="row.is_estimated" class="h-3.5 px-1 rounded-sm text-[9px] font-black uppercase tracking-tighter bg-orange-50 text-orange-500 border-none shadow-none ">Estimasi</Badge>
                     </div>
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
+                    <Badge variant="secondary" class="h-5 px-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
                         {{ formatStatus(row.status) }}
                     </Badge>
                 </template>

@@ -386,24 +386,24 @@ const getTypeLabel = (type: string) => {
 
             <template #cell(reference)="{ row }">
                 <div class="flex items-center gap-3">
-                    <div :class="['h-9 w-9 shrink-0 rounded-lg flex items-center justify-center', 
+                    <div :class="['h-9 w-9 shrink-0 rounded-lg flex items-center justify-center transition-all group-hover:shadow-sm', 
                         row.type === 'payable' ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500']">
                         <FileText v-if="row.reference_type === 'sale' || row.reference_type === 'restock'" class="h-4 w-4" />
                         <Activity v-else class="h-4 w-4" />
                     </div>
                     <div class="min-w-0">
                         <div class="flex items-center gap-1.5">
-                            <p class="text-[13px] font-bold text-foreground font-mono uppercase">
+                            <p class="text-[13px] font-bold text-foreground font-mono uppercase leading-none">
                                 {{ row.reference_number || `${row.reference_type}#${row.reference_id}` }}
                             </p>
-                            <Badge variant="outline" class="text-[9px] px-1 h-3.5 uppercase font-black tracking-tighter">
+                            <Badge variant="outline" class="text-[9px] px-1 h-3.5 uppercase font-black tracking-tighter leading-none border-slate-200">
                                 {{ row.reference_type }}
                             </Badge>
                         </div>
-                        <p class="text-[11px] text-muted-foreground flex items-center gap-1">
-                            {{ formatDate(row.created_at) }}
-                            <span class="h-0.5 w-0.5 rounded-full bg-slate-300"></span>
-                            <span :class="row.type === 'payable' ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'">
+                        <p class="text-[11px] text-muted-foreground flex items-center gap-1 mt-1.5">
+                            <span class="font-bold text-slate-500 uppercase tracking-tighter">{{ formatDate(row.created_at) }}</span>
+                            <span class="h-0.5 w-0.5 rounded-full bg-slate-300 mx-0.5"></span>
+                            <span :class="row.type === 'payable' ? 'text-rose-600 font-black uppercase' : 'text-emerald-600 font-black uppercase'">
                                 {{ getTypeLabel(row.type) }}
                             </span>
                         </p>
@@ -474,7 +474,7 @@ const getTypeLabel = (type: string) => {
 
             <template #cell(status_badge)="{ row }">
                 <Badge 
-                    :class="[getStatusConfig(row.status).class, 'text-[10px] uppercase font-bold px-2 h-5']"
+                    :class="[getStatusConfig(row.status).class, 'text-[10px] uppercase font-black tracking-widest px-2 h-5 rounded-lg border-none shadow-none ']"
                 >
                     <CircleAlert v-if="row.status === 'overdue'" class="h-3 w-3 mr-1" />
                     <CircleCheck v-else-if="row.status === 'paid'" class="h-3 w-3 mr-1" />

@@ -135,26 +135,26 @@ const formatDate = (dateString: string) => {
                     </Link>
                 </template>
                 <template #cell(detail)="{ row }">
-                    <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-orange-50 flex items-center justify-center text-orange-400 border border-orange-100/50 transition-colors group-hover:bg-orange-500 group-hover:text-white group-hover:border-transparent">
-                            <ReceiptText class="h-5 w-5" />
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 shrink-0 rounded-lg bg-orange-50 flex items-center justify-center text-orange-400 border border-orange-100/50 transition-colors group-hover:bg-orange-500 group-hover:text-white group-hover:border-transparent">
+                            <ReceiptText class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.nama_pengeluaran }}</p>
-                            <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">{{ row.keterangan || 'No internal notes' }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.nama_pengeluaran }}</p>
+                            <p class="text-[10px] text-muted-foreground line-clamp-1 mt-1.5 italic">{{ row.keterangan || 'No internal notes' }}</p>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(kategori)="{ row }">
-                    <div class="flex flex-col gap-1">
+                    <div class="flex flex-col gap-1.5">
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold font-mono px-1.5 py-0.5 bg-secondary text-muted-foreground rounded uppercase tracking-tighter">{{ row.jenis_pengeluaran }}</span>
-                            <span v-if="row.account" class="text-[10px] font-bold px-1.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded uppercase px-1 line-clamp-1">
+                            <span class="text-[9px] font-black font-mono px-1.5 py-0.5 bg-secondary text-muted-foreground rounded-sm uppercase tracking-widest">{{ row.jenis_pengeluaran }}</span>
+                            <span v-if="row.account" class="text-[9px] font-black px-1.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-sm uppercase line-clamp-1 tracking-tighter">
                                 {{ row.account.code }}
                             </span>
                         </div>
-                        <span class="text-xs font-medium text-muted-foreground">{{ formatDate(row.tanggal) }}</span>
+                        <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{{ formatDate(row.tanggal) }}</span>
                     </div>
                 </template>
 

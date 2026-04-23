@@ -177,35 +177,38 @@ const formatCurrency = (value: number) => {
                         <Boxes v-else class="h-4 w-4" />
                     </div>
                     <div class="min-w-0 pr-4">
-                        <p class="text-[13px] font-bold text-foreground truncate max-w-[200px]">{{ row.nama }}</p>
-                        <p class="text-xs font-medium text-muted-foreground uppercase tracking-tighter mt-0.5">{{
+                        <p class="text-[13px] font-bold text-foreground truncate max-w-[200px] leading-none">{{ row.nama }}</p>
+                        <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mt-1.5 opacity-70">{{
                             row.type?.replace('_', ' ') }}</p>
                     </div>
                 </div>
             </template>
 
             <template #cell(identity)="{ row }">
-                <div class="flex flex-col gap-0.5">
-                    <span class="text-xs font-mono font-bold text-foreground/70">#{{ row.sku || '--' }}</span>
-                    <span class="text-xs font-bold text-muted-foreground uppercase tracking-widest italic">{{
+                <div class="flex flex-col gap-1">
+                    <span class="text-[11px] font-mono font-bold text-foreground/80 tracking-tight bg-slate-100 px-1.5 py-0.5 rounded w-fit">#{{ row.sku || '--' }}</span>
+                    <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-0.5">{{
                         (row.category?.name || 'Inventory') }}</span>
                 </div>
             </template>
 
             <template #cell(price)="{ row }">
-                <span class="text-[13px] font-bold text-foreground tabular-nums">{{
-                    formatCurrency(row.current_price?.retail_price || 0) }}</span>
+                <div class="flex flex-col items-end">
+                    <span class="text-[13px] font-bold text-foreground tabular-nums">{{
+                        formatCurrency(row.current_price?.retail_price || 0) }}</span>
+                    <span class="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Harga Retail</span>
+                </div>
             </template>
 
             <template #cell(stock)="{ row }">
                 <div :class="[
-                    'inline-flex flex-col items-center gap-0.5 px-2 py-0.5 rounded border transition-all min-w-[50px]',
+                    'inline-flex flex-col items-center gap-1 px-2.5 py-1 rounded-lg border transition-all min-w-[60px]',
                     row.stok <= (row.stok_minimal || 0)
-                        ? 'bg-red-50 text-red-600 border-red-100'
-                        : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                        ? 'bg-rose-50 text-rose-600 border-rose-100 shadow-sm shadow-rose-100/50'
+                        : 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm shadow-emerald-100/50'
                 ]">
-                    <span class="text-[12px] font-bold tabular-nums leading-none">{{ Number(row.stok || 0) }}</span>
-                    <span class="text-xs font-bold uppercase opacity-60 leading-none">{{ row.unit?.simbol || 'pcs'
+                    <span class="text-[13px] font-bold tabular-nums leading-none">{{ Number(row.stok || 0) }}</span>
+                    <span class="text-[10px] font-bold uppercase opacity-60 leading-none tracking-widest">{{ row.unit?.simbol || 'pcs'
                     }}</span>
                 </div>
             </template>

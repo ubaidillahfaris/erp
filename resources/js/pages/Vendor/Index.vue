@@ -128,16 +128,16 @@ const deleteVendor = async (id: number) => {
                 </Link>
             </template>
             <template #cell(profil)="{ row }">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
                     <div
-                        class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
-                        <Building2 class="h-5 w-5" />
+                        class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
+                        <Building2 class="h-4 w-4" />
                     </div>
                     <div class="min-w-0 pr-4">
-                        <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.nama }}</p>
+                        <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.nama }}</p>
                         <p v-if="row.email"
-                            class="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-                            <Mail class="h-3 w-3" /> {{ row.email }}
+                            class="text-[11px] text-muted-foreground font-mono mt-1.5 flex items-center gap-1.5 tracking-tight">
+                            <Mail class="h-3 w-3 opacity-70" /> {{ row.email }}
                         </p>
                     </div>
                 </div>
@@ -146,14 +146,13 @@ const deleteVendor = async (id: number) => {
             <template #cell(kontak)="{ row }">
                 <div class="flex flex-col gap-1">
                     <div v-if="row.telepon"
-                        class="flex items-center text-xs font-semibold text-muted-foreground">
-                        <Phone class="mr-2 h-3.5 w-3.5 text-accent" />
+                        class="flex items-center text-[11px] font-bold text-foreground tracking-tight">
+                        <Phone class="mr-2 h-3 w-3 text-accent" />
                         {{ row.telepon }}
                     </div>
                     <div v-if="row.alamat"
-                        class="flex items-start text-xs text-muted-foreground max-w-[200px] leading-relaxed">
-                        <MapPin class="mr-2 h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground" />
-                        <span class="line-clamp-2">{{ row.alamat }}</span>
+                        class="flex items-start text-[10px] text-muted-foreground max-w-[180px] leading-relaxed pl-5">
+                        <span class="line-clamp-2 italic">{{ row.alamat }}</span>
                     </div>
                 </div>
             </template>

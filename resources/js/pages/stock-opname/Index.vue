@@ -123,11 +123,11 @@ const formatStatus = (status: string) => {
                     </Link>
                 </template>
                 <template #cell(date)="{ row }">
-                    <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
-                            <ClipboardList class="h-5 w-5" />
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
+                            <ClipboardList class="h-4 w-4" />
                         </div>
-                        <span class="text-[14px] font-bold text-foreground capitalize tabular-nums">{{ formatDate(row.tanggal) }}</span>
+                        <span class="text-[13px] font-bold text-foreground capitalize tabular-nums leading-none">{{ formatDate(row.tanggal) }}</span>
                     </div>
                 </template>
 
@@ -136,15 +136,15 @@ const formatStatus = (status: string) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
+                    <Badge variant="secondary" class="h-5 px-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all" :class="getStatusStyles(row.status)">
                         {{ formatStatus(row.status) }}
                     </Badge>
                 </template>
 
                 <template #cell(items)="{ row }">
-                    <div class="flex flex-col items-center">
-                        <span class="text-[14px] font-bold text-foreground tabular-nums">{{ row.items_count }}</span>
-                        <span class="text-xs font-black uppercase tracking-tighter text-muted-foreground">SKUs Audited</span>
+                    <div class="flex flex-col items-center gap-0.5">
+                        <span class="text-[14px] font-bold text-foreground tabular-nums leading-none">{{ row.items_count }}</span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">SKUs Audited</span>
                     </div>
                 </template>
 

@@ -197,13 +197,13 @@ const formatStatus = (status: string) => {
                 </template>
 
                 <template #cell(vendor)="{ row }">
-                    <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
-                            <HistoryIcon class="h-5 w-5" />
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
+                            <HistoryIcon class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.vendor?.nama || 'Direct Purchase' }}</p>
-                            <p class="text-xs font-medium text-muted-foreground mt-0.5">{{ formatDate(row.tanggal) }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.vendor?.nama || 'Direct Purchase' }}</p>
+                            <p class="text-[11px] font-bold text-muted-foreground mt-1.5 uppercase tracking-tighter">{{ formatDate(row.tanggal) }}</p>
                         </div>
                     </div>
                 </template>
@@ -223,7 +223,7 @@ const formatStatus = (status: string) => {
                 </template>
 
                 <template #cell(status)="{ row }">
-                    <Badge variant="secondary" class="h-5 px-1.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status_pembayaran)">
+                    <Badge variant="secondary" class="h-5 px-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all" :class="getStatusStyles(row.status_pembayaran)">
                         {{ formatStatus(row.status_pembayaran) }}
                     </Badge>
                 </template>

@@ -136,27 +136,27 @@ const typeThemes: Record<string, string> = {
             </template>
 
             <template #cell(trx)="{ row }">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
                     <div :class="[
-                        'h-10 w-10 shrink-0 rounded-xl flex items-center justify-center font-bold transition-colors group-hover:bg-accent group-hover:text-white',
-                        row.status === 'finalized' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                        'h-9 w-9 shrink-0 rounded-lg flex items-center justify-center font-bold transition-all group-hover:bg-accent group-hover:text-white',
+                        row.status === 'finalized' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'
                     ]">
-                        <CheckCircle2 v-if="row.status === 'finalized'" class="h-5 w-5" />
-                        <FileIcon v-else class="h-5 w-5" />
+                        <CheckCircle2 v-if="row.status === 'finalized'" class="h-4 w-4" />
+                        <FileIcon v-else class="h-4 w-4" />
                     </div>
                     <div>
-                        <Link :href="`/purchasing/${row.id}`" class="text-sm font-bold text-foreground hover:underline flex items-center gap-2">
+                        <Link :href="`/purchasing/${row.id}`" class="text-[13px] font-bold text-foreground hover:underline flex items-center gap-2 leading-none">
                             {{ row.no_invoice || `TRX-${String(row.id).padStart(5, '0')}` }}
                         </Link>
-                        <p class="text-xs text-muted-foreground mt-0.5 whitespace-nowrap">{{ formatDate(row.tanggal) }}</p>
+                        <p class="text-[11px] font-bold text-muted-foreground mt-1.5 whitespace-nowrap uppercase tracking-tighter">{{ formatDate(row.tanggal) }}</p>
                     </div>
                 </div>
             </template>
 
             <template #cell(vendor)="{ row }">
                 <div class="flex flex-col gap-1.5 items-start">
-                    <span class="text-sm font-medium">{{ row.vendor?.nama || 'Tanpa Vendor (Internal)' }}</span>
-                    <Badge variant="outline" :class="[typeThemes[row.transaction_type], 'text-xs rounded font-bold uppercase tracking-wider h-5']">
+                    <span class="text-[12px] font-bold text-foreground/80">{{ row.vendor?.nama || 'Tanpa Vendor (Internal)' }}</span>
+                    <Badge variant="outline" :class="[typeThemes[row.transaction_type], 'text-[9px] rounded-sm font-black uppercase tracking-[0.1em] h-4 border-none px-1.5']">
                         {{ typeLabels[row.transaction_type]?.split(' (')[0] || row.transaction_type }}
                     </Badge>
                 </div>
@@ -164,11 +164,11 @@ const typeThemes: Record<string, string> = {
 
             <template #cell(tanda)="{ row }">
                 <div class="flex flex-col gap-1 items-start">
-                    <span class="text-sm font-bold tabular-nums">{{ formatCurrency(row.total_biaya) }}</span>
-                    <Badge v-if="row.status === 'finalized'" variant="secondary" class="bg-emerald-50 text-emerald-700 border-none h-5 font-bold uppercase tracking-widest text-[10px]">
+                    <span class="text-[13px] font-bold tabular-nums">{{ formatCurrency(row.total_biaya) }}</span>
+                    <Badge v-if="row.status === 'finalized'" variant="secondary" class="bg-emerald-50 text-emerald-600 border-none h-4 font-black uppercase tracking-widest text-[9px] px-1 rounded-sm shadow-none ">
                         Finalized
                     </Badge>
-                    <Badge v-else variant="secondary" class="bg-slate-100 text-slate-700 border-none h-5 font-bold uppercase tracking-widest text-[10px]">
+                    <Badge v-else variant="secondary" class="bg-slate-50 text-slate-400 border-none h-4 font-black uppercase tracking-widest text-[9px] px-1 rounded-sm shadow-none ">
                         Draft
                     </Badge>
                 </div>

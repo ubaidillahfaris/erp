@@ -3,7 +3,8 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
 import {
     Plus, MoreHorizontal, User as UserIcon,
-    Mail, Calendar, Shield, Trash2, Edit2, Loader2
+    Mail, Calendar, Shield, Trash2, Edit2, Loader2,
+    Pencil, Filter
 } from 'lucide-vue-next';
 import PageHeader from '@/components/PageHeader.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -89,6 +90,24 @@ const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | nu
     direction.value = payload.direction || '';
 };
 
+const formatDate = (dateString: string) => {
+    if (!dateString) return '--';
+    return new Date(dateString).toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+};
+
+const getRoleBadgeColor = (role: string) => {
+    const r = role.toLowerCase();
+    if (r.includes('super')) return 'bg-purple-50 text-purple-700 border-purple-100';
+    if (r.includes('admin')) return 'bg-blue-50 text-blue-700 border-blue-100';
+    if (r.includes('kasir')) return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+    if (r.includes('owner')) return 'bg-amber-50 text-amber-700 border-amber-100';
+    return 'bg-slate-100 text-slate-600 border-slate-200';
+};
+
 const isDialogOpen = ref(false);
 const isEditing = ref(false);
 const editingUserId = ref<number | null>(null);
@@ -169,35 +188,33 @@ const deleteUser = async (id: number) => {
                     </Button>
                 </template>
 
-                <template #cell(user)="{ row }">
-                    <div class="flex items-center gap-3">
-                        <Avatar class="h-9 w-9 rounded-xl border-2 border-white shadow-sm">
-                            <AvatarFallback class="bg-slate-100 text-slate-600 font-bold text-xs uppercase">
-                                {{ row.name.substring(0, 2) }}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-slate-900 leading-none mb-1">{{ row.name }}</span>
-                            <span class="text-xs text-muted-foreground tabular-nums">{{ row.email }}</span>
-                        </div>
+            <template #cell(user)="{ row }">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="h-9 w-9 shrink-0 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-xs border border-accent/20">
+                        {{ row.name.charAt(0).toUpperCase() }}
                     </div>
-                </template>
+                    <div class="min-w-0">
+                        <p class="text-[13px] font-bold text-foreground leading-none">{{ row.name }}</p>
+                        <p class="text-[11px] text-muted-foreground font-mono mt-1 tracking-tight">{{ row.email }}</p>
+                    </div>
+                </div>
+            </template>
 
                 <template #cell(role)="{ row }">
-                    <Badge variant="outline" :class="[
-                        'px-2 py-0.5 rounded font-bold uppercase tracking-widest text-[10px] h-5',
-                        row.role === 'superadmin' ? 'bg-purple-50 text-purple-700 border-purple-100' :
-                            row.role === 'admin' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                'bg-slate-100 text-slate-600 border-slate-200'
+                    <Badge :class="[
+                        getRoleBadgeColor(row.role),
+                        'text-[10px] uppercase font-bold px-2 h-5 tracking-widest border-none shadow-none'
                     ]">
                         {{ row.role }}
                     </Badge>
                 </template>
 
                 <template #cell(created_at)="{ row }">
-                    <span class="text-xs font-medium text-slate-500 tabular-nums">
-                        {{ row.created_at }}
-                    </span>
+                    <div class="flex flex-col gap-0.5">
+                        <span class="text-[12px] font-medium text-foreground">{{ formatDate(row.created_at) }}</span>
+                        <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Terdaftar</span>
+                    </div>
                 </template>
 
                 <template #actions="{ row }">
@@ -205,14 +222,14 @@ const deleteUser = async (id: number) => {
                         <DropdownMenu>
                             <DropdownMenuTrigger as-child>
                                 <button
-                                    class="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-colors">
-                                    <MoreHorizontal class="h-4 w-4" />
+                                    class="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-secondary transition-all">
+                                    <MoreHorizontal class="h-4 w-4 text-muted-foreground" />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" class="w-48 shadow-none rounded-xl p-1.5 border-slate-200">
-                                <DropdownMenuLabel
-                                    class="px-2 py-1.5 text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                                    Aksi</DropdownMenuLabel>
+                                <DropdownMenuLabel class="text-[10px] uppercase font-bold text-muted-foreground px-2.5 py-1.5">
+                                    User Actions
+                                </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem @click="openEditDialog(row)"
                                     class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px]">

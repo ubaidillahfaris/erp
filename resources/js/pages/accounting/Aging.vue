@@ -254,16 +254,16 @@ const handleRowClick = (row: any) => {
                 <template #cell(party_name)="{ row }">
                     <div class="flex items-center gap-3">
                         <div class="min-w-0">
-                            <p class="text-[13px] font-bold text-slate-900 truncate">{{ row.party_name }}</p>
-                            <p class="text-[10px] text-slate-400 uppercase font-medium tracking-wider">{{ row.party_type }}</p>
+                            <p class="text-[13px] font-bold text-foreground truncate leading-none">{{ row.party_name }}</p>
+                            <p class="text-[10px] text-muted-foreground uppercase font-black tracking-[0.15em] mt-1.5">{{ row.party_type }}</p>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(reference)="{ row }">
-                    <div class="flex items-center gap-1.5 opacity-80 decoration-slate-300">
-                        <span class="text-[11px] font-mono text-slate-500 uppercase">{{ row.reference }}</span>
-                        <ExternalLink class="h-3 w-3 text-slate-300" />
+                    <div class="flex items-center gap-1.5 opacity-80">
+                        <span class="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-tighter">{{ row.reference }}</span>
+                        <ExternalLink class="h-3 w-3 text-muted-foreground/40" />
                     </div>
                 </template>
 
@@ -275,15 +275,15 @@ const handleRowClick = (row: any) => {
 
                 <template #cell(days_overdue)="{ row }">
                     <div class="flex items-center justify-end gap-2">
-                        <span :class="['text-[13px] font-bold tabular-nums', row.days_overdue > 0 ? 'text-rose-600' : 'text-slate-400']">
+                        <span :class="['text-[13px] font-bold tabular-nums leading-none', row.days_overdue > 0 ? 'text-rose-600' : 'text-slate-400']">
                             {{ row.days_overdue > 0 ? row.days_overdue : 0 }} Hr
                         </span>
-                        <AlertTriangle v-if="row.days_overdue > 60" class="h-3.5 w-3.5 text-rose-500" />
+                        <AlertTriangle v-if="row.days_overdue > 60" class="h-3 w-3 text-rose-500" />
                     </div>
                 </template>
 
                 <template #cell(bucket)="{ row }">
-                    <Badge :class="['text-[9px] uppercase font-bold px-1.5 h-5 rounded-md border shadow-none tracking-tighter', getBucketVariant(row.bucket)]">
+                    <Badge :class="['text-[9px] uppercase font-black px-2 h-4 rounded-sm border shadow-none tracking-widest', getBucketVariant(row.bucket)]">
                         {{ getBucketLabel(row.bucket) }}
                     </Badge>
                 </template>

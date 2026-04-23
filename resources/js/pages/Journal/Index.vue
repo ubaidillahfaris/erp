@@ -176,19 +176,19 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
             :total-count="journals.total"
         >
             <template #cell(tanggal)="{ row }">
-                <span class="font-mono text-xs font-bold text-muted-foreground">{{ formatDate(row.tanggal) }}</span>
+                <span class="font-mono text-[11px] font-bold text-muted-foreground tracking-tighter">{{ formatDate(row.tanggal) }}</span>
             </template>
 
             <template #cell(category)="{ row }">
-                <Badge variant="outline" class="rounded-xl text-xs px-2 py-0.5 font-bold uppercase tracking-tighter border-slate-200 text-muted-foreground shadow-none ">
+                <Badge variant="outline" class="rounded-lg text-[9px] px-1.5 py-0.5 font-black uppercase tracking-widest border-slate-200 text-muted-foreground shadow-none ">
                     {{ row.category }}
                 </Badge>
             </template>
 
             <template #cell(description)="{ row }">
-                <div class="flex flex-col gap-0.5">
-                    <span class="text-sm font-bold text-foreground">{{ row.description }}</span>
-                    <span v-if="row.reference" class="text-xs text-muted-foreground uppercase opacity-50 flex items-center font-bold tracking-tight">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[13px] font-bold text-foreground leading-tight">{{ row.description }}</span>
+                    <span v-if="row.reference" class="text-[10px] text-muted-foreground uppercase opacity-60 flex items-center font-bold tracking-tight">
                         <HistoryIcon class="mr-1 h-3 w-3" />
                         Ref: {{ row.reference_type.split('\\').pop() }} #{{ row.reference_id }}
                     </span>
@@ -196,7 +196,7 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
             </template>
 
             <template #cell(via)="{ row }">
-                <span class="text-xs font-black uppercase tracking-widest text-muted-foreground">{{ row.payment_method }}</span>
+                <span class="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground/60">{{ row.payment_method }}</span>
             </template>
 
             <template #cell(debit)="{ row }">

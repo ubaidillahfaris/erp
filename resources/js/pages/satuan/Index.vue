@@ -147,8 +147,8 @@ const confirmDelete = async (id: number) => {
                             <Ruler class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[14px] font-bold text-foreground capitalize">{{ row.nama }}</p>
-                            <p class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{{ row.simbol }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize leading-none">{{ row.nama }}</p>
+                            <p class="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-widest mt-1.5">{{ row.simbol }}</p>
                         </div>
                     </div>
                 </template>

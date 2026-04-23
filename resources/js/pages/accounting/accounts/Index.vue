@@ -181,26 +181,26 @@ const deleteAccount = (id: number, hasHistory: boolean) => {
                 </template>
 
                 <template #cell(code)="{ row }">
-                    <div class="flex items-center gap-2">
-                        <div class="h-7 w-7 rounded bg-slate-100 flex items-center justify-center">
-                            <LayoutGrid class="h-3.5 w-3.5 text-slate-400" />
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
+                            <LayoutGrid class="h-4 w-4" />
                         </div>
-                        <span class="text-[13px] font-bold text-slate-900 font-mono tracking-tight">{{ row.code }}</span>
+                        <span class="text-[13px] font-bold text-foreground font-mono tracking-tighter leading-none">{{ row.code }}</span>
                     </div>
                 </template>
 
                 <template #cell(name)="{ row }">
-                    <div class="flex flex-col">
-                        <span class="text-[13px] font-bold text-slate-800">{{ row.name }}</span>
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[13px] font-bold text-foreground leading-none">{{ row.name }}</span>
                         <div v-if="row.journal_items_count > 0" class="flex items-center gap-1 mt-0.5">
                             <Lock class="h-2.5 w-2.5 text-amber-500" />
-                            <span class="text-[10px] text-amber-600 font-medium italic">Immutable</span>
+                            <span class="text-[10px] text-amber-600 font-black uppercase tracking-tighter">Immutable</span>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(type_badge)="{ row }">
-                    <Badge :class="['text-[10px] uppercase font-bold px-1.5 h-5 rounded-md border shadow-none', getTypeVariant(row.type)]">
+                    <Badge :class="['text-[10px] uppercase font-black tracking-widest px-1.5 h-4 rounded-sm border shadow-none', getTypeVariant(row.type)]">
                         {{ row.type }}
                     </Badge>
                 </template>

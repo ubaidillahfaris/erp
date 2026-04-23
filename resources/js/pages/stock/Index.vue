@@ -225,23 +225,23 @@ const exportPdf = () => {
                 </template>
 
                 <template #cell(product)="{ row }">
-                    <div class="flex items-center gap-4">
-                        <div class="h-10 w-10 shrink-0 rounded-xl bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
-                            <Package class="h-5 w-5" />
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
+                            <Package class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[14px] font-bold text-foreground capitalize truncate">{{ row.nama }}</p>
-                            <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-xs font-mono font-bold text-muted-foreground uppercase tracking-widest">{{ row.sku }}</span>
-                                <span class="text-xs text-muted-foreground italic">•</span>
-                                <span class="text-xs font-medium text-muted-foreground lowercase">{{ row.satuan?.nama }}</span>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.nama }}</p>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <span class="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-widest">{{ row.sku }}</span>
+                                <span class="text-[11px] text-muted-foreground italic">•</span>
+                                <span class="text-[11px] font-medium text-muted-foreground lowercase">{{ row.satuan?.nama }}</span>
                             </div>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(type)="{ row }">
-                    <Badge variant="outline" class="h-5 px-1.5 rounded text-xs font-bold uppercase tracking-widest border-slate-200 text-muted-foreground shadow-none ">
+                    <Badge variant="outline" class="h-4 px-1 rounded-sm text-[9px] font-black uppercase tracking-widest border-slate-200 text-muted-foreground shadow-none ">
                         {{ row.type?.replace('_', ' ') }}
                     </Badge>
                 </template>

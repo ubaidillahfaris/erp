@@ -180,41 +180,41 @@ const hasActiveFilters = computed(() => {
 
             <template #cell(invoice)="{ row }">
                 <div class="flex items-center gap-3">
-                    <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground">
+                    <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                         <FileText class="h-4 w-4" />
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[13px] font-bold text-foreground font-mono">#{{ row.invoice_number }}</p>
-                        <p class="text-[11px] text-muted-foreground">{{ formatDate(row.tanggal) }}</p>
+                        <p class="text-[13px] font-bold text-foreground font-mono leading-none">#{{ row.invoice_number }}</p>
+                        <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-tighter mt-1.5">{{ formatDate(row.tanggal) }}</p>
                     </div>
                 </div>
             </template>
 
             <template #cell(customer)="{ row }">
                 <div class="flex items-center gap-2">
-                    <div class="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center">
+                    <div class="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200/50">
                         <UserIcon class="h-3 w-3 text-slate-400" />
                     </div>
-                    <span class="text-[12px] font-medium" :class="row.sale_customer ? 'text-foreground' : 'text-muted-foreground italic'">
+                    <span class="text-[12px] font-bold text-foreground/80 leading-none" :class="!row.sale_customer && 'italic opacity-50'">
                         {{ row.sale_customer?.customer?.name || 'Walk-in' }}
                     </span>
                 </div>
             </template>
 
             <template #cell(items_summary)="{ row }">
-                <div class="flex flex-col gap-0.5">
-                    <span class="text-[12px] font-bold text-foreground">{{ row.items?.length || 0 }} Items</span>
-                    <span class="text-[11px] text-muted-foreground">{{ row.items?.reduce((acc: number, i: any) => acc + Number(i.qty), 0) }} Total Qty</span>
+                <div class="flex flex-col gap-1">
+                    <span class="text-[12px] font-bold text-foreground leading-none">{{ row.items?.length || 0 }} Items</span>
+                    <span class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">{{ row.items?.reduce((acc: number, i: any) => acc + Number(i.qty), 0) }} Total Qty</span>
                 </div>
             </template>
 
             <template #cell(payment)="{ row }">
-                <div class="flex flex-col">
+                <div class="flex flex-col gap-1">
                     <div class="flex items-center gap-1.5">
-                        <CreditCard class="h-3 w-3 text-muted-foreground" />
-                        <span class="text-[11px] font-bold uppercase tracking-tight text-foreground">{{ row.payment_method }}</span>
+                        <CreditCard class="h-3 w-3 text-muted-foreground/60" />
+                        <span class="text-[11px] font-black uppercase tracking-[0.1em] text-foreground leading-none">{{ row.payment_method }}</span>
                     </div>
-                    <span v-if="row.payment_method === 'cash'" class="text-[10px] text-muted-foreground">
+                    <span v-if="row.payment_method === 'cash'" class="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">
                         Rec: {{ formatCurrency(row.received_amount) }}
                     </span>
                 </div>
