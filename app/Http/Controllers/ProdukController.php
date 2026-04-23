@@ -16,30 +16,41 @@ class ProdukController extends Controller
     {
         $perPage = $request->input('per_page', 10);
         $search = $request->input('search');
-        $jenis = $request->input('jenis');
+
+        // Handle faceted filters (from DataTable) or legacy 'jenis'
+        $activeFilters = $request->input('active_filters', []);
+        $jenis = $activeFilters['jenis'] ?? $request->input('jenis');
+
         $sort = $request->input('sort') ?: 'created_at';
         $direction = strtolower($request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
+        // Base query with virtual 'stok' column from stocks table
+        $query = Produk::query()
+            ->with(['satuan', 'currentPrice', 'category'])
+            ->addSelect(['stok' => \App\Models\Stock::select('balance')
+                ->whereColumn('produk_id', 'produks.id')
+                ->limit(1)
+            ])
+            ->when($jenis && $jenis !== 'all', function ($query) use ($jenis) {
+                if (is_array($jenis)) {
+                    $query->whereIn('type', $jenis);
+                } else {
+                    $query->where('type', $jenis);
+                }
+            });
+
         if ($request->filled('search')) {
             $produks = Produk::search($search)
-                ->when($request->filled('jenis') && $jenis !== 'all', function ($query) use ($jenis) {
-                    $query->where('type', $jenis);
-                })
-                ->query(fn ($q) => $q->with(['satuan', 'currentPrice', 'category'])->orderBy($sort, $direction))
+                ->query(fn ($q) => $q->mergeConstraintsFrom($query)->orderBy($sort, $direction))
                 ->paginate($perPage);
         } else {
-            $produks = Produk::query()
-                ->when($request->filled('jenis') && $jenis !== 'all', function ($query) use ($jenis) {
-                    $query->where('type', $jenis);
-                })
-                ->with(['satuan', 'currentPrice', 'category'])
-                ->orderBy($sort, $direction)
+            $produks = $query->orderBy($sort, $direction)
                 ->paginate($perPage);
         }
 
         return Inertia::render('produk/Index', [
             'produks' => $produks->withQueryString(),
-            'filters' => $request->only(['search', 'jenis', 'per_page', 'sort', 'direction']),
+            'filters' => $request->only(['search', 'active_filters', 'per_page', 'sort', 'direction']),
         ]);
     }
 

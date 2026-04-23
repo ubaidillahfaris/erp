@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Services\RoleService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\PermissionRegistrar;
@@ -19,17 +21,50 @@ class UserController extends Controller
     /**
      * Display a listing of the users.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        return Inertia::render('settings/Users', [
-            'users' => User::with('roles')->get()->map(fn ($user) => [
+        $perPage = $request->input('per_page', 10);
+        $sort = $request->input('sort') ?: 'created_at';
+        $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
+
+        // Handle faceted filters
+        $activeFilters = $request->input('active_filters', []);
+        if (is_string($activeFilters)) {
+            $activeFilters = json_decode($activeFilters, true) ?: [];
+        }
+
+        $query = User::with('roles');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if (!empty($activeFilters['role'])) {
+            $roles = (array) $activeFilters['role'];
+            $query->whereHas('roles', function ($q) use ($roles) {
+                $q->whereIn('roles.name', $roles);
+            });
+        }
+
+        $users = $query->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->through(fn ($user) => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->roles->first()?->name,
                 'created_at' => $user->created_at->format('d M Y'),
-            ]),
+            ])
+            ->withQueryString();
+
+        return Inertia::render('settings/Users', [
+            'users' => $users,
             'roles' => Role::all()->pluck('name'),
+            'filters' => $request->only(['search', 'active_filters', 'per_page', 'sort', 'direction']),
         ]);
     }
 

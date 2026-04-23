@@ -25,6 +25,11 @@ class PurchaseController extends Controller
         $sort = $request->input('sort') ?: 'tanggal';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
+        // Handle faceted filters
+        $activeFilters = $request->input('active_filters', []);
+        $type = $activeFilters['transaction_type'] ?? $request->input('type');
+        $status = $activeFilters['status'] ?? $request->input('status');
+
         $query = Purchase::with(['vendor'])->withCount('items');
 
         if ($request->filled('search')) {
@@ -36,19 +41,27 @@ class PurchaseController extends Controller
             });
         }
 
-        if ($request->filled('type') && $request->type !== 'semua') {
-            $query->where('transaction_type', $request->type);
+        if ($type && $type !== 'semua') {
+            if (is_array($type)) {
+                $query->whereIn('transaction_type', $type);
+            } else {
+                $query->where('transaction_type', $type);
+            }
         }
 
-        if ($request->filled('status') && $request->status !== 'semua') {
-            $query->where('status', $request->status);
+        if ($status && $status !== 'semua') {
+            if (is_array($status)) {
+                $query->whereIn('status', $status);
+            } else {
+                $query->where('status', $status);
+            }
         }
 
         $purchases = $query->orderBy($sort, $direction)->paginate($perPage)->withQueryString();
 
         return Inertia::render('purchasing/Index', [
             'purchases' => $purchases,
-            'filters' => $request->only(['search', 'type', 'status', 'per_page', 'sort', 'direction']),
+            'filters' => $request->only(['search', 'active_filters', 'per_page', 'sort', 'direction']),
         ]);
     }
 

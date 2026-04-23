@@ -50,6 +50,7 @@ const props = defineProps<{
         per_page?: string;
         sort?: string;
         direction?: string;
+        active_filters?: Record<string, any>;
     };
 }>();
 
@@ -59,10 +60,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const search = ref(props.filters.search || '');
-const jenis = ref(props.filters.jenis || 'all');
 const perPage = ref(props.filters.per_page || String(props.produks.per_page));
 const sort = ref(props.filters.sort || 'created_at');
 const direction = ref(props.filters.direction || 'desc');
+const activeFilters = ref(props.filters.active_filters || {});
 
 const columns = [
     { key: 'item', label: 'Item Details', sortKey: 'nama' },
@@ -77,15 +78,26 @@ const tabs = [
     { value: 'finished_good', label: 'Barang Jadi' },
 ];
 
-watch([search, jenis, perPage, sort, direction], debounce(([newSearch, newJenis, newPerPage, newSort, newDirection]) => {
+const filterOptions = [
+    {
+        key: 'jenis',
+        label: 'Jenis Produk',
+        options: [
+            { value: 'raw_material', label: 'Bahan Baku' },
+            { value: 'finished_good', label: 'Barang Jadi' },
+        ]
+    }
+];
+
+watch([search, perPage, sort, direction, activeFilters], debounce(([newSearch, newPerPage, newSort, newDirection, newFilters]) => {
     router.get(index().url, {
         search: newSearch || undefined,
-        jenis: newJenis === 'all' ? undefined : newJenis,
         per_page: newPerPage,
         sort: newSort || undefined,
-        direction: newSort ? (newDirection || 'asc') : undefined
+        direction: newSort ? (newDirection || 'asc') : undefined,
+        active_filters: Object.keys(newFilters).length > 0 ? newFilters : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
-}, 300));
+}, 300), { deep: true });
 
 const { confirmDialog } = useConfirm();
 
@@ -138,6 +150,8 @@ const formatCurrency = (value: number) => {
             v-model:perPage="perPage"
             :sort="sort"
             :direction="direction as any"
+            :filter-options="filterOptions"
+            v-model:active-filters="activeFilters"
             @sort-change="handleSortChange"
             @bulk-delete="handleBulkDelete"
             search-placeholder="Cari nama, SKU..." 
@@ -145,19 +159,7 @@ const formatCurrency = (value: number) => {
             :total-count="produks.total"
         >
             <template #toolbar-actions>
-                <Select v-model="jenis">
-                    <SelectTrigger class="h-9 w-[180px] rounded-xl border-slate-200 bg-white text-[13px] font-medium shadow-none focus-visible:ring-accent/5 transition-all font-sans pl-3">
-                        <div class="flex items-center gap-2">
-                            <Filter class="h-3.5 w-3.5 text-muted-foreground" />
-                            <SelectValue placeholder="Jenis Produk" />
-                        </div>
-                    </SelectTrigger>
-                    <SelectContent class="rounded-xl shadow-none border-slate-200 font-sans">
-                        <SelectItem value="all" class="text-[13px]">Semua Jenis</SelectItem>
-                        <SelectItem value="raw_material" class="text-[13px]">Bahan Baku</SelectItem>
-                        <SelectItem value="finished_good" class="text-[13px]">Barang Jadi</SelectItem>
-                    </SelectContent>
-                </Select>
+                <!-- Add other toolbar actions here if needed -->
             </template>
             <template #header-actions>
                 <Link :href="create().url">
@@ -202,7 +204,7 @@ const formatCurrency = (value: number) => {
                         ? 'bg-red-50 text-red-600 border-red-100'
                         : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                 ]">
-                    <span class="text-[12px] font-bold tabular-nums leading-none">{{ row.stok }}</span>
+                    <span class="text-[12px] font-bold tabular-nums leading-none">{{ Number(row.stok || 0) }}</span>
                     <span class="text-xs font-bold uppercase opacity-60 leading-none">{{ row.unit?.simbol || 'pcs'
                     }}</span>
                 </div>

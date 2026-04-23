@@ -88,7 +88,7 @@ const groupedMenus = computed(() => {
     <!-- ── FOOTER: Settings & User ── -->
     <SidebarFooter class="px-3 pb-6 pt-4 space-y-1">
         <!-- System Nav -->
-        <SidebarMenu class="px-2 mb-4">
+        <!-- <SidebarMenu class="px-2 mb-4">
             <SidebarMenuItem>
                 <SidebarMenuButton as-child
                     class="h-10 px-3 rounded-xl hover:bg-slate-50 text-slate-500 transition-all dark:hover:bg-slate-800">
@@ -112,7 +112,7 @@ const groupedMenus = computed(() => {
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-        </SidebarMenu>
+        </SidebarMenu> -->
 
         <NavUser />
     </SidebarFooter>

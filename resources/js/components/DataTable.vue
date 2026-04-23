@@ -14,7 +14,11 @@ import {
     ArrowUp,
     ArrowDown,
     Trash2, // Added
-    X // Added
+    X, // Added
+    Plus,
+    ListFilter,
+    Check,
+    Search,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import DataTablePagination from '@/components/DataTablePagination.vue';
@@ -29,6 +33,16 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 // Removed Checkbox import
 
 interface Column {
@@ -39,6 +53,17 @@ interface Column {
     readonly class?: string;
     readonly sortable?: boolean;
     readonly sortKey?: string; // Added
+}
+
+interface FilterOption {
+    readonly value: string;
+    readonly label: string;
+}
+
+interface FilterCategory {
+    readonly key: string;
+    readonly label: string;
+    readonly options: readonly FilterOption[];
 }
 
 interface Tab {
@@ -70,6 +95,8 @@ const props = withDefaults(defineProps<{
     rowIdKey?: string;
     toolbarTitle?: string;
     showSelection?: boolean;
+    filterOptions?: readonly FilterCategory[];
+    activeFilters?: Record<string, any>;
 }>(), {
     searchPlaceholder: 'Filter...',
     rowIdKey: 'id',
@@ -84,6 +111,8 @@ const emit = defineEmits<{
     (e: 'rowClick', row: any): void;
     (e: 'bulkDelete', selectedIds: (string | number)[]): void;
     (e: 'sortChange', payload: { key: string, direction: 'asc' | 'desc' | null }): void;
+    (e: 'addNew'): void;
+    (e: 'update:active-filters', value: Record<string, any>): void;
 }>();
 
 // --- STATE SYNC ---
@@ -243,6 +272,51 @@ const handleSortToggle = (column: any) => {
         column.clearSorting(); // Back to NEUTRAL
     }
 };
+
+const hasActiveFilters = computed(() => {
+    return Object.keys(props.activeFilters || {}).length > 0;
+});
+
+const getActiveFilterCount = (key: string) => {
+    const filter = props.activeFilters?.[key];
+    if (Array.isArray(filter)) return filter.length;
+    return filter ? 1 : 0;
+};
+
+const isFilterActive = (key: string, value: string) => {
+    const filter = props.activeFilters?.[key];
+    if (Array.isArray(filter)) return filter.includes(value);
+    return filter === value;
+};
+
+const toggleFilter = (key: string, value: string) => {
+    const current = { ...(props.activeFilters || {}) };
+    let values = Array.isArray(current[key]) ? [...current[key]] : (current[key] ? [current[key]] : []);
+
+    if (values.includes(value)) {
+        values = values.filter(v => v !== value);
+    } else {
+        values.push(value);
+    }
+
+    if (values.length === 0) {
+        delete current[key];
+    } else {
+        current[key] = values;
+    }
+
+    emit('update:active-filters', current);
+};
+
+const clearFilters = () => {
+    emit('update:active-filters', {});
+};
+
+const clearFilterCategory = (key: string) => {
+    const current = { ...(props.activeFilters || {}) };
+    delete current[key];
+    emit('update:active-filters', current);
+};
 </script>
 
 <template>
@@ -251,7 +325,7 @@ const handleSortToggle = (column: any) => {
     <DataTableTabs v-if="tabs && tabs.length > 0" v-model:activeTab="internalActiveTab" :tabs="tabs" />
 
     <!-- TOOLBAR -->
-    <div class="h-10 flex items-center justify-between gap-3">
+    <div class="h-10 flex items-center justify-end gap-3">
         <!-- Bulkl/Selection Toolbar -->
         <div v-if="selectedRowsCount > 0"
             class="flex-1 flex items-center justify-between px-3 bg-accent/5 border border-accent/20 rounded-md h-full animate-in fade-in slide-in-from-top-1 duration-200">
@@ -277,18 +351,83 @@ const handleSortToggle = (column: any) => {
 
         <!-- Standard Toolbar -->
         <template v-else>
+            <!-- FILTERS & OTHER ACTIONS -->
             <div class="flex items-center gap-2">
-                <div class="relative group">
-                    <Input v-model="internalSearch" :placeholder="searchPlaceholder"
-                        class="h-9 w-[150px] lg:w-[250px] bg-white border-input shadow-none focus-visible:ring-accent/5 rounded-md transition-all pl-3" />
-                </div>
-
                 <div v-if="$slots['toolbar-actions']" class="flex items-center gap-2">
                     <slot name="toolbar-actions"></slot>
                 </div>
+
+                <div v-if="filterOptions && filterOptions.length > 0" class="flex items-center gap-2">
+                    <template v-for="filter in filterOptions" :key="filter.key">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <Button variant="outline" size="sm" class="h-9 border rounded-full px-4">
+                                    <ListFilter class="mr-2 h-4 w-4" />
+                                    {{ filter.label }}
+                                    <template v-if="getActiveFilterCount(filter.key) > 0">
+                                        <Separator orientation="vertical" class="mx-2 h-4" />
+                                        <Badge variant="secondary" class="rounded-sm px-1 font-normal lg:hidden">
+                                            {{ getActiveFilterCount(filter.key) }}
+                                        </Badge>
+                                        <div class="hidden space-x-1 lg:flex">
+                                            <Badge v-if="getActiveFilterCount(filter.key) > 2" variant="secondary"
+                                                class="rounded-sm px-1 font-normal">
+                                                {{ getActiveFilterCount(filter.key) }} selected
+                                            </Badge>
+                                            <template v-else>
+                                                <Badge
+                                                    v-for="option in filter.options.filter(o => isFilterActive(filter.key, o.value))"
+                                                    :key="option.value" variant="secondary"
+                                                    class="rounded-sm px-1 font-normal">
+                                                    {{ option.label }}
+                                                </Badge>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-[200px]">
+                                <DropdownMenuLabel>{{ filter.label }}</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuCheckboxItem v-for="option in filter.options" :key="option.value"
+                                    :checked="isFilterActive(filter.key, option.value)"
+                                    @select.prevent="toggleFilter(filter.key, option.value)"
+                                    :class="[
+                                        'cursor-pointer transition-colors',
+                                        isFilterActive(filter.key, option.value) ? 'bg-accent/5 font-semibold text-accent' : ''
+                                    ]">
+                                    <div class="flex items-center justify-between w-full gap-2">
+                                        <span>{{ option.label }}</span>
+                                        <Check v-if="isFilterActive(filter.key, option.value)"
+                                            class="h-3.5 w-3.5 animate-in zoom-in-50 duration-300" />
+                                    </div>
+                                </DropdownMenuCheckboxItem>
+                                <template v-if="getActiveFilterCount(filter.key) > 0">
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem @click="clearFilterCategory(filter.key)"
+                                        class="justify-center text-center text-xs font-semibold text-muted-foreground hover:text-destructive py-2 transition-colors cursor-pointer border-t mt-1">
+                                        RESET FILTER
+                                    </DropdownMenuItem>
+                                </template>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </template>
+
+                    <Button v-if="hasActiveFilters" variant="ghost" class="h-9 px-2 lg:px-4 rounded-full" @click="clearFilters">
+                        Reset
+                        <X class="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
             </div>
 
+            <!-- SEARCH & CREATE -->
             <div class="flex items-center gap-2">
+                <div class="relative group">
+                    <Search
+                        class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-accent" />
+                    <Input v-model="internalSearch" :placeholder="searchPlaceholder"
+                        class="h-9 w-[150px] lg:w-[250px] bg-white border-input shadow-none focus-visible:ring-accent/5 rounded-full transition-all pl-9" />
+                </div>
                 <slot name="header-actions"></slot>
             </div>
         </template>
@@ -317,8 +456,8 @@ const handleSortToggle = (column: any) => {
 
                         <!-- Data Headers -->
                         <TableHead v-else @click="handleSortToggle(header.column)" :class="[
-                            'px-4 text-[11px] font-bold uppercase tracking-widest text-slate-500 h-10 select-none',
-                            header.column.getCanSort() ? 'cursor-pointer hover:bg-muted/50 transition-colors group/head' : '',
+                            'px-4 text-xs font-medium text-muted-foreground h-10 select-none',
+                            header.column.getCanSort() ? 'cursor-pointer hover:text-foreground transition-colors group/head' : '',
                             (header.column.columnDef.meta as any)?.align === 'center' ? 'text-center' : (header.column.columnDef.meta as any)?.align === 'right' ? 'text-right' : 'text-left',
                             (header.column.columnDef.meta as any)?.class
                         ]" :style="{ width: (header.column.columnDef.meta as any)?.width }">
@@ -346,7 +485,7 @@ const handleSortToggle = (column: any) => {
                 <template v-if="table.getRowModel().rows?.length">
                     <template v-for="row in table.getRowModel().rows" :key="row.id">
                         <TableRow :data-state="row.getIsSelected() && 'selected'"
-                            class="group transition-colors data-[state=selected]:bg-accent/[0.03] hover:bg-muted/20"
+                            class="group transition-colors data-[state=selected]:bg-accent/[0.03] hover:bg-slate-50/80"
                             @click="emit('rowClick', row.original)">
                             <template v-for="cell in row.getVisibleCells()" :key="cell.id">
                                 <!-- Selection Cell -->
@@ -354,7 +493,8 @@ const handleSortToggle = (column: any) => {
                                     <input type="checkbox" :checked="row.getIsSelected()"
                                         @change="row.toggleSelected(($event.target as HTMLInputElement).checked)"
                                         @click.stop
-                                        class="h-4 w-4 rounded border-input text-accent accent-accent focus:ring-accent/20 cursor-pointer transition-all bg-white" />
+                                        class="h-4 w-4 rounded border-input text-accent accent-accent focus:ring-accent/20 cursor-pointer transition-all bg-white"
+                                        :class="row.getIsSelected() ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 transition-opacity'" />
                                 </TableCell>
 
                                 <!-- Expand Cell -->
@@ -377,7 +517,7 @@ const handleSortToggle = (column: any) => {
 
                                 <!-- Data Cell -->
                                 <TableCell v-else :class="[
-                                    'px-4 py-3.5 align-middle text-sm font-medium text-slate-700',
+                                    'px-4 py-3.5 align-middle text-sm text-foreground/80',
                                     (cell.column.columnDef.meta as any)?.align === 'center' ? 'text-center' : (cell.column.columnDef.meta as any)?.align === 'right' ? 'text-right' : 'text-left',
                                     (cell.column.columnDef.meta as any)?.class
                                 ]">
@@ -393,7 +533,7 @@ const handleSortToggle = (column: any) => {
                         <TableRow v-if="row.getIsExpanded()">
                             <TableCell :colspan="row.getVisibleCells().length"
                                 class="p-0 border-t bg-muted/5 tracking-normal">
-                                <div class="px-12 py-6 animate-in slide-in-from-top-1 duration-300">
+                                <div class="px-8 py-5 animate-in slide-in-from-top-1 duration-300">
                                     <slot name="expanded" :row="row.original"></slot>
                                 </div>
                             </TableCell>
@@ -404,13 +544,23 @@ const handleSortToggle = (column: any) => {
                 <template v-else>
                     <TableRow>
                         <TableCell :colspan="tableColumns.length"
-                            class="h-32 text-center text-muted-foreground text-sm italic py-12">
+                            class="h-48 text-center text-muted-foreground text-sm py-12">
                             <slot name="empty">No results found.</slot>
                         </TableCell>
                     </TableRow>
                 </template>
             </TableBody>
         </Table>
+
+        <div class="border-t border-slate-100">
+            <slot name="add-new">
+                <button @click="emit('addNew')"
+                    class="w-full flex items-center gap-2 px-6 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-slate-50 transition-colors">
+                    <Plus class="h-4 w-4" />
+                    New
+                </button>
+            </slot>
+        </div>
 
         <!-- PAGINATION -->
         <DataTablePagination :paginator="data" v-model:perPage="internalPerPage" :selectedCount="selectedRowsCount"
