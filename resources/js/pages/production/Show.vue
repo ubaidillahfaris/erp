@@ -54,31 +54,26 @@ const formatTime = (dateStr: string) => new Date(dateStr).toLocaleTimeString('id
 <AppLayout :breadcrumbs="breadcrumbs">
     <div class="px-6 py-8 space-y-6 animate-fade-up font-sans text-slate-700">
         
-        <!-- Header: Minimalist & Clean -->
-        <header class="flex items-center justify-between gap-4 pb-6 border-b border-border/60">
-            <div class="flex items-center gap-4">
-                <Link :href="index().url" class="h-10 w-10 rounded-full bg-card border border-border/50 flex items-center justify-center hover:bg-muted transition shadow-sm">
-                    <ArrowLeft class="h-5 w-5 text-muted-foreground" />
-                </Link>
-                <div>
-                    <div class="flex items-center gap-3">
-                        <h1 class="text-2xl font-normal tracking-tight text-foreground">{{ production.sku }}</h1>
-                        <Badge :class="['rounded-full px-2.5 py-0.5 font-normal text-[10px] uppercase tracking-widest border-0', 
-                            production.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600']">
-                            {{ production.status === 'completed' ? 'Selesai' : 'Diproses' }}
-                        </Badge>
-                    </div>
-                    <p class="text-[13px] font-normal text-muted-foreground mt-1 tracking-tight">Batch #{{ production.id }} &bull; {{ formatDate(production.created_at) }}</p>
+        <!-- Header: Using Standard PageHeader -->
+        <PageHeader 
+            :title="production.sku" 
+            :description="`Batch #${production.id} • ${formatDate(production.created_at)}`"
+            :back-href="index().url"
+            class="pb-6 border-b border-border/60"
+        >
+            <template #actions>
+                <div class="flex items-center gap-3">
+                    <Badge :class="['rounded-full px-2.5 py-0.5 font-normal text-[10px] uppercase tracking-widest border-0', 
+                        production.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600']">
+                        {{ production.status === 'completed' ? 'Selesai' : 'Diproses' }}
+                    </Badge>
+                    <Link v-if="production.status !== 'completed'" :href="edit(production.id).url" class="h-10 px-5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-normal flex items-center gap-2 transition hover:-translate-y-0.5 shadow-none">
+                        Finish Batch
+                        <CheckCircle2 class="h-3.5 w-3.5" />
+                    </Link>
                 </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-                <Link v-if="production.status !== 'completed'" :href="edit(production.id).url" class="h-10 px-5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-normal flex items-center gap-2 transition hover:-translate-y-0.5 shadow-none">
-                    Finish Batch
-                    <CheckCircle2 class="h-3.5 w-3.5" />
-                </Link>
-            </div>
-        </header>
+            </template>
+        </PageHeader>
 
         <main class="grid grid-cols-12 gap-5">
             <!-- Summary Panel -->
