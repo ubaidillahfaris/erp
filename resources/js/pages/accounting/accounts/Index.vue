@@ -13,7 +13,14 @@ import DataTable from '@/components/DataTable.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+    DropdownMenu, 
+    DropdownMenuContent, 
+    DropdownMenuItem, 
+    DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { MoreHorizontal, Pencil, HistoryIcon } from 'lucide-vue-next';
 
 const props = defineProps<{
     accounts: {
@@ -226,35 +233,32 @@ const deleteAccount = (id: number, hasHistory: boolean) => {
                 </template>
 
                 <template #actions="{ row }">
-                    <div class="flex items-center gap-2 justify-end">
-                        <TooltipProvider>
-                            <Tooltip :delay-duration="100">
-                                <TooltipTrigger as-child>
-                                    <Button as-child variant="ghost" size="sm" class="h-8 w-8 p-0 rounded-lg hover:bg-slate-100">
-                                        <Link :href="`/accounting/accounts/${row.id}/edit`">
-                                            <Edit2 class="h-3.5 w-3.5 text-slate-600" />
-                                        </Link>
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" class="bg-slate-900 text-white text-[10px] font-bold py-1 px-2">Edit Akun</TooltipContent>
-                            </Tooltip>
+                    <div class="flex items-center justify-end">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger as-child>
+                                <button class="h-8 w-8 flex items-center justify-center rounded-lg text-black/80 hover:bg-secondary hover:text-foreground transition-all">
+                                    <MoreHorizontal class="h-4 w-4" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="rounded-xl p-1.5 w-44 shadow-none border-slate-200 font-sans">
+                                <DropdownMenuItem @click="router.visit(`/accounting/accounts/${row.id}/edit`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px]">
+                                    <Pencil class="h-3.5 w-3.5" /> Edit Akun
+                                </DropdownMenuItem>
+                                
+                                <DropdownMenuItem @click="router.visit(`/accounting/journal?account_id=${row.id}`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px]">
+                                    <HistoryIcon class="h-3.5 w-3.5" /> Riwayat Jurnal
+                                </DropdownMenuItem>
 
-                            <Tooltip :delay-duration="100">
-                                <TooltipTrigger as-child>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="sm" 
-                                        :class="['h-8 w-8 p-0 rounded-lg', row.journal_items_count > 0 ? 'opacity-30 grayscale cursor-not-allowed' : 'hover:bg-rose-50']"
-                                        @click="deleteAccount(row.id, row.journal_items_count > 0)"
-                                    >
-                                        <Trash2 :class="['h-3.5 w-3.5', row.journal_items_count > 0 ? 'text-slate-400' : 'text-rose-500']" />
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" class="bg-rose-600 text-white text-[10px] font-bold py-1 px-2">
-                                    {{ row.journal_items_count > 0 ? 'Akun memiliki history jurnal' : 'Hapus/Nonaktifkan Akun' }}
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                                <DropdownMenuItem 
+                                    @click="deleteAccount(row.id, row.journal_items_count > 0)"
+                                    :disabled="row.journal_items_count > 0"
+                                    class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive focus:text-destructive focus:bg-destructive/5 disabled:opacity-30 disabled:cursor-not-allowed"
+                                >
+                                    <Trash2 class="h-3.5 w-3.5" /> 
+                                    {{ row.journal_items_count > 0 ? 'Immutable (Ada Jurnal)' : 'Hapus Akun' }}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </template>
 
