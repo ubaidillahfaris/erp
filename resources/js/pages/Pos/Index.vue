@@ -602,7 +602,7 @@ const selectAmount = (amount: number) => {
 
     <!-- Modals -->
     <Dialog :open="showPayment" @update:open="showPayment = $event">
-        <DialogContent class="md:min-w-4xl lg:min-w-6xl rounded-4xl p-0 overflow-hidden border-none shadow-2xl">
+        <DialogContent class="w-fit md:min-w-4xl lg:min-w-6xl rounded-4xl p-0 overflow-hidden border-none shadow-2xl">
             <div class="flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-white">
                 <div>
                     <h3 class="text-xl font-bold text-slate-900 tracking-tight">Selesaikan Pembayaran</h3>
@@ -703,7 +703,7 @@ const selectAmount = (amount: number) => {
                             <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Total
                                 Bayar</span>
                             <span class="font-bold text-4xl tracking-tight text-white">{{ formatCurrency(totalAmount)
-                            }}</span>
+                                }}</span>
                         </div>
                     </div>
                     <div class="pt-8 space-y-3">
