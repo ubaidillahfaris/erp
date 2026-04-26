@@ -23,11 +23,13 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps<{
     employee?: any;
     roles: string[];
     isEditing?: boolean;
+    app_debug?: boolean;
 }>();
 
 const breadcrumbs = [
@@ -51,13 +53,77 @@ const form = useForm({
     bank_name: props.employee?.bank_name ?? '',
     bank_account: props.employee?.bank_account ?? '',
     create_user: !!props.employee?.user_id,
-    role: props.employee?.user?.roles?.[0]?.name ?? 'Staff',
+    role: props.employee?.user?.roles?.[0]?.name ?? 'staff',
     password: '',
+    photo: null as File | null,
+    documents: [] as File[],
+    documents_meta: '',
 });
 
+onMounted(() => {
+    if (props.app_debug && !props.isEditing) {
+        form.name = 'Budi Santoso';
+        form.nik = '3273000000000001';
+        form.email = 'budi@warung.com';
+        form.phone = '08123456789';
+        form.address = 'Jl. Merdeka No. 123, Bandung';
+        form.position = 'Staf Produksi';
+        form.department = 'Produksi';
+        form.join_date = new Date().toISOString().split('T')[0];
+        form.employment_type = 'Tetap';
+        form.basic_salary = '5000000';
+        form.status = 'active';
+        form.create_user = true;
+        form.role = 'staff';
+        form.password = 'password';
+    }
+});
+
+const photoPreview = ref(props.employee?.photo_path ? `/storage/${props.employee.photo_path}` : null);
+const photoInput = ref<HTMLInputElement | null>(null);
+const docInputs = ref<HTMLInputElement[]>([]);
+
+const handlePhotoChange = (e: Event) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+        form.photo = file;
+        photoPreview.value = URL.createObjectURL(file);
+    }
+};
+
+const additionalDocuments = ref<{ type: string; file: File | null; preview: string | null }[]>([]);
+
+const addDocumentRow = () => {
+    additionalDocuments.value.push({ type: 'KTP', file: null, preview: null });
+};
+
+const removeDocumentRow = (index: number) => {
+    additionalDocuments.value.splice(index, 1);
+};
+
+const handleDocumentFileChange = (index: number, e: Event) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (file) {
+        additionalDocuments.value[index].file = file;
+        if (file.type.startsWith('image/')) {
+            additionalDocuments.value[index].preview = URL.createObjectURL(file);
+        } else {
+            additionalDocuments.value[index].preview = null;
+        }
+    }
+};
+
 const submit = () => {
+    // Prep documents
+    form.documents = additionalDocuments.value.map(d => d.file).filter(f => f !== null) as File[];
+    form.documents_meta = JSON.stringify(additionalDocuments.value.filter(d => d.file !== null).map(d => ({ type: d.type })));
+
     if (props.isEditing) {
-        form.put(update(props.employee.id).url);
+        // Use POST with _method: PUT for file upload support in updates
+        form.transform((data) => ({
+            ...data,
+            _method: 'PUT',
+        })).post(update(props.employee.id).url);
     } else {
         form.post(store().url);
     }
@@ -258,13 +324,147 @@ const submit = () => {
                 <div class="col-span-12 lg:col-span-4 space-y-6">
                     <!-- Photo Upload -->
                     <Card class="rounded-[2rem] border-border/40 shadow-none bg-white p-10 flex flex-col items-center text-center space-y-4">
-                        <div class="h-32 w-32 rounded-3xl bg-slate-50 border-2 border-dashed border-border/60 flex flex-col items-center justify-center text-muted-foreground group cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all">
-                            <Camera class="h-8 w-8 mb-2 opacity-20 group-hover:opacity-100 transition-opacity" />
-                            <span class="text-[10px] font-normal uppercase tracking-widest">Upload Foto</span>
+                        <div 
+                            class="h-32 w-32 rounded-3xl bg-slate-50 border-2 border-dashed border-border/60 flex flex-col items-center justify-center text-muted-foreground group cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all overflow-hidden relative"
+                            @click="photoInput?.click()"
+                        >
+                            <img v-if="photoPreview" :src="photoPreview" class="absolute inset-0 w-full h-full object-cover" />
+                            <div v-else class="flex flex-col items-center justify-center">
+                                <Camera class="h-8 w-8 mb-2 opacity-20 group-hover:opacity-100 transition-opacity" />
+                                <span class="text-[10px] font-normal uppercase tracking-widest">Upload Foto</span>
+                            </div>
+                            <input 
+                                type="file" 
+                                ref="photoInput" 
+                                class="hidden" 
+                                accept="image/*"
+                                @change="handlePhotoChange"
+                            />
                         </div>
                         <div class="space-y-1">
                             <h4 class="text-sm font-normal text-slate-900">Foto Profil</h4>
                             <p class="text-[11px] text-muted-foreground font-normal">Format JPG, PNG (Max 2MB)</p>
+                            <p v-if="form.errors.photo" class="text-[10px] text-red-500">{{ form.errors.photo }}</p>
+                        </div>
+                    </Card>
+
+                    <!-- Documents Section -->
+                    <Card class="rounded-[2rem] border-border/40 shadow-none bg-white overflow-hidden p-0">
+                        <div class="px-8 py-6 border-b border-border/40 bg-slate-50/50 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded-full bg-orange-500/5 flex items-center justify-center text-orange-600">
+                                    <CreditCard class="h-4 w-4" />
+                                </div>
+                                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-900">Dokumen Pendukung</h3>
+                            </div>
+                            <Button type="button" variant="outline" size="sm" class="h-8 rounded-full text-[10px] uppercase tracking-wider" @click="addDocumentRow">
+                                Tambah
+                            </Button>
+                        </div>
+                        <div class="p-0">
+                            <div v-if="additionalDocuments.length === 0" class="text-center py-12 px-6">
+                                <div class="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center mx-auto mb-3 text-slate-300">
+                                    <CreditCard class="h-6 w-6" />
+                                </div>
+                                <p class="text-[11px] text-slate-400 font-normal">Belum ada dokumen tambahan.</p>
+                            </div>
+                            
+                            <div v-else class="divide-y divide-slate-100">
+                                <!-- Table Header -->
+                                <div class="px-6 py-3 flex items-center bg-slate-50/30 text-[10px] uppercase tracking-[0.15em] text-slate-400 font-bold">
+                                    <div class="w-24">Tipe</div>
+                                    <div class="flex-1 px-4">Berkas</div>
+                                    <div class="w-10 text-right">Aksi</div>
+                                </div>
+
+                                <!-- Table Rows -->
+                                <div v-for="(doc, index) in additionalDocuments" :key="index" class="px-6 py-4 flex items-center group hover:bg-slate-50/50 transition-colors">
+                                    <!-- Type Selection -->
+                                    <div class="w-24 shrink-0">
+                                        <Select v-model="doc.type">
+                                            <SelectTrigger class="h-8 rounded-lg text-[10px] uppercase tracking-wider border-0 bg-slate-100/50 hover:bg-slate-100 shadow-none ring-0 focus:ring-0">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="KTP">KTP</SelectItem>
+                                                <SelectItem value="NPWP">NPWP</SelectItem>
+                                                <SelectItem value="Kontrak">Kontrak</SelectItem>
+                                                <SelectItem value="CV">CV / Resume</SelectItem>
+                                                <SelectItem value="Lainnya">Lainnya</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <!-- File Preview/Info -->
+                                    <div class="flex-1 px-4 flex items-center gap-3 overflow-hidden">
+                                        <div 
+                                            class="h-10 w-10 shrink-0 rounded-lg border border-slate-200 bg-white flex items-center justify-center cursor-pointer overflow-hidden group/thumb"
+                                            @click="docInputs[index]?.click()"
+                                        >
+                                            <img v-if="doc.preview" :src="doc.preview" class="h-full w-full object-cover" />
+                                            <div v-else class="flex items-center justify-center text-slate-300 group-hover/thumb:text-primary transition-colors">
+                                                <Camera class="h-4 w-4" />
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col min-w-0">
+                                            <p 
+                                                class="text-[11px] font-bold text-slate-600 truncate cursor-pointer hover:text-primary transition-colors"
+                                                @click="docInputs[index]?.click()"
+                                            >
+                                                {{ doc.file ? doc.file.name : 'Pilih file...' }}
+                                            </p>
+                                            <p v-if="doc.file" class="text-[9px] text-slate-400 font-normal uppercase tracking-tighter">
+                                                {{ (doc.file.size / 1024).toFixed(1) }} KB
+                                            </p>
+                                        </div>
+                                        <input 
+                                            type="file" 
+                                            :ref="(el) => { if (el) docInputs[index] = el as any }" 
+                                            class="hidden" 
+                                            @change="handleDocumentFileChange(index, $event)"
+                                        />
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="w-10 text-right">
+                                        <Button 
+                                            type="button" 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            class="h-8 w-8 rounded-full text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all" 
+                                            @click="removeDocumentRow(index)"
+                                        >
+                                            <X class="h-3.5 w-3.5" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Existing Documents (if editing) -->
+                            <div v-if="isEditing && employee.documents?.length > 0" class="border-t border-slate-100 bg-slate-50/20">
+                                <div class="px-6 py-4">
+                                    <h4 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">Dokumen Tersimpan</h4>
+                                    <div class="space-y-2">
+                                        <div v-for="doc in employee.documents" :key="doc.id" class="flex items-center justify-between p-3 rounded-2xl bg-white border border-slate-100 hover:border-slate-200 transition-all shadow-sm shadow-slate-200/20">
+                                            <div class="flex items-center gap-3">
+                                                <div class="h-9 w-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                                                    <CreditCard class="h-4 w-4" />
+                                                </div>
+                                                <div class="overflow-hidden">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none">{{ doc.type }}</span>
+                                                        <Badge class="h-4 px-1 rounded text-[8px] font-normal border-0 bg-blue-50 text-blue-500 shadow-none uppercase">{{ doc.file_type.split('/')[1] }}</Badge>
+                                                    </div>
+                                                    <p class="text-[11px] font-bold text-slate-700 truncate mt-1">{{ doc.file_name }}</p>
+                                                </div>
+                                            </div>
+                                            <a :href="`/storage/${doc.file_path}`" target="_blank" class="shrink-0 ml-4">
+                                                <Button variant="ghost" size="sm" class="h-8 rounded-lg text-[10px] uppercase tracking-wider font-bold text-blue-500 hover:text-blue-600 hover:bg-blue-50">Lihat</Button>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </Card>
 

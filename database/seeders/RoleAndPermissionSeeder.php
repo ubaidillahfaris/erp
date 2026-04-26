@@ -47,10 +47,25 @@ class RoleAndPermissionSeeder extends Seeder
         $cashierRole->givePermissionTo([
             'view dashboard',
             'make sales',
-            'manage products', // Minimal access to see items
+            'manage products',
             'void sales',
         ]);
 
-        // Roles and permissions only
+        $managerRole = Role::firstOrCreate(['name' => 'manager']);
+        $managerRole->givePermissionTo([
+            'view dashboard',
+            'manage users',
+            'manage products',
+            'manage vendors',
+            'manage customers',
+            'manage stock',
+            'view reports',
+            'manage employees',
+        ]);
+
+        $staffRole = Role::firstOrCreate(['name' => 'staff']);
+        $staffRole->givePermissionTo([
+            'view dashboard',
+        ]);
     }
 }

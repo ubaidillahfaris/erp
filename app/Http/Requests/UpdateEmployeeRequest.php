@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +19,7 @@ class UpdateEmployeeRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -42,8 +43,12 @@ class UpdateEmployeeRequest extends FormRequest
             'basic_salary' => 'required|numeric|min:0',
             'bank_name' => 'nullable|string|max:100',
             'bank_account' => 'nullable|string|max:50',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'user_id' => 'nullable|exists:users,id',
             'status' => 'required|string|in:active,inactive',
+            'documents' => 'nullable|array',
+            'documents.*' => 'file|mimes:jpg,jpeg,png,webp,pdf,doc,docx|max:5120',
+            'documents_meta' => 'nullable|string',
         ];
     }
 }

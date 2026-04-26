@@ -73,8 +73,9 @@ const formatCurrency = (value: number) => {
             <Card class="bg-card rounded-3xl p-6 shadow-none border border-border/40 flex flex-col md:flex-row items-center md:items-start gap-8 relative overflow-hidden">
                 <div class="absolute top-0 right-0 -mr-6 -mt-6 w-32 h-32 bg-primary/5 rounded-full blur-3xl"></div>
                 
-                <Avatar class="h-28 w-28 rounded-2xl border border-border/40 shadow-sm shrink-0">
-                    <AvatarFallback class="bg-primary/5 text-primary text-3xl font-normal rounded-2xl">
+                <Avatar class="h-28 w-28 rounded-2xl border border-border/40 shadow-sm shrink-0 overflow-hidden">
+                    <img v-if="props.employee.photo_path" :src="`/storage/${props.employee.photo_path}`" class="h-full w-full object-cover" />
+                    <AvatarFallback v-else class="bg-primary/5 text-primary text-3xl font-normal rounded-2xl">
                         {{ props.employee.name.split(' ').map((n: string) => n[0]).join('') }}
                     </AvatarFallback>
                 </Avatar>
@@ -110,7 +111,7 @@ const formatCurrency = (value: number) => {
                         <TabsTrigger value="personal" class="rounded-xl px-6 text-[12px] font-normal uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm">Personal</TabsTrigger>
                         <TabsTrigger value="employment" class="rounded-xl px-6 text-[12px] font-normal uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm">Employment</TabsTrigger>
                         <TabsTrigger value="financial" class="rounded-xl px-6 text-[12px] font-normal uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm">Financial</TabsTrigger>
-                        <TabsTrigger value="system" class="rounded-xl px-6 text-[12px] font-normal uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm">System</TabsTrigger>
+                        <TabsTrigger value="documents" class="rounded-xl px-6 text-[12px] font-normal uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-foreground data-[state=active]:shadow-sm">Documents</TabsTrigger>
                     </TabsList>
                 </div>
 
@@ -261,8 +262,49 @@ const formatCurrency = (value: number) => {
                     </Card>
                 </TabsContent>
                 
+                <TabsContent value="documents" class="mt-0">
+                    <Card class="bg-card rounded-[2.5rem] p-8 md:p-12 shadow-none border border-border/40">
+                        <div class="space-y-12">
+                            <div class="flex items-center gap-3 pb-8 border-b border-border/40">
+                                <div class="h-10 w-10 rounded-full bg-orange-500/5 flex items-center justify-center text-orange-600">
+                                    <CreditCard class="h-5 w-5" />
+                                </div>
+                                <h3 class="text-xl font-normal tracking-tight text-foreground">Arsip Dokumen</h3>
+                            </div>
+
+                            <div v-if="props.employee.documents?.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <Card v-for="doc in props.employee.documents" :key="doc.id" class="p-5 rounded-3xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+                                    <div class="flex flex-col gap-4">
+                                        <div class="flex items-center justify-between">
+                                            <Badge variant="outline" class="rounded-full px-2.5 py-0.5 text-[9px] uppercase tracking-widest font-normal bg-white">
+                                                {{ doc.type }}
+                                            </Badge>
+                                            <a :href="`/storage/${doc.file_path}`" target="_blank" class="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Printer class="h-3.5 w-3.5" />
+                                            </a>
+                                        </div>
+                                        <div class="space-y-1">
+                                            <p class="text-xs font-bold text-slate-700 truncate">{{ doc.file_name }}</p>
+                                            <p class="text-[10px] text-slate-400 font-normal capitalize">{{ doc.file_type.split('/')[1] }} • {{ (doc.file_size / 1024).toFixed(1) }} KB</p>
+                                        </div>
+                                        <a :href="`/storage/${doc.file_path}`" target="_blank">
+                                            <Button variant="outline" size="sm" class="w-full rounded-xl h-9 text-[10px] uppercase tracking-widest font-normal bg-white">
+                                                Buka Dokumen
+                                            </Button>
+                                        </a>
+                                    </div>
+                                </Card>
+                            </div>
+                            <div v-else class="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                                <CreditCard class="h-12 w-12 text-muted-foreground mb-4 font-light" />
+                                <p class="text-sm font-normal uppercase tracking-[0.2em] text-muted-foreground">Belum ada dokumen terunggah</p>
+                            </div>
+                        </div>
+                    </Card>
+                </TabsContent>
+
                 <!-- Placeholders for other tabs -->
-                <TabsContent v-for="t in ['employment', 'system']" :key="t" :value="t" class="mt-0">
+                <TabsContent v-for="t in ['employment']" :key="t" :value="t" class="mt-0">
                     <Card class="p-16 rounded-[2.5rem] border border-border/40 shadow-none bg-white flex flex-col items-center justify-center text-center opacity-40">
                         <AlertCircle class="h-10 w-10 text-muted-foreground mb-4 font-light" />
                         <p class="text-sm font-normal uppercase tracking-[0.2em] text-muted-foreground">Module under development</p>
