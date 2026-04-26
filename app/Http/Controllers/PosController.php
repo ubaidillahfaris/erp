@@ -35,6 +35,7 @@ class PosController extends Controller
                     'price' => (float) ($produk->currentPrice?->retail_price ?? 0),
                     'cost' => (float) ($produk->currentPrice?->purchase_price ?? 0),
                     'stock' => (float) ($produk->stock?->balance ?? 0),
+                    'track_stock' => (bool) $produk->track_stock,
                 ];
             });
 

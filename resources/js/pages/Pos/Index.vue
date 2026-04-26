@@ -112,6 +112,8 @@ const showVoid = ref(false);
 const showTables = ref(false);
 const showShift = ref(false);
 
+const cashInputRef = ref<any>(null);
+
 const { setOpen } = useSidebar();
 
 onMounted(() => {
@@ -185,6 +187,16 @@ const fetchPrice = async (produkId: number, satuanId: number, customerId: number
 
 const addToCart = async (produk: any) => {
     const existingIndex = cart.value.findIndex(item => item.produk_id === produk.id);
+
+    // Check stock first
+    if (produk.track_stock) {
+        const currentQty = existingIndex > -1 ? cart.value[existingIndex].qty : 0;
+        if (currentQty + 1 > produk.stock) {
+            toast.error(`Stok tidak mencukupi. Sisa: ${produk.stock}`);
+            return;
+        }
+    }
+
     const priceData = await fetchPrice(produk.id, produk.satuan_id, selectedCustomerId.value);
 
     if (existingIndex > -1) {
@@ -207,12 +219,36 @@ const updateQty = (produkId: number, delta: number) => {
     const index = cart.value.findIndex(l => l.produk_id === produkId);
     if (index === -1) return;
 
+    const produk = props.produks.find(p => p.id === produkId);
     const newQty = cart.value[index].qty + delta;
-    if (newQty > 0) {
-        cart.value[index].qty = newQty;
-    } else {
-        cart.value.splice(index, 1);
+
+    if (delta > 0 && produk?.track_stock && newQty > (produk.stock || 0)) {
+        toast.error(`Stok tidak mencukupi. Maksimal: ${produk.stock}`);
+        return;
     }
+
+    // Buttons only allow decrement down to 1
+    if (newQty >= 1) {
+        cart.value[index].qty = newQty;
+    }
+};
+
+const setQty = (produkId: number, val: number) => {
+    const index = cart.value.findIndex(l => l.produk_id === produkId);
+    if (index === -1) return;
+
+    const produk = props.produks.find(p => p.id === produkId);
+    if (produk?.track_stock && val > (produk.stock || 0)) {
+        toast.error(`Stok tidak mencukupi. Maksimal: ${produk.stock}`);
+        // Reset to max stock or previous value? 
+        // Let's set it to max stock for better UX
+        cart.value[index].qty = produk.stock;
+        return;
+    }
+
+    // Manual input allows 0, but doesn't delete the item
+    // The cashier can explicitly delete using the X button
+    cart.value[index].qty = isNaN(val) ? 0 : Math.max(0, val);
 };
 
 const removeFromCart = (produkId: number) => {
@@ -233,21 +269,22 @@ const form = useForm({
     items: [] as any[],
 });
 
-watch(totalAmount, (newTotal) => {
-    if (form.payment_method !== 'cash') {
-        form.received_amount = newTotal;
-    }
-});
-
 watch(() => form.payment_method, (newMethod) => {
     if (newMethod !== 'cash') {
         form.received_amount = totalAmount.value;
-    } else if (form.received_amount === totalAmount.value) {
-        // If it was auto-filled by non-cash, maybe clear it for cash or leave it?
-        // Usually, for cash, people want to type the amount or use quick buttons.
-        // Let's clear it if it's the exact amount to encourage using buttons/typing.
-        // Actually, leaving it as totalAmount (Uang Pas) is also good.
-        // Let's leave it but allow clearing.
+    } else {
+        // Focus the input when switching to cash
+        setTimeout(() => {
+            cashInputRef.value?.$el?.focus();
+        }, 100);
+    }
+});
+
+watch(showPayment, (isOpen) => {
+    if (isOpen && form.payment_method === 'cash') {
+        setTimeout(() => {
+            cashInputRef.value?.$el?.focus();
+        }, 100);
     }
 });
 
@@ -282,7 +319,7 @@ const suggestedAmounts = computed(() => {
 
     const denominations = [1000, 2000, 5000, 10000, 20000, 50000, 100000];
     const suggestions = new Set<number>();
-    
+
     // Exact amount
     suggestions.add(total);
 
@@ -291,7 +328,7 @@ const suggestedAmounts = computed(() => {
         if (d > total) {
             suggestions.add(d);
         }
-        
+
         // Round up to nearest denomination
         const rounded = Math.ceil(total / d) * d;
         if (rounded > total) {
@@ -405,13 +442,15 @@ const selectAmount = (amount: number) => {
             <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
                 <button v-for="p in filteredProduks" :key="p.id" :disabled="p.stock === 0" @click="addToCart(p)"
                     class="group relative flex flex-col text-left rounded-2xl bg-white border border-slate-200 p-3 transition hover:border-primary hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none">
-                    <span v-if="p.stock === 0"
+                    <span v-if="p.track_stock && p.stock <= 0"
                         class="absolute top-2 right-2 z-10 text-[10px] font-bold uppercase tracking-wider bg-destructive text-white px-2 py-0.5 rounded-full">
                         Habis
                     </span>
-                    <span v-else-if="p.stock < 10"
-                        class="absolute top-2 right-2 z-10 text-[10px] font-bold uppercase tracking-wider bg-slate-900 text-white px-2 py-0.5 rounded-full">
-                        Sisa {{ p.stock }}
+                    <span v-else-if="p.track_stock" :class="cn(
+                        'absolute top-2 right-2 z-10 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full',
+                        p.stock < 10 ? 'bg-orange-500 text-white' : 'bg-slate-900 text-white'
+                    )">
+                        Stok {{ p.stock }}
                     </span>
 
                     <div
@@ -510,13 +549,14 @@ const selectAmount = (amount: number) => {
                         <div class="mt-2 flex items-center justify-between">
                             <div class="flex items-center gap-1 bg-slate-100 rounded-full p-0.5">
                                 <button @click="updateQty(line.produk_id, -1)"
-                                    class="h-7 w-7 rounded-full bg-white hover:bg-slate-50  flex items-center justify-center text-slate-600">
+                                    class="h-7 w-7 rounded-full bg-white hover:bg-slate-50  flex items-center justify-center text-slate-600 transition shadow-sm active:scale-90">
                                     <Minus class="h-3 w-3" />
                                 </button>
-                                <span class="w-7 text-center text-sm font-bold tabular-nums text-slate-800">{{ line.qty
-                                }}</span>
+                                <input type="number" :value="line.qty"
+                                    @input="e => setQty(line.produk_id, parseInt((e.target as HTMLInputElement).value) || 0)"
+                                    class="w-12 text-center text-sm font-bold tabular-nums text-slate-800 bg-transparent border-0 focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                                 <button @click="updateQty(line.produk_id, 1)"
-                                    class="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center">
+                                    class="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center transition shadow-sm active:scale-90">
                                     <Plus class="h-3 w-3" />
                                 </button>
                             </div>
@@ -562,102 +602,118 @@ const selectAmount = (amount: number) => {
 
     <!-- Modals -->
     <Dialog :open="showPayment" @update:open="showPayment = $event">
-        <DialogContent class="max-w-3xl rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
-            <div class="flex items-center justify-between p-5 border-b border-slate-100">
+        <DialogContent class="md:min-w-4xl lg:min-w-6xl rounded-4xl p-0 overflow-hidden border-none shadow-2xl">
+            <div class="flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-white">
                 <div>
-                    <h3 class="text-lg font-bold text-slate-900">Selesaikan Pembayaran</h3>
-                    <p class="text-xs text-slate-400">Pilih metode bayar dan konfirmasi transaksi.</p>
+                    <h3 class="text-xl font-bold text-slate-900 tracking-tight">Selesaikan Pembayaran</h3>
+                    <p class="text-sm text-slate-500 mt-0.5">Pilih metode bayar dan konfirmasi transaksi.</p>
                 </div>
             </div>
-            <div class="grid md:grid-cols-[1fr_320px]">
-                <div class="p-6 space-y-5 bg-white">
-                    <div class="grid grid-cols-2 gap-3">
+            <div class="grid md:grid-cols-[1fr_380px]">
+                <div class="p-8 space-y-8 bg-white">
+                    <div class="grid grid-cols-4 gap-4">
                         <button
                             v-for="m in [{ id: 'cash', label: 'Cash', icon: Banknote }, { id: 'qris', label: 'QRIS', icon: QrCode }, { id: 'transfer', label: 'Transfer', icon: Wallet }, { id: 'credit', label: 'Piutang', icon: CreditCard }]"
                             :key="m.id" @click="form.payment_method = m.id as PaymentMethod"
-                            :class="cn('text-left p-4 rounded-2xl border-2 transition-all', form.payment_method === m.id ? 'border-primary bg-primary/5' : 'border-slate-100 hover:border-slate-300')">
-                            <div class="flex items-center justify-between mb-3">
-                                <div
-                                    :class="cn('p-2 rounded-xl', form.payment_method === m.id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400')">
-                                    <component :is="m.icon" class="h-5 w-5" />
-                                </div>
-                                <Check v-if="form.payment_method === m.id" class="h-4 w-4 text-primary" />
+                            :class="cn('text-center p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2', form.payment_method === m.id ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-slate-100 hover:border-slate-300 bg-slate-50/50')">
+                            <div
+                                :class="cn('h-12 w-12 rounded-xl flex items-center justify-center transition-all', form.payment_method === m.id ? 'bg-primary text-white scale-110 shadow-md shadow-primary/20' : 'bg-white text-slate-400 border border-slate-100')">
+                                <component :is="m.icon" class="h-6 w-6" />
                             </div>
-                            <p class="text-sm font-bold text-slate-800">{{ m.label }}</p>
+                            <div class="space-y-0.5">
+                                <p class="text-sm font-bold text-slate-900">{{ m.label }}</p>
+                            </div>
                         </button>
                     </div>
+
                     <div v-if="form.payment_method === 'cash'"
-                        class="bg-slate-50 rounded-2xl p-5 space-y-6 border border-slate-100 animate-in fade-in slide-in-from-top-2">
-                        <div class="space-y-3">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pilih Nominal Cepat</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                <button v-for="amt in suggestedAmounts" :key="amt"
-                                    @click="selectAmount(amt)"
-                                    :class="cn(
-                                        'h-11 rounded-xl text-xs font-bold border transition-all active:scale-95',
-                                        form.received_amount === amt 
-                                            ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' 
-                                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
-                                    )">
-                                    {{ amt === totalAmount ? 'Uang Pas' : formatCurrency(amt).replace('Rp', '').trim() }}
-                                </button>
-                                <button @click="form.received_amount = 0"
-                                    class="h-11 rounded-xl text-xs font-bold bg-white text-destructive border border-slate-200 hover:border-destructive/30 transition-all">
-                                    Reset
-                                </button>
+                        class="bg-slate-50 rounded-3xl p-6 border border-slate-100 animate-in fade-in slide-in-from-top-2">
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="space-y-4">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Pilih
+                                    Nominal
+                                    Cepat</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button v-for="amt in suggestedAmounts" :key="amt" @click="selectAmount(amt)"
+                                        :class="cn(
+                                            'h-12 rounded-xl text-sm font-bold border transition-all active:scale-95 shadow-sm',
+                                            form.received_amount === amt
+                                                ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
+                                                : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                                        )">
+                                        {{ amt === totalAmount ? 'Uang Pas' : formatCurrency(amt).replace('Rp',
+                                            '').trim()
+                                        }}
+                                    </button>
+                                    <button @click="form.received_amount = 0"
+                                        class="h-12 rounded-xl text-sm font-bold bg-white text-destructive border border-slate-200 hover:border-destructive/30 transition-all shadow-sm">
+                                        Reset
+                                    </button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="space-y-3 pt-2">
-                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Input Manual</label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">Rp</span>
-                                <Input type="number" v-model.number="form.received_amount"
-                                    class="h-16 pl-12 text-3xl font-bold rounded-2xl bg-white border-slate-200 focus-visible:ring-primary/20 shadow-sm" />
-                            </div>
-                        </div>
+                            <div class="space-y-5">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Input
+                                        Manual</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">Rp</span>
+                                        <Input ref="cashInputRef" type="number" v-model.number="form.received_amount"
+                                            class="h-14 pl-12 text-2xl font-bold rounded-xl bg-white border-slate-200 focus-visible:ring-primary/20 shadow-inner" />
+                                    </div>
+                                </div>
 
-                        <div class="flex items-center justify-between p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-                            <div>
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600/60">Kembalian</p>
-                                <p class="text-2xl font-bold text-emerald-600 tabular-nums">
-                                    {{ formatCurrency(Math.max(0, form.received_amount - totalAmount)) }}
-                                </p>
-                            </div>
-                            <div v-if="form.received_amount >= totalAmount" class="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                                <Check class="h-6 w-6" />
+                                <div
+                                    class="flex items-center justify-between p-5 rounded-2xl bg-emerald-50 text-emerald-900 border border-emerald-100 shadow-sm transition-all">
+                                    <div>
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600">
+                                            Kembalian</p>
+                                        <p class="text-2xl font-bold tabular-nums">
+                                            {{ formatCurrency(Math.max(0, form.received_amount - totalAmount)) }}
+                                        </p>
+                                    </div>
+                                    <div v-if="form.received_amount >= totalAmount"
+                                        class="h-10 w-10 rounded-full bg-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/20">
+                                        <Check class="h-6 w-6 text-white" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div v-if="form.payment_method === 'qris'"
-                        class="bg-slate-50 rounded-2xl p-8 flex flex-col items-center justify-center border border-slate-100 animate-in zoom-in-95">
-                        <QrCode class="h-32 w-32 text-slate-800 mb-2" />
+                        class="bg-slate-50 rounded-3xl p-8 flex flex-col items-center justify-center border border-slate-100 animate-in zoom-in-95">
+                        <QrCode class="h-28 w-28 text-slate-800 mb-4" />
                         <p class="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Scan QRIS Dinamis</p>
                     </div>
                 </div>
-                <div class="bg-slate-900 text-white p-6 flex flex-col">
-                    <div class="flex-1 space-y-4">
-                        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500">Ringkasan</h4>
-                        <div class="flex justify-between text-sm text-slate-400"><span>Total Belanja</span><span>{{
-                            formatCurrency(subtotal) }}</span></div>
-                        <div class="flex justify-between text-sm text-slate-400"><span>Diskon</span><span>-{{
-                            formatCurrency(discountAmt) }}</span></div>
-                        <div class="flex justify-between text-sm text-slate-400"><span>Pajak & Svc</span><span>{{
-                            formatCurrency(serviceCharge + tax) }}</span></div>
-                        <div class="border-t border-slate-800 my-4"></div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Total
+                <div class="bg-slate-900 text-white p-8 flex flex-col justify-between">
+                    <div class="space-y-5">
+                        <h4 class="text-xs font-bold uppercase tracking-widest text-slate-400">Ringkasan Pembayaran</h4>
+                        <div class="space-y-2.5">
+                            <div class="flex justify-between text-sm text-slate-300"><span>Total Belanja</span><span
+                                    class="font-medium">{{ formatCurrency(subtotal) }}</span></div>
+                            <div class="flex justify-between text-sm text-slate-300"><span>Diskon</span><span
+                                    class="font-medium">-{{ formatCurrency(discountAmt) }}</span></div>
+                            <div class="flex justify-between text-sm text-slate-300"><span>Pajak & Svc</span><span
+                                    class="font-medium">{{ formatCurrency(serviceCharge + tax) }}</span></div>
+                        </div>
+                        <div class="border-t border-slate-700/50 my-5"></div>
+                        <div class="flex flex-col gap-1.5">
+                            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Total
                                 Bayar</span>
-                            <span class="font-bold text-3xl">{{ formatCurrency(totalAmount) }}</span>
+                            <span class="font-bold text-4xl tracking-tight text-white">{{ formatCurrency(totalAmount)
+                            }}</span>
                         </div>
                     </div>
-                    <div class="pt-6 space-y-3">
+                    <div class="pt-8 space-y-3">
                         <Button @click="handleCheckout"
                             :disabled="form.processing || (form.payment_method === 'cash' && form.received_amount < totalAmount)"
-                            class="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold uppercase tracking-widest">Konfirmasi
-                            & Cetak</Button>
+                            class="w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+                            Konfirmasi & Cetak
+                        </Button>
                         <Button variant="ghost" @click="showPayment = false"
-                            class="w-full text-slate-400">Batal</Button>
+                            class="w-full h-12 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">Batal</Button>
                     </div>
                 </div>
             </div>
