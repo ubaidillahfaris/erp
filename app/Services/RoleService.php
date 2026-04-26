@@ -50,28 +50,19 @@ class RoleService
             $filteredMenus = $this->filterMenusByStatus($menus, $user, $authorizedMenuIds);
 
             // 4. GROUPING LOGIC
-            // Get authorized modules for the user
-            if ($user->hasRole('superadmin')) {
-                $authorizedModules = Module::active()->orderBy('order_priority')->get();
-            } else {
-                $authorizedModules = Module::active()
-                    ->whereHas('roles', function ($query) use ($user) {
-                        $query->whereIn('roles.id', $user->roles->pluck('id'));
-                    })
-                    ->orderBy('order_priority')
-                    ->get();
-            }
-
             // Group filtered menus by module_id
             $grouped = $filteredMenus->groupBy('module_id');
 
             $result = [];
 
-            // Add authorized modules that have at least one authorized menu
-            foreach ($authorizedModules as $module) {
+            // Get all active modules
+            $modules = Module::active()->orderBy('order_priority')->get();
+
+            // Add modules that have at least one authorized menu
+            foreach ($modules as $module) {
                 $moduleMenus = $grouped->get($module->id, collect());
 
-                // Show module if there are menus, or if user is superadmin (show empty shell if requested)
+                // Show module if there are menus, or if user is superadmin
                 if ($moduleMenus->isNotEmpty() || $user->hasRole('superadmin')) {
                     $result[] = [
                         'id' => $module->id,

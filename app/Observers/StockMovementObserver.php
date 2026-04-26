@@ -40,20 +40,36 @@ class StockMovementObserver
             if ($ratio != 0) {
                 $amountInBaseUnit /= $ratio;
             }
-
-            \Log::info("StockMovement Observer | Product: {$produk->id} | Used: {$movement->satuan_id} | Base: {$baseSatuanId} | Ratio: {$ratio} | AmountBase: {$amountInBaseUnit}");
         }
 
-        $stock = Stock::firstOrCreate(
-            ['produk_id' => $produk->id],
-            ['last_satuan_id' => $baseSatuanId, 'balance' => 0]
-        );
+        // Sprint 3.2: Pessimistic Locking
+        // Use lockForUpdate to ensure serialized access to the stock row
+        $stock = Stock::where('produk_id', $produk->id)->lockForUpdate()->first();
+
+        if (! $stock) {
+            $stock = Stock::create([
+                'produk_id' => $produk->id,
+                'balance' => 0,
+                'last_satuan_id' => $baseSatuanId,
+            ]);
+            // Refresh with lock
+            $stock = Stock::where('id', $stock->id)->lockForUpdate()->first();
+        }
 
         $change = $movement->type === 'in' ? $amountInBaseUnit : -$amountInBaseUnit;
 
         // If deleted, we reverse the change
         if ($event === 'deleted') {
             $change = -$change;
+        }
+
+        // Validate stock sufficiency for outgoing movements
+        // Sprint 3.2: Only enforce if track_stock is enabled and NOT a stock_opname/storno
+        $isStorno = str_contains(strtolower($movement->keterangan ?? ''), 'storno');
+        $isAdjustment = in_array($movement->reference_type, ['stock_opname', 'adjustment']) || $isStorno;
+
+        if ($produk->track_stock && ! $isAdjustment && $change < 0 && ($stock->balance + $change) < 0) {
+            throw new \RuntimeException("Stok {$produk->nama} tidak mencukupi untuk transaksi ini (Sisa: {$stock->balance}, Diminta: ".abs($change).')');
         }
 
         $stock->increment('balance', $change);

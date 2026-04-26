@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use App\Actions\RecordStockMovement;
+use App\DTOs\JournalEntryData;
+use App\DTOs\JournalItemData;
+use App\Models\JournalEntry;
 use App\Models\Sale;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
@@ -13,7 +16,8 @@ use Illuminate\Support\Facades\Log;
 class StornoService
 {
     public function __construct(
-        protected RecordStockMovement $recordStockMovement
+        protected RecordStockMovement $recordStockMovement,
+        protected JournalService $journalService
     ) {}
 
     /**
@@ -27,6 +31,10 @@ class StornoService
     public function perform(Model $model, ?string $reason = null): bool
     {
         return DB::transaction(function () use ($model, $reason) {
+            // 1. Accounting Reversal (Double Entry)
+            $this->reverseJournalEntries($model, $reason);
+
+            // 2. Module Specific Logic (Stock, Status)
             if ($model instanceof StockOpname) {
                 return $this->stornoStockOpname($model, $reason);
             }
@@ -39,6 +47,37 @@ class StornoService
 
             throw new \Exception('Model '.get_class($model).' does not support storno yet.');
         });
+    }
+
+    /**
+     * Reverse all journal entries associated with the given model.
+     */
+    protected function reverseJournalEntries(Model $model, ?string $reason): void
+    {
+        $originalEntries = JournalEntry::where('journalable_type', get_class($model))
+            ->where('journalable_id', $model->id)
+            ->with('items')
+            ->get();
+
+        foreach ($originalEntries as $entry) {
+            $reverseItems = [];
+            foreach ($entry->items as $item) {
+                // Swap Debit and Credit
+                $reverseItems[] = new JournalItemData(
+                    account_id: $item->account_id,
+                    amount: $item->debit ?: $item->credit,
+                    type: $item->debit ? 'credit' : 'debit'
+                );
+            }
+
+            $this->journalService->record(new JournalEntryData(
+                items: $reverseItems,
+                tanggal: now(),
+                description: 'STORNO: '.($reason ?: 'Pembatalan '.$entry->description),
+                journalable: $model,
+                ref_number: 'STRN-'.$entry->ref_number
+            ));
+        }
     }
 
     /**

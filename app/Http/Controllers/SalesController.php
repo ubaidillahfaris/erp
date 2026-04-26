@@ -83,9 +83,9 @@ class SalesController extends Controller
     }
 
     /**
-     * Void the specified sale.
+     * Storno the specified sale.
      */
-    public function void(Request $request, Sale $sale)
+    public function stornoSale(Request $request, Sale $sale)
     {
         // Check permission
         if (! $request->user()->can('void sales')) {
@@ -102,9 +102,9 @@ class SalesController extends Controller
 
             $this->stornoService->perform($sale, $request->reason);
 
-            return back()->with('success', 'Transaksi penjualan #'.$sale->invoice_number.' telah dibatalkan (voided).');
+            return back()->with('success', 'Transaksi penjualan #'.$sale->invoice_number.' telah di-storno (reversal).');
         } catch (\Exception $e) {
-            return back()->with('error', 'Gagal membatalkan transaksi: '.$e->getMessage());
+            return back()->with('error', 'Gagal melakukan storno: '.$e->getMessage());
         }
     }
 }

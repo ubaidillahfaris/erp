@@ -36,8 +36,8 @@ class SaleJournalTest extends TestCase
         $this->satuan = Satuan::create(['nama' => 'PCS', 'simbol' => 'PCS']);
 
         // Ensure Produk has satuan_id to satisfy StockMovementObserver
-        $this->produk1 = Produk::create(['sku' => 'SKU-001', 'nama' => 'Produk 1', 'satuan_id' => $this->satuan->id]);
-        $this->produk2 = Produk::create(['sku' => 'SKU-002', 'nama' => 'Produk 2', 'satuan_id' => $this->satuan->id]);
+        $this->produk1 = Produk::create(['sku' => 'SKU-001', 'nama' => 'Produk 1', 'satuan_id' => $this->satuan->id, 'track_stock' => false]);
+        $this->produk2 = Produk::create(['sku' => 'SKU-002', 'nama' => 'Produk 2', 'satuan_id' => $this->satuan->id, 'track_stock' => false]);
     }
 
     /**

@@ -12,6 +12,17 @@ class JournalItem extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::updating(function ($journalItem) {
+            throw new \RuntimeException('Journal items are immutable and cannot be modified.');
+        });
+
+        static::deleting(function ($journalItem) {
+            throw new \RuntimeException('Journal items are immutable and cannot be deleted.');
+        });
+    }
+
     protected $fillable = [
         'journal_entry_id',
         'account_id',

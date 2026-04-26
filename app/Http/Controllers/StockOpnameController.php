@@ -195,20 +195,19 @@ class StockOpnameController extends Controller
         return redirect()->route('stock-opname.index')->with('success', 'Stock opname berhasil dihapus.');
     }
 
-    public function storno(Request $request, StockOpname $stockOpname): RedirectResponse
+    public function stornoOpname(Request $request, StockOpname $stockOpname): RedirectResponse
     {
         try {
             $validated = $request->validate([
                 'reason' => 'nullable|string|max:255',
             ]);
 
-            // STORNO NOTE: Manual reversal required for journals.
-            Log::info("Manual reversal required for journals of OPN-{$stockOpname->id}");
+            Log::info("Performing Storno for OPN-{$stockOpname->id}");
             $this->stornoService->perform($stockOpname, $validated['reason'] ?? 'Dibatalkan oleh pengguna');
 
-            return redirect()->back()->with('success', 'Hasil opname berhasil dibatalkan.');
+            return redirect()->back()->with('success', 'Hasil opname berhasil di-storno (reversal).');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal membatalkan: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Gagal melakukan storno: '.$e->getMessage());
         }
     }
 

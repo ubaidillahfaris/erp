@@ -35,7 +35,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     Route::middleware('permission:view dashboard')->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // 0. POINT OF SALE (make sales)
-    Route::middleware('permission:make sales')->group(function () {
+    Route::middleware(['permission:make sales', 'period_lock'])->group(function () {
         Route::get('pos', [PosController::class, 'index'])->name('pos.index');
         Route::get('pos/price', [PosController::class, 'getPrice'])->name('pos.price');
         Route::post('pos', [PosController::class, 'store'])->name('pos.store');
@@ -53,8 +53,10 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::delete('bom/bulk-destroy', [BOMController::class, 'bulkDestroy'])->name('bom.bulk-destroy');
         Route::resource('bom', BOMController::class);
 
-        Route::delete('production/bulk-destroy', [ProductionController::class, 'bulkDestroy'])->name('production.bulk-destroy');
-        Route::resource('production', ProductionController::class);
+        Route::middleware('period_lock')->group(function () {
+            Route::delete('production/bulk-destroy', [ProductionController::class, 'bulkDestroy'])->name('production.bulk-destroy');
+            Route::resource('production', ProductionController::class);
+        });
     });
 
     // 2. VENDOR & CUSTOMER MANAGEMENT
@@ -83,7 +85,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     });
 
     // 3. PROCUREMENT & STOCK (manage stock)
-    Route::middleware('permission:manage stock')->group(function () {
+    Route::middleware(['permission:manage stock', 'period_lock'])->group(function () {
         Route::get('restock', [RestockController::class, 'index'])->name('restock.index');
         Route::delete('restock/bulk-destroy', [RestockController::class, 'bulkDestroy'])->name('restock.bulk-destroy');
         Route::resource('restock', RestockController::class)->except(['index']);
@@ -100,7 +102,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::post('stock/export-pdf', [StockController::class, 'exportMutationPdf'])->name('stock.export-pdf');
         Route::post('stock/adjustment', [StockController::class, 'adjustment'])->name('stock.adjustment');
         Route::resource('stock-opname', StockOpnameController::class);
-        Route::post('stock-opname/{stock_opname}/storno', [StockOpnameController::class, 'storno'])->name('stock-opname.storno');
+        Route::post('stock-opname/{stock_opname}/storno', [StockOpnameController::class, 'stornoOpname'])->name('stock-opname.storno');
         Route::post('stock-opname/{stock_opname}/reopen', [StockOpnameController::class, 'reopen'])->name('stock-opname.reopen');
     });
 
@@ -122,15 +124,17 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::get('profit-loss', [TrialBalanceController::class, 'index'])
             ->name('profit-loss.index');
 
-        Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
-        Route::resource('pengeluaran', PengeluaranController::class);
+        Route::middleware('period_lock')->group(function () {
+            Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');
+            Route::resource('pengeluaran', PengeluaranController::class);
+        });
     });
 
     // 5. SALES MANAGEMENT (void sales)
-    Route::middleware('permission:void sales')->group(function () {
+    Route::middleware(['permission:void sales', 'period_lock'])->group(function () {
         Route::get('sales', [SalesController::class, 'index'])->name('sales.index');
         Route::get('sales/{sale}', [SalesController::class, 'show'])->name('sales.show');
-        Route::post('sales/{sale}/void', [SalesController::class, 'void'])->name('sales.void');
+        Route::post('sales/{sale}/void', [SalesController::class, 'stornoSale'])->name('sales.void');
     });
 
     // 6. PAYABLES & RECEIVABLES
@@ -139,7 +143,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::get('payables/{payable}', [PayableController::class, 'show'])->name('payables.show');
 
         // Manage Payments (Sub-permission)
-        Route::middleware('permission:manage payments')->group(function () {
+        Route::middleware(['permission:manage payments', 'period_lock'])->group(function () {
             Route::post('payables/{payable}/payments', [PayableController::class, 'storePayment'])->name('payables.payments.store');
         });
     });

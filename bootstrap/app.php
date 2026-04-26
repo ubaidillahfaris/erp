@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckPeriodLock;
 use App\Http\Middleware\DynamicMenuMiddleware;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'dynamic_menu' => DynamicMenuMiddleware::class,
+            'period_lock' => CheckPeriodLock::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

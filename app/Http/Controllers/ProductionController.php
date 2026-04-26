@@ -170,6 +170,10 @@ class ProductionController extends Controller
 
     public function update(UpdateProductionRequest $request, Production $production): RedirectResponse
     {
+        if ($production->status === 'completed') {
+            abort(403, 'Produksi sudah selesai dan tidak dapat diubah lagi.');
+        }
+
         try {
             DB::transaction(function () use ($request, $production) {
                 $validated = $request->validated();
@@ -225,7 +229,7 @@ class ProductionController extends Controller
     {
         // Add safeguard to prevent deleting completed productions unless handling reversals
         if ($production->status === 'completed') {
-            return redirect()->back()->with('error', 'Produksi yang sudah selesai tidak dapat dihapus.');
+            abort(403, 'Produksi yang sudah selesai tidak dapat dihapus.');
         }
 
         $production->delete();

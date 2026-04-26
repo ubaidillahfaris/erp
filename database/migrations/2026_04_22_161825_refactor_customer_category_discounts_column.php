@@ -27,7 +27,9 @@ return new class extends Migration
         }
 
         Schema::table('customer_category_discounts', function (Blueprint $table) {
+            $table->dropUnique(['customer_id', 'kategori']);
             $table->dropColumn('kategori');
+            $table->unique(['customer_id', 'category_id']);
         });
     }
 

@@ -389,30 +389,15 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
       </div>
     </article>
   </section>
-
   <!-- ===== Recent Transactions Table ===== -->
-  <section class="pt-4">
-    <article class="bg-card rounded-3xl p-6 lg:p-8 shadow-none border border-border/40">
+  <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-4">
+    <article class="col-span-1 lg:col-span-7 bg-card rounded-3xl p-6 lg:p-8 shadow-none border border-border/40">
       <div class="flex items-center justify-between flex-wrap gap-4 px-2">
         <div>
           <h3 class="text-xl font-bold tracking-tight text-foreground">Recent Transactions</h3>
-          <p class="text-sm font-medium text-muted-foreground mt-1">Lalu lintas sistem dan riwayat order terkini</p>
+          <p class="text-sm font-medium text-muted-foreground mt-1">Riwayat order terkini</p>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="relative hidden lg:block">
-            <Search class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input type="text" placeholder="Cari transaksi ID ..."
-              class="h-12 w-64 rounded-full pl-11 pr-4 bg-muted/30 border border-border/50 outline-none focus:ring-2 focus:ring-primary/40 focus:bg-background text-sm font-bold transition-all" />
-          </div>
-          <button
-            class="h-12 px-5 rounded-full border border-border/60 text-sm font-bold flex items-center gap-2 hover:bg-muted transition">
-            <Filter class="h-4 w-4" /> Filter
-          </button>
-          <button
-            class="h-12 px-6 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-transparent text-sm font-bold flex items-center gap-2 shadow-none hover:scale-[1.02] transition">
-            <Download class="h-4 w-4" /> Ekspor
-          </button>
-        </div>
+        <Link href="/sales" class="text-primary text-sm font-bold hover:underline">Lihat Semua</Link>
       </div>
 
       <div class="mt-8 overflow-hidden rounded-2xl border border-border/60 shadow-none">
@@ -420,53 +405,60 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
           <TableHeader>
             <TableRow>
               <TableHead class="font-medium text-xs text-muted-foreground uppercase tracking-wider">Ref ID</TableHead>
-              <TableHead class="font-medium text-xs text-muted-foreground uppercase tracking-wider">Kategori</TableHead>
               <TableHead class="font-medium text-xs text-muted-foreground uppercase tracking-wider">Tanggal</TableHead>
-              <TableHead class="font-medium text-xs text-muted-foreground uppercase tracking-wider">Status</TableHead>
-              <TableHead class="font-medium text-xs text-muted-foreground text-right uppercase tracking-wider">Total IDR
-              </TableHead>
+              <TableHead class="font-medium text-xs text-muted-foreground text-right uppercase tracking-wider">Total IDR</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-for="(tx, idx) in recent_sales" :key="idx" class="cursor-pointer group">
               <TableCell>
-                <div class="flex items-center gap-4">
-                  <span
-                    class="h-10 w-10 rounded-full flex items-center justify-center bg-primary/10 text-primary shrink-0 group-hover:scale-110 transition-transform">
-                    <ArrowDownLeft class="h-4 w-4" />
-                  </span>
-                  <div class="leading-tight">
-                    <div class="text-sm font-medium text-foreground">{{ tx.invoice_number ||
-                      `Order #${tx.id}` }}</div>
-                    <div class="text-xs text-muted-foreground mt-0.5">Penjualan
-                      Retail</div>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <span
-                  class="text-xs font-medium px-2.5 py-1 rounded-md border border-border/60 bg-muted/20 text-foreground">Income</span>
+                <div class="text-sm font-medium text-foreground">{{ tx.invoice_number || `Order #${tx.id}` }}</div>
               </TableCell>
               <TableCell class="text-sm font-medium text-muted-foreground">{{ formatDate(tx.tanggal) }}</TableCell>
-              <TableCell>
-                <span
-                  class="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  Completed
-                </span>
-              </TableCell>
               <TableCell class="text-right font-medium text-sm text-primary">
-                + {{ formatRupiah(tx.total_amount) }}
-              </TableCell>
-            </TableRow>
-            <TableRow v-if="recent_sales.length === 0">
-              <TableCell colspan="5" class="py-12 text-center text-muted-foreground font-semibold">
-                <PackageOpen class="h-12 w-12 opacity-30 mx-auto mb-3" />
-                Belum ada transaksi di periode ini.
+                {{ formatRupiah(tx.total_amount) }}
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
+      </div>
+    </article>
+
+    <!-- Audit Log -->
+    <article class="col-span-1 lg:col-span-5 bg-card rounded-3xl p-6 lg:p-8 shadow-none border border-border/40">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+          <Clock class="h-5 w-5 text-primary" />
+          System Audit Log
+        </h3>
+      </div>
+
+      <div class="space-y-4">
+        <div v-for="log in recent_audits" :key="log.id" class="flex items-start gap-4 p-3 rounded-2xl hover:bg-muted/50 transition-colors border border-transparent hover:border-border/40">
+          <div :class="['h-10 w-10 rounded-full flex items-center justify-center shrink-0', 
+            log.event === 'created' ? 'bg-emerald-500/10 text-emerald-600' : 
+            (log.event === 'deleted' ? 'bg-rose-500/10 text-rose-600' : 'bg-amber-500/10 text-amber-600')]">
+            <RefreshCw v-if="log.event === 'updated'" class="h-4 w-4" />
+            <ShoppingBag v-else-if="log.event === 'created'" class="h-4 w-4" />
+            <TrendingDown v-else class="h-4 w-4" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-bold text-foreground flex items-center justify-between">
+              <span>{{ log.user?.name || 'System' }}</span>
+              <span class="text-[10px] font-medium text-muted-foreground uppercase">{{ log.event }}</span>
+            </div>
+            <p class="text-xs text-muted-foreground truncate mt-0.5">
+              {{ log.auditable_type.split('\\').pop() }} #{{ log.auditable_id }}
+            </p>
+            <div class="text-[10px] text-muted-foreground mt-1 flex items-center gap-1.5">
+              <Calendar class="h-3 w-3" />
+              {{ formatDate(log.created_at) }} {{ formatTime(log.created_at) }}
+            </div>
+          </div>
+        </div>
+        <div v-if="!recent_audits || recent_audits.length === 0" class="py-12 text-center text-muted-foreground">
+          <p class="text-sm font-medium">Belum ada aktivitas audit.</p>
+        </div>
       </div>
     </article>
   </section>

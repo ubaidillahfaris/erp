@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\Satuan;
+use App\Models\StockOpname;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Satuan>
+ * @extends Factory<StockOpname>
  */
-class SatuanFactory extends Factory
+class StockOpnameFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,8 +18,9 @@ class SatuanFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama' => fake()->unique()->word(),
-            'simbol' => fake()->unique()->lexify('??'),
+            'tanggal' => now(),
+            'status' => 'completed',
+            'keterangan' => fake()->sentence(),
         ];
     }
 }

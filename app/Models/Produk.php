@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Database\Factories\ProdukFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 
 class Produk extends Model
 {
     /** @use HasFactory<ProdukFactory> */
-    use HasFactory, Searchable;
+    use Auditable, HasFactory, Searchable, SoftDeletes;
 
     protected $fillable = [
         'sku',

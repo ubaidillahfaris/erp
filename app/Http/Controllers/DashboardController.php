@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Pengeluaran;
 use App\Models\Production;
 use App\Models\Sale;
@@ -130,6 +131,12 @@ class DashboardController extends Controller
                 'count' => (int) $item->count,
             ]);
 
+        // 6. Recent Audit Logs
+        $recentAudits = AuditLog::with(['user', 'auditable'])
+            ->latest()
+            ->take(10)
+            ->get();
+
         return Inertia::render('dashboard/Dashboard', [
             'metrics' => [
                 'sales_today' => (float) $salesToday,
@@ -141,6 +148,7 @@ class DashboardController extends Controller
             'vendors' => $vendors,
             'cash_flow_trend' => $cashFlowTrend,
             'heatmap_data' => $pulseData,
+            'recent_audits' => $recentAudits,
             'current_interval' => $interval,
         ]);
     }

@@ -64,6 +64,7 @@ class ProductionJournalTest extends TestCase
             'satuan_id' => $satuan->id,
             'overhead_rate_per_unit' => 500, // Rp 5,00
             'is_active' => true,
+            'track_stock' => false,
         ]);
 
         $bom = Bom::create([
@@ -89,6 +90,7 @@ class ProductionJournalTest extends TestCase
             'sku' => 'RAW-001',
             'nama' => 'Raw Material',
             'satuan_id' => $satuan->id,
+            'track_stock' => false,
         ]);
 
         ProductionItem::create([
