@@ -239,6 +239,18 @@ watch(totalAmount, (newTotal) => {
     }
 });
 
+watch(() => form.payment_method, (newMethod) => {
+    if (newMethod !== 'cash') {
+        form.received_amount = totalAmount.value;
+    } else if (form.received_amount === totalAmount.value) {
+        // If it was auto-filled by non-cash, maybe clear it for cash or leave it?
+        // Usually, for cash, people want to type the amount or use quick buttons.
+        // Let's clear it if it's the exact amount to encourage using buttons/typing.
+        // Actually, leaving it as totalAmount (Uang Pas) is also good.
+        // Let's leave it but allow clearing.
+    }
+});
+
 const handleCheckout = () => {
     form.customer_id = selectedCustomerId.value;
     form.items = cart.value.map(item => ({
@@ -262,6 +274,38 @@ const handleCheckout = () => {
             toast.error(errors.checkout || 'Gagal memproses transaksi.');
         },
     });
+};
+
+const suggestedAmounts = computed(() => {
+    const total = totalAmount.value;
+    if (total <= 0) return [];
+
+    const denominations = [1000, 2000, 5000, 10000, 20000, 50000, 100000];
+    const suggestions = new Set<number>();
+    
+    // Exact amount
+    suggestions.add(total);
+
+    // Common higher denominations
+    denominations.forEach(d => {
+        if (d > total) {
+            suggestions.add(d);
+        }
+        
+        // Round up to nearest denomination
+        const rounded = Math.ceil(total / d) * d;
+        if (rounded > total) {
+            suggestions.add(rounded);
+        }
+    });
+
+    return Array.from(suggestions)
+        .sort((a, b) => a - b)
+        .slice(0, 5); // Top 5 suggestions
+});
+
+const selectAmount = (amount: number) => {
+    form.received_amount = amount;
 };
 </script>
 
@@ -543,15 +587,47 @@ const handleCheckout = () => {
                         </button>
                     </div>
                     <div v-if="form.payment_method === 'cash'"
-                        class="bg-slate-50 rounded-2xl p-5 space-y-4 border border-slate-100 animate-in fade-in slide-in-from-top-2">
-                        <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Jumlah
-                            Diterima</label>
-                        <Input type="number" v-model.number="form.received_amount"
-                            class="h-14 text-2xl font-bold rounded-xl" />
-                        <div class="flex justify-between pt-3 border-t border-slate-200"><span
-                                class="text-xs font-bold text-slate-400">Kembalian</span><span
-                                class="text-xl font-bold text-emerald-600">{{ formatCurrency(Math.max(0,
-                                    form.received_amount - totalAmount)) }}</span></div>
+                        class="bg-slate-50 rounded-2xl p-5 space-y-6 border border-slate-100 animate-in fade-in slide-in-from-top-2">
+                        <div class="space-y-3">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pilih Nominal Cepat</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button v-for="amt in suggestedAmounts" :key="amt"
+                                    @click="selectAmount(amt)"
+                                    :class="cn(
+                                        'h-11 rounded-xl text-xs font-bold border transition-all active:scale-95',
+                                        form.received_amount === amt 
+                                            ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' 
+                                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                                    )">
+                                    {{ amt === totalAmount ? 'Uang Pas' : formatCurrency(amt).replace('Rp', '').trim() }}
+                                </button>
+                                <button @click="form.received_amount = 0"
+                                    class="h-11 rounded-xl text-xs font-bold bg-white text-destructive border border-slate-200 hover:border-destructive/30 transition-all">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 pt-2">
+                            <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Input Manual</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">Rp</span>
+                                <Input type="number" v-model.number="form.received_amount"
+                                    class="h-16 pl-12 text-3xl font-bold rounded-2xl bg-white border-slate-200 focus-visible:ring-primary/20 shadow-sm" />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600/60">Kembalian</p>
+                                <p class="text-2xl font-bold text-emerald-600 tabular-nums">
+                                    {{ formatCurrency(Math.max(0, form.received_amount - totalAmount)) }}
+                                </p>
+                            </div>
+                            <div v-if="form.received_amount >= totalAmount" class="h-10 w-10 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                                <Check class="h-6 w-6" />
+                            </div>
+                        </div>
                     </div>
                     <div v-if="form.payment_method === 'qris'"
                         class="bg-slate-50 rounded-2xl p-8 flex flex-col items-center justify-center border border-slate-100 animate-in zoom-in-95">
