@@ -15,9 +15,9 @@ class Production extends Model
 
     protected $fillable = [
         'sku',
-        'tanggal',
+        'date',
         'bom_id',
-        'produk_id',
+        'product_id',
         'target_yield',
         'actual_yield',
         'status',
@@ -27,7 +27,7 @@ class Production extends Model
     protected function casts(): array
     {
         return [
-            'tanggal' => 'date',
+            'date' => 'date',
             'target_yield' => 'decimal:4',
             'actual_yield' => 'decimal:4',
             'total_cost' => 'decimal:2',
@@ -39,9 +39,9 @@ class Production extends Model
         return $this->belongsTo(Bom::class);
     }
 
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class, 'produk_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function items(): HasMany

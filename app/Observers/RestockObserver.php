@@ -25,19 +25,19 @@ class RestockObserver
     {
         $this->recordRestockJournal($restock);
 
-        $tanggal = $restock->tanggal instanceof CarbonInterface ? $restock->tanggal->format('Y-m-d') : $restock->tanggal;
+        $date = $restock->date instanceof CarbonInterface ? $restock->date->format('Y-m-d') : $restock->date;
 
         // Journal creation (DISABLED - Transition to Double-Entry)
         /*
         \App\Models\Journal::create([
-            'tanggal' => $tanggal,
+            'date' => $date,
             'type' => 'kredit',
             'amount' => $restock->total_biaya,
             'category' => 'persediaan',
             'payment_method' => $restock->status_pembayaran === 'lunas' ? 'tunai' : 'hutang',
             'reference_type' => Restock::class,
             'reference_id' => $restock->id,
-            'description' => 'Pembelian stok: '.($restock->keterangan ?? 'Tanpa keterangan'),
+            'description' => 'Pembelian stok: '.($restock->notes ?? 'Tanpa keterangan'),
         ]);
         */
 
@@ -65,7 +65,7 @@ class RestockObserver
 
     public function updated(Restock $restock): void
     {
-        $tanggal = $restock->tanggal instanceof CarbonInterface ? $restock->tanggal->format('Y-m-d') : $restock->tanggal;
+        $date = $restock->date instanceof CarbonInterface ? $restock->date->format('Y-m-d') : $restock->date;
 
         // Journal update DISABLED - Transition to Double-Entry
         /*
@@ -75,10 +75,10 @@ class RestockObserver
 
         if ($journal) {
             $journal->update([
-                'tanggal' => $tanggal,
+                'date' => $date,
                 'amount' => $restock->total_biaya,
                 'payment_method' => $restock->status_pembayaran === 'lunas' ? 'tunai' : 'hutang',
-                'description' => 'Pembelian stok: '.($restock->keterangan ?? 'Tanpa keterangan'),
+                'description' => 'Pembelian stok: '.($restock->notes ?? 'Tanpa keterangan'),
             ]);
         }
         */
@@ -110,8 +110,8 @@ class RestockObserver
                 new JournalItemData($materialAcc->id, $amountCents, 'debit'),
                 new JournalItemData($paymentAcc->id, $amountCents, 'credit'),
             ],
-            tanggal: $restock->tanggal,
-            description: 'Restock [Legacy]: '.($restock->keterangan ?? 'Tanpa keterangan'),
+            date: $restock->date,
+            description: 'Restock [Legacy]: '.($restock->notes ?? 'Tanpa keterangan'),
             journalable: $restock
         ));
     }

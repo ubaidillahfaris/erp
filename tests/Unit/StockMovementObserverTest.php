@@ -2,11 +2,11 @@
 
 namespace Tests\Unit;
 
-use App\Models\Produk;
-use App\Models\Satuan;
-use App\Models\SatuanConversion;
+use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockMovement;
+use App\Models\Unit;
+use App\Models\UnitConversion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,40 +14,40 @@ class StockMovementObserverTest extends TestCase
 {
     use RefreshDatabase;
 
-    private Satuan $pcs;
+    private Unit $pcs;
 
-    private Satuan $box;
+    private Unit $box;
 
-    private Produk $produk;
+    private Product $product;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->pcs = Satuan::create(['nama' => 'Pieces', 'simbol' => 'pcs']);
-        $this->box = Satuan::create(['nama' => 'Box', 'simbol' => 'box']);
+        $this->pcs = Unit::create(['name' => 'Pieces', 'symbol' => 'pcs']);
+        $this->box = Unit::create(['name' => 'Box', 'symbol' => 'box']);
 
         // 1 box = 10 pcs
-        SatuanConversion::create([
-            'satuan_id' => $this->box->id,
-            'to_satuan_id' => $this->pcs->id,
-            'rasio' => 10,
+        UnitConversion::create([
+            'unit_id' => $this->box->id,
+            'target_unit_id' => $this->pcs->id,
+            'ratio' => 10,
         ]);
 
         // Product base unit is PCS
-        $this->produk = Produk::factory()->create(['satuan_id' => $this->pcs->id]);
+        $this->product = Product::factory()->create(['unit_id' => $this->pcs->id]);
     }
 
     public function test_movement_created_updates_balance_same_unit(): void
     {
         StockMovement::create([
-            'produk_id' => $this->produk->id,
-            'satuan_id' => $this->pcs->id,
+            'product_id' => $this->product->id,
+            'unit_id' => $this->pcs->id,
             'type' => 'in',
-            'jumlah' => 50,
+            'quantity' => 50,
         ]);
 
-        $stock = Stock::where('produk_id', $this->produk->id)->first();
+        $stock = Stock::where('product_id', $this->product->id)->first();
         $this->assertEquals(50.0, (float) $stock->balance);
     }
 
@@ -55,13 +55,13 @@ class StockMovementObserverTest extends TestCase
     {
         // Add 2 boxes (should be 20 pcs)
         StockMovement::create([
-            'produk_id' => $this->produk->id,
-            'satuan_id' => $this->box->id,
+            'product_id' => $this->product->id,
+            'unit_id' => $this->box->id,
             'type' => 'in',
-            'jumlah' => 2,
+            'quantity' => 2,
         ]);
 
-        $stock = Stock::where('produk_id', $this->produk->id)->first();
+        $stock = Stock::where('product_id', $this->product->id)->first();
         $this->assertEquals(20.0, (float) $stock->balance);
     }
 
@@ -69,54 +69,54 @@ class StockMovementObserverTest extends TestCase
     {
         // Initial 100 pcs
         StockMovement::create([
-            'produk_id' => $this->produk->id,
-            'satuan_id' => $this->pcs->id,
+            'product_id' => $this->product->id,
+            'unit_id' => $this->pcs->id,
             'type' => 'in',
-            'jumlah' => 100,
+            'quantity' => 100,
         ]);
 
         // Out 1 box (10 pcs)
         StockMovement::create([
-            'produk_id' => $this->produk->id,
-            'satuan_id' => $this->box->id,
+            'product_id' => $this->product->id,
+            'unit_id' => $this->box->id,
             'type' => 'out',
-            'jumlah' => 1,
+            'quantity' => 1,
         ]);
 
-        $stock = Stock::where('produk_id', $this->produk->id)->first();
+        $stock = Stock::where('product_id', $this->product->id)->first();
         $this->assertEquals(90.0, (float) $stock->balance);
     }
 
     public function test_movement_deleted_reverts_balance(): void
     {
         $movement = StockMovement::create([
-            'produk_id' => $this->produk->id,
-            'satuan_id' => $this->pcs->id,
+            'product_id' => $this->product->id,
+            'unit_id' => $this->pcs->id,
             'type' => 'in',
-            'jumlah' => 100,
+            'quantity' => 100,
         ]);
 
-        $this->assertEquals(100.0, (float) $this->produk->fresh()->stock->balance);
+        $this->assertEquals(100.0, (float) $this->product->fresh()->stock->balance);
 
         $movement->delete();
 
-        $this->assertEquals(0.0, (float) Stock::where('produk_id', $this->produk->id)->first()->balance);
+        $this->assertEquals(0.0, (float) Stock::where('product_id', $this->product->id)->first()->balance);
     }
 
     public function test_inverse_conversion_handling(): void
     {
         // Product base unit is BOX
-        $produkBox = Produk::factory()->create(['satuan_id' => $this->box->id]);
+        $productBox = Product::factory()->create(['unit_id' => $this->box->id]);
 
         // Add 20 pcs (should be 2 boxes)
         StockMovement::create([
-            'produk_id' => $produkBox->id,
-            'satuan_id' => $this->pcs->id,
+            'product_id' => $productBox->id,
+            'unit_id' => $this->pcs->id,
             'type' => 'in',
-            'jumlah' => 20,
+            'quantity' => 20,
         ]);
 
-        $stock = Stock::where('produk_id', $produkBox->id)->first();
+        $stock = Stock::where('product_id', $productBox->id)->first();
         $this->assertEquals(2.0, (float) $stock->balance);
     }
 }

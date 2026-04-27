@@ -17,7 +17,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     (e: 'update:open', value: boolean): void;
-    (e: 'created', vendor: { id: number; nama: string }): void;
+    (e: 'created', vendor: { id: number; name: string }): void;
 }>();
 
 const isOpen = ref(props.open);
@@ -33,18 +33,18 @@ watch(isOpen, (newVal) => {
 });
 
 const formData = ref({
-    nama: '',
-    alamat: '',
-    telepon: '',
+    name: '',
+    address: '',
+    phone: '',
     email: '',
     errors: {} as Record<string, string[]>
 });
 
 const resetForm = () => {
     formData.value = {
-        nama: '',
-        alamat: '',
-        telepon: '',
+        name: '',
+        address: '',
+        phone: '',
         email: '',
         errors: {}
     };
@@ -57,13 +57,13 @@ const submit = async () => {
         formData.value.errors = {};
         
         const response = await axios.post(quickVendorAction().url, {
-            nama: formData.value.nama,
-            alamat: formData.value.alamat,
-            telepon: formData.value.telepon,
+            name: formData.value.name,
+            address: formData.value.address,
+            phone: formData.value.phone,
             email: formData.value.email,
         });
         
-        toast.success(response.data.message || 'Vendor berhasil ditambahkan');
+        toast.success(response.data.message || 'Vendor added successfully');
         emit('created', response.data.vendor);
         isOpen.value = false;
         resetForm();
@@ -100,12 +100,12 @@ const submit = async () => {
                     </Label>
                     <Input 
                         id="quick-vendor-nama" 
-                        v-model="formData.nama" 
+                        v-model="formData.name" 
                         placeholder="Contoh: PT. Sumber Makmur" 
-                        :class="{'border-destructive': formData.errors.nama}"
+                        :class="{'border-destructive': formData.errors.name}"
                         required
                     />
-                    <p v-if="formData.errors.nama" class="text-xs text-destructive">{{ formData.errors.nama[0] }}</p>
+                    <p v-if="formData.errors.name" class="text-xs text-destructive">{{ formData.errors.name[0] }}</p>
                 </div>
 
                 <div class="grid gap-2">
@@ -116,7 +116,7 @@ const submit = async () => {
                         <Phone class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input 
                             id="quick-vendor-telepon" 
-                            v-model="formData.telepon" 
+                            v-model="formData.phone" 
                             placeholder="Nomor Telp/WA" 
                             class="pl-9"
                         />
@@ -140,10 +140,10 @@ const submit = async () => {
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="quick-vendor-alamat">Alamat</Label>
+                    <Label for="quick-vendor-alamat">Address</Label>
                     <Textarea 
                         id="quick-vendor-alamat" 
-                        v-model="formData.alamat" 
+                        v-model="formData.address" 
                         placeholder="Alamat operasional vendor..." 
                         rows="2"
                         class="resize-none"
@@ -155,7 +155,7 @@ const submit = async () => {
                 <Button variant="outline" @click="isOpen = false" :disabled="isSubmitting">
                     Batal
                 </Button>
-                <Button @click="submit" :disabled="!formData.nama || isSubmitting" class="gap-2">
+                <Button @click="submit" :disabled="!formData.name || isSubmitting" class="gap-2">
                     Simpan Vendor
                 </Button>
             </DialogFooter>

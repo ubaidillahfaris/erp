@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProductPriceStat extends Model
 {
     protected $fillable = [
-        'produk_id',
-        'satuan_id',
+        'product_id',
+        'unit_id',
         'avg_price',
         'min_price',
         'max_price',
@@ -26,13 +26,13 @@ class ProductPriceStat extends Model
         ];
     }
 
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Unit::class);
     }
 }

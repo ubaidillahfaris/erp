@@ -27,7 +27,7 @@ class StorePurchaseRequest extends FormRequest
             if (is_array($this->items)) {
                 $items = $this->items;
                 foreach ($items as &$item) {
-                    $item['harga_satuan'] = 0;
+                    $item['unit_price'] = 0;
                 }
                 $this->merge(['items' => $items]);
             }
@@ -39,15 +39,15 @@ class StorePurchaseRequest extends FormRequest
         return [
             'no_invoice' => ['nullable', 'string', 'max:100'],
             'vendor_id' => ['nullable', 'exists:vendors,id'],
-            'tanggal' => ['required', 'date'],
+            'date' => ['required', 'date'],
             'transaction_type' => ['required', 'in:purchase,gift,adjustment'],
             'payment_method' => ['required', 'string', 'in:cash,transfer,credit'],
-            'keterangan' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.produk_id' => ['required', 'exists:produks,id'],
-            'items.*.satuan_id' => ['required', 'exists:satuans,id'],
-            'items.*.jumlah' => ['required', 'numeric', 'min:0.0001'],
-            'items.*.harga_satuan' => ['required', 'numeric', 'min:0'],
+            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.unit_id' => ['required', 'exists:units,id'],
+            'items.*.quantity' => ['required', 'numeric', 'min:0.0001'],
+            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'max:20480'], // 20MB max per file
         ];
@@ -61,8 +61,8 @@ class StorePurchaseRequest extends FormRequest
                     $validator->errors()->add('vendor_id', 'Vendor wajib diisi untuk transaksi Pembelian.');
                 }
                 foreach ($this->items ?? [] as $index => $item) {
-                    if (isset($item['harga_satuan']) && (float) $item['harga_satuan'] <= 0) {
-                        $validator->errors()->add("items.{$index}.harga_satuan", 'Harga satuan harus lebih dari 0 untuk transaksi Pembelian.');
+                    if (isset($item['unit_price']) && (float) $item['unit_price'] <= 0) {
+                        $validator->errors()->add("items.{$index}.unit_price", 'Harga satuan harus lebih dari 0 untuk transaksi Pembelian.');
                     }
                 }
             }

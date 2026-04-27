@@ -61,6 +61,6 @@ class TrialBalanceController extends Controller
         Cache::forget('trial_balance_current');
 
         return redirect()->route('accounting.trial-balance.index')
-            ->with('success', 'Trial Balance berhasil diperbarui.');
+            ->with('success', 'Trial Balance updated successfully.');
     }
 }

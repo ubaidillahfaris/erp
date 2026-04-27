@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('boms', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
-            $table->string('nama')->nullable();
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->string('name')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

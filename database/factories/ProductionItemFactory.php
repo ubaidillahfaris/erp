@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductionItem;
-use App\Models\Produk;
-use App\Models\Satuan;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,11 +22,11 @@ class ProductionItemFactory extends Factory
     {
         return [
             'production_id' => Production::factory(),
-            'produk_id' => Produk::factory(),
-            'satuan_id' => Satuan::factory(),
+            'product_id' => Product::factory(),
+            'unit_id' => Unit::factory(),
             'planned_qty' => $this->faker->numberBetween(1, 50),
             'actual_qty' => $this->faker->numberBetween(1, 50),
-            'harga_satuan' => $this->faker->numberBetween(1000, 10000),
+            'unit_price' => $this->faker->numberBetween(1000, 10000),
         ];
     }
 }

@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('pengeluarans', function (Blueprint $table) {
             $table->id();
-            $table->date('tanggal');
+            $table->date('date');
             $table->string('jenis_pengeluaran');
             $table->string('nama_pengeluaran');
             $table->decimal('nominal', 15, 2);
-            $table->text('keterangan')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

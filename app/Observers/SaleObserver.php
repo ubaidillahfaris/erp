@@ -26,13 +26,13 @@ class SaleObserver
      */
     public function created(Sale $sale): void
     {
-        /** @var Carbon $tanggal */
-        $tanggal = $sale->tanggal;
+        /** @var Carbon $date */
+        $date = $sale->date;
 
         // 1. Record Revenue Journal (DISABLED - Journals are now read-only)
         /*
         $sale->journals()->create([
-            'tanggal' => $tanggal->format('Y-m-d'),
+            'date' => $date->format('Y-m-d'),
             'type' => 'debit', // Cash in
             'amount' => $sale->total_amount,
             'category' => 'penjualan',
@@ -135,15 +135,15 @@ class SaleObserver
      */
     protected function recordSaleJournals(Sale $sale): void
     {
-        $tanggal = $sale->tanggal;
+        $date = $sale->date;
         $refNumber = sprintf(
             'SALE-%s-%d',
-            $tanggal->format('Ymd'),
+            $date->format('Ymd'),
             $sale->id
         );
 
         // Atomic transaction for the dual entries
-        DB::transaction(function () use ($sale, $tanggal, $refNumber) {
+        DB::transaction(function () use ($sale, $date, $refNumber) {
             // 1. Revenue Entry: Debit 1102 (Receiv) vs Credit 4101 (Revenue)
             $receivableAcc = Account::findByCode('1102');
             $revenueAcc = Account::findByCode('4101');
@@ -155,7 +155,7 @@ class SaleObserver
                     new JournalItemData($receivableAcc->id, $revenueAmountCents, 'debit'),
                     new JournalItemData($revenueAcc->id, $revenueAmountCents, 'credit'),
                 ],
-                tanggal: $tanggal,
+                date: $date,
                 ref_number: "{$refNumber}-REV",
                 description: "Revenue Penjualan INV-{$sale->invoice_number}",
                 journalable: $sale
@@ -173,7 +173,7 @@ class SaleObserver
                     new JournalItemData($cogsAcc->id, $cogsAmountCents, 'debit'),
                     new JournalItemData($finishedGoodsAcc->id, $cogsAmountCents, 'credit'),
                 ],
-                tanggal: $tanggal,
+                date: $date,
                 ref_number: "{$refNumber}-COGS",
                 description: "COGS Penjualan INV-{$sale->invoice_number}",
                 journalable: $sale

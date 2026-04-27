@@ -176,7 +176,7 @@ const deleteAccount = (id: number, hasHistory: boolean) => {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Semua Status</SelectItem>
-                                <SelectItem value="1">Aktif</SelectItem>
+                                <SelectItem value="1">Active</SelectItem>
                                 <SelectItem value="0">Nonaktif</SelectItem>
                             </SelectContent>
                         </Select>

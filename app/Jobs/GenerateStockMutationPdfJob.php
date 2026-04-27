@@ -21,7 +21,7 @@ class GenerateStockMutationPdfJob implements ShouldQueue
 
     public function handle(): void
     {
-        $query = StockMovement::with(['produk', 'satuan'])->latest();
+        $query = StockMovement::with(['product', 'unit'])->latest();
 
         if (! empty($this->filters['start_date'])) {
             $query->whereDate('created_at', '>=', $this->filters['start_date']);
@@ -31,8 +31,8 @@ class GenerateStockMutationPdfJob implements ShouldQueue
             $query->whereDate('created_at', '<=', $this->filters['end_date']);
         }
 
-        if (! empty($this->filters['produk_id'])) {
-            $query->where('produk_id', $this->filters['produk_id']);
+        if (! empty($this->filters['product_id'])) {
+            $query->where('product_id', $this->filters['product_id']);
         }
 
         $movements = $query->get();

@@ -5,10 +5,10 @@ namespace Tests\Feature;
 use App\Exceptions\MissingCOGSException;
 use App\Models\Account;
 use App\Models\JournalEntry;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\Satuan;
+use App\Models\Unit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
@@ -17,11 +17,11 @@ class SaleJournalTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected Satuan $satuan;
+    protected Unit $unit;
 
-    protected Produk $produk1;
+    protected Product $product1;
 
-    protected Produk $produk2;
+    protected Product $product2;
 
     protected function setUp(): void
     {
@@ -31,13 +31,13 @@ class SaleJournalTest extends TestCase
         Account::create(['code' => '1102', 'name' => 'Piutang Usaha', 'type' => 'asset', 'balance_type' => 'debit']);
         Account::create(['code' => '4101', 'name' => 'Penjualan', 'type' => 'income', 'balance_type' => 'credit']);
         Account::create(['code' => '5101', 'name' => 'HPP', 'type' => 'expense', 'balance_type' => 'debit']);
-        Account::create(['code' => '1302', 'name' => 'Persediaan Barang Jadi', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1302', 'name' => 'Persediaan Finished Goods', 'type' => 'asset', 'balance_type' => 'debit']);
 
-        $this->satuan = Satuan::create(['nama' => 'PCS', 'simbol' => 'PCS']);
+        $this->unit = Unit::create(['name' => 'PCS', 'symbol' => 'PCS']);
 
-        // Ensure Produk has satuan_id to satisfy StockMovementObserver
-        $this->produk1 = Produk::create(['sku' => 'SKU-001', 'nama' => 'Produk 1', 'satuan_id' => $this->satuan->id, 'track_stock' => false]);
-        $this->produk2 = Produk::create(['sku' => 'SKU-002', 'nama' => 'Produk 2', 'satuan_id' => $this->satuan->id, 'track_stock' => false]);
+        // Ensure Product has unit_id to satisfy StockMovementObserver
+        $this->product1 = Product::create(['sku' => 'SKU-001', 'name' => 'Product 1', 'unit_id' => $this->unit->id, 'track_stock' => false]);
+        $this->product2 = Product::create(['sku' => 'SKU-002', 'name' => 'Product 2', 'unit_id' => $this->unit->id, 'track_stock' => false]);
     }
 
     /**
@@ -50,15 +50,15 @@ class SaleJournalTest extends TestCase
 
         $sale = Sale::create([
             'invoice_number' => 'INV-AUTO',
-            'tanggal' => '2024-04-19',
+            'date' => '2024-04-19',
             'total_amount' => 1000.00,
             'status' => 'draft',
             'payment_method' => 'cash',
         ]);
 
         // Add items to trigger computation
-        SaleItem::create(['sale_id' => $sale->id, 'produk_id' => $this->produk1->id, 'satuan_id' => $this->satuan->id, 'qty' => 2, 'cost' => 150.00, 'price' => 200, 'subtotal' => 400]);
-        SaleItem::create(['sale_id' => $sale->id, 'produk_id' => $this->produk2->id, 'satuan_id' => $this->satuan->id, 'qty' => 1, 'cost' => 100.50, 'price' => 150, 'subtotal' => 150]);
+        SaleItem::create(['sale_id' => $sale->id, 'product_id' => $this->product1->id, 'unit_id' => $this->unit->id, 'qty' => 2, 'cost' => 150.00, 'price' => 200, 'subtotal' => 400]);
+        SaleItem::create(['sale_id' => $sale->id, 'product_id' => $this->product2->id, 'unit_id' => $this->unit->id, 'qty' => 1, 'cost' => 100.50, 'price' => 150, 'subtotal' => 150]);
 
         $sale->update(['status' => 'completed']);
 
@@ -81,7 +81,7 @@ class SaleJournalTest extends TestCase
     {
         $sale = Sale::create([
             'invoice_number' => 'INV-EMPTY',
-            'tanggal' => '2024-04-19',
+            'date' => '2024-04-19',
             'total_amount' => 1000.00,
             'status' => 'draft',
             'payment_method' => 'cash',
@@ -102,14 +102,14 @@ class SaleJournalTest extends TestCase
 
         $sale = Sale::create([
             'invoice_number' => 'INV-OVERWRITE',
-            'tanggal' => '2024-04-19',
+            'date' => '2024-04-19',
             'total_amount' => 500.00,
             'cogs_amount' => 99999, // Manual/junk value
             'status' => 'draft',
             'payment_method' => 'cash',
         ]);
 
-        SaleItem::create(['sale_id' => $sale->id, 'produk_id' => $this->produk1->id, 'satuan_id' => $this->satuan->id, 'qty' => 1, 'cost' => 100.00, 'price' => 150, 'subtotal' => 150]);
+        SaleItem::create(['sale_id' => $sale->id, 'product_id' => $this->product1->id, 'unit_id' => $this->unit->id, 'qty' => 1, 'cost' => 100.00, 'price' => 150, 'subtotal' => 150]);
 
         $sale->update(['status' => 'completed']);
 
@@ -127,13 +127,13 @@ class SaleJournalTest extends TestCase
 
         $sale = Sale::create([
             'invoice_number' => 'INV-FAIL-SAFE',
-            'tanggal' => '2024-04-19',
+            'date' => '2024-04-19',
             'total_amount' => 500.00,
             'status' => 'draft',
             'payment_method' => 'cash',
         ]);
 
-        SaleItem::create(['sale_id' => $sale->id, 'produk_id' => $this->produk1->id, 'satuan_id' => $this->satuan->id, 'qty' => 1, 'cost' => 100.00, 'price' => 150, 'subtotal' => 150]);
+        SaleItem::create(['sale_id' => $sale->id, 'product_id' => $this->product1->id, 'unit_id' => $this->unit->id, 'qty' => 1, 'cost' => 100.00, 'price' => 150, 'subtotal' => 150]);
 
         $sale->update(['status' => 'completed']);
 

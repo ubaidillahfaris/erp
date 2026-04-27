@@ -4,13 +4,13 @@ Proses pengolahan bahan baku menjadi barang jadi berdasarkan resep.
 
 ```mermaid
 erDiagram
-    PRODUKS ||--o{ BOMS : "is_produced_as"
+    PRODUCTS ||--o{ BOMS : "is_produced_as"
     BOMS ||--o{ BOM_ITEMS : "recipe_details"
-    PRODUKS ||--o{ BOM_ITEMS : "as_ingredient"
+    PRODUCTS ||--o{ BOM_ITEMS : "as_ingredient"
     
     PRODUCTIONS ||--o{ PRODUCTION_ITEMS : "execution_log"
     BOMS ||--o{ PRODUCTIONS : "using_recipe"
-    PRODUKS ||--o{ PRODUCTIONS : "resulting_product"
+    PRODUCTS ||--o{ PRODUCTIONS : "resulting_product"
 
     BOMS {
         bigint id PK

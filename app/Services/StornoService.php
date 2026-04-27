@@ -72,8 +72,8 @@ class StornoService
 
             $this->journalService->record(new JournalEntryData(
                 items: $reverseItems,
-                tanggal: now(),
-                description: 'STORNO: '.($reason ?: 'Pembatalan '.$entry->description),
+                date: now(),
+                description: 'STORNO: '.($reason ?: 'Cancellation of '.$entry->description),
                 journalable: $model,
                 ref_number: 'STRN-'.$entry->ref_number
             ));
@@ -86,7 +86,7 @@ class StornoService
     protected function stornoStockOpname(StockOpname $opname, ?string $reason): bool
     {
         if ($opname->status !== 'completed') {
-            throw new \Exception("Hanya Stock Opname dengan status 'completed' yang dapat di-storno.");
+            throw new \Exception("Only Stock Opname with 'completed' status can be reversed.");
         }
 
         // 1. Reverse Stock Movements
@@ -110,7 +110,7 @@ class StornoService
     protected function stornoSale(Sale $sale, ?string $reason): bool
     {
         if ($sale->status !== 'completed') {
-            throw new \Exception("Hanya transaksi penjualan dengan status 'completed' yang dapat di-storno.");
+            throw new \Exception("Only sale transactions with 'completed' status can be voided.");
         }
 
         // 1. Reverse Stock by creating 'in' movements for all items
@@ -135,13 +135,13 @@ class StornoService
     {
         foreach ($sale->items as $item) {
             $this->recordStockMovement->handle([
-                'produk_id' => $item->produk_id,
-                'satuan_id' => $item->satuan_id,
+                'product_id' => $item->product_id,
+                'unit_id' => $item->unit_id,
                 'type' => 'in', // Return to stock
-                'jumlah' => $item->qty,
+                'quantity' => $item->qty,
                 'reference_type' => 'sale',
                 'reference_id' => $sale->id,
-                'keterangan' => 'STORNO: '.($reason ?: "Pembatalan penjualan #{$sale->invoice_number}"),
+                'notes' => 'STORNO: '.($reason ?: "Cancellation of sale #{$sale->invoice_number}"),
             ]);
         }
     }
@@ -159,13 +159,13 @@ class StornoService
         foreach ($movements as $movement) {
             // Create a counter-movement (In -> Out, Out -> In)
             $this->recordStockMovement->handle([
-                'produk_id' => $movement->produk_id,
-                'satuan_id' => $movement->satuan_id,
+                'product_id' => $movement->product_id,
+                'unit_id' => $movement->unit_id,
                 'type' => $movement->type === 'in' ? 'out' : 'in',
-                'jumlah' => $movement->jumlah,
+                'quantity' => $movement->quantity,
                 'reference_type' => $movement->reference_type,
                 'reference_id' => $movement->reference_id,
-                'keterangan' => 'STORNO: '.($reason ?: "Pembatalan transaksi #{$model->id}"),
+                'notes' => 'STORNO: '.($reason ?: "Cancellation of transaction #{$model->id}"),
             ]);
         }
     }

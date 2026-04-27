@@ -23,7 +23,7 @@ class MobileDashboardController extends Controller
     {
         $today = Carbon::today();
 
-        $salesToday = Sale::whereDate('tanggal', $today)->get();
+        $salesToday = Sale::whereDate('date', $today)->get();
         $totalSales = $salesToday->sum('total_amount');
         $transactionCount = $salesToday->count();
 
@@ -34,7 +34,7 @@ class MobileDashboardController extends Controller
             });
         });
 
-        $expensesToday = Pengeluaran::whereDate('tanggal', $today)->sum('nominal');
+        $expensesToday = Pengeluaran::whereDate('date', $today)->sum('nominal');
 
         return response()->json([
             'success' => true,

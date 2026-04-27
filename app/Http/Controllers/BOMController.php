@@ -6,10 +6,10 @@ use App\Actions\RecalculateHpp;
 use App\Http\Requests\StoreBOMRequest;
 use App\Http\Requests\UpdateBOMRequest;
 use App\Models\Bom;
+use App\Models\Product;
 use App\Models\Production;
-use App\Models\Produk;
-use App\Models\Satuan;
-use App\Models\SatuanConversion;
+use App\Models\Unit;
+use App\Models\UnitConversion;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,21 +28,21 @@ class BOMController extends Controller
         $sort = $request->input('sort') ?: 'created_at';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
-        $query = Bom::with('produk.satuan', 'produk.currentPrice', 'yieldSatuan');
+        $query = Bom::with('product.unit', 'product.currentPrice', 'yieldUnit');
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
+                $q->where('name', 'like', "%{$search}%")
                     ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhereHas('produk', function ($pq) use ($search) {
-                        $pq->where('nama', 'like', "%{$search}%");
+                    ->orWhereHas('product', function ($pq) use ($search) {
+                        $pq->where('name', 'like', "%{$search}%");
                     });
             });
         }
 
         if ($request->wantsJson()) {
-            $query->with(['items.produk.satuan', 'items.satuan']);
+            $query->with(['items.product.unit', 'items.unit']);
 
             return response()->json($query->paginate(10));
         }
@@ -62,19 +62,19 @@ class BOMController extends Controller
      */
     public function create(): Response
     {
-        $produks = Produk::whereIn('type', ['finished_good', 'intermediate_good'])
+        $products = Product::whereIn('type', ['finished_good', 'intermediate_good'])
             ->whereDoesntHave('bom')
             ->get();
 
-        $bahanBakus = Produk::with(['satuan', 'currentPrice'])->whereIn('type', ['raw_material', 'intermediate_good'])->get();
+        $bahanBakus = Product::with(['unit', 'currentPrice'])->whereIn('type', ['raw_material', 'intermediate_good'])->get();
 
-        $satuans = Satuan::all();
+        $units = Unit::all();
 
         return Inertia::render('bom/Create', [
-            'produks' => $produks,
+            'products' => $products,
             'bahanBakus' => $bahanBakus,
-            'satuans' => $satuans,
-            'conversions' => SatuanConversion::all(),
+            'units' => $units,
+            'conversions' => UnitConversion::all(),
         ]);
     }
 
@@ -100,7 +100,7 @@ class BOMController extends Controller
             }
 
             // Recalculate HPP for the product
-            app(RecalculateHpp::class)->handle($bom->produk);
+            app(RecalculateHpp::class)->handle($bom->product);
         });
 
         return redirect()->route('bom.index')->with('success', 'BOM berhasil dibuat.');
@@ -111,18 +111,18 @@ class BOMController extends Controller
      */
     public function edit(Bom $bom): Response
     {
-        $bom->load(['items.produk.satuan', 'yieldSatuan']);
+        $bom->load(['items.product.unit', 'yieldUnit']);
 
-        $produks = Produk::whereIn('type', ['finished_good', 'intermediate_good'])
+        $products = Product::whereIn('type', ['finished_good', 'intermediate_good'])
             ->where(function ($query) use ($bom) {
                 $query->whereDoesntHave('bom')
-                    ->orWhere('id', $bom->produk_id);
+                    ->orWhere('id', $bom->product_id);
             })
             ->get();
 
-        $bahanBakus = Produk::with(['satuan', 'currentPrice'])->whereIn('type', ['raw_material', 'intermediate_good'])->get();
+        $bahanBakus = Product::with(['unit', 'currentPrice'])->whereIn('type', ['raw_material', 'intermediate_good'])->get();
 
-        $satuans = Satuan::all();
+        $units = Unit::all();
 
         // Get latest production yield if it exists
         $latestProduction = Production::where('bom_id', $bom->id)
@@ -134,10 +134,10 @@ class BOMController extends Controller
 
         return Inertia::render('bom/Edit', [
             'bom' => $bom,
-            'produks' => $produks,
+            'products' => $products,
             'bahanBakus' => $bahanBakus,
-            'satuans' => $satuans,
-            'conversions' => SatuanConversion::all(),
+            'units' => $units,
+            'conversions' => UnitConversion::all(),
             'latest_production_yield' => $latestProductionYield,
         ]);
     }
@@ -156,10 +156,10 @@ class BOMController extends Controller
             }
 
             // Recalculate HPP for the product
-            app(RecalculateHpp::class)->handle($bom->produk);
+            app(RecalculateHpp::class)->handle($bom->product);
         });
 
-        return redirect()->route('bom.index')->with('success', 'BOM berhasil diperbarui.');
+        return redirect()->route('bom.index')->with('success', 'BOM updated successfully.');
     }
 
     /**
@@ -169,7 +169,7 @@ class BOMController extends Controller
     {
         $bom->delete();
 
-        return redirect()->route('bom.index')->with('success', 'BOM berhasil dihapus.');
+        return redirect()->route('bom.index')->with('success', 'BOM deleted successfully.');
     }
 
     public function bulkDestroy(Request $request)
@@ -181,6 +181,6 @@ class BOMController extends Controller
 
         Bom::whereIn('id', $request->ids)->delete();
 
-        return to_route('bom.index')->with('success', count($request->ids).' BOM berhasil dihapus.');
+        return to_route('bom.index')->with('success', count($request->ids).' BOM deleted successfully.');
     }
 }

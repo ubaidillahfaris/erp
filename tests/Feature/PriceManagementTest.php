@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\Price;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Restock;
-use App\Models\Satuan;
+use App\Models\Unit;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,50 +33,50 @@ class PriceManagementTest extends TestCase
     public function test_purchase_price_is_automatically_tracked_on_restock(): void
     {
         $user = User::factory()->superadmin()->create();
-        $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
-        $produk = Produk::create([
+        $unit = Unit::create(['name' => 'Pcs', 'symbol' => 'pcs']);
+        $product = Product::create([
             'sku' => 'P001',
-            'nama' => 'Produk Test',
+            'name' => 'Product Test',
             'type' => 'raw_material',
-            'satuan_id' => $satuan->id,
-            'stok_minimal' => 5,
+            'unit_id' => $unit->id,
+            'min_stock' => 5,
         ]);
 
         // 1. Initial restock
         $this->actingAs($user)->post(route('restock.store'), [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'vendor_id' => $this->vendor->id,
             'status_pembayaran' => 'lunas',
             'total_bayar' => 10000,
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $satuan->id,
-                    'jumlah' => 10,
-                    'harga_satuan' => 1000,
+                    'product_id' => $product->id,
+                    'unit_id' => $unit->id,
+                    'quantity' => 10,
+                    'unit_price' => 1000,
                 ],
             ],
         ]);
 
         $this->assertDatabaseHas('prices', [
-            'produk_id' => $produk->id,
-            'satuan_id' => $satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $unit->id,
             'purchase_price' => 1000.00,
             'is_current' => true,
         ]);
 
         // 2. Second restock with different price
         $this->actingAs($user)->post(route('restock.store'), [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'vendor_id' => $this->vendor->id,
             'status_pembayaran' => 'lunas',
             'total_bayar' => 12000,
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $satuan->id,
-                    'jumlah' => 10,
-                    'harga_satuan' => 1200,
+                    'product_id' => $product->id,
+                    'unit_id' => $unit->id,
+                    'quantity' => 10,
+                    'unit_price' => 1200,
                 ],
             ],
         ]);
@@ -97,40 +97,40 @@ class PriceManagementTest extends TestCase
     public function test_can_update_retail_price_for_product(): void
     {
         $user = User::factory()->superadmin()->create();
-        $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
-        $produk = Produk::create([
+        $unit = Unit::create(['name' => 'Pcs', 'symbol' => 'pcs']);
+        $product = Product::create([
             'sku' => 'P001',
-            'nama' => 'Produk Test',
+            'name' => 'Product Test',
             'type' => 'finished_good',
-            'satuan_id' => $satuan->id,
-            'stok_minimal' => 5,
+            'unit_id' => $unit->id,
+            'min_stock' => 5,
             'is_active' => true,
         ]);
 
         // Create initial price record (e.g. from restock)
         Price::create([
-            'produk_id' => $produk->id,
-            'satuan_id' => $satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $unit->id,
             'purchase_price' => 1000,
             'retail_price' => 1500,
             'is_current' => true,
         ]);
 
-        $response = $this->actingAs($user)->put(route('produk.update', $produk), [
+        $response = $this->actingAs($user)->put(route('product.update', $product), [
             'sku' => 'P001',
-            'nama' => 'Produk Test Updated',
+            'name' => 'Product Test Updated',
             'type' => 'finished_good',
             'is_active' => true,
-            'stok_minimal' => 5,
+            'min_stock' => 5,
             'retail_price' => 2000,
             'wholesale_price' => 1800,
-            'satuan_id' => $satuan->id,
+            'unit_id' => $unit->id,
         ]);
 
-        $response->assertRedirect(route('produk.index'));
+        $response->assertRedirect(route('product.index'));
 
         $this->assertDatabaseHas('prices', [
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'retail_price' => 2000.00,
             'wholesale_price' => 1800.00,
             'is_current' => true,
@@ -140,25 +140,25 @@ class PriceManagementTest extends TestCase
     public function test_can_create_product_with_initial_prices(): void
     {
         $user = User::factory()->superadmin()->create();
-        $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
+        $unit = Unit::create(['name' => 'Pcs', 'symbol' => 'pcs']);
 
-        $response = $this->actingAs($user)->post(route('produk.store'), [
+        $response = $this->actingAs($user)->post(route('product.store'), [
             'sku' => 'PNEW',
-            'nama' => 'Produk Baru',
+            'name' => 'Product Baru',
             'type' => 'finished_good',
-            'stok_minimal' => 10,
-            'satuan_id' => $satuan->id,
+            'min_stock' => 10,
+            'unit_id' => $unit->id,
             'retail_price' => 5000,
             'wholesale_price' => 4500,
         ]);
 
-        $response->assertRedirect(route('produk.index'));
+        $response->assertRedirect(route('product.index'));
 
-        $produk = Produk::where('sku', 'PNEW')->first();
-        $this->assertNotNull($produk);
+        $product = Product::where('sku', 'PNEW')->first();
+        $this->assertNotNull($product);
 
         $this->assertDatabaseHas('prices', [
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'retail_price' => 5000.00,
             'wholesale_price' => 4500.00,
             'is_current' => true,
@@ -168,41 +168,41 @@ class PriceManagementTest extends TestCase
     public function test_can_update_restock_and_track_price(): void
     {
         $user = User::factory()->superadmin()->create();
-        $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
-        $produk = Produk::create([
+        $unit = Unit::create(['name' => 'Pcs', 'symbol' => 'pcs']);
+        $product = Product::create([
             'sku' => 'PREST',
-            'nama' => 'Restock Product',
+            'name' => 'Restock Product',
             'type' => 'raw_material',
-            'satuan_id' => $satuan->id,
-            'stok_minimal' => 5,
+            'unit_id' => $unit->id,
+            'min_stock' => 5,
         ]);
 
         // 1. Create restock
         $restock = Restock::create([
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'status_pembayaran' => 'lunas',
             'total_bayar' => 1000,
             'total_biaya' => 1000,
             'vendor_id' => $this->vendor->id,
         ]);
         $restock->items()->create([
-            'produk_id' => $produk->id,
-            'satuan_id' => $satuan->id,
-            'jumlah' => 1,
-            'harga_satuan' => 1000,
+            'product_id' => $product->id,
+            'unit_id' => $unit->id,
+            'quantity' => 1,
+            'unit_price' => 1000,
         ]);
 
         // 2. Update restock via controller
         $response = $this->actingAs($user)->put(route('restock.update', $restock), [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'status_pembayaran' => 'lunas',
             'total_bayar' => 1500,
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $satuan->id,
-                    'jumlah' => 1,
-                    'harga_satuan' => 1500,
+                    'product_id' => $product->id,
+                    'unit_id' => $unit->id,
+                    'quantity' => 1,
+                    'unit_price' => 1500,
                 ],
             ],
         ]);
@@ -211,7 +211,7 @@ class PriceManagementTest extends TestCase
 
         // Should have new current price
         $this->assertDatabaseHas('prices', [
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'purchase_price' => 1500.00,
             'is_current' => true,
         ]);

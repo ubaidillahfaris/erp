@@ -16,7 +16,7 @@ class ProfitLossController extends Controller
         $endDate = $request->input('end_date', now()->endOfDay()->format('Y-m-d'));
 
         // Aggregations
-        $financialData = Journal::whereBetween('tanggal', [$startDate, $endDate])
+        $financialData = Journal::whereBetween('date', [$startDate, $endDate])
             ->select('category', 'type', DB::raw('SUM(amount) as total'))
             ->groupBy('category', 'type')
             ->get();
@@ -41,8 +41,8 @@ class ProfitLossController extends Controller
 
             if ($data->category === 'hpp') {
                 $label = 'Beban Pokok Penjualan (HPP)';
-            } elseif ($data->category === 'produksi') {
-                $label = 'Harga Pokok Produksi';
+            } elseif ($data->category === 'productsi') {
+                $label = 'Harga Pokok Productsi';
             } elseif ($data->category === 'penjualan') {
                 $label = 'Pendapatan Penjualan';
             }
@@ -55,7 +55,7 @@ class ProfitLossController extends Controller
             if ($data->category === 'penjualan') {
                 $report['revenue']['total'] += $item['amount'];
                 $report['revenue']['items'][] = $item;
-            } elseif (in_array($data->category, ['hpp', 'produksi'])) {
+            } elseif (in_array($data->category, ['hpp', 'productsi'])) {
                 $report['cogs']['total'] += $item['amount'];
                 $report['cogs']['items'][] = $item;
             } elseif ($data->category === 'persediaan') {

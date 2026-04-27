@@ -29,7 +29,7 @@ const onOpenChange = (open: boolean) => {
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter class="flex w-full items-center gap-3 sm:justify-between">
-                <Button variant="outline" class="w-full sm:w-1/2 mt-2 sm:mt-0" @click="handleCancel" :disabled="isConfirming">Batal</Button>
+                <Button variant="outline" class="w-full sm:w-1/2 mt-2 sm:mt-0" @click="handleCancel" :disabled="isConfirming">Cancel</Button>
                 <Button class="w-full sm:w-1/2" @click="handleConfirm" :disabled="isConfirming">Ya, Lanjutkan</Button>
             </AlertDialogFooter>
         </AlertDialogContent>

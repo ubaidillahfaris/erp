@@ -64,7 +64,7 @@ class CustomerController extends Controller
 
         Customer::create($request->all());
 
-        return to_route('customer.index')->with('success', 'Customer berhasil ditambahkan.');
+        return to_route('customer.index')->with('success', 'Customer added successfully.');
     }
 
     /**
@@ -95,7 +95,7 @@ class CustomerController extends Controller
 
         $customer->update($request->all());
 
-        return to_route('customer.index')->with('success', 'Customer berhasil diperbarui.');
+        return to_route('customer.index')->with('success', 'Customer updated successfully.');
     }
 
     /**
@@ -109,7 +109,7 @@ class CustomerController extends Controller
 
         $customer->delete();
 
-        return back()->with('success', 'Customer berhasil dihapus.');
+        return back()->with('success', 'Customer deleted successfully.');
     }
 
     /**
@@ -135,7 +135,7 @@ class CustomerController extends Controller
             }
         }
 
-        $message = "{$deletedCount} customer berhasil dihapus.";
+        $message = "{$deletedCount} customer deleted successfully.";
         if ($skippedCount > 0) {
             $message .= " {$skippedCount} customer dilewati karena memiliki riwayat transaksi.";
         }

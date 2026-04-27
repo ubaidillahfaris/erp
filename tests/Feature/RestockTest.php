@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
-use App\Models\Produk;
-use App\Models\Satuan;
+use App\Models\Product;
+use App\Models\Unit;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,7 +17,7 @@ class RestockTest extends TestCase
 
     private User $user;
 
-    private Produk $bahanBaku;
+    private Product $bahanBaku;
 
     private Vendor $vendor;
 
@@ -33,26 +33,26 @@ class RestockTest extends TestCase
         $this->user = User::factory()->superadmin()->create();
         $this->vendor = Vendor::factory()->create();
 
-        $satuan = Satuan::create([
-            'nama' => 'Kilogram',
-            'simbol' => 'kg',
+        $unit = Unit::create([
+            'name' => 'Kilogram',
+            'symbol' => 'kg',
         ]);
 
-        $this->bahanBaku = Produk::create([
+        $this->bahanBaku = Product::create([
             'sku' => 'RAW-001',
-            'nama' => 'Tepung Terigu',
+            'name' => 'Tepung Terigu',
             'type' => 'raw_material',
-            'satuan_id' => $satuan->id,
-            'stok_minimal' => 10,
+            'unit_id' => $unit->id,
+            'min_stock' => 10,
         ]);
 
-        // Buat produk finished good untuk testing validasi type
-        Produk::create([
+        // Buat product finished good untuk testing validasi type
+        Product::create([
             'sku' => 'FG-001',
-            'nama' => 'Roti Manis',
+            'name' => 'Roti Manis',
             'type' => 'finished_good',
-            'satuan_id' => $satuan->id,
-            'stok_minimal' => 5,
+            'unit_id' => $unit->id,
+            'min_stock' => 5,
         ]);
     }
 
@@ -71,17 +71,17 @@ class RestockTest extends TestCase
     public function test_can_store_restock()
     {
         $data = [
-            'tanggal' => Carbon::now()->format('Y-m-d'),
-            'keterangan' => 'Restock Tepung dari Supplier A',
+            'date' => Carbon::now()->format('Y-m-d'),
+            'notes' => 'Restock Tepung dari Supplier A',
             'vendor_id' => $this->vendor->id,
             'status_pembayaran' => 'lunas',
             'total_bayar' => 500000,
             'items' => [
                 [
-                    'produk_id' => $this->bahanBaku->id,
-                    'satuan_id' => $this->bahanBaku->satuan_id,
-                    'jumlah' => 50,
-                    'harga_satuan' => 10000,
+                    'product_id' => $this->bahanBaku->id,
+                    'unit_id' => $this->bahanBaku->unit_id,
+                    'quantity' => 50,
+                    'unit_price' => 10000,
                 ],
             ],
         ];
@@ -91,14 +91,14 @@ class RestockTest extends TestCase
         $response->assertRedirect(route('restock.index'));
 
         $this->assertDatabaseHas('restocks', [
-            'keterangan' => 'Restock Tepung dari Supplier A',
+            'notes' => 'Restock Tepung dari Supplier A',
             'total_biaya' => 500000, // 50 * 10000
         ]);
 
         $this->assertDatabaseHas('restock_items', [
-            'produk_id' => $this->bahanBaku->id,
-            'jumlah' => 50,
-            'harga_satuan' => 10000,
+            'product_id' => $this->bahanBaku->id,
+            'quantity' => 50,
+            'unit_price' => 10000,
         ]);
     }
 

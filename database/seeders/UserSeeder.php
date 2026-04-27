@@ -34,14 +34,14 @@ class UserSeeder extends Seeder
         $owner->assignRole('superadmin');
 
         // 2. Production Manager (Manufaktur Plastik)
-        $produksi = User::firstOrCreate([
-            'email' => 'produksi@warung.com',
+        $productsi = User::firstOrCreate([
+            'email' => 'productsi@warung.com',
         ], [
-            'name' => 'Manager Produksi Plastik',
+            'name' => 'Manager Productsi Plastik',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        $produksi->assignRole('superadmin'); // Production needs high access for BOM/Stock
+        $productsi->assignRole('superadmin'); // Production needs high access for BOM/Stock
 
         // 3. Store / Sales Manager (Toko Bangunan)
         $sales = User::firstOrCreate([

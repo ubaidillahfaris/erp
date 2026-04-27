@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ProdukResource;
-use App\Models\Produk;
+use App\Http\Resources\ProductResource;
+use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,35 +12,35 @@ use Illuminate\Support\Facades\DB;
 /**
  * @group POS & Scanner
  *
- * API untuk transaksi penjualan dan pencarian produk kasir mobile.
+ * API untuk transaksi penjualan dan pencarian product kasir mobile.
  */
 class MobilePosController extends Controller
 {
     /**
-     * List Produk POS
+     * List Product POS
      *
-     * Mengambil daftar produk yang aktif untuk dijual (finished_good).
+     * Mengambil daftar product yang aktif untuk dijual (finished_good).
      *
      * @queryParam search string Filter berdasarkan Nama, SKU, atau Barcode. Example: Kopi
      */
     public function products(Request $request)
     {
-        $query = Produk::where('is_active', true)
+        $query = Product::where('is_active', true)
             ->where('type', 'finished_good')
-            ->with(['currentPrice', 'satuan', 'stock']);
+            ->with(['currentPrice', 'unit', 'stock']);
 
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
+                $q->where('name', 'like', "%{$search}%")
                     ->orWhere('sku', 'like', "%{$search}%")
                     ->orWhere('barcode', 'like', "%{$search}%");
             });
         }
 
-        $produks = $query->paginate($request->integer('per_page', 10));
+        $products = $query->paginate($request->integer('per_page', 10));
 
-        return ProdukResource::collection($produks);
+        return ProductResource::collection($products);
     }
 
     /**
@@ -53,23 +53,23 @@ class MobilePosController extends Controller
      * @bodyParam received_amount number Jumlah uang diterima. Example: 50000
      * @bodyParam change_amount number Kembalian. Example: 5000
      * @bodyParam items object[] required List barang yang dibeli.
-     * @bodyParam items[].produk_id int required ID Produk. Example: 1
-     * @bodyParam items[].satuan_id int required ID Satuan. Example: 1
+     * @bodyParam items[].product_id int required ID Product. Example: 1
+     * @bodyParam items[].unit_id int required ID Unit. Example: 1
      * @bodyParam items[].qty number required Jumlah barang. Example: 2
-     * @bodyParam items[].price number required Harga jual per satuan. Example: 15000
-     * @bodyParam items[].cost number required Harga modal per satuan. Example: 10000
+     * @bodyParam items[].price number required Harga jual per unit. Example: 15000
+     * @bodyParam items[].cost number required Harga modal per unit. Example: 10000
      */
     public function checkout(Request $request)
     {
         $validated = $request->validate([
-            'tanggal' => ['required', 'date'],
+            'date' => ['required', 'date'],
             'payment_method' => ['required', 'string'],
             'received_amount' => ['nullable', 'numeric', 'min:0'],
             'change_amount' => ['nullable', 'numeric'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.produk_id' => ['required', 'exists:produks,id'],
-            'items.*.satuan_id' => ['required', 'exists:satuans,id'],
+            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.unit_id' => ['required', 'exists:units,id'],
             'items.*.qty' => ['required', 'numeric', 'min:0.001'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.cost' => ['required', 'numeric', 'min:0'],
@@ -85,7 +85,7 @@ class MobilePosController extends Controller
 
                 $sale = Sale::create([
                     'invoice_number' => $invoiceNumber,
-                    'tanggal' => $validated['tanggal'],
+                    'date' => $validated['date'],
                     'total_amount' => $totalAmount,
                     'received_amount' => $validated['received_amount'] ?? $totalAmount,
                     'change_amount' => $validated['change_amount'] ?? 0,
@@ -95,8 +95,8 @@ class MobilePosController extends Controller
 
                 foreach ($validated['items'] as $item) {
                     $sale->items()->create([
-                        'produk_id' => $item['produk_id'],
-                        'satuan_id' => $item['satuan_id'],
+                        'product_id' => $item['product_id'],
+                        'unit_id' => $item['unit_id'],
                         'qty' => $item['qty'],
                         'price' => $item['price'],
                         'cost' => $item['cost'],

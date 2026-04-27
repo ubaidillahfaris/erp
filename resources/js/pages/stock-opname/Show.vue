@@ -17,7 +17,7 @@ import {
     Clock,
     FileInput
 } from 'lucide-vue-next';
-import { storno, reopen } from '@/actions/App/Http/Controllers/StockOpnameController';
+import { stornoOpname, reopen } from '@/actions/App/Http/Controllers/StockOpnameController';
 import { useConfirm } from '@/composables/useConfirm';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -66,7 +66,7 @@ const { confirmDialog } = useConfirm();
 
 const cancelOpname = async () => {
     if (await confirmDialog('Batalkan Hasil Opname?', 'Batalkan hasil penyesuaian stok ini? Saldo stok akan dikembalikan ke kondisi semula. Tindakan ini akan tercatat sebagai pembatalan.')) {
-        router.post(storno.url(props.opname.id));
+        router.post(stornoOpname.url(props.opname.id));
     }
 };
 
@@ -146,7 +146,7 @@ const getStatusColor = (status: string) => {
                             </div>
                             <div>
                                 <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Tanggal Audit</span>
-                                <p class="text-[14px] font-bold text-slate-700 mt-1 tabular-nums">{{ formatDate(opname.tanggal) }}</p>
+                                <p class="text-[14px] font-bold text-slate-700 mt-1 tabular-nums">{{ formatDate(opname.date) }}</p>
                             </div>
                         </div>
                         <div class="flex items-start gap-3 md:col-span-2">
@@ -155,7 +155,7 @@ const getStatusColor = (status: string) => {
                             </div>
                             <div>
                                 <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">Keterangan / Catatan</span>
-                                <p class="text-[14px] font-medium text-slate-600 mt-1 italic">{{ opname.keterangan || 'Tidak ada catatan khusus.' }}</p>
+                                <p class="text-[14px] font-medium text-slate-600 mt-1 italic">{{ opname.notes || 'Tidak ada catatan khusus.' }}</p>
                             </div>
                         </div>
                     </div>
@@ -191,16 +191,16 @@ const getStatusColor = (status: string) => {
                                                 <PackageOpen class="h-4 w-4 text-slate-400 group-hover:text-primary" />
                                             </div>
                                             <div class="flex flex-col">
-                                                <span class="font-bold text-slate-700 text-[13px] leading-tight">{{ item.produk?.nama }}</span>
-                                                <span class="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-tighter">{{ item.produk?.sku }}</span>
+                                                <span class="font-bold text-slate-700 text-[13px] leading-tight">{{ item.product?.name }}</span>
+                                                <span class="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-tighter">{{ item.product?.sku }}</span>
                                             </div>
                                         </div>
                                     </TableCell>
                                     <TableCell class="text-right tabular-nums text-slate-400 font-medium italic">
-                                        {{ parseFloat(item.system_qty) }} <span class="text-[10px] uppercase font-black opacity-60">{{ item.satuan?.simbol || 'PCS' }}</span>
+                                        {{ parseFloat(item.system_qty) }} <span class="text-[10px] uppercase font-black opacity-60">{{ item.unit?.symbol || 'PCS' }}</span>
                                     </TableCell>
                                     <TableCell class="text-right font-black text-slate-700 tabular-nums">
-                                        {{ parseFloat(item.physical_qty) }} <span class="text-[10px] uppercase font-black text-slate-400">{{ item.satuan?.simbol || 'PCS' }}</span>
+                                        {{ parseFloat(item.physical_qty) }} <span class="text-[10px] uppercase font-black text-slate-400">{{ item.unit?.symbol || 'PCS' }}</span>
                                     </TableCell>
                                     <TableCell class="text-right pr-8">
                                         <div :class="cn(

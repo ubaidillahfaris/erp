@@ -5,8 +5,8 @@ namespace App\Providers;
 use App\Models\Customer;
 use App\Models\Journal;
 use App\Models\Pengeluaran;
+use App\Models\Product;
 use App\Models\Production;
-use App\Models\Produk;
 use App\Models\Purchase;
 use App\Models\Restock;
 use App\Models\Sale;
@@ -16,7 +16,7 @@ use App\Models\Vendor;
 use App\Observers\JournalObserver;
 use App\Observers\PengeluaranObserver;
 use App\Observers\ProductionObserver;
-use App\Observers\ProdukObserver;
+use App\Observers\ProductObserver;
 use App\Observers\PurchaseObserver;
 use App\Observers\RestockObserver;
 use App\Observers\SaleItemObserver;
@@ -47,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
 
-        Produk::observe(ProdukObserver::class);
+        Product::observe(ProductObserver::class);
         StockMovement::observe(StockMovementObserver::class);
         Restock::observe(RestockObserver::class);
         Production::observe(ProductionObserver::class);

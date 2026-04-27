@@ -12,15 +12,15 @@ class BomItem extends Model
 
     protected $fillable = [
         'bom_id',
-        'produk_id',
-        'satuan_id',
-        'jumlah',
+        'product_id',
+        'unit_id',
+        'quantity',
     ];
 
     protected function casts(): array
     {
         return [
-            'jumlah' => 'decimal:4',
+            'quantity' => 'decimal:4',
         ];
     }
 
@@ -35,16 +35,16 @@ class BomItem extends Model
     /**
      * Get the product (ingredient) for the BOM item.
      */
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class, 'produk_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     /**
      * Get the unit override for the BOM item, if any.
      */
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class, 'satuan_id');
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 }

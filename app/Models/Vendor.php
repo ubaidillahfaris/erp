@@ -11,13 +11,13 @@ class Vendor extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nama',
-        'alamat',
+        'name',
+        'address',
         'latitude',
         'longitude',
-        'telepon',
+        'phone',
         'email',
-        'keterangan',
+        'notes',
     ];
 
     protected $casts = [

@@ -44,7 +44,7 @@ class JournalLedgerTest extends TestCase
     {
         $sale = Sale::create([
             'invoice_number' => 'INV-001',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 100000,
             'status' => 'completed',
             'payment_method' => 'cash',
@@ -52,7 +52,7 @@ class JournalLedgerTest extends TestCase
 
         $entry = JournalEntry::create([
             'ref_number' => 'INV-001',
-            'tanggal' => now(),
+            'date' => now(),
             'description' => 'Penjualan INV-001',
             'journalable_type' => 'App\Models\Sale',
             'journalable_id' => $sale->id,
@@ -87,14 +87,14 @@ class JournalLedgerTest extends TestCase
         // Yesterday's entry
         JournalEntry::create([
             'ref_number' => 'OLD-1',
-            'tanggal' => now()->subDay(),
+            'date' => now()->subDay(),
             'description' => 'Old Entry',
         ]);
 
         // Today's entry
         JournalEntry::create([
             'ref_number' => 'NEW-1',
-            'tanggal' => now(),
+            'date' => now(),
             'description' => 'New Entry',
         ]);
 
@@ -115,7 +115,7 @@ class JournalLedgerTest extends TestCase
         // Sale entry
         JournalEntry::create([
             'ref_number' => 'SALE-1',
-            'tanggal' => now(),
+            'date' => now(),
             'description' => 'Sale',
             'journalable_type' => 'App\Models\Sale',
         ]);
@@ -123,7 +123,7 @@ class JournalLedgerTest extends TestCase
         // Production entry
         JournalEntry::create([
             'ref_number' => 'PRD-1',
-            'tanggal' => now(),
+            'date' => now(),
             'description' => 'Production',
             'journalable_type' => 'App\Models\Production',
         ]);

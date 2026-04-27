@@ -7,9 +7,9 @@ use App\Actions\RecordStockMovement;
 use App\Http\Requests\StoreRestockRequest;
 use App\Http\Requests\UpdateRestockRequest;
 use App\Models\Price;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Restock;
-use App\Models\Satuan;
+use App\Models\Unit;
 use App\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +29,7 @@ class RestockController extends Controller
         }
 
         $perPage = $request->input('per_page', 10);
-        $sort = $request->input('sort') ?: 'tanggal';
+        $sort = $request->input('sort') ?: 'date';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         $query = Restock::with(['vendor'])->withCount('items');
@@ -37,9 +37,9 @@ class RestockController extends Controller
         if ($request->has('search') && ! empty($request->search)) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('keterangan', 'like', "%{$search}%")
+                $q->where('notes', 'like', "%{$search}%")
                     ->orWhereHas('vendor', function ($qv) use ($search) {
-                        $qv->where('nama', 'like', "%{$search}%");
+                        $qv->where('name', 'like', "%{$search}%");
                     });
             });
         }
@@ -70,13 +70,13 @@ class RestockController extends Controller
 
     public function create(Request $request): Response
     {
-        $bahanBakus = Produk::with(['satuan', 'currentPrice'])->where('type', 'raw_material')->get();
+        $bahanBakus = Product::with(['unit', 'currentPrice'])->where('type', 'raw_material')->get();
 
         return Inertia::render('restock/Create', [
             'bahanBakus' => $bahanBakus,
-            'satuans' => Satuan::all(['id', 'nama', 'simbol']),
-            'vendors' => Vendor::all(['id', 'nama']),
-            'produkId' => $request->query('produk_id'),
+            'units' => Unit::all(['id', 'name', 'symbol']),
+            'vendors' => Vendor::all(['id', 'name']),
+            'productId' => $request->query('product_id'),
         ]);
     }
 
@@ -84,39 +84,39 @@ class RestockController extends Controller
     {
         DB::transaction(function () use ($request) {
             $itemsTotal = collect($request->items)->sum(function ($item) {
-                return $item['jumlah'] * $item['harga_satuan'];
+                return $item['quantity'] * $item['unit_price'];
             });
 
-            $adjustmentsTotal = collect($request->biaya_tambahan ?? [])->sum('nominal');
+            $adjustmentsTotal = collect($request->cost_tambahan ?? [])->sum('nominal');
             $totalBiaya = $itemsTotal + $adjustmentsTotal;
 
             $restock = Restock::create([
-                'tanggal' => $request->tanggal,
+                'date' => $request->date,
                 'vendor_id' => $request->vendor_id,
-                'keterangan' => $request->keterangan,
+                'notes' => $request->notes,
                 'status_pembayaran' => $request->status_pembayaran,
                 'total_bayar' => $request->total_bayar,
-                'biaya_tambahan' => $request->biaya_tambahan,
+                'biaya_tambahan' => $request->cost_tambahan,
                 'total_biaya' => $totalBiaya,
             ]);
 
             foreach ($request->items as $item) {
                 $restock->items()->create($item);
-                $this->updateProductPrice($item['produk_id'], $item['satuan_id'], (float) $item['harga_satuan']);
+                $this->updateProductPrice($item['product_id'], $item['unit_id'], (float) $item['unit_price']);
 
                 // Recalculate HPP for this product and its dependents
-                $produk = Produk::find($item['produk_id']);
-                app(RecalculateHpp::class)->handle($produk);
+                $product = Product::find($item['product_id']);
+                app(RecalculateHpp::class)->handle($product);
 
                 // Record Stock Movement
                 app(RecordStockMovement::class)->handle([
-                    'produk_id' => $item['produk_id'],
-                    'satuan_id' => $item['satuan_id'],
+                    'product_id' => $item['product_id'],
+                    'unit_id' => $item['unit_id'],
                     'type' => 'in',
-                    'jumlah' => $item['jumlah'],
+                    'quantity' => $item['quantity'],
                     'reference_type' => 'restock',
                     'reference_id' => $restock->id,
-                    'keterangan' => "Restock ref: {$restock->id}",
+                    'notes' => "Restock ref: {$restock->id}",
                 ]);
             }
         });
@@ -126,14 +126,14 @@ class RestockController extends Controller
 
     public function edit(Restock $restock): Response
     {
-        $restock->load(['items.produk.satuan', 'vendor']);
-        $bahanBakus = Produk::with('satuan')->where('type', 'raw_material')->get();
+        $restock->load(['items.product.unit', 'vendor']);
+        $bahanBakus = Product::with('unit')->where('type', 'raw_material')->get();
 
         return Inertia::render('restock/Edit', [
             'restock' => $restock,
             'bahanBakus' => $bahanBakus,
-            'satuans' => Satuan::all(['id', 'nama', 'simbol']),
-            'vendors' => Vendor::all(['id', 'nama']),
+            'units' => Unit::all(['id', 'name', 'symbol']),
+            'vendors' => Vendor::all(['id', 'name']),
         ]);
     }
 
@@ -141,37 +141,37 @@ class RestockController extends Controller
     {
         DB::transaction(function () use ($request, $restock) {
             $itemsTotal = collect($request->items)->sum(function ($item) {
-                return $item['jumlah'] * $item['harga_satuan'];
+                return $item['quantity'] * $item['unit_price'];
             });
 
-            $adjustmentsTotal = collect($request->biaya_tambahan ?? [])->sum('nominal');
+            $adjustmentsTotal = collect($request->cost_tambahan ?? [])->sum('nominal');
             $totalBiaya = $itemsTotal + $adjustmentsTotal;
 
             $restock->update([
-                'tanggal' => $request->tanggal,
+                'date' => $request->date,
                 'vendor_id' => $request->vendor_id,
-                'keterangan' => $request->keterangan,
+                'notes' => $request->notes,
                 'status_pembayaran' => $request->status_pembayaran,
                 'total_bayar' => $request->total_bayar,
-                'biaya_tambahan' => $request->biaya_tambahan,
+                'biaya_tambahan' => $request->cost_tambahan,
                 'total_biaya' => $totalBiaya,
             ]);
 
             $restock->items()->delete();
             foreach ($request->items as $item) {
                 $restock->items()->create($item);
-                $this->updateProductPrice($item['produk_id'], $item['satuan_id'], $item['harga_satuan']);
+                $this->updateProductPrice($item['product_id'], $item['unit_id'], $item['unit_price']);
             }
         });
 
-        return redirect()->route('restock.index')->with('success', 'Pencatatan Restock berhasil diperbarui.');
+        return redirect()->route('restock.index')->with('success', 'Pencatatan Restock updated successfully.');
     }
 
     public function destroy(Restock $restock): RedirectResponse
     {
         $restock->delete();
 
-        return redirect()->route('restock.index')->with('success', 'Data Restock berhasil dihapus.');
+        return redirect()->route('restock.index')->with('success', 'Data Restock deleted successfully.');
     }
 
     public function bulkDestroy(Request $request)
@@ -183,16 +183,16 @@ class RestockController extends Controller
 
         Restock::whereIn('id', $request->ids)->delete();
 
-        return to_route('restock.index')->with('success', count($request->ids).' data restock berhasil dihapus.');
+        return to_route('restock.index')->with('success', count($request->ids).' data restock deleted successfully.');
     }
 
     /**
      * Update product price record based on restock data.
      */
-    private function updateProductPrice(int $produkId, int $satuanId, float $purchasePrice): void
+    private function updateProductPrice(int $productId, int $unitId, float $purchasePrice): void
     {
-        $currentPrice = Price::where('produk_id', $produkId)
-            ->where('satuan_id', $satuanId)
+        $currentPrice = Price::where('product_id', $productId)
+            ->where('unit_id', $unitId)
             ->where('is_current', true)
             ->first();
 
@@ -203,8 +203,8 @@ class RestockController extends Controller
             }
 
             Price::create([
-                'produk_id' => $produkId,
-                'satuan_id' => $satuanId,
+                'product_id' => $productId,
+                'unit_id' => $unitId,
                 'purchase_price' => $purchasePrice,
                 'retail_price' => $currentPrice ? $currentPrice->retail_price : 0,
                 'wholesale_price' => $currentPrice ? $currentPrice->wholesale_price : null,

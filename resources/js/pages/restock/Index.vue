@@ -50,7 +50,7 @@ const sort = ref(props.filters.sort || '');
 const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'vendor', label: 'Timestamp & Vendor', sortKey: 'tanggal' },
+    { key: 'vendor', label: 'Timestamp & Vendor', sortKey: 'date' },
     { key: 'info', label: 'Keterangan' },
     { key: 'items', label: 'Items', align: 'center' },
     { key: 'cost', label: 'Total Biaya', align: 'right', sortKey: 'total_biaya' },
@@ -76,7 +76,7 @@ const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | nu
 };
 
 const handleBulkDelete = async (ids: (string | number)[]) => {
-    if (await confirmDialog('Hapus Restock Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} data restock yang dipilih?`)) {
+    if (await confirmDialog('Hapus Restock Terpilih?', `Are you sure you want to delete ${ids.length} data restock yang dipilih?`)) {
         router.post(restockBulkDestroy().url, {
             _method: 'DELETE',
             ids: ids
@@ -97,7 +97,7 @@ const settleRestock = async (id: number) => {
 };
 
 const deleteRestock = async (id: number) => {
-    if (await confirmDialog('Hapus Data Restock?', 'Apakah Anda yakin ingin menghapus data restock ini? (Akan mengurangi stok produk dan membatalkan laporan pengeluaran keuangan).')) {
+    if (await confirmDialog('Hapus Data Restock?', 'Are you sure you want to delete data restock ini? (Akan mengurangi stok product dan membatalkan laporan pengeluaran keuangan).')) {
         router.delete(`/restock/${id}`);
     }
 };
@@ -202,14 +202,14 @@ const formatStatus = (status: string) => {
                             <HistoryIcon class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.vendor?.nama || 'Direct Purchase' }}</p>
-                            <p class="text-[11px] font-bold text-muted-foreground mt-1.5 uppercase tracking-tighter">{{ formatDate(row.tanggal) }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.vendor?.name || 'Direct Purchase' }}</p>
+                            <p class="text-[11px] font-bold text-muted-foreground mt-1.5 uppercase tracking-tighter">{{ formatDate(row.date) }}</p>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(info)="{ row }">
-                    <p class="text-[13px] text-muted-foreground max-w-[200px] line-clamp-2 leading-relaxed tracking-tight">{{ row.keterangan || 'No internal notes' }}</p>
+                    <p class="text-[13px] text-muted-foreground max-w-[200px] line-clamp-2 leading-relaxed tracking-tight">{{ row.notes || 'No internal notes' }}</p>
                 </template>
 
                 <template #cell(items)="{ row }">

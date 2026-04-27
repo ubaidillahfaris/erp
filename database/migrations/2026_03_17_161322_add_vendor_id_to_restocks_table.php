@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('restocks', function (Blueprint $table) {
-            $table->foreignId('vendor_id')->nullable()->after('keterangan')->constrained()->nullOnDelete();
+            $table->foreignId('vendor_id')->nullable()->after('notes')->constrained()->nullOnDelete();
         });
     }
 

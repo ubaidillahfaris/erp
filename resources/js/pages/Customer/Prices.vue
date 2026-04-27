@@ -47,8 +47,8 @@ const props = defineProps<{
         status?: { name: string };
     };
     customerPrices: any[];
-    produks: any[];
-    satuans: any[];
+    products: any[];
+    units: any[];
     creditSetting: { 
         id?: number; 
         allow_credit: boolean; 
@@ -79,8 +79,8 @@ const activeTab = ref('prices');
 const isCategoryDialogOpen = ref(false);
 
 const form = useForm({
-    produk_id: '',
-    satuan_id: '',
+    product_id: '',
+    unit_id: '',
     custom_price: 0,
     valid_until: '',
 });
@@ -103,8 +103,8 @@ const historyLog = computed(() => {
     return props.customerPrices.flatMap(cp =>
         cp.histories.map((h: any) => ({
             ...h,
-            produk_nama: cp.produk.nama,
-            satuan_nama: cp.satuan.nama,
+            product_name: cp.product.name,
+            satuan_name: cp.unit.name,
         }))
     ).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 });
@@ -112,8 +112,8 @@ const historyLog = computed(() => {
 const openAddDialog = () => {
     editingPriceId.value = null;
     form.reset();
-    form.produk_id = '';
-    form.satuan_id = '';
+    form.product_id = '';
+    form.unit_id = '';
     form.custom_price = 0;
     form.valid_until = '';
     isDialogOpen.value = true;
@@ -121,8 +121,8 @@ const openAddDialog = () => {
 
 const openEditDialog = (price: any) => {
     editingPriceId.value = price.id;
-    form.produk_id = String(price.produk_id);
-    form.satuan_id = String(price.satuan_id);
+    form.product_id = String(price.product_id);
+    form.unit_id = String(price.unit_id);
     form.custom_price = price.custom_price;
     form.valid_until = price.valid_until || '';
     isDialogOpen.value = true;
@@ -273,11 +273,11 @@ const actionLabel: Record<string, string> = {
                 <Table>
                     <TableHeader>
                         <TableRow class="bg-slate-50/50 hover:bg-slate-50/50">
-                            <TableHead class="font-bold text-slate-700 py-4 pl-6">Produk</TableHead>
-                            <TableHead class="font-bold text-slate-700">Satuan</TableHead>
+                            <TableHead class="font-bold text-slate-700 py-4 pl-6">Product</TableHead>
+                            <TableHead class="font-bold text-slate-700">Unit</TableHead>
                             <TableHead class="font-bold text-slate-700">Harga Khusus</TableHead>
                             <TableHead class="font-bold text-slate-700">Berlaku Hingga</TableHead>
-                            <TableHead class="font-bold text-slate-700 text-right pr-6">Aksi</TableHead>
+                            <TableHead class="font-bold text-slate-700 text-right pr-6">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -289,13 +289,13 @@ const actionLabel: Record<string, string> = {
                                         class="h-8 w-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500 shrink-0">
                                         <Package class="h-4 w-4" />
                                     </div>
-                                    <span class="font-semibold text-slate-900 text-sm">{{ price.produk.nama }}</span>
+                                    <span class="font-semibold text-slate-900 text-sm">{{ price.product.name }}</span>
                                 </div>
                             </TableCell>
                             <TableCell>
                                 <Badge variant="secondary"
                                     class="rounded-lg font-medium bg-slate-100 text-slate-600 border-none text-xs">
-                                    {{ price.satuan.nama }}
+                                    {{ price.unit.name }}
                                 </Badge>
                             </TableCell>
                             <TableCell>
@@ -342,8 +342,8 @@ const actionLabel: Record<string, string> = {
                         <TableRow class="bg-slate-50/50 hover:bg-slate-50/50">
                             <TableHead class="font-bold text-slate-700 py-3 pl-6 text-xs uppercase tracking-wide">Waktu
                             </TableHead>
-                            <TableHead class="font-bold text-slate-700 text-xs uppercase tracking-wide">Aksi</TableHead>
-                            <TableHead class="font-bold text-slate-700 text-xs uppercase tracking-wide">Produk</TableHead>
+                            <TableHead class="font-bold text-slate-700 text-xs uppercase tracking-wide">Actions</TableHead>
+                            <TableHead class="font-bold text-slate-700 text-xs uppercase tracking-wide">Product</TableHead>
                             <TableHead class="font-bold text-slate-700 text-xs uppercase tracking-wide">Perubahan Harga
                             </TableHead>
                             <TableHead class="font-bold text-slate-700 text-xs uppercase tracking-wide">Masa Berlaku
@@ -371,8 +371,8 @@ const actionLabel: Record<string, string> = {
                             </TableCell>
                             <TableCell>
                                 <div class="flex flex-col">
-                                    <span class="text-xs font-semibold text-slate-800">{{ log.produk_nama }}</span>
-                                    <span class="text-[10px] text-slate-400">{{ log.satuan_nama }}</span>
+                                    <span class="text-xs font-semibold text-slate-800">{{ log.product_nama }}</span>
+                                    <span class="text-[10px] text-slate-400">{{ log.unit_nama }}</span>
                                 </div>
                             </TableCell>
                             <TableCell>
@@ -534,16 +534,16 @@ const actionLabel: Record<string, string> = {
             <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                     <SectionHeader title="Diskon Berbasis Kategori"
-                        description="Daftar potongan harga khusus untuk kategori produk tertentu." />
+                        description="Daftar potongan harga khusus untuk kategori product tertentu." />
                 </div>
 
                 <Table>
                     <TableHeader>
                         <TableRow class="bg-slate-50/50 hover:bg-slate-50/50">
-                            <TableHead class="font-bold text-slate-700 py-4 pl-6">Kategori</TableHead>
+                            <TableHead class="font-bold text-slate-700 py-4 pl-6">Category</TableHead>
                             <TableHead class="font-bold text-slate-700 text-center">Diskon</TableHead>
                             <TableHead class="font-bold text-slate-700">Status</TableHead>
-                            <TableHead class="font-bold text-slate-700 text-right pr-6">Aksi</TableHead>
+                            <TableHead class="font-bold text-slate-700 text-right pr-6">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -598,7 +598,7 @@ const actionLabel: Record<string, string> = {
                         {{ editingPriceId ? 'Edit Harga Khusus' : 'Tambah Harga Khusus' }}
                     </DialogTitle>
                     <DialogDescription class="text-slate-400 text-sm mt-1">
-                        Set harga spesial untuk produk pilihan.
+                        Set harga spesial untuk product pilihan.
                     </DialogDescription>
                 </DialogHeader>
             </div>
@@ -606,37 +606,37 @@ const actionLabel: Record<string, string> = {
             <!-- Dialog Body -->
             <form @submit.prevent="submit" class="px-6 py-6 flex flex-col gap-5 bg-white rounded-b-lg">
 
-                <!-- Produk -->
+                <!-- Product -->
                 <div class="flex flex-col gap-1.5">
-                    <Label class="text-xs font-bold uppercase tracking-widest text-slate-500">Produk</Label>
-                    <Select v-model="form.produk_id" :disabled="!!editingPriceId">
+                    <Label class="text-xs font-bold uppercase tracking-widest text-slate-500">Product</Label>
+                    <Select v-model="form.product_id" :disabled="!!editingPriceId">
                         <SelectTrigger class="h-10 rounded-xl border-slate-200 shadow-none text-sm">
-                            <SelectValue placeholder="Pilih Produk" />
+                            <SelectValue placeholder="Pilih Product" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem v-for="p in produks" :key="p.id" :value="String(p.id)">
-                                {{ p.nama }}
+                            <SelectItem v-for="p in products" :key="p.id" :value="String(p.id)">
+                                {{ p.name }}
                             </SelectItem>
                         </SelectContent>
                     </Select>
-                    <span v-if="form.errors.produk_id" class="text-xs text-destructive">{{ form.errors.produk_id
+                    <span v-if="form.errors.product_id" class="text-xs text-destructive">{{ form.errors.product_id
                         }}</span>
                 </div>
 
-                <!-- Satuan -->
+                <!-- Unit -->
                 <div class="flex flex-col gap-1.5">
-                    <Label class="text-xs font-bold uppercase tracking-widest text-slate-500">Satuan</Label>
-                    <Select v-model="form.satuan_id" :disabled="!!editingPriceId">
+                    <Label class="text-xs font-bold uppercase tracking-widest text-slate-500">Unit</Label>
+                    <Select v-model="form.unit_id" :disabled="!!editingPriceId">
                         <SelectTrigger class="h-10 rounded-xl border-slate-200 shadow-none text-sm">
-                            <SelectValue placeholder="Pilih Satuan" />
+                            <SelectValue placeholder="Pilih Unit" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem v-for="s in satuans" :key="s.id" :value="String(s.id)">
-                                {{ s.nama }}
+                            <SelectItem v-for="s in units" :key="s.id" :value="String(s.id)">
+                                {{ s.name }}
                             </SelectItem>
                         </SelectContent>
                     </Select>
-                    <span v-if="form.errors.satuan_id" class="text-xs text-destructive">{{ form.errors.satuan_id
+                    <span v-if="form.errors.unit_id" class="text-xs text-destructive">{{ form.errors.unit_id
                         }}</span>
                 </div>
 
@@ -688,7 +688,7 @@ const actionLabel: Record<string, string> = {
             
             <form @submit.prevent="submitCategoryDiscount" class="p-6 flex flex-col gap-5 bg-white rounded-b-lg">
                 <div class="flex flex-col gap-1.5">
-                    <Label class="text-xs font-bold uppercase tracking-widest text-slate-500">Kategori</Label>
+                    <Label class="text-xs font-bold uppercase tracking-widest text-slate-500">Category</Label>
                     <Combobox 
                         v-model="categoryForm.category_id" 
                         :options="kategoriList.map(k => ({ label: k.name, value: String(k.id) }))"
@@ -709,7 +709,7 @@ const actionLabel: Record<string, string> = {
                 </div>
 
                 <DialogFooter class="pt-2">
-                    <Button type="button" variant="ghost" @click="isCategoryDialogOpen = false" class="rounded-xl">Batal</Button>
+                    <Button type="button" variant="ghost" @click="isCategoryDialogOpen = false" class="rounded-xl">Cancel</Button>
                     <Button type="submit" :disabled="categoryForm.processing" class="bg-accent rounded-xl px-6">
                         {{ categoryForm.processing ? 'Menyimpan...' : 'Simpan Diskon' }}
                     </Button>

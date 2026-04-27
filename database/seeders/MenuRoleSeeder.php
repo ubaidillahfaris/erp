@@ -24,7 +24,7 @@ class MenuRoleSeeder extends Seeder
         $cashier = Role::where('name', 'cashier')->first();
         if ($cashier) {
             // Cashier usually only sees Dashboard and POS
-            $cashierMenus = Menu::whereIn('route_name', ['dashboard', 'pos.index', 'produk.index'])->pluck('id')->toArray();
+            $cashierMenus = Menu::whereIn('route_name', ['dashboard', 'pos.index', 'product.index'])->pluck('id')->toArray();
             $cashier->menus()->sync($cashierMenus);
         }
     }

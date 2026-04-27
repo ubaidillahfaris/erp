@@ -30,20 +30,20 @@ class UpdateBOMRequest extends FormRequest
                 'max:50',
                 Rule::unique('boms')->ignore($this->route('bom')),
             ],
-            'produk_id' => [
+            'product_id' => [
                 'required',
-                'exists:produks,id',
+                'exists:products,id',
                 Rule::unique('boms')->ignore($this->route('bom')),
             ],
-            'nama' => 'nullable|string|max:255',
+            'name' => 'nullable|string|max:255',
             'is_active' => 'boolean',
             'auto_deduct_on_sale' => 'boolean',
             'expected_yield' => 'required|numeric|min:0.0001',
-            'yield_satuan_id' => 'required|exists:satuans,id',
+            'yield_unit_id' => 'required|exists:units,id',
             'items' => 'required|array|min:1',
-            'items.*.produk_id' => 'required|exists:produks,id',
-            'items.*.satuan_id' => 'nullable|exists:satuans,id',
-            'items.*.jumlah' => 'required|numeric|min:0.0001',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.unit_id' => 'nullable|exists:units,id',
+            'items.*.quantity' => 'required|numeric|min:0.0001',
         ];
     }
 }

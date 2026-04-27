@@ -21,7 +21,7 @@ const props = defineProps<{
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
-    { title: 'Produksi', href: index().url },
+    { title: 'Productsi', href: index().url },
     { title: props.production.sku, href: '#' },
 ];
 
@@ -49,9 +49,21 @@ const formatTime = (dateStr: string) => new Date(dateStr).toLocaleTimeString('id
 </script>
 
 <template>
-<Head :title="`Detail Produksi - ${production.sku}`" />
+<Head :title="`Detail Productsi - ${production.sku}`" />
 
 <AppLayout :breadcrumbs="breadcrumbs">
+    <div class="px-6 pt-6 -mb-6" v-if="production.status === 'completed'">
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3">
+            <div class="h-10 w-10 shrink-0 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+                <Info class="h-5 w-5" />
+            </div>
+            <div>
+                <p class="text-sm font-bold text-amber-900">Production Order Completed</p>
+                <p class="text-xs text-amber-700/80 font-medium">This production order is completed and cannot be modified.</p>
+            </div>
+        </div>
+    </div>
+
     <div class="px-6 py-8 space-y-6 animate-fade-up font-sans text-slate-700">
         
         <!-- Header: Using Standard PageHeader -->
@@ -89,9 +101,9 @@ const formatTime = (dateStr: string) => new Date(dateStr).toLocaleTimeString('id
                     </div>
 
                     <div class="space-y-1">
-                        <h2 class="text-xl font-normal tracking-tight text-foreground leading-tight">{{ production.produk?.nama }}</h2>
+                        <h2 class="text-xl font-normal tracking-tight text-foreground leading-tight">{{ production.product?.name }}</h2>
                         <div class="flex items-center gap-2 mt-2">
-                            <span class="text-[11px] font-normal text-muted-foreground/60 uppercase tracking-widest">BOM: {{ production.bom?.nama || '-' }}</span>
+                            <span class="text-[11px] font-normal text-muted-foreground/60 uppercase tracking-widest">BOM: {{ production.bom?.name || '-' }}</span>
                         </div>
                     </div>
 
@@ -100,14 +112,14 @@ const formatTime = (dateStr: string) => new Date(dateStr).toLocaleTimeString('id
                             <p class="text-[10px] font-normal text-muted-foreground uppercase tracking-widest mb-2">Target</p>
                             <p class="text-2xl font-normal tracking-tighter tabular-nums">
                                 {{ formatNumber(production.target_yield) }}
-                                <span class="text-[12px] font-normal text-muted-foreground ml-0.5">{{ production.produk?.satuan?.simbol }}</span>
+                                <span class="text-[12px] font-normal text-muted-foreground ml-0.5">{{ production.product?.unit?.symbol }}</span>
                             </p>
                         </div>
                         <div class="p-5 rounded-2xl bg-slate-50/50 border border-border/40">
                             <p class="text-[10px] font-normal text-muted-foreground uppercase tracking-widest mb-2">Actual</p>
                             <p class="text-2xl font-normal tracking-tighter tabular-nums" :class="production.actual_yield ? 'text-emerald-600' : 'text-muted-foreground/30'">
                                 {{ production.actual_yield ? formatNumber(production.actual_yield) : '--' }}
-                                <span v-if="production.actual_yield" class="text-[12px] font-normal text-muted-foreground ml-0.5">{{ production.produk?.satuan?.simbol }}</span>
+                                <span v-if="production.actual_yield" class="text-[12px] font-normal text-muted-foreground ml-0.5">{{ production.product?.unit?.symbol }}</span>
                             </p>
                         </div>
                     </div>
@@ -184,19 +196,19 @@ const formatTime = (dateStr: string) => new Date(dateStr).toLocaleTimeString('id
                                 <TableRow v-for="item in production.items" :key="item.id" class="border-b border-border/40 last:border-0 hover:bg-muted/10 transition-colors">
                                     <TableCell class="px-6 py-5">
                                         <div class="leading-tight">
-                                            <div class="text-[14px] font-normal text-foreground leading-none">{{ item.produk?.nama }}</div>
-                                            <div class="text-[11px] text-muted-foreground mt-2 font-normal uppercase tracking-widest">{{ item.produk?.sku || 'NO-SKU' }}</div>
+                                            <div class="text-[14px] font-normal text-foreground leading-none">{{ item.product?.name }}</div>
+                                            <div class="text-[11px] text-muted-foreground mt-2 font-normal uppercase tracking-widest">{{ item.product?.sku || 'NO-SKU' }}</div>
                                         </div>
                                     </TableCell>
                                     <TableCell class="px-4 py-5 text-right font-normal text-muted-foreground/60 tabular-nums text-[12px]">
-                                        {{ formatNumber(item.planned_qty) }} <span class="text-[11px] ml-0.5 opacity-50">{{ item.satuan?.simbol }}</span>
+                                        {{ formatNumber(item.planned_qty) }} <span class="text-[11px] ml-0.5 opacity-50">{{ item.unit?.symbol }}</span>
                                     </TableCell>
                                     <TableCell class="px-4 py-5 text-right">
                                         <div class="flex flex-col items-end">
                                             <span class="text-[14px] font-normal tabular-nums" :class="parseFloat(item.actual_qty) > parseFloat(item.planned_qty) ? 'text-rose-600' : 'text-foreground'">
                                                 {{ formatNumber(item.actual_qty) }}
                                             </span>
-                                            <span class="text-[11px] font-normal uppercase text-muted-foreground/50 tracking-tighter">{{ item.satuan?.simbol }}</span>
+                                            <span class="text-[11px] font-normal uppercase text-muted-foreground/50 tracking-tighter">{{ item.unit?.symbol }}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell class="px-6 py-5 text-right">

@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Stock extends Model
 {
     protected $fillable = [
-        'produk_id',
-        'last_satuan_id',
+        'product_id',
+        'last_unit_id',
         'balance',
         'last_movement_id',
     ];
@@ -21,14 +21,14 @@ class Stock extends Model
         ];
     }
 
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
-    public function lastSatuan(): BelongsTo
+    public function lastUnit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class, 'last_satuan_id');
+        return $this->belongsTo(Unit::class, 'last_unit_id');
     }
 
     public function lastMovement(): BelongsTo

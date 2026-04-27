@@ -53,7 +53,7 @@ const sort = ref(props.filters.sort || '');
 const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'tanggal', label: 'Tanggal', sortKey: 'tanggal' },
+    { key: 'date', label: 'Tanggal', sortKey: 'date' },
     { key: 'category', label: 'Kategori' },
     { key: 'description', label: 'Keterangan' },
     { key: 'via', label: 'Via', align: 'center' },
@@ -176,7 +176,7 @@ const finalBalance = computed(() => totals.value.debit - totals.value.kredit);
             :total-count="journals.total"
         >
             <template #cell(tanggal)="{ row }">
-                <span class="font-mono text-[11px] font-bold text-muted-foreground tracking-tighter">{{ formatDate(row.tanggal) }}</span>
+                <span class="font-mono text-[11px] font-bold text-muted-foreground tracking-tighter">{{ formatDate(row.date) }}</span>
             </template>
 
             <template #cell(category)="{ row }">

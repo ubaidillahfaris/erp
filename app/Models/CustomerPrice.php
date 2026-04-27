@@ -10,8 +10,8 @@ class CustomerPrice extends Model
 {
     protected $fillable = [
         'customer_id',
-        'produk_id',
-        'satuan_id',
+        'product_id',
+        'unit_id',
         'custom_price',
         'valid_until',
         'is_active',
@@ -56,8 +56,8 @@ class CustomerPrice extends Model
         CustomerPriceHistory::create([
             'customer_price_id' => $this->id,
             'customer_id' => $this->customer_id,
-            'produk_id' => $this->produk_id,
-            'satuan_id' => $this->satuan_id,
+            'product_id' => $this->product_id,
+            'unit_id' => $this->unit_id,
             'old_price' => $action === 'created' ? null : $this->getOriginal('custom_price'),
             'new_price' => $action === 'deleted' ? null : $this->custom_price,
             'old_valid_until' => $action === 'created' ? null : $this->getOriginal('valid_until'),
@@ -78,16 +78,16 @@ class CustomerPrice extends Model
     /**
      * Get the product that owns the custom price.
      */
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
     /**
      * Get the unit that owns the custom price.
      */
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Unit::class);
     }
 }

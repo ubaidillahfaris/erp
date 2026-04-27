@@ -9,11 +9,11 @@ class StockOpnameItem extends Model
 {
     protected $fillable = [
         'stock_opname_id',
-        'produk_id',
-        'satuan_id',
+        'product_id',
+        'unit_id',
         'system_qty',
         'physical_qty',
-        'harga_satuan',
+        'unit_price',
     ];
 
     protected function casts(): array
@@ -21,7 +21,7 @@ class StockOpnameItem extends Model
         return [
             'system_qty' => 'decimal:4',
             'physical_qty' => 'decimal:4',
-            'harga_satuan' => 'integer',
+            'unit_price' => 'integer',
         ];
     }
 
@@ -30,13 +30,13 @@ class StockOpnameItem extends Model
         return $this->belongsTo(StockOpname::class);
     }
 
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Unit::class);
     }
 }

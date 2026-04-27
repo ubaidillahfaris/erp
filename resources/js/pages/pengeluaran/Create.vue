@@ -23,15 +23,15 @@ defineProps<{
     accounts: any[];
 }>();
 const expenseTypes = ref([
-    { id: 'Listrik', nama: 'Listrik' },
-    { id: 'Air & Galon', nama: 'Air & Galon' },
-    { id: 'Internet / WIFI', nama: 'Internet / WIFI' },
-    { id: 'Gas', nama: 'Gas' },
-    { id: 'Kebersihan', nama: 'Kebersihan (Sabun, Pel, dll)' },
-    { id: 'Lain-lain', nama: 'Lain-lain (Tak Terduga)' },
+    { id: 'Listrik', name: 'Listrik' },
+    { id: 'Air & Galon', name: 'Air & Galon' },
+    { id: 'Internet / WIFI', name: 'Internet / WIFI' },
+    { id: 'Gas', name: 'Gas' },
+    { id: 'Kebersihan', name: 'Kebersihan (Sabun, Pel, dll)' },
+    { id: 'Lain-lain', name: 'Lain-lain (Tak Terduga)' },
 ]);
 
-const handleCreateType = (nama: string) => {
+const handleCreateType = (name: string) => {
     expenseTypes.value.push({ id: nama, nama });
     form.jenis_pengeluaran = nama;
 };
@@ -43,12 +43,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = useForm({
-    tanggal: new Date().toISOString().slice(0, 10),
+    date: new Date().toISOString().slice(0, 10),
     jenis_pengeluaran: '',
     account_id: '' as string | number,
     nama_pengeluaran: '',
     nominal: 0,
-    keterangan: '',
+    notes: '',
     add_another: false });
 
 const submit = (addAnother = false) => {
@@ -56,7 +56,7 @@ const submit = (addAnother = false) => {
     form.post(store.url(), {
         onSuccess: () => {
             if (addAnother) {
-                form.reset('nama_pengeluaran', 'nominal', 'keterangan');
+                form.reset('nama_pengeluaran', 'nominal', 'notes');
                 document.getElementById('nama_pengeluaran')?.focus();
             }
         } });
@@ -91,9 +91,9 @@ const submit = (addAnother = false) => {
                 <form @submit.prevent="submit(false)" class="flex flex-col gap-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <Label for="tanggal">Tanggal Pengeluaran</Label>
-                            <Input id="tanggal" type="date" v-model="form.tanggal" required />
-                            <InputError :message="form.errors.tanggal" />
+                            <Label for="date">Tanggal Pengeluaran</Label>
+                            <Input id="date" type="date" v-model="form.date" required />
+                            <InputError :message="form.errors.date" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <Label for="account_id">Kategori Akun (Accounting)</Label>
@@ -132,18 +132,18 @@ const submit = (addAnother = false) => {
                     <div class="grid grid-cols-1 gap-4">
                         <div class="flex flex-col gap-2">
                             <Label for="nama_pengeluaran">Nama Pengeluaran</Label>
-                            <Input id="nama_pengeluaran" v-model="form.nama_pengeluaran"
+                            <Input id="nama_pengeluaran" v-model="form.name_pengeluaran"
                                 placeholder="Contoh: Token Listrik 100rb, atau Refill Galon Aqua" required />
-                            <InputError :message="form.errors.nama_pengeluaran" />
+                            <InputError :message="form.errors.name_pengeluaran" />
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <Label for="keterangan">Keterangan (Optional)</Label>
-                        <textarea id="keterangan" v-model="form.keterangan"
+                        <Label for="notes">Keterangan (Optional)</Label>
+                        <textarea id="notes" v-model="form.notes"
                             class="flex min-h-[80px] w-full rounded-xl border border-slate-200 bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder="Catatan tambahan..."></textarea>
-                        <InputError :message="form.errors.keterangan" />
+                        <InputError :message="form.errors.notes" />
                     </div>
 
                     <FormActionButtons :processing="form.processing" show-add-another @save="submit(false)"

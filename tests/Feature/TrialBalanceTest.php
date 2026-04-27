@@ -65,7 +65,7 @@ class TrialBalanceTest extends TestCase
                 new JournalItemData(account_id: $acc1->id, type: 'debit', amount: 100000),
                 new JournalItemData(account_id: $acc2->id, type: 'credit', amount: 100000),
             ],
-            tanggal: now()
+            date: now()
         );
 
         $this->journalService->record($data);
@@ -86,7 +86,7 @@ class TrialBalanceTest extends TestCase
         $acc2 = Account::factory()->create(['balance_type' => 'credit']);
 
         // Force UNBALANCED in DB (bypassing service to create faulty state)
-        $entry = JournalEntry::create(['ref_number' => 'FAULTY', 'tanggal' => now(), 'description' => 'Unbalanced']);
+        $entry = JournalEntry::create(['ref_number' => 'FAULTY', 'date' => now(), 'description' => 'Unbalanced']);
         JournalItem::create(['journal_entry_id' => $entry->id, 'account_id' => $acc1->id, 'debit' => 100000, 'credit' => 0]);
         JournalItem::create(['journal_entry_id' => $entry->id, 'account_id' => $acc2->id, 'debit' => 0, 'credit' => 50000]); // WRONG CREDIT
 
@@ -118,7 +118,7 @@ class TrialBalanceTest extends TestCase
                 new JournalItemData(account_id: $acc1->id, type: 'debit', amount: 50000),
                 new JournalItemData(account_id: $acc2->id, type: 'credit', amount: 50000),
             ],
-            tanggal: now()
+            date: now()
         );
 
         $this->journalService->record($data);

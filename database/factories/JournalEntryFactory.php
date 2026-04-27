@@ -20,7 +20,7 @@ class JournalEntryFactory extends Factory
     {
         return [
             'ref_number' => 'JE-'.$this->faker->unique()->numberBetween(1000, 9999),
-            'tanggal' => now(),
+            'date' => now(),
             'description' => $this->faker->sentence(),
             'created_by' => User::factory(),
         ];

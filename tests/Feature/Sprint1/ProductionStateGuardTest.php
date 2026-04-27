@@ -38,8 +38,8 @@ class ProductionStateGuardTest extends TestCase
                 'items' => [
                     [
                         'id' => $item->id,
-                        'produk_id' => $item->produk_id,
-                        'satuan_id' => $item->satuan_id,
+                        'product_id' => $item->product_id,
+                        'unit_id' => $item->unit_id,
                         'actual_qty' => 10,
                     ],
                 ],

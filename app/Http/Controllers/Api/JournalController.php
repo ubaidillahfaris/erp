@@ -17,14 +17,14 @@ class JournalController extends Controller
     {
         $perPage = $request->integer('per_page', 10);
 
-        $query = Journal::query()->orderBy('tanggal', 'desc')->orderBy('id', 'desc');
+        $query = Journal::query()->orderBy('date', 'desc')->orderBy('id', 'desc');
 
         if ($request->filled('start_date')) {
-            $query->where('tanggal', '>=', $request->start_date);
+            $query->where('date', '>=', $request->start_date);
         }
 
         if ($request->filled('end_date')) {
-            $query->where('tanggal', '<=', $request->end_date);
+            $query->where('date', '<=', $request->end_date);
         }
 
         if ($request->filled('type')) {

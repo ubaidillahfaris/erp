@@ -22,12 +22,12 @@ const props = defineProps<{
 
 const search = ref(props.filters.search || '');
 const perPage = ref(props.filters.per_page || String(props.purchases.per_page));
-const sort = ref(props.filters.sort || 'tanggal');
+const sort = ref(props.filters.sort || 'date');
 const direction = ref(props.filters.direction || 'desc');
 const activeFilters = ref(props.filters.active_filters || {});
 
 const columns = [
-    { key: 'trx', label: 'Transaksi', sortKey: 'tanggal' },
+    { key: 'trx', label: 'Transaksi', sortKey: 'date' },
     { key: 'vendor', label: 'Vendor & Tipe', sortKey: 'vendor_id' },
     { key: 'tanda', label: 'Nilai & Status', sortable: false },
 ];
@@ -148,14 +148,14 @@ const typeThemes: Record<string, string> = {
                         <Link :href="`/purchasing/${row.id}`" class="text-[13px] font-bold text-foreground hover:underline flex items-center gap-2 leading-none">
                             {{ row.no_invoice || `TRX-${String(row.id).padStart(5, '0')}` }}
                         </Link>
-                        <p class="text-[11px] font-bold text-muted-foreground mt-1.5 whitespace-nowrap uppercase tracking-tighter">{{ formatDate(row.tanggal) }}</p>
+                        <p class="text-[11px] font-bold text-muted-foreground mt-1.5 whitespace-nowrap uppercase tracking-tighter">{{ formatDate(row.date) }}</p>
                     </div>
                 </div>
             </template>
 
             <template #cell(vendor)="{ row }">
                 <div class="flex flex-col gap-1.5 items-start">
-                    <span class="text-[12px] font-bold text-foreground/80">{{ row.vendor?.nama || 'Tanpa Vendor (Internal)' }}</span>
+                    <span class="text-[12px] font-bold text-foreground/80">{{ row.vendor?.name || 'Tanpa Vendor (Internal)' }}</span>
                     <Badge variant="outline" :class="[typeThemes[row.transaction_type], 'text-[9px] rounded-sm font-black uppercase tracking-[0.1em] h-4 border-none px-1.5']">
                         {{ typeLabels[row.transaction_type]?.split(' (')[0] || row.transaction_type }}
                     </Badge>

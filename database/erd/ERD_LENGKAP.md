@@ -24,21 +24,21 @@ erDiagram
     ROLES }|--o{ MENUS : "menu_role"
 
     %% MODULE: CORE
-    PRODUKS ||--o{ STOCKS : "current_balance"
-    PRODUKS ||--o{ STOCK_MOVEMENTS : "history"
-    PRODUKS ||--o{ PRICES : "pricing"
-    SATUANS ||--o{ PRODUKS : "default_unit"
+    PRODUCTS ||--o{ STOCKS : "current_balance"
+    PRODUCTS ||--o{ STOCK_MOVEMENTS : "history"
+    PRODUCTS ||--o{ PRICES : "pricing"
+    SATUANS ||--o{ PRODUCTS : "default_unit"
     SATUANS ||--o{ SATUAN_CONVERSIONS : "conversions"
 
     %% MODULE: TRANSACTIONS
     VENDORS ||--o{ PURCHASES : "supplies"
     PURCHASES ||--o{ PURCHASE_ITEMS : "details"
     SALES ||--o{ SALE_ITEMS : "details"
-    PRODUKS ||--o{ PURCHASE_ITEMS : "bought"
-    PRODUKS ||--o{ SALE_ITEMS : "sold"
+    PRODUCTS ||--o{ PURCHASE_ITEMS : "bought"
+    PRODUCTS ||--o{ SALE_ITEMS : "sold"
 
     %% MODULE: PRODUCTION
-    PRODUKS ||--o{ BOMS : "recipe_for"
+    PRODUCTS ||--o{ BOMS : "recipe_for"
     BOMS ||--o{ BOM_ITEMS : "ingredients"
     PRODUCTIONS ||--o{ PRODUCTION_ITEMS : "execution"
 ```
@@ -60,20 +60,20 @@ erDiagram
 ### Modul 02: Master Data & Satuan
 | Tabel | Kolom Utama |
 |-------|-------------|
-| **`produks`** | `id`, `sku` (UK), `barcode`, `nama`, `kategori`, `deskripsi`, `stok_minimal`, `is_active`, `satuan_id` (FK), `type` (raw_material/finished_good), `track_stock`, `created_at`, `updated_at` |
+| **`products`** | `id`, `sku` (UK), `barcode`, `nama`, `kategori`, `deskripsi`, `stok_minimal`, `is_active`, `satuan_id` (FK), `type` (raw_material/finished_good), `track_stock`, `created_at`, `updated_at` |
 | **`satuans`** | `id`, `nama` (UK), `simbol` (UK), `deskripsi`, `created_at`, `updated_at` |
-| **`satuan_conversions`** | `id`, `satuan_id` (FK), `to_satuan_id` (FK), `rasio`, `produk_id` (FK-Optional), `created_at`, `updated_at` |
-| **`prices`** | `id`, `produk_id` (FK), `satuan_id` (FK), `purchase_price`, `retail_price`, `wholesale_price`, `is_current`, `created_at`, `updated_at` |
+| **`satuan_conversions`** | `id`, `satuan_id` (FK), `to_satuan_id` (FK), `rasio`, `product_id` (FK-Optional), `created_at`, `updated_at` |
+| **`prices`** | `id`, `product_id` (FK), `satuan_id` (FK), `purchase_price`, `retail_price`, `wholesale_price`, `is_current`, `created_at`, `updated_at` |
 
 ---
 
 ### Modul 03: Inventory & Stocks
 | Tabel | Kolom Utama |
 |-------|-------------|
-| **`stocks`** | `id`, `produk_id` (FK), `last_satuan_id` (FK), `balance`, `last_movement_id` (FK), `created_at`, `updated_at` |
-| **`stock_movements`** | `id`, `produk_id` (FK), `satuan_id` (FK), `type` (in/out), `jumlah`, `reference_type`, `reference_id`, `keterangan`, `created_at`, `updated_at` |
+| **`stocks`** | `id`, `product_id` (FK), `last_satuan_id` (FK), `balance`, `last_movement_id` (FK), `created_at`, `updated_at` |
+| **`stock_movements`** | `id`, `product_id` (FK), `satuan_id` (FK), `type` (in/out), `jumlah`, `reference_type`, `reference_id`, `keterangan`, `created_at`, `updated_at` |
 | **`stock_opnames`** | `id`, `tanggal`, `keterangan`, `status` (draft/final/storno), `storno_at`, `storno_reason`, `created_at`, `updated_at` |
-| **`stock_opname_items`** | `id`, `stock_opname_id` (FK), `produk_id` (FK), `satuan_id` (FK), `system_qty`, `physical_qty`, `created_at`, `updated_at` |
+| **`stock_opname_items`** | `id`, `stock_opname_id` (FK), `product_id` (FK), `satuan_id` (FK), `system_qty`, `physical_qty`, `created_at`, `updated_at` |
 
 ---
 
@@ -81,7 +81,7 @@ erDiagram
 | Tabel | Kolom Utama |
 |-------|-------------|
 | **`purchases`** | `id`, `no_invoice`, `vendor_id` (FK), `tanggal`, `transaction_type` (purchase/gift/adj), `status` (draft/finalized), `total_biaya`, `signature_log` (JSON), `created_at`, `updated_at` |
-| **`purchase_items`** | `id`, `purchase_id` (FK), `produk_id` (FK), `satuan_id` (FK), `jumlah`, `harga_satuan`, `created_at`, `updated_at` |
+| **`purchase_items`** | `id`, `purchase_id` (FK), `product_id` (FK), `satuan_id` (FK), `jumlah`, `harga_satuan`, `created_at`, `updated_at` |
 | **`vendors`** | `id`, `nama`, `alamat`, `telepon`, `email`, `latitude`, `longitude`, `created_at`, `updated_at` |
 
 ---
@@ -90,17 +90,17 @@ erDiagram
 | Tabel | Kolom Utama |
 |-------|-------------|
 | **`sales`** | `id`, `invoice_number` (UK), `tanggal`, `total_amount`, `payment_method`, `received_amount`, `change_amount`, `notes`, `created_at`, `updated_at` |
-| **`sale_items`** | `id`, `sale_id` (FK), `produk_id` (FK), `satuan_id` (FK), `qty`, `price`, `cost` (HPP), `subtotal`, `created_at`, `updated_at` |
+| **`sale_items`** | `id`, `sale_id` (FK), `product_id` (FK), `satuan_id` (FK), `qty`, `price`, `cost` (HPP), `subtotal`, `created_at`, `updated_at` |
 
 ---
 
 ### Modul 06: Production (BOM)
 | Tabel | Kolom Utama |
 |-------|-------------|
-| **`boms`** | `id`, `produk_id` (FK), `nama`, `sku` (UK), `expected_yield`, `auto_deduct_on_sale`, `is_active`, `created_at`, `updated_at` |
-| **`bom_items`** | `id`, `bom_id` (FK), `produk_id` (FK), `satuan_id` (FK), `jumlah`, `created_at`, `updated_at` |
-| **`productions`** | `id`, `sku` (UK), `tanggal`, `bom_id` (FK), `produk_id` (FK), `target_yield`, `actual_yield`, `status` (draft/in_progress/completed/cancelled), `total_cost`, `created_at`, `updated_at` |
-| **`production_items`** | `id`, `production_id` (FK), `produk_id` (FK), `satuan_id` (FK), `planned_qty`, `actual_qty`, `harga_satuan`, `created_at`, `updated_at` |
+| **`boms`** | `id`, `product_id` (FK), `nama`, `sku` (UK), `expected_yield`, `auto_deduct_on_sale`, `is_active`, `created_at`, `updated_at` |
+| **`bom_items`** | `id`, `bom_id` (FK), `product_id` (FK), `satuan_id` (FK), `jumlah`, `created_at`, `updated_at` |
+| **`productions`** | `id`, `sku` (UK), `tanggal`, `bom_id` (FK), `product_id` (FK), `target_yield`, `actual_yield`, `status` (draft/in_progress/completed/cancelled), `total_cost`, `created_at`, `updated_at` |
+| **`production_items`** | `id`, `production_id` (FK), `product_id` (FK), `satuan_id` (FK), `planned_qty`, `actual_qty`, `harga_satuan`, `created_at`, `updated_at` |
 
 ---
 

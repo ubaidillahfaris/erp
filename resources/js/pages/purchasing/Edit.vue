@@ -34,8 +34,8 @@ import { toast } from 'vue-sonner';
 
 const props = defineProps<{ 
     purchase: any;
-    produks: any[]; 
-    satuans: any[];
+    products: any[]; 
+    units: any[];
     vendors: any[];
 }>();
 
@@ -52,20 +52,20 @@ const transactionTypes = [
 ];
 
 const formItems = props.purchase.items.map((item: any) => ({
-    produk_id: item.produk_id,
-    satuan_id: item.satuan_id,
-    jumlah: Number(item.jumlah),
-    harga_satuan: Number(item.harga_satuan)
+    product_id: item.product_id,
+    unit_id: item.unit_id,
+    quantity: Number(item.quantity),
+    unit_price: Number(item.unit_price)
 }));
 
 const form = useForm({
-    tanggal: props.purchase.tanggal,
+    date: props.purchase.date,
     transaction_type: props.purchase.transaction_type,
     payment_method: props.purchase.payment_method || 'cash',
     vendor_id: props.purchase.vendor_id || null,
-    keterangan: props.purchase.keterangan || '',
+    notes: props.purchase.notes || '',
     no_invoice: props.purchase.no_invoice || '',
-    items: formItems.length > 0 ? formItems : [{ produk_id: '', satuan_id: '', jumlah: 1, harga_satuan: 0 }],
+    items: formItems.length > 0 ? formItems : [{ product_id: '', unit_id: '', quantity: 1, unit_price: 0 }],
     attachments: [] as File[],
     _method: 'PUT'
 });
@@ -73,7 +73,7 @@ const form = useForm({
 const isQuickVendorOpen = ref(false);
 
 const addItem = () => {
-    form.items.push({ produk_id: '', satuan_id: '', jumlah: 1, harga_satuan: 0 });
+    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0 });
 };
 
 const removeItem = (idx: number) => {
@@ -81,11 +81,11 @@ const removeItem = (idx: number) => {
 };
 
 const handleProductChange = (idx: number, productId: any) => {
-    const product = props.produks.find(p => p.id == productId);
+    const product = props.products.find(p => p.id == productId);
     if (product) {
-        form.items[idx].satuan_id = product.satuan_id;
+        form.items[idx].unit_id = product.unit_id;
         if (form.transaction_type === 'purchase' && product.current_price) {
-            form.items[idx].harga_satuan = Number(product.current_price.purchase_price);
+            form.items[idx].unit_price = Number(product.current_price.purchase_price);
         }
     }
 };
@@ -94,7 +94,7 @@ watch(() => form.transaction_type, (newType) => {
     if (newType !== 'purchase') {
         form.vendor_id = null;
         form.items.forEach((item: any) => {
-            item.harga_satuan = 0;
+            item.unit_price = 0;
         });
     }
 });
@@ -124,11 +124,11 @@ const formatSize = (bytes: number) => {
 
 const totalBiaya = computed(() => {
     return form.items.reduce((total: number, item: any) => {
-        return total + (Number(item.jumlah) * Number(item.harga_satuan));
+        return total + (Number(item.quantity) * Number(item.unit_price));
     }, 0);
 });
 
-const handleVendorCreated = (vendor: { id: number; nama: string }) => {
+const handleVendorCreated = (vendor: { id: number; name: string }) => {
     props.vendors.push(vendor);
     form.vendor_id = vendor.id;
 };
@@ -188,9 +188,9 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                             </Select>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <Label for="tanggal">Tanggal Dokumen</Label>
-                            <Input id="tanggal" type="date" v-model="form.tanggal" required />
-                            <p v-if="form.errors.tanggal" class="text-sm text-destructive">{{ form.errors.tanggal }}</p>
+                            <Label for="date">Tanggal Dokumen</Label>
+                            <Input id="date" type="date" v-model="form.date" required />
+                            <p v-if="form.errors.date" class="text-sm text-destructive">{{ form.errors.date }}</p>
                         </div>
                     </div>
 
@@ -228,7 +228,7 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                             </div>
                             <Combobox 
                                 v-model="form.vendor_id" 
-                                :options="vendors.map(v => ({ value: v.id.toString(), label: v.nama }))" 
+                                :options="vendors.map(v => ({ value: v.id.toString(), label: v.name }))" 
                                 placeholder="Pilih Vendor..." 
                                 :disabled="form.transaction_type !== 'purchase'"
                             />
@@ -237,9 +237,9 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                     </div>
                     
                     <div class="flex flex-col gap-2">
-                        <Label for="keterangan">Keterangan Tambahan (Opsional)</Label>
-                        <Textarea id="keterangan" v-model="form.keterangan" placeholder="Catatan transaksi..." rows="2" class="resize-none" />
-                        <p v-if="form.errors.keterangan" class="text-sm text-destructive">{{ form.errors.keterangan }}</p>
+                        <Label for="notes">Keterangan Tambahan (Opsional)</Label>
+                        <Textarea id="notes" v-model="form.notes" placeholder="Catatan transaksi..." rows="2" class="resize-none" />
+                        <p v-if="form.errors.notes" class="text-sm text-destructive">{{ form.errors.notes }}</p>
                     </div>
                 </div>
             </Card>
@@ -259,10 +259,10 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                         <Table>
                             <TableHeader>
                                 <TableRow class="bg-slate-50">
-                                    <TableHead class="w-[35%] pl-6">Produk / Barang</TableHead>
-                                    <TableHead class="w-[20%]">Satuan</TableHead>
+                                    <TableHead class="w-[35%] pl-6">Product / Barang</TableHead>
+                                    <TableHead class="w-[20%]">Unit</TableHead>
                                     <TableHead class="w-[15%]">Kuantitas</TableHead>
-                                    <TableHead class="w-[25%]">Harga Satuan (Rp)</TableHead>
+                                    <TableHead class="w-[25%]">Harga Unit (Rp)</TableHead>
                                     <TableHead class="w-[5%] text-right pr-6"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -270,37 +270,37 @@ const deleteExistingAttachment = async (id: string, name: string) => {
                                 <TableRow v-for="(item, idx) in form.items" :key="idx">
                                     <TableCell class="pl-6 align-top pt-4">
                                         <Combobox 
-                                            v-model="item.produk_id" 
-                                            :options="produks.map(p => ({ value: p.id.toString(), label: p.nama }))" 
-                                            placeholder="Pilih Produk..."
+                                            v-model="item.product_id" 
+                                            :options="products.map(p => ({ value: p.id.toString(), label: p.name }))" 
+                                            placeholder="Pilih Product..."
                                             @update:modelValue="(val: any) => handleProductChange(idx as number, val)"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.produk_id` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.produk_id` as keyof typeof form.errors] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.product_id` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.product_id` as keyof typeof form.errors] }}</p>
                                     </TableCell>
-                                    <!-- Select Satuan -->
+                                    <!-- Select Unit -->
                                     <TableCell class="align-top pt-4">
                                         <CreatableSelect 
-                                            v-model="item.satuan_id" 
-                                            :options="satuans" 
-                                            placeholder="Satuan"
+                                            v-model="item.unit_id" 
+                                            :options="units" 
+                                            placeholder="Unit"
                                             hide-label
-                                            display-expr="simbol"
+                                            display-expr="symbol"
                                             value-expr="id"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.satuan_id` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.satuan_id` as keyof typeof form.errors] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.unit_id` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.unit_id` as keyof typeof form.errors] }}</p>
                                     </TableCell>
                                     <!-- Input Kuantitas -->
                                     <TableCell class="align-top pt-4">
-                                        <Input type="number" step="0.0001" v-model="item.jumlah" required min="0.0001" class="text-right" />
-                                        <p v-if="form.errors[`items.${idx}.jumlah` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.jumlah` as keyof typeof form.errors] }}</p>
+                                        <Input type="number" step="0.0001" v-model="item.quantity" required min="0.0001" class="text-right" />
+                                        <p v-if="form.errors[`items.${idx}.quantity` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.quantity` as keyof typeof form.errors] }}</p>
                                     </TableCell>
-                                    <!-- Input Harga Satuan -->
+                                    <!-- Input Harga Unit -->
                                     <TableCell class="align-top pt-4">
                                         <InputCurrency 
-                                            v-model="item.harga_satuan" 
+                                            v-model="item.unit_price" 
                                             :disabled="form.transaction_type !== 'purchase'"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.harga_satuan` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.harga_satuan` as keyof typeof form.errors] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.unit_price` as keyof typeof form.errors]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.unit_price` as keyof typeof form.errors] }}</p>
                                     </TableCell>
                                     <!-- Hapus -->
                                     <TableCell class="text-right pr-6 align-top pt-4">
@@ -375,7 +375,7 @@ const deleteExistingAttachment = async (id: string, name: string) => {
 
             <div class="flex justify-end gap-4 py-4 mb-20">
                 <Link :href="index().url">
-                    <Button variant="outline" type="button" class="h-11 px-8 border-slate-200">Batal</Button>
+                    <Button variant="outline" type="button" class="h-11 px-8 border-slate-200">Cancel</Button>
                 </Link>
                 <Button type="submit" :disabled="form.processing" class="h-11 px-8 gap-2 bg-primary">
                     <Save class="h-4 w-4" />

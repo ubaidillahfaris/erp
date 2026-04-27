@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('stock_opname_items', function (Blueprint $table) {
-            $table->bigInteger('harga_satuan')->nullable()->after('physical_qty');
+            $table->bigInteger('unit_price')->nullable()->after('physical_qty');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('stock_opname_items', function (Blueprint $table) {
-            $table->dropColumn('harga_satuan');
+            $table->dropColumn('unit_price');
         });
     }
 };

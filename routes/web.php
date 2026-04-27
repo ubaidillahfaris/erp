@@ -3,6 +3,7 @@
 use App\Http\Controllers\Accounting\AccountController;
 use App\Http\Controllers\Accounting\AgingReportController;
 use App\Http\Controllers\Accounting\JournalController;
+use App\Http\Controllers\Accounting\PeriodLockController;
 use App\Http\Controllers\Accounting\TrialBalanceController;
 use App\Http\Controllers\BOMController;
 use App\Http\Controllers\CustomerController;
@@ -12,16 +13,17 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\PayableController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PosController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductionController;
-use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\QuickCreateSatuanController;
+use App\Http\Controllers\QuickCreateUnitController;
 use App\Http\Controllers\QuickCreateVendorController;
 use App\Http\Controllers\RestockController;
 use App\Http\Controllers\SalesController;
-use App\Http\Controllers\SatuanController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\System\AuditLogController;
+use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -43,12 +45,12 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // 1. PRODUCT & MANUFACTURING (manage products)
     Route::middleware('permission:manage products')->group(function () {
-        Route::delete('produk/bulk-destroy', [ProdukController::class, 'bulkDestroy'])->name('produk.bulk-destroy');
-        Route::resource('produk', ProdukController::class)->names('produk');
+        Route::delete('product/bulk-destroy', [ProductController::class, 'bulkDestroy'])->name('product.bulk-destroy');
+        Route::resource('product', ProductController::class)->names('product');
 
-        Route::delete('satuan/bulk-destroy', [SatuanController::class, 'bulkDestroy'])->name('satuan.bulk-destroy');
-        Route::resource('satuan', SatuanController::class);
-        Route::post('satuan/quick', QuickCreateSatuanController::class)->name('satuan.quick');
+        Route::delete('unit/bulk-destroy', [UnitController::class, 'bulkDestroy'])->name('unit.bulk-destroy');
+        Route::resource('unit', UnitController::class);
+        Route::post('unit/quick', QuickCreateUnitController::class)->name('unit.quick');
 
         Route::delete('bom/bulk-destroy', [BOMController::class, 'bulkDestroy'])->name('bom.bulk-destroy');
         Route::resource('bom', BOMController::class);
@@ -98,7 +100,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
         // Stocks
         Route::get('stock', [StockController::class, 'index'])->name('stock.index');
-        Route::get('stock/{produk}', [StockController::class, 'show'])->name('stock.show');
+        Route::get('stock/{product}', [StockController::class, 'show'])->name('stock.show');
         Route::post('stock/export-pdf', [StockController::class, 'exportMutationPdf'])->name('stock.export-pdf');
         Route::post('stock/adjustment', [StockController::class, 'adjustment'])->name('stock.adjustment');
         Route::resource('stock-opname', StockOpnameController::class);
@@ -119,10 +121,19 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
                 ->name('accounting.trial-balance.refresh');
             Route::get('aging', [AgingReportController::class, 'index'])->name('accounting.aging.index');
             Route::resource('accounts', AccountController::class);
+
+            // Feature: Period Locks
+            Route::resource('periods', PeriodLockController::class)
+                ->only(['index', 'store', 'update', 'destroy'])
+                ->names('accounting.periods');
         });
 
         Route::get('profit-loss', [TrialBalanceController::class, 'index'])
             ->name('profit-loss.index');
+
+        // Feature: System Audit Log
+        Route::get('system/audit-log', [AuditLogController::class, 'index'])
+            ->name('system.audit-log.index');
 
         Route::middleware('period_lock')->group(function () {
             Route::delete('pengeluaran/bulk-destroy', [PengeluaranController::class, 'bulkDestroy'])->name('pengeluaran.bulk-destroy');

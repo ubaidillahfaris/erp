@@ -6,10 +6,10 @@ use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
 use App\Exceptions\MissingOverheadRateException;
 use App\Models\Account;
+use App\Models\Product;
 use App\Models\Production;
-use App\Models\Produk;
 use App\Services\JournalService;
-use App\Services\SatuanService;
+use App\Services\UnitService;
 use Illuminate\Support\Facades\DB;
 
 class CompleteProduction
@@ -28,56 +28,56 @@ class CompleteProduction
         DB::transaction(function () use ($production) {
             // 1. Deduct Stock for Ingredients (Production Items)
             foreach ($production->items as $item) {
-                $ingredientProduk = Produk::find($item->produk_id);
+                $ingredientProduct = Product::find($item->product_id);
 
                 // Calculate stock deduction (convert used unit to base unit if necessary)
                 $qtyToDeduct = $item->actual_qty;
-                if ($ingredientProduk->satuan_id !== $item->satuan_id) {
-                    $ratio = app(SatuanService::class)->getConversionRatio($ingredientProduk->satuan_id, $item->satuan_id);
+                if ($ingredientProduct->unit_id !== $item->unit_id) {
+                    $ratio = app(UnitService::class)->getConversionRatio($ingredientProduct->unit_id, $item->unit_id);
                     $qtyToDeduct = $item->actual_qty / ($ratio ?: 1);
                 }
 
                 // Record Stock Movement for Ingredient Usage
                 app(RecordStockMovement::class)->handle([
-                    'produk_id' => $item->produk_id,
-                    'satuan_id' => $item->satuan_id,
+                    'product_id' => $item->product_id,
+                    'unit_id' => $item->unit_id,
                     'type' => 'out',
-                    'jumlah' => $item->actual_qty,
+                    'quantity' => $item->actual_qty,
                     'reference_type' => 'production_usage',
                     'reference_id' => $production->id,
-                    'keterangan' => "Production usage for SKU: {$production->sku}",
+                    'notes' => "Production usage for SKU: {$production->sku}",
                 ]);
             }
 
             // 2. Add Stock for Finished Product
             app(RecordStockMovement::class)->handle([
-                'produk_id' => $production->produk_id,
-                'satuan_id' => $production->produk->satuan_id,
+                'product_id' => $production->product_id,
+                'unit_id' => $production->product->unit_id,
                 'type' => 'in',
-                'jumlah' => $production->actual_yield,
+                'quantity' => $production->actual_yield,
                 'reference_type' => 'production_yield',
                 'reference_id' => $production->id,
-                'keterangan' => "Production yield for SKU: {$production->sku}",
+                'notes' => "Production yield for SKU: {$production->sku}",
             ]);
 
             // 3. Update the HPP of the finished product based on actual yield
-            $finishedProduk = Produk::with('currentPrice')->find($production->produk_id);
+            $finishedProduct = Product::with('currentPrice')->find($production->product_id);
 
             // Hard Constraint: Overhead Rate Validation
-            if (($finishedProduk->overhead_rate_per_unit ?? 0) <= 0) {
-                throw new MissingOverheadRateException($finishedProduk->nama);
+            if (($finishedProduct->overhead_rate_per_unit ?? 0) <= 0) {
+                throw new MissingOverheadRateException($finishedProduct->name);
             }
 
             if ($production->actual_yield > 0) {
                 $newHpp = $production->total_cost / $production->actual_yield;
 
-                if ($finishedProduk->currentPrice) {
-                    $finishedProduk->currentPrice->update([
+                if ($finishedProduct->currentPrice) {
+                    $finishedProduct->currentPrice->update([
                         'purchase_price' => $newHpp,
                     ]);
                 } else {
-                    $finishedProduk->prices()->create([
-                        'satuan_id' => $finishedProduk->satuan_id,
+                    $finishedProduct->prices()->create([
+                        'unit_id' => $finishedProduct->unit_id,
                         'purchase_price' => $newHpp,
                         'retail_price' => 0,
                         'is_current' => true,
@@ -87,17 +87,17 @@ class CompleteProduction
 
             // 4. Record Financial Journal (Double-Entry)
             $materialCostCents = (int) round((float) ($production->total_cost ?? 0) * 100);
-            $overheadAppliedCents = (int) round((float) $finishedProduk->overhead_rate_per_unit * $production->actual_yield);
+            $overheadAppliedCents = (int) round((float) $finishedProduct->overhead_rate_per_unit * $production->actual_yield);
 
             $journalData = new JournalEntryData(
                 items: [
-                    // Debit 1302: Persediaan Barang Jadi = material_cost + overhead_applied
+                    // Debit 1302: Persediaan Finished Goods = material_cost + overhead_applied
                     new JournalItemData(
                         account_id: Account::findByCode('1302')->id,
                         amount: $materialCostCents + $overheadAppliedCents,
                         type: 'debit'
                     ),
-                    // Credit 1301: Persediaan Bahan Baku = material_cost
+                    // Credit 1301: Persediaan Raw Materials = material_cost
                     new JournalItemData(
                         account_id: Account::findByCode('1301')->id,
                         amount: $materialCostCents,
@@ -110,8 +110,8 @@ class CompleteProduction
                         type: 'credit'
                     ),
                 ],
-                tanggal: $production->tanggal,
-                description: "Produksi selesai: {$production->sku}",
+                date: $production->date,
+                description: "Productsi selesai: {$production->sku}",
                 journalable: $production
             );
 

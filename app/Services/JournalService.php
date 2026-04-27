@@ -63,7 +63,7 @@ class JournalService
             /** @var JournalEntry $entry */
             $entry = JournalEntry::create([
                 'ref_number' => $refNumber,
-                'tanggal' => $data->tanggal ?? now(),
+                'date' => $data->date ?? now(),
                 'description' => $data->description,
                 'journalable_id' => $data->journalable?->id,
                 'journalable_type' => $data->journalable ? get_class($data->journalable) : null,

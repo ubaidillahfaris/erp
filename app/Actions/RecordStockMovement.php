@@ -13,13 +13,13 @@ class RecordStockMovement
     public function handle(array $data): StockMovement
     {
         return StockMovement::create([
-            'produk_id' => $data['produk_id'],
-            'satuan_id' => $data['satuan_id'],
+            'product_id' => $data['product_id'],
+            'unit_id' => $data['unit_id'],
             'type' => $data['type'], // 'in' or 'out'
-            'jumlah' => $data['jumlah'],
+            'quantity' => $data['quantity'],
             'reference_type' => $data['reference_type'] ?? null,
             'reference_id' => $data['reference_id'] ?? null,
-            'keterangan' => $data['keterangan'] ?? null,
+            'notes' => $data['notes'] ?? null,
         ]);
     }
 }

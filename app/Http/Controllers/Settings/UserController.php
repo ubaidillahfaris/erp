@@ -9,9 +9,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Services\RoleService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\PermissionRegistrar;
@@ -43,7 +42,7 @@ class UserController extends Controller
             });
         }
 
-        if (!empty($activeFilters['role'])) {
+        if (! empty($activeFilters['role'])) {
             $roles = (array) $activeFilters['role'];
             $query->whereHas('roles', function ($q) use ($roles) {
                 $q->whereIn('roles.name', $roles);
@@ -81,7 +80,7 @@ class UserController extends Controller
 
         $user->assignRole($request->role);
 
-        return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
+        return redirect()->route('users.index')->with('success', 'User added successfully.');
     }
 
     /**
@@ -106,7 +105,7 @@ class UserController extends Controller
         // Clear dynamic menu cache for this user
         app(RoleService::class)->clearMenuCache($user);
 
-        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
+        return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
 
     /**
@@ -120,6 +119,6 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
 }

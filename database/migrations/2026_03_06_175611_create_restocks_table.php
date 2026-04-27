@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('restocks', function (Blueprint $table) {
             $table->id();
-            $table->date('tanggal');
-            $table->string('keterangan')->nullable();
+            $table->date('date');
+            $table->string('notes')->nullable();
             $table->decimal('total_biaya', 15, 2)->default(0);
             $table->timestamps();
         });

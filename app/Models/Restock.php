@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Restock extends Model
 {
     protected $fillable = [
-        'tanggal',
+        'date',
         'vendor_id',
-        'keterangan',
+        'notes',
         'status_pembayaran',
         'total_bayar',
         'biaya_tambahan',
@@ -19,7 +19,7 @@ class Restock extends Model
     protected function casts(): array
     {
         return [
-            'tanggal' => 'date',
+            'date' => 'date',
             'total_biaya' => 'decimal:2',
             'total_bayar' => 'decimal:2',
             'biaya_tambahan' => 'array',

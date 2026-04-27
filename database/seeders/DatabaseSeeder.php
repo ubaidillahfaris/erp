@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class,
             MenuSeeder::class,
             MenuRoleSeeder::class,
-            SatuanConversionSeeder::class,
+            UnitConversionSeeder::class,
             // BakeryStoreSeeder::class,
             ChartOfAccountsSeeder::class,
             AccountingMenuSeeder::class,
@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             TransaksiModuleSeeder::class,
             PayablesMenuSeeder::class,
             EmployeeSeeder::class,
+            NewFeaturesMenuSeeder::class,
         ]);
     }
 }

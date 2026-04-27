@@ -13,7 +13,7 @@ class JournalController extends Controller
     public function index(Request $request): Response
     {
         $perPage = $request->integer('per_page', 10);
-        $sort = $request->input('sort') ?: 'tanggal';
+        $sort = $request->input('sort') ?: 'date';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         $query = JournalEntry::query()
@@ -28,11 +28,11 @@ class JournalController extends Controller
         });
 
         $query->when($request->date_start, function ($q, $date) {
-            $q->whereDate('tanggal', '>=', $date);
+            $q->whereDate('date', '>=', $date);
         });
 
         $query->when($request->date_end, function ($q, $date) {
-            $q->whereDate('tanggal', '<=', $date);
+            $q->whereDate('date', '<=', $date);
         });
 
         $query->when($request->type, function ($q, $type) {

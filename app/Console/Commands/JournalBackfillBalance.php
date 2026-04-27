@@ -28,7 +28,7 @@ class JournalBackfillBalance extends Command
     {
         $this->info('Starting balance backfill...');
 
-        $journals = Journal::orderBy('tanggal', 'asc')
+        $journals = Journal::orderBy('date', 'asc')
             ->orderBy('id', 'asc')
             ->get();
 

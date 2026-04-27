@@ -9,8 +9,8 @@ class SaleItem extends Model
 {
     protected $fillable = [
         'sale_id',
-        'produk_id',
-        'satuan_id',
+        'product_id',
+        'unit_id',
         'qty',
         'price',
         'cost',
@@ -32,13 +32,13 @@ class SaleItem extends Model
         return $this->belongsTo(Sale::class);
     }
 
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Unit::class);
     }
 }

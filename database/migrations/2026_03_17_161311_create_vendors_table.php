@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('vendors', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
-            $table->text('alamat')->nullable();
-            $table->string('telepon')->nullable();
+            $table->string('name');
+            $table->text('address')->nullable();
+            $table->string('phone')->nullable();
             $table->string('email')->nullable();
-            $table->text('keterangan')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

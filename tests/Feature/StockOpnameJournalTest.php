@@ -4,10 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Account;
 use App\Models\JournalEntry;
+use App\Models\Product;
 use App\Models\ProductPriceStat;
-use App\Models\Produk;
-use App\Models\Satuan;
 use App\Models\StockOpname;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -19,9 +19,9 @@ class StockOpnameJournalTest extends TestCase
 
     protected User $user;
 
-    protected Produk $produk;
+    protected Product $product;
 
-    protected Satuan $satuan;
+    protected Unit $unit;
 
     protected function setUp(): void
     {
@@ -31,11 +31,11 @@ class StockOpnameJournalTest extends TestCase
         Role::create(['name' => 'superadmin']);
         $this->user->assignRole('superadmin');
 
-        $this->satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
+        $this->unit = Unit::create(['name' => 'Pcs', 'symbol' => 'pcs']);
 
-        $this->produk = Produk::create([
-            'nama' => 'Roti Tawar',
-            'satuan_id' => $this->satuan->id,
+        $this->product = Product::create([
+            'name' => 'Roti Tawar',
+            'unit_id' => $this->unit->id,
             'kategori' => 'Bakery',
             'harga_jual' => 12000,
             'stock_minimum' => 10,
@@ -48,8 +48,8 @@ class StockOpnameJournalTest extends TestCase
         Account::firstOrCreate(['code' => '6201'], ['name' => 'Kerugian Selisih Stok', 'type' => 'expense', 'balance_type' => 'debit']);
 
         ProductPriceStat::create([
-            'produk_id' => $this->produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $this->product->id,
+            'unit_id' => $this->unit->id,
             'avg_price' => 10000, // 10k -> 1000000 cents
             'latest_price' => 10000,
         ]);
@@ -60,12 +60,12 @@ class StockOpnameJournalTest extends TestCase
     public function test_surplus_item_records_debit_persediaan()
     {
         $payload = [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'status' => 'completed',
             'items' => [
                 [
-                    'produk_id' => $this->produk->id,
-                    'satuan_id' => $this->satuan->id,
+                    'product_id' => $this->product->id,
+                    'unit_id' => $this->unit->id,
                     'system_qty' => 10,
                     'physical_qty' => 12, // +2 surplus
                 ],
@@ -100,12 +100,12 @@ class StockOpnameJournalTest extends TestCase
     public function test_shrinkage_item_records_debit_kerugian()
     {
         $payload = [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'status' => 'completed',
             'items' => [
                 [
-                    'produk_id' => $this->produk->id,
-                    'satuan_id' => $this->satuan->id,
+                    'product_id' => $this->product->id,
+                    'unit_id' => $this->unit->id,
                     'system_qty' => 10,
                     'physical_qty' => 8, // -2 shrinkage
                 ],
@@ -137,15 +137,15 @@ class StockOpnameJournalTest extends TestCase
     public function test_zero_value_item_skips_journal()
     {
         // Change avg_price to 0 temporarily
-        ProductPriceStat::where('produk_id', $this->produk->id)->update(['avg_price' => 0]);
+        ProductPriceStat::where('product_id', $this->product->id)->update(['avg_price' => 0]);
 
         $payload = [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'status' => 'completed',
             'items' => [
                 [
-                    'produk_id' => $this->produk->id,
-                    'satuan_id' => $this->satuan->id,
+                    'product_id' => $this->product->id,
+                    'unit_id' => $this->unit->id,
                     'system_qty' => 10,
                     'physical_qty' => 8, // -2 shrinkage, but 0 value
                 ],
@@ -170,12 +170,12 @@ class StockOpnameJournalTest extends TestCase
         Account::where('code', '1301')->delete();
 
         $payload = [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'status' => 'completed',
             'items' => [
                 [
-                    'produk_id' => $this->produk->id,
-                    'satuan_id' => $this->satuan->id,
+                    'product_id' => $this->product->id,
+                    'unit_id' => $this->unit->id,
                     'system_qty' => 10,
                     'physical_qty' => 12, // +2 surplus
                 ],
@@ -202,15 +202,15 @@ class StockOpnameJournalTest extends TestCase
         $this->assertEquals(0, $journalCount);
     }
 
-    public function test_harga_satuan_populated_from_avg_price_on_create()
+    public function test_unit_price_populated_from_avg_price_on_create()
     {
         $payload = [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'status' => 'draft',
             'items' => [
                 [
-                    'produk_id' => $this->produk->id,
-                    'satuan_id' => $this->satuan->id,
+                    'product_id' => $this->product->id,
+                    'unit_id' => $this->unit->id,
                     'system_qty' => 10,
                     'physical_qty' => 12,
                 ],
@@ -223,6 +223,6 @@ class StockOpnameJournalTest extends TestCase
         $item = $opname->items()->first();
 
         // 10000 * 100 = 1000000
-        $this->assertEquals(1000000, $item->harga_satuan);
+        $this->assertEquals(1000000, $item->unit_price);
     }
 }

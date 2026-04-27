@@ -86,9 +86,9 @@ class PengeluaranObserver
 
             $data = new JournalEntryData(
                 items: $items,
-                description: "Pengeluaran Operasional: {$pengeluaran->nama_pengeluaran} ({$pengeluaran->jenis_pengeluaran})",
-                tanggal: $pengeluaran->tanggal,
-                ref_number: 'EXP-'.$pengeluaran->tanggal->format('Ymd').'-'.str_pad((string) $pengeluaran->id, 4, '0', STR_PAD_LEFT),
+                description: "Pengeluaran Operasional: {$pengeluaran->name_pengeluaran} ({$pengeluaran->jenis_pengeluaran})",
+                date: $pengeluaran->date,
+                ref_number: 'EXP-'.$pengeluaran->date->format('Ymd').'-'.str_pad((string) $pengeluaran->id, 4, '0', STR_PAD_LEFT),
                 journalable: $pengeluaran
             );
 
@@ -97,11 +97,11 @@ class PengeluaranObserver
             // Legacy Journal (DISABLED - Transition to Double-Entry)
             /*
             \App\Models\Journal::create([
-                'tanggal' => $pengeluaran->tanggal->format('Y-m-d'),
+                'date' => $pengeluaran->date->format('Y-m-d'),
                 'type' => 'kredit',
                 'amount' => $pengeluaran->nominal,
                 'category' => 'operasional',
-                'description' => "Pengeluaran Operasional: {$pengeluaran->nama_pengeluaran}",
+                'description' => "Pengeluaran Operasional: {$pengeluaran->name_pengeluaran}",
                 'reference_type' => Pengeluaran::class,
                 'reference_id' => $pengeluaran->id,
             ]);

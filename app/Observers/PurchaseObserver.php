@@ -48,18 +48,18 @@ class PurchaseObserver
             throw new InvalidPurchaseAmountException;
         }
 
-        $tanggal = $purchase->tanggal;
+        $date = $purchase->date;
 
         $refNumber = sprintf(
             'PUR-%s-%d',
-            $tanggal->format('Ymd'),
+            $date->format('Ymd'),
             $purchase->id
         );
 
-        $vendorName = $purchase->vendor?->nama ?? 'Unknown Vendor';
+        $vendorName = $purchase->vendor?->name ?? 'Unknown Vendor';
         $paymentMethod = $purchase->payment_method ?? 'cash';
 
-        // Debit: Persediaan Bahan Baku always
+        // Debit: Persediaan Raw Materials always
         $rawMaterialAcc = Account::findByCode('1301');
 
         // Credit: depends on payment method
@@ -89,7 +89,7 @@ class PurchaseObserver
                     type: 'credit'
                 ),
             ],
-            tanggal: $tanggal,
+            date: $date,
             ref_number: $refNumber,
             description: $description,
             journalable: $purchase

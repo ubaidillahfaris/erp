@@ -14,14 +14,14 @@ return new class extends Migration
         Schema::create('customer_prices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade');
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
-            $table->foreignId('satuan_id')->constrained('satuans')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
             $table->decimal('custom_price', 15, 2);
             $table->date('valid_until')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->unique(['customer_id', 'produk_id', 'satuan_id'], 'customer_produk_satuan_unique');
+            $table->unique(['customer_id', 'product_id', 'unit_id'], 'customer_product_satuan_unique');
         });
     }
 

@@ -20,7 +20,7 @@ class VendorController extends Controller
 
         $vendors = Vendor::query()
             ->when($request->search, function ($query, $search) {
-                $query->where('nama', 'like', "%{$search}%");
+                $query->where('name', 'like', "%{$search}%");
             })
             ->orderBy($sort, $direction)
             ->paginate($perPage)
@@ -46,18 +46,18 @@ class VendorController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'alamat' => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
-            'telepon' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
-            'keterangan' => 'nullable|string',
+            'notes' => 'nullable|string',
         ]);
 
         Vendor::create($request->all());
 
-        return to_route('vendor.index')->with('success', 'Vendor berhasil ditambahkan.');
+        return to_route('vendor.index')->with('success', 'Vendor added successfully.');
     }
 
     public function edit(Vendor $vendor): Response
@@ -73,18 +73,18 @@ class VendorController extends Controller
     public function update(Request $request, Vendor $vendor)
     {
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'alamat' => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
-            'telepon' => 'nullable|string|max:20',
+            'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
-            'keterangan' => 'nullable|string',
+            'notes' => 'nullable|string',
         ]);
 
         $vendor->update($request->all());
 
-        return to_route('vendor.index')->with('success', 'Vendor berhasil diperbarui.');
+        return to_route('vendor.index')->with('success', 'Vendor updated successfully.');
     }
 
     /**
@@ -98,7 +98,7 @@ class VendorController extends Controller
 
         $vendor->delete();
 
-        return back()->with('success', 'Vendor berhasil dihapus.');
+        return back()->with('success', 'Vendor deleted successfully.');
     }
 
     public function bulkDestroy(Request $request)
@@ -121,7 +121,7 @@ class VendorController extends Controller
             }
         }
 
-        $message = "{$deletedCount} vendor berhasil dihapus.";
+        $message = "{$deletedCount} vendor deleted successfully.";
         if ($skippedCount > 0) {
             $message .= " {$skippedCount} vendor dilewati karena memiliki riwayat.";
         }

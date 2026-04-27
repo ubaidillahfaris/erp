@@ -64,7 +64,7 @@ class AccountManagementTest extends TestCase
         $account = Account::factory()->create(['code' => '1101', 'name' => 'Old Name']);
 
         // Create journal entry to trigger lock
-        $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'tanggal' => now(), 'description' => 'Test']);
+        $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'date' => now(), 'description' => 'Test']);
         $entry->items()->create([
             'account_id' => $account->id,
             'debit' => 1000,
@@ -92,7 +92,7 @@ class AccountManagementTest extends TestCase
         $account = Account::factory()->create(['code' => '1101', 'name' => 'Old Name', 'type' => 'asset', 'balance_type' => 'debit']);
 
         // Create journal entry to trigger lock
-        $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'tanggal' => now(), 'description' => 'Test']);
+        $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'date' => now(), 'description' => 'Test']);
         $entry->items()->create([
             'account_id' => $account->id,
             'debit' => 1000,
@@ -120,7 +120,7 @@ class AccountManagementTest extends TestCase
         $account = Account::factory()->create();
 
         // Create journal entry to trigger block
-        $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'tanggal' => now(), 'description' => 'Test']);
+        $entry = JournalEntry::create(['ref_number' => 'TEST-1', 'date' => now(), 'description' => 'Test']);
         $entry->items()->create([
             'account_id' => $account->id,
             'debit' => 1000,

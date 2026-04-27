@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('purchase_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('purchase_id')->constrained()->onDelete('cascade');
-            $table->foreignId('produk_id')->constrained()->onDelete('cascade');
-            $table->foreignId('satuan_id')->constrained();
-            $table->decimal('jumlah', 15, 4);
-            $table->decimal('harga_satuan', 15, 2);
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('unit_id')->constrained();
+            $table->decimal('quantity', 15, 4);
+            $table->decimal('unit_price', 15, 2);
             $table->timestamps();
         });
     }

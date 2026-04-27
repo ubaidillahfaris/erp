@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('productions', function (Blueprint $table) {
             $table->id();
             $table->string('sku')->unique();
-            $table->date('tanggal');
+            $table->date('date');
             $table->foreignId('bom_id')->constrained('boms')->onDelete('restrict');
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('restrict');
+            $table->foreignId('product_id')->constrained('products')->onDelete('restrict');
             $table->decimal('target_yield', 8, 2);
             $table->decimal('actual_yield', 8, 2)->nullable();
             $table->enum('status', ['draft', 'in_progress', 'completed', 'cancelled'])->default('in_progress');

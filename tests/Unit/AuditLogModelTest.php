@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\AuditLog;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -33,7 +33,7 @@ class AuditLogModelTest extends TestCase
         $log = AuditLog::create([
             'user_id' => $user->id,
             'event' => 'created',
-            'auditable_type' => 'App\Models\Produk',
+            'auditable_type' => 'App\Models\Product',
             'auditable_id' => 1,
         ]);
 
@@ -44,14 +44,14 @@ class AuditLogModelTest extends TestCase
     /** @test */
     public function test_it_can_morph_to_auditable()
     {
-        $produk = Produk::factory()->create();
+        $product = Product::factory()->create();
         $log = AuditLog::create([
             'event' => 'created',
-            'auditable_type' => Produk::class,
-            'auditable_id' => $produk->id,
+            'auditable_type' => Product::class,
+            'auditable_id' => $product->id,
         ]);
 
-        $this->assertInstanceOf(Produk::class, $log->auditable);
-        $this->assertEquals($produk->id, $log->auditable->id);
+        $this->assertInstanceOf(Product::class, $log->auditable);
+        $this->assertEquals($product->id, $log->auditable->id);
     }
 }

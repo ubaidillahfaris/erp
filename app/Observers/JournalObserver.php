@@ -13,25 +13,25 @@ class JournalObserver
      */
     public function created(Journal $journal): void
     {
-        $this->updateBalances($journal->tanggal, $journal->id);
-        $this->updateSummary($journal->tanggal);
+        $this->updateBalances($journal->date, $journal->id);
+        $this->updateSummary($journal->date);
     }
 
     public function updated(Journal $journal): void
     {
-        $this->updateBalances($journal->tanggal, $journal->id);
-        $this->updateSummary($journal->tanggal);
+        $this->updateBalances($journal->date, $journal->id);
+        $this->updateSummary($journal->date);
 
-        if ($journal->wasChanged('tanggal')) {
-            $this->updateBalances($journal->getOriginal('tanggal'));
-            $this->updateSummary($journal->getOriginal('tanggal'));
+        if ($journal->wasChanged('date')) {
+            $this->updateBalances($journal->getOriginal('date'));
+            $this->updateSummary($journal->getOriginal('date'));
         }
     }
 
     public function deleted(Journal $journal): void
     {
-        $this->updateBalances($journal->tanggal, $journal->id);
-        $this->updateSummary($journal->tanggal);
+        $this->updateBalances($journal->date, $journal->id);
+        $this->updateSummary($journal->date);
     }
 
     /**
@@ -40,8 +40,8 @@ class JournalObserver
     private function updateBalances($date, $startId = null): void
     {
         // Get all journals from the starting date onwards, ordered by date and ID
-        $journals = Journal::where('tanggal', '>=', $date)
-            ->orderBy('tanggal', 'asc')
+        $journals = Journal::where('date', '>=', $date)
+            ->orderBy('date', 'asc')
             ->orderBy('id', 'asc')
             ->get();
 
@@ -51,12 +51,12 @@ class JournalObserver
             return;
         }
 
-        $previousJournal = Journal::where('tanggal', '<', $firstJournal->tanggal)
+        $previousJournal = Journal::where('date', '<', $firstJournal->date)
             ->orWhere(function ($query) use ($firstJournal) {
-                $query->where('tanggal', $firstJournal->tanggal)
+                $query->where('date', $firstJournal->date)
                     ->where('id', '<', $firstJournal->id);
             })
-            ->orderBy('tanggal', 'desc')
+            ->orderBy('date', 'desc')
             ->orderBy('id', 'desc')
             ->first();
 
@@ -83,7 +83,7 @@ class JournalObserver
         // Ensure date is in Y-m-d format
         $dateString = $date instanceof CarbonInterface ? $date->format('Y-m-d') : $date;
 
-        $stats = Journal::where('tanggal', $dateString)
+        $stats = Journal::where('date', $dateString)
             ->selectRaw("SUM(CASE WHEN type = 'debit' THEN amount ELSE 0 END) as total_debit")
             ->selectRaw("SUM(CASE WHEN type = 'kredit' THEN amount ELSE 0 END) as total_kredit")
             ->first();

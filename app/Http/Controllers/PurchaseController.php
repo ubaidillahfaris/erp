@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Actions\Purchasing\FinalizePurchase;
 use App\Http\Requests\StorePurchaseRequest;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\PurchaseAttachment;
-use App\Models\Satuan;
+use App\Models\Unit;
 use App\Models\Vendor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +22,7 @@ class PurchaseController extends Controller
     public function index(Request $request): Response
     {
         $perPage = $request->input('per_page', 10);
-        $sort = $request->input('sort') ?: 'tanggal';
+        $sort = $request->input('sort') ?: 'date';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         // Handle faceted filters
@@ -35,9 +35,9 @@ class PurchaseController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('keterangan', 'like', "%{$search}%")
+                $q->where('notes', 'like', "%{$search}%")
                     ->orWhere('no_invoice', 'like', "%{$search}%")
-                    ->orWhereHas('vendor', fn ($qv) => $qv->where('nama', 'like', "%{$search}%"));
+                    ->orWhereHas('vendor', fn ($qv) => $qv->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -68,27 +68,27 @@ class PurchaseController extends Controller
     public function create(Request $request): Response
     {
         return Inertia::render('purchasing/Create', [
-            'produks' => Produk::with(['satuan', 'currentPrice'])->where('is_active', true)->get(),
-            'satuans' => Satuan::all(['id', 'nama', 'simbol']),
-            'vendors' => Vendor::orderBy('nama')->get(['id', 'nama']),
-            'produkId' => $request->query('produk_id'),
+            'products' => Product::with(['unit', 'currentPrice'])->where('is_active', true)->get(),
+            'units' => Unit::all(['id', 'name', 'symbol']),
+            'vendors' => Vendor::orderBy('name')->get(['id', 'name']),
+            'productId' => $request->query('product_id'),
         ]);
     }
 
     public function store(StorePurchaseRequest $request): RedirectResponse
     {
         DB::transaction(function () use ($request) {
-            $itemsTotal = collect($request->items)->sum(fn ($item) => $item['jumlah'] * $item['harga_satuan']);
+            $itemsTotal = collect($request->items)->sum(fn ($item) => $item['quantity'] * $item['unit_price']);
 
             $purchase = Purchase::create([
                 'no_invoice' => $request->no_invoice,
                 'vendor_id' => $request->vendor_id,
-                'tanggal' => $request->tanggal,
+                'date' => $request->date,
                 'transaction_type' => $request->transaction_type,
                 'payment_method' => $request->payment_method,
                 'status' => 'draft',
                 'total_biaya' => $itemsTotal,
-                'keterangan' => $request->keterangan,
+                'notes' => $request->notes,
             ]);
 
             foreach ($request->items as $item) {
@@ -124,9 +124,9 @@ class PurchaseController extends Controller
 
         return Inertia::render('purchasing/Edit', [
             'purchase' => $purchase,
-            'produks' => Produk::with(['satuan', 'currentPrice'])->where('is_active', true)->get(),
-            'satuans' => Satuan::all(['id', 'nama', 'simbol']),
-            'vendors' => Vendor::orderBy('nama')->get(['id', 'nama']),
+            'products' => Product::with(['unit', 'currentPrice'])->where('is_active', true)->get(),
+            'units' => Unit::all(['id', 'name', 'symbol']),
+            'vendors' => Vendor::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -137,16 +137,16 @@ class PurchaseController extends Controller
         }
 
         DB::transaction(function () use ($request, $purchase) {
-            $itemsTotal = collect($request->items)->sum(fn ($item) => $item['jumlah'] * $item['harga_satuan']);
+            $itemsTotal = collect($request->items)->sum(fn ($item) => $item['quantity'] * $item['unit_price']);
 
             $purchase->update([
                 'no_invoice' => $request->no_invoice,
                 'vendor_id' => $request->vendor_id,
-                'tanggal' => $request->tanggal,
+                'date' => $request->date,
                 'transaction_type' => $request->transaction_type,
                 'payment_method' => $request->payment_method,
                 'total_biaya' => $itemsTotal,
-                'keterangan' => $request->keterangan,
+                'notes' => $request->notes,
             ]);
 
             // Sync items (delete existing and recreate is simplest)
@@ -171,12 +171,12 @@ class PurchaseController extends Controller
             }
         });
 
-        return redirect()->route('purchasing.show', $purchase)->with('success', 'Draft Pembelian berhasil diperbarui.');
+        return redirect()->route('purchasing.show', $purchase)->with('success', 'Draft Pembelian updated successfully.');
     }
 
     public function show(Purchase $purchase): Response
     {
-        $purchase->load(['items.produk.satuan', 'items.satuan', 'vendor', 'attachments']);
+        $purchase->load(['items.product.unit', 'items.unit', 'vendor', 'attachments']);
 
         return Inertia::render('purchasing/Show', [
             'purchase' => $purchase,
@@ -211,7 +211,7 @@ class PurchaseController extends Controller
 
         $purchase->delete();
 
-        return redirect()->route('purchasing.index')->with('success', 'Pembelian berhasil dihapus.');
+        return redirect()->route('purchasing.index')->with('success', 'Pembelian deleted successfully.');
     }
 
     public function destroyAttachment(PurchaseAttachment $purchaseAttachment): RedirectResponse
@@ -219,6 +219,6 @@ class PurchaseController extends Controller
         Storage::disk('private')->delete($purchaseAttachment->file_path);
         $purchaseAttachment->delete();
 
-        return redirect()->back()->with('success', 'Lampiran berhasil dihapus.');
+        return redirect()->back()->with('success', 'Lampiran deleted successfully.');
     }
 }

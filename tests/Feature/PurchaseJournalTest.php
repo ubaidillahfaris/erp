@@ -23,7 +23,7 @@ class PurchaseJournalTest extends TestCase
         Account::create(['code' => '1301', 'name' => 'Persediaan', 'type' => 'asset', 'balance_type' => 'debit']);
         Account::create(['code' => '2101', 'name' => 'Hutang', 'type' => 'liability', 'balance_type' => 'credit']);
 
-        $this->vendor = Vendor::factory()->create(['nama' => 'Vendor Test']);
+        $this->vendor = Vendor::factory()->create(['name' => 'Vendor Test']);
     }
 
     /**
@@ -35,7 +35,7 @@ class PurchaseJournalTest extends TestCase
             'status' => 'draft',
             'vendor_id' => $this->vendor->id,
             'total_biaya' => 1000.50,
-            'tanggal' => '2024-04-19',
+            'date' => '2024-04-19',
             'payment_method' => 'credit',
         ]);
 

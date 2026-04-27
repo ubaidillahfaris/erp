@@ -6,8 +6,8 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\CustomerCategoryDiscount;
 use App\Models\CustomerPrice;
-use App\Models\Produk;
-use App\Models\Satuan;
+use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -42,15 +42,15 @@ class CustomerPriceController extends Controller
     public function index(Customer $customer)
     {
         $customerPrices = $customer->customerPrices()
-            ->with(['produk', 'satuan', 'histories.changedBy'])
+            ->with(['product', 'unit', 'histories.changedBy'])
             ->latest()
             ->get();
 
         return Inertia::render('Customer/Prices', [
             'customer' => $customer,
             'customerPrices' => $customerPrices,
-            'produks' => Produk::all(['id', 'nama']),
-            'satuans' => Satuan::all(['id', 'nama']),
+            'products' => Product::all(['id', 'name']),
+            'units' => Unit::all(['id', 'name']),
             'creditSetting' => $customer->creditSetting,
             'categoryDiscounts' => $customer->categoryDiscounts()->with('category')->where('is_active', true)->get(),
             'kategoriList' => Category::all(['id', 'name']),
@@ -63,21 +63,21 @@ class CustomerPriceController extends Controller
     public function store(Request $request, Customer $customer)
     {
         $request->validate([
-            'produk_id' => 'required|exists:produks,id',
-            'satuan_id' => 'required|exists:satuans,id',
+            'product_id' => 'required|exists:products,id',
+            'unit_id' => 'required|exists:units,id',
             'custom_price' => 'required|numeric|min:0',
             'valid_until' => 'nullable|date',
         ]);
 
         $customer->customerPrices()->create([
-            'produk_id' => $request->produk_id,
-            'satuan_id' => $request->satuan_id,
+            'product_id' => $request->product_id,
+            'unit_id' => $request->unit_id,
             'custom_price' => $request->custom_price,
             'valid_until' => $request->valid_until,
             'is_active' => true,
         ]);
 
-        return back()->with('success', 'Harga khusus berhasil ditambahkan.');
+        return back()->with('success', 'Harga khusus added successfully.');
     }
 
     /**
@@ -93,7 +93,7 @@ class CustomerPriceController extends Controller
 
         $price->update($request->only(['custom_price', 'valid_until', 'is_active']));
 
-        return back()->with('success', 'Harga khusus berhasil diperbarui.');
+        return back()->with('success', 'Harga khusus updated successfully.');
     }
 
     /**
@@ -123,7 +123,7 @@ class CustomerPriceController extends Controller
             $validated
         );
 
-        return back()->with('success', 'Pengaturan kredit berhasil diperbarui.');
+        return back()->with('success', 'Pengaturan kredit updated successfully.');
     }
 
     /**
@@ -150,7 +150,7 @@ class CustomerPriceController extends Controller
             'is_active' => true,
         ]);
 
-        return back()->with('success', 'Diskon kategori berhasil ditambahkan.');
+        return back()->with('success', 'Diskon kategori added successfully.');
     }
 
     /**
@@ -160,6 +160,6 @@ class CustomerPriceController extends Controller
     {
         $discount->delete();
 
-        return back()->with('success', 'Diskon kategori berhasil dihapus.');
+        return back()->with('success', 'Diskon kategori deleted successfully.');
     }
 }

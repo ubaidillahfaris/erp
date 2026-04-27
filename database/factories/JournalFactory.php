@@ -18,7 +18,7 @@ class JournalFactory extends Factory
     public function definition(): array
     {
         return [
-            'tanggal' => $this->faker->date(),
+            'date' => $this->faker->date(),
             'type' => $this->faker->randomElement(['debit', 'kredit']),
             'amount' => $this->faker->randomFloat(2, 1000, 100000),
             'category' => $this->faker->word(),

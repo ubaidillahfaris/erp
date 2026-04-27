@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('journals', function (Blueprint $table) {
             $table->id();
-            $table->date('tanggal');
+            $table->date('date');
             $table->enum('type', ['debit', 'kredit']);
             $table->decimal('amount', 15, 2);
             $table->string('category'); // pembelian, beban, penjualan, dll

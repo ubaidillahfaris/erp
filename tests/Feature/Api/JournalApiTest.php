@@ -27,7 +27,7 @@ class JournalApiTest extends TestCase
         Sanctum::actingAs($user);
 
         Journal::factory()->create([
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'type' => 'debit',
             'amount' => 1000,
             'category' => 'sales',
@@ -40,7 +40,7 @@ class JournalApiTest extends TestCase
                 'data' => [
                     '*' => [
                         'id',
-                        'tanggal',
+                        'date',
                         'type',
                         'amount',
                         'category',
@@ -61,11 +61,11 @@ class JournalApiTest extends TestCase
         Sanctum::actingAs($user);
 
         // Entry 1 (Oldest)
-        Journal::factory()->create(['tanggal' => '2023-01-01', 'type' => 'debit', 'amount' => 1000]);
+        Journal::factory()->create(['date' => '2023-01-01', 'type' => 'debit', 'amount' => 1000]);
         // Entry 2
-        Journal::factory()->create(['tanggal' => '2023-01-02', 'type' => 'kredit', 'amount' => 300]);
+        Journal::factory()->create(['date' => '2023-01-02', 'type' => 'kredit', 'amount' => 300]);
         // Entry 3 (Newest)
-        Journal::factory()->create(['tanggal' => '2023-01-03', 'type' => 'debit', 'amount' => 500]);
+        Journal::factory()->create(['date' => '2023-01-03', 'type' => 'debit', 'amount' => 500]);
 
         $response = $this->getJson('/api/v1/journal?per_page=2&page=1');
 

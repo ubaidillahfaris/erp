@@ -12,11 +12,11 @@ class ProductionItem extends Model
 
     protected $fillable = [
         'production_id',
-        'produk_id',
-        'satuan_id',
+        'product_id',
+        'unit_id',
         'planned_qty',
         'actual_qty',
-        'harga_satuan',
+        'unit_price',
     ];
 
     protected function casts(): array
@@ -24,7 +24,7 @@ class ProductionItem extends Model
         return [
             'planned_qty' => 'decimal:4',
             'actual_qty' => 'decimal:4',
-            'harga_satuan' => 'decimal:2',
+            'unit_price' => 'decimal:2',
         ];
     }
 
@@ -33,13 +33,13 @@ class ProductionItem extends Model
         return $this->belongsTo(Production::class);
     }
 
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class, 'produk_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class, 'satuan_id');
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 }

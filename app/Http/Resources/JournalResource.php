@@ -16,7 +16,7 @@ class JournalResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'tanggal' => $this->tanggal,
+            'date' => $this->date,
             'type' => $this->type,
             'amount' => (float) $this->amount,
             'category' => $this->category,

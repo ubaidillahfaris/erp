@@ -2,30 +2,30 @@
 
 namespace App\Actions\Purchasing;
 
+use App\Models\Product;
 use App\Models\ProductPriceStat;
-use App\Models\Produk;
 use App\Models\PurchaseItem;
-use App\Services\SatuanService;
+use App\Services\UnitService;
 use Illuminate\Support\Facades\DB;
 
 class UpdateProductPriceStats
 {
-    public function __construct(protected SatuanService $satuanService) {}
+    public function __construct(protected UnitService $unitService) {}
 
     /**
      * Recalculate price statistics for a specific product.
      */
-    public function handle(int $produkId): void
+    public function handle(int $productId): void
     {
-        $produk = Produk::findOrFail($produkId);
-        $baseSatuanId = $produk->satuan_id;
+        $product = Product::findOrFail($productId);
+        $baseUnitId = $product->unit_id;
 
-        if (! $baseSatuanId) {
+        if (! $baseUnitId) {
             return;
         }
 
         // Fetch all finalized purchase items for this product
-        $items = PurchaseItem::where('produk_id', $produkId)
+        $items = PurchaseItem::where('product_id', $productId)
             ->whereHas('purchase', function ($query) {
                 $query->where('status', 'finalized')
                     ->where('transaction_type', 'purchase');
@@ -35,7 +35,7 @@ class UpdateProductPriceStats
         if ($items->isEmpty()) {
             // If no purchases, we might want to reset the stats but keep the record
             ProductPriceStat::updateOrCreate(
-                ['produk_id' => $produkId, 'satuan_id' => $baseSatuanId],
+                ['product_id' => $productId, 'unit_id' => $baseUnitId],
                 ['avg_price' => 0, 'min_price' => 0, 'max_price' => 0, 'last_purchase_price' => 0]
             );
 
@@ -48,15 +48,15 @@ class UpdateProductPriceStats
         $lastPurchasePrice = 0;
 
         foreach ($items as $item) {
-            $ratio = $this->satuanService->getConversionRatio($item->satuan_id, $baseSatuanId, $produkId);
+            $ratio = $this->unitService->getConversionRatio($item->unit_id, $baseUnitId, $productId);
 
             // Normalized price per base unit
-            // 1 Unit of item->satuan_id = Ratio units of baseSatuanId
-            // So Price per baseSatuanId = Price per item->satuan_id / Ratio
-            $normalizedPrice = (float) $item->harga_satuan / ($ratio ?: 1);
+            // 1 Unit of item->unit_id = Ratio units of baseUnitId
+            // So Price per baseUnitId = Price per item->unit_id / Ratio
+            $normalizedPrice = (float) $item->unit_price / ($ratio ?: 1);
 
-            // For weighted average, we need to convert the 'jumlah' to base unit as well
-            $normalizedQty = (float) $item->jumlah * ($ratio ?: 1);
+            // For weighted average, we need to convert the 'quantity' to base unit as well
+            $normalizedQty = (float) $item->quantity * ($ratio ?: 1);
 
             $normalizedPrices[] = $normalizedPrice;
             $weightedSum += ($normalizedPrice * $normalizedQty);
@@ -70,9 +70,9 @@ class UpdateProductPriceStats
         $minPrice = min($normalizedPrices);
         $maxPrice = max($normalizedPrices);
 
-        DB::transaction(function () use ($produkId, $baseSatuanId, $avgPrice, $minPrice, $maxPrice, $lastPurchasePrice) {
+        DB::transaction(function () use ($productId, $baseUnitId, $avgPrice, $minPrice, $maxPrice, $lastPurchasePrice) {
             ProductPriceStat::updateOrCreate(
-                ['produk_id' => $produkId, 'satuan_id' => $baseSatuanId],
+                ['product_id' => $productId, 'unit_id' => $baseUnitId],
                 [
                     'avg_price' => $avgPrice,
                     'min_price' => $minPrice,

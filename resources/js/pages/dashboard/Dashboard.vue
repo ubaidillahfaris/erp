@@ -33,13 +33,13 @@ type MetricData = {
 type SaleInfo = {
   id: number;
   invoice_number: string;
-  tanggal: string;
+  date: string;
   total_amount: string | number;
 };
 
 type VendorInfo = {
   id: number;
-  nama: string;
+  name: string;
 };
 
 const props = defineProps<{
@@ -195,7 +195,7 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
         </div>
         <div class="mt-6 pt-5 border-t border-border/50 flex items-end justify-between relative z-10">
           <div>
-            <div class="text-xs text-muted-foreground font-semibold">Produksi aktif berjalan</div>
+            <div class="text-xs text-muted-foreground font-semibold">Productsi aktif berjalan</div>
             <div class="text-xl font-extrabold mt-0.5">{{ metrics.active_productions }} Baris</div>
           </div>
           <Link href="/production"
@@ -203,7 +203,7 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
             <span class="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
               <FlaskConical class="h-4 w-4" />
             </span>
-            <span class="leading-tight text-left">Kelola<br />Produksi</span>
+            <span class="leading-tight text-left">Kelola<br />Productsi</span>
           </Link>
         </div>
       </div>
@@ -405,7 +405,7 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
           <TableHeader>
             <TableRow>
               <TableHead class="font-medium text-xs text-muted-foreground uppercase tracking-wider">Ref ID</TableHead>
-              <TableHead class="font-medium text-xs text-muted-foreground uppercase tracking-wider">Tanggal</TableHead>
+              <TableHead class="font-medium text-xs text-muted-foreground uppercase tracking-wider">Date</TableHead>
               <TableHead class="font-medium text-xs text-muted-foreground text-right uppercase tracking-wider">Total IDR</TableHead>
             </TableRow>
           </TableHeader>
@@ -414,7 +414,7 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
               <TableCell>
                 <div class="text-sm font-medium text-foreground">{{ tx.invoice_number || `Order #${tx.id}` }}</div>
               </TableCell>
-              <TableCell class="text-sm font-medium text-muted-foreground">{{ formatDate(tx.tanggal) }}</TableCell>
+              <TableCell class="text-sm font-medium text-muted-foreground">{{ formatDate(tx.date) }}</TableCell>
               <TableCell class="text-right font-medium text-sm text-primary">
                 {{ formatRupiah(tx.total_amount) }}
               </TableCell>

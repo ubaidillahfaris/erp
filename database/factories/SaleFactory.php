@@ -19,7 +19,7 @@ class SaleFactory extends Factory
     {
         return [
             'invoice_number' => 'INV-'.fake()->unique()->numberBetween(1000, 9999),
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'received_amount' => 10000,
             'change_amount' => 0,

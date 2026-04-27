@@ -24,7 +24,7 @@ class SyncProductStock
             // Legacy Restocks
             $restocks = Restock::with('items')->get()->map(function ($restock) {
                 return [
-                    'date' => $restock->tanggal,
+                    'date' => $restock->date,
                     'type' => 'restock',
                     'model' => $restock,
                 ];
@@ -36,14 +36,14 @@ class SyncProductStock
                 ->get()
                 ->map(function ($purchase) {
                     return [
-                        'date' => $purchase->tanggal,
+                        'date' => $purchase->date,
                         'type' => 'purchase',
                         'model' => $purchase,
                     ];
                 });
 
             // Productions (Completed only)
-            $productions = Production::with(['items.produk', 'produk'])->where('status', 'completed')
+            $productions = Production::with(['items.product', 'product'])->where('status', 'completed')
                 ->get()
                 ->map(function ($production) {
                     return [
@@ -64,47 +64,47 @@ class SyncProductStock
 
                 if ($type === 'restock') {
                     foreach ($model->items as $item) {
-                        $this->recordInbound($item->produk_id, $item->satuan_id, $item->jumlah, 'restock', $model->id, "Legacy Restock ref: {$model->id}");
+                        $this->recordInbound($item->product_id, $item->unit_id, $item->quantity, 'restock', $model->id, "Legacy Restock ref: {$model->id}");
                     }
                 } elseif ($type === 'purchase') {
                     foreach ($model->items as $item) {
-                        $this->recordInbound($item->produk_id, $item->satuan_id, $item->jumlah, 'purchase', $model->id, "Purchase ref: {$model->id}");
+                        $this->recordInbound($item->product_id, $item->unit_id, $item->quantity, 'purchase', $model->id, "Purchase ref: {$model->id}");
                     }
                 } elseif ($type === 'production') {
                     // Ingredient Usage (OUT)
                     foreach ($model->items as $pItem) {
                         if ($pItem->actual_qty > 0) {
                             app(RecordStockMovement::class)->handle([
-                                'produk_id' => $pItem->produk_id,
-                                'satuan_id' => $pItem->satuan_id,
+                                'product_id' => $pItem->product_id,
+                                'unit_id' => $pItem->unit_id,
                                 'type' => 'out',
-                                'jumlah' => $pItem->actual_qty,
+                                'quantity' => $pItem->actual_qty,
                                 'reference_type' => 'production_usage',
                                 'reference_id' => $model->id,
-                                'keterangan' => "Initial sync production usage SKU: {$model->sku}",
+                                'notes' => "Initial sync production usage SKU: {$model->sku}",
                             ]);
                         }
                     }
 
                     // Yield Produced (IN)
                     if ($model->actual_yield > 0) {
-                        $this->recordInbound($model->produk_id, $model->produk->satuan_id, $model->actual_yield, 'production_yield', $model->id, "Initial sync production yield SKU: {$model->sku}");
+                        $this->recordInbound($model->product_id, $model->product->unit_id, $model->actual_yield, 'production_yield', $model->id, "Initial sync production yield SKU: {$model->sku}");
                     }
                 }
             }
         });
     }
 
-    protected function recordInbound($produkId, $satuanId, $jumlah, $refType, $refId, $keterangan): void
+    protected function recordInbound($productId, $unitId, $quantity, $refType, $refId, $notes): void
     {
         app(RecordStockMovement::class)->handle([
-            'produk_id' => $produkId,
-            'satuan_id' => $satuanId,
+            'product_id' => $productId,
+            'unit_id' => $unitId,
             'type' => 'in',
-            'jumlah' => $jumlah,
+            'quantity' => $quantity,
             'reference_type' => $refType,
             'reference_id' => $refId,
-            'keterangan' => $keterangan,
+            'notes' => $notes,
         ]);
     }
 }

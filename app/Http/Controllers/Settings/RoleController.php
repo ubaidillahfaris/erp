@@ -43,7 +43,7 @@ class RoleController extends Controller
             $this->roleService->syncRolePermissionsFromMenus($role, $request->menu_ids);
         }
 
-        return redirect()->route('roles.index')->with('success', 'Role berhasil ditambahkan.');
+        return redirect()->route('roles.index')->with('success', 'Role added successfully.');
     }
 
     /**
@@ -57,7 +57,7 @@ class RoleController extends Controller
             $this->roleService->syncRolePermissionsFromMenus($role, $request->menu_ids);
         }
 
-        return redirect()->route('roles.index')->with('success', 'Role berhasil diperbarui.');
+        return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
 
     /**
@@ -71,6 +71,6 @@ class RoleController extends Controller
 
         $role->delete();
 
-        return redirect()->route('roles.index')->with('success', 'Role berhasil dihapus.');
+        return redirect()->route('roles.index')->with('success', 'Role deleted successfully.');
     }
 }

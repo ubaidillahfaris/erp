@@ -11,8 +11,8 @@ class StockOpname extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tanggal',
-        'keterangan',
+        'date',
+        'notes',
         'status',
         'storno_at',
         'storno_reason',
@@ -21,7 +21,7 @@ class StockOpname extends Model
     protected function casts(): array
     {
         return [
-            'tanggal' => 'date',
+            'date' => 'date',
             'storno_at' => 'datetime',
         ];
     }

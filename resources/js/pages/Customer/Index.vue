@@ -66,7 +66,7 @@ const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | nu
 };
 
 const handleBulkDelete = async (ids: (string | number)[]) => {
-    if (await confirmDialog('Hapus Customer Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} customer yang dipilih? Data yang memiliki riwayat transaksi akan dilewati.`)) {
+    if (await confirmDialog('Hapus Customer Terpilih?', `Are you sure you want to delete ${ids.length} customer yang dipilih? Data yang memiliki riwayat transaksi akan dilewati.`)) {
         router.post(bulkDestroy().url, {
             _method: 'DELETE',
             ids: ids
@@ -77,7 +77,7 @@ const handleBulkDelete = async (ids: (string | number)[]) => {
 const { confirmDialog } = useConfirm();
 
 const deleteCustomer = async (id: number) => {
-    if (await confirmDialog('Hapus Customer?', 'Apakah Anda yakin ingin menghapus customer ini? Data yang terhapus tidak bisa dikembalikan.')) {
+    if (await confirmDialog('Hapus Customer?', 'Are you sure you want to delete customer ini? Data yang terhapus tidak bisa dikembalikan.')) {
         router.delete(destroy({ customer: id }).url);
     }
 };

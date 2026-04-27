@@ -10,8 +10,8 @@ class CustomerPriceHistory extends Model
     protected $fillable = [
         'customer_price_id',
         'customer_id',
-        'produk_id',
-        'satuan_id',
+        'product_id',
+        'unit_id',
         'old_price',
         'new_price',
         'old_valid_until',
@@ -39,17 +39,17 @@ class CustomerPriceHistory extends Model
     /**
      * Get the product associated with this history.
      */
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
     /**
      * Get the unit associated with this history.
      */
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Unit::class);
     }
 
     /**

@@ -104,7 +104,7 @@ class EmployeeController extends Controller
             }
 
             return redirect()->route('employees.index')
-                ->with('success', 'Data pegawai berhasil ditambahkan.');
+                ->with('success', 'Data pegawai added successfully.');
         });
     }
 
@@ -171,7 +171,7 @@ class EmployeeController extends Controller
         }
 
         return redirect()->route('employees.index')
-            ->with('success', 'Data pegawai berhasil diperbarui.');
+            ->with('success', 'Data pegawai updated successfully.');
     }
 
     /**
@@ -182,6 +182,6 @@ class EmployeeController extends Controller
         $employee->delete();
 
         return redirect()->route('employees.index')
-            ->with('success', 'Data pegawai berhasil dihapus.');
+            ->with('success', 'Data pegawai deleted successfully.');
     }
 }

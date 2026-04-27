@@ -7,7 +7,7 @@ erDiagram
     VENDORS ||--o{ PURCHASES : "supplier"
     PURCHASES ||--o{ PURCHASE_ITEMS : "items_list"
     PURCHASES ||--o{ PURCHASE_ATTACHMENTS : "files/invoices"
-    PRODUKS ||--o{ PURCHASE_ITEMS : "bought_item"
+    PRODUCTS ||--o{ PURCHASE_ITEMS : "bought_item"
     SATUANS ||--o{ PURCHASE_ITEMS : "buying_unit"
 
     PURCHASES {

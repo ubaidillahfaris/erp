@@ -38,40 +38,40 @@ class FinalizePurchase
                 // 2. Update Product Price (Current Active Purchase Price)
                 // Only for "purchase" type transactions
                 if ($purchase->transaction_type === 'purchase') {
-                    $this->updateCurrentPrice($item->produk_id, $item->satuan_id, (float) $item->harga_satuan);
+                    $this->updateCurrentPrice($item->product_id, $item->unit_id, (float) $item->unit_price);
                 }
 
                 // 3. Record Stock Movement
                 $this->recordStockMovement->handle([
-                    'produk_id' => $item->produk_id,
-                    'satuan_id' => $item->satuan_id,
+                    'product_id' => $item->product_id,
+                    'unit_id' => $item->unit_id,
                     'type' => 'in',
-                    'jumlah' => $item->jumlah,
+                    'quantity' => $item->quantity,
                     'reference_type' => 'purchase',
                     'reference_id' => $purchase->id,
-                    'keterangan' => "Purchase ref: {$purchase->id} ({$purchase->transaction_type})",
+                    'notes' => "Purchase ref: {$purchase->id} ({$purchase->transaction_type})",
                 ]);
 
                 // 4. Update Price Aggregates (AVG/MIN/MAX)
-                $this->updateProductPriceStats->handle($item->produk_id);
+                $this->updateProductPriceStats->handle($item->product_id);
 
                 // 5. Recalculate HPP (if it's a purchase)
                 if ($purchase->transaction_type === 'purchase') {
-                    $this->recalculateHpp->handle($item->produk);
+                    $this->recalculateHpp->handle($item->product);
                 }
             }
 
             // 6. Record Financial Journal (only for purchase type)
             if ($purchase->transaction_type === 'purchase' && (float) $purchase->total_biaya > 0) {
                 Journal::create([
-                    'tanggal' => $purchase->tanggal->format('Y-m-d'),
+                    'date' => $purchase->date->format('Y-m-d'),
                     'type' => 'kredit',
                     'amount' => $purchase->total_biaya,
                     'category' => 'persediaan',
                     'payment_method' => 'hutang',
                     'reference_type' => Purchase::class,
                     'reference_id' => $purchase->id,
-                    'description' => 'Pembelian (Auto-Journal): '.($purchase->keterangan ?? "Inbound #{$purchase->id}"),
+                    'description' => 'Pembelian (Auto-Journal): '.($purchase->notes ?? "Inbound #{$purchase->id}"),
                 ]);
             }
         });
@@ -80,10 +80,10 @@ class FinalizePurchase
     /**
      * Update the current active purchase price for a product.
      */
-    protected function updateCurrentPrice(int $produkId, int $satuanId, float $purchasePrice): void
+    protected function updateCurrentPrice(int $productId, int $unitId, float $purchasePrice): void
     {
-        $currentPrice = Price::where('produk_id', $produkId)
-            ->where('satuan_id', $satuanId)
+        $currentPrice = Price::where('product_id', $productId)
+            ->where('unit_id', $unitId)
             ->where('is_current', true)
             ->first();
 
@@ -94,8 +94,8 @@ class FinalizePurchase
             }
 
             Price::create([
-                'produk_id' => $produkId,
-                'satuan_id' => $satuanId,
+                'product_id' => $productId,
+                'unit_id' => $unitId,
                 'purchase_price' => $purchasePrice,
                 'retail_price' => $currentPrice ? $currentPrice->retail_price : 0,
                 'wholesale_price' => $currentPrice ? $currentPrice->wholesale_price : null,

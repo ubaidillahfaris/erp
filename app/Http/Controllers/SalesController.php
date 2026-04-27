@@ -19,19 +19,19 @@ class SalesController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $sort = $request->input('sort', 'tanggal');
+        $sort = $request->input('sort', 'date');
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         $query = Sale::query()
             ->with([
                 'saleCustomer.customer',
-                'items.produk',
-                'items.satuan',
+                'items.product',
+                'items.unit',
                 'payable' => function ($q) {
                     $q->select('id', 'reference_id', 'reference_type', 'status', 'total_amount', 'remaining_amount');
                 },
             ])
-            ->latest('tanggal');
+            ->latest('date');
 
         // Filters
         $query->when($request->search, function ($query, $search) {
@@ -39,11 +39,11 @@ class SalesController extends Controller
         });
 
         $query->when($request->date_start, function ($query, $date) {
-            $query->whereDate('tanggal', '>=', $date);
+            $query->whereDate('date', '>=', $date);
         });
 
         $query->when($request->date_end, function ($query, $date) {
-            $query->whereDate('tanggal', '<=', $date);
+            $query->whereDate('date', '<=', $date);
         });
 
         $query->when($request->payment_method, function ($query, $method) {
@@ -71,8 +71,8 @@ class SalesController extends Controller
     {
         $sale->load([
             'saleCustomer.customer',
-            'items.produk',
-            'items.satuan',
+            'items.product',
+            'items.unit',
             'payable.payments.createdBy',
         ]);
 

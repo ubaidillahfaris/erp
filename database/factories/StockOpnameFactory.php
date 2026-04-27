@@ -18,9 +18,9 @@ class StockOpnameFactory extends Factory
     public function definition(): array
     {
         return [
-            'tanggal' => now(),
+            'date' => now(),
             'status' => 'completed',
-            'keterangan' => fake()->sentence(),
+            'notes' => fake()->sentence(),
         ];
     }
 }

@@ -12,12 +12,12 @@ class Bom extends Model
     use HasFactory;
 
     protected $fillable = [
-        'produk_id',
+        'product_id',
         'sku',
-        'nama',
+        'name',
         'is_active',
         'expected_yield',
-        'yield_satuan_id',
+        'yield_unit_id',
         'auto_deduct_on_sale',
     ];
 
@@ -32,8 +32,8 @@ class Bom extends Model
     protected static function booted(): void
     {
         static::creating(function (Bom $bom) {
-            if (! $bom->yield_satuan_id && $bom->produk_id) {
-                $bom->yield_satuan_id = $bom->produk->satuan_id;
+            if (! $bom->yield_unit_id && $bom->product_id) {
+                $bom->yield_unit_id = $bom->product->unit_id;
             }
         });
     }
@@ -41,17 +41,17 @@ class Bom extends Model
     /**
      * Get the finished product that owns the BOM.
      */
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class, 'produk_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     /**
      * Get the unit for the yield total.
      */
-    public function yieldSatuan(): BelongsTo
+    public function yieldUnit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class, 'yield_satuan_id');
+        return $this->belongsTo(Unit::class, 'yield_unit_id');
     }
 
     /**

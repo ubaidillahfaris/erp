@@ -21,13 +21,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = useForm({
-    nama: '',
-    alamat: '',
+    name: '',
+    address: '',
     latitude: undefined as number | undefined,
     longitude: undefined as number | undefined,
-    telepon: '',
+    phone: '',
     email: '',
-    keterangan: '',
+    notes: '',
 });
 
 const submit = () => {
@@ -65,22 +65,22 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
                 
                 <form @submit.prevent="submit" class="p-6 flex flex-col gap-4">
                     <div class="flex flex-col gap-2">
-                        <Label for="nama" class="text-sm font-medium text-foreground px-0.5">Nama Vendor / Supplier</Label>
-                        <Input id="nama" v-model="form.nama" required placeholder="Nama Perusahaan" class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.nama" />
-                        <div v-if="form.errors.nama" class="text-xs text-destructive flex items-center gap-1 mt-1">
-                            ⚠️ {{ form.errors.nama }}
+                        <Label for="name" class="text-sm font-medium text-foreground px-0.5">Nama Vendor / Supplier</Label>
+                        <Input id="name" v-model="form.name" required placeholder="Nama Perusahaan" class="h-10 rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10" :aria-invalid="!!form.errors.name" />
+                        <div v-if="form.errors.name" class="text-xs text-destructive flex items-center gap-1 mt-1">
+                            ⚠️ {{ form.errors.name }}
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <Label for="alamat" class="text-sm font-medium text-foreground px-0.5">Alamat Lengkap</Label>
-                        <Textarea id="alamat" v-model="form.alamat" rows="2" placeholder="Alamat Operasional..." class="rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" :aria-invalid="!!form.errors.alamat" />
+                        <Label for="address" class="text-sm font-medium text-foreground px-0.5">Alamat Lengkap</Label>
+                        <Textarea id="address" v-model="form.address" rows="2" placeholder="Alamat Operasional..." class="rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" :aria-invalid="!!form.errors.address" />
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <Label for="telepon" class="text-sm font-medium text-foreground px-0.5">Telepon</Label>
-                            <InputPhone v-model="form.telepon" />
+                            <Label for="phone" class="text-sm font-medium text-foreground px-0.5">Phone</Label>
+                            <InputPhone v-model="form.phone" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <Label for="email" class="text-sm font-medium text-foreground px-0.5">Email</Label>
@@ -89,8 +89,8 @@ const updateLocation = (loc: { lat: number, lng: number }) => {
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <Label for="keterangan" class="text-sm font-medium text-foreground px-0.5">Keterangan</Label>
-                        <Textarea id="keterangan" v-model="form.keterangan" rows="2" placeholder="Catatan tambahan..." class="rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" />
+                        <Label for="notes" class="text-sm font-medium text-foreground px-0.5">Notes</Label>
+                        <Textarea id="notes" v-model="form.notes" rows="2" placeholder="Catatan tambahan..." class="rounded-xl border-slate-200 shadow-none focus-visible:ring-2 focus-visible:ring-slate-900/10 resize-none p-3" />
                     </div>
 
                     <div class="mt-4 pt-5 border-t border-slate-200">

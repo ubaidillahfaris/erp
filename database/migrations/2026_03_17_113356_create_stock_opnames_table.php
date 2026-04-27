@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('stock_opnames', function (Blueprint $table) {
             $table->id();
-            $table->date('tanggal');
-            $table->string('keterangan')->nullable();
+            $table->date('date');
+            $table->string('notes')->nullable();
             $table->string('status')->default('draft'); // draft, completed
             $table->timestamps();
         });

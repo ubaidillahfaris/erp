@@ -39,7 +39,7 @@ import DateRangePicker from '@/components/DateRangePicker.vue';
 defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
-    produks: {
+    products: {
         data: any[];
         links: any[];
         current_page: number;
@@ -48,7 +48,7 @@ const props = defineProps<{
         total: number;
         next_page_url: string | null;
     };
-    satuans: any[];
+    units: any[];
     conversions: any[];
     filters: {
         search?: string;
@@ -64,7 +64,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const search = ref(props.filters.search || '');
 const type = ref(props.filters.type || 'all');
-const perPage = ref(props.filters.per_page || String(props.produks.per_page));
+const perPage = ref(props.filters.per_page || String(props.products.per_page));
 
 const columns = [
     { key: 'product', label: 'Product Specification' },
@@ -83,12 +83,12 @@ watch([search, type, perPage], debounce(([newSearch, newType, newPerPage]) => {
 
 // Adjustment Dialog logic
 const isAdjustmentOpen = ref(false);
-const selectedProduk = ref<any>(null);
+const selectedProduct = ref<any>(null);
 const adjustmentForm = useForm({
-    produk_id: null as number | null,
-    satuan_id: '' as string | number,
+    product_id: null as number | null,
+    unit_id: '' as string | number,
     physical_qty: 1,
-    keterangan: '',
+    notes: '',
 });
 
 const getConversionRatio = (fromId: any, toId: any) => {
@@ -102,18 +102,18 @@ const getConversionRatio = (fromId: any, toId: any) => {
         if (String(currentId) === String(toId)) return currentRatio;
 
         // Direct
-        props.conversions.filter(c => String(c.satuan_id) === String(currentId)).forEach(c => {
-            if (!visited.has(String(c.to_satuan_id))) {
-                visited.add(String(c.to_satuan_id));
-                queue.push([c.to_satuan_id, currentRatio * parseFloat(c.rasio)]);
+        props.conversions.filter(c => String(c.unit_id) === String(currentId)).forEach(c => {
+            if (!visited.has(String(c.to_unit_id))) {
+                visited.add(String(c.to_unit_id));
+                queue.push([c.to_unit_id, currentRatio * parseFloat(c.rasio)]);
             }
         });
 
         // Inverse
-        props.conversions.filter(c => String(c.to_satuan_id) === String(currentId)).forEach(c => {
-            if (!visited.has(String(c.satuan_id))) {
-                visited.add(String(c.satuan_id));
-                queue.push([c.satuan_id, currentRatio * (1.0 / parseFloat(c.rasio))]);
+        props.conversions.filter(c => String(c.to_unit_id) === String(currentId)).forEach(c => {
+            if (!visited.has(String(c.unit_id))) {
+                visited.add(String(c.unit_id));
+                queue.push([c.unit_id, currentRatio * (1.0 / parseFloat(c.rasio))]);
             }
         });
     }
@@ -123,24 +123,24 @@ const getConversionRatio = (fromId: any, toId: any) => {
 const delta = ref(0);
 const systemQtySelectedUnit = ref(0);
 
-watch([() => adjustmentForm.physical_qty, () => adjustmentForm.satuan_id], () => {
-    if (!selectedProduk.value) return;
+watch([() => adjustmentForm.physical_qty, () => adjustmentForm.unit_id], () => {
+    if (!selectedProduct.value) return;
 
-    const currentBalance = parseFloat(selectedProduk.value.stock?.balance || 0);
-    const ratio = getConversionRatio(selectedProduk.value.satuan_id, adjustmentForm.satuan_id);
+    const currentBalance = parseFloat(selectedProduct.value.stock?.balance || 0);
+    const ratio = getConversionRatio(selectedProduct.value.unit_id, adjustmentForm.unit_id);
 
     systemQtySelectedUnit.value = currentBalance * ratio;
     delta.value = (adjustmentForm.physical_qty || 0) - systemQtySelectedUnit.value;
 }, { immediate: true });
 
-const openAdjustment = (produk: any) => {
-    selectedProduk.value = produk;
-    adjustmentForm.produk_id = produk.id;
-    adjustmentForm.satuan_id = String(produk.satuan_id);
+const openAdjustment = (product: any) => {
+    selectedProduct.value = product;
+    adjustmentForm.product_id = product.id;
+    adjustmentForm.unit_id = String(product.unit_id);
     // Set initial physical qty to current system qty
-    const currentBalance = parseFloat(produk.stock?.balance || 0);
+    const currentBalance = parseFloat(product.stock?.balance || 0);
     adjustmentForm.physical_qty = currentBalance;
-    adjustmentForm.keterangan = 'Opname berkala';
+    adjustmentForm.notes = 'Opname berkala';
     isAdjustmentOpen.value = true;
 };
 
@@ -153,9 +153,9 @@ const submitAdjustment = () => {
     });
 };
 
-const getStockStatus = (produk: any) => {
-    const balance = parseFloat(produk.stock?.balance || 0);
-    const min = produk.stok_minimal || 0;
+const getStockStatus = (product: any) => {
+    const balance = parseFloat(product.stock?.balance || 0);
+    const min = product.min_stock || 0;
 
     if (balance <= 0) return { label: 'OOS', variant: 'destructive', icon: AlertTriangle, styles: 'bg-destructive/5 text-destructive border-destructive/10' };
     if (balance <= min) return { label: 'LOW', variant: 'outline', icon: AlertTriangle, styles: 'bg-orange-50 text-orange-600 border-orange-100' };
@@ -197,17 +197,17 @@ const exportPdf = () => {
             title="Stock Ledger" 
             description="Manajemen Saldo & Inventaris Gudang" 
             back-href="/dashboard"
-            :count="produks.total"
+            :count="products.total"
         />
 
         <!-- ====== CONTENT AREA ====== -->
         <div class="w-full max-w-7xl mx-auto">
             <DataTable
-                :data="produks"
+                :data="products"
                 :columns="columns"
                 v-model:search="search"
                 v-model:perPage="perPage"
-                search-placeholder="Cari SKU atau Nama Produk..."
+                search-placeholder="Cari SKU atau Nama Product..."
                 toolbar-title="Global Inventory"
             >
                 <template #toolbar-actions>
@@ -230,11 +230,11 @@ const exportPdf = () => {
                             <Package class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.nama }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.name }}</p>
                             <div class="flex items-center gap-2 mt-1.5">
                                 <span class="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-widest">{{ row.sku }}</span>
                                 <span class="text-[11px] text-muted-foreground italic">•</span>
-                                <span class="text-[11px] font-medium text-muted-foreground lowercase">{{ row.satuan?.nama }}</span>
+                                <span class="text-[11px] font-medium text-muted-foreground lowercase">{{ row.unit?.name }}</span>
                             </div>
                         </div>
                     </div>
@@ -248,10 +248,10 @@ const exportPdf = () => {
 
                 <template #cell(balance)="{ row }">
                     <div class="flex flex-col items-end gap-0.5">
-                        <span class="text-[18px] font-bold tabular-nums tracking-tighter" :class="parseFloat(row.stock?.balance || 0) <= row.stok_minimal ? 'text-destructive' : 'text-foreground'">
+                        <span class="text-[18px] font-bold tabular-nums tracking-tighter" :class="parseFloat(row.stock?.balance || 0) <= row.min_stock ? 'text-destructive' : 'text-foreground'">
                             {{ parseFloat(row.stock?.balance || 0).toLocaleString('id-ID') }}
                         </span>
-                        <span class="text-xs font-bold uppercase tracking-tighter text-muted-foreground">Min. {{ row.stok_minimal }}</span>
+                        <span class="text-xs font-bold uppercase tracking-tighter text-muted-foreground">Min. {{ row.min_stock }}</span>
                     </div>
                 </template>
 
@@ -279,12 +279,12 @@ const exportPdf = () => {
                                 <DropdownMenuLabel class="text-xs font-bold uppercase tracking-widest text-muted-foreground px-2 py-1.5 text-center text-xs">Inventory Ops</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
 
-                                <DropdownMenuItem @click="router.get(`/restock/create?produk_id=${row.id}`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
+                                <DropdownMenuItem @click="router.get(`/restock/create?product_id=${row.id}`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
                                     <ShoppingCart class="h-3.5 w-3.5 text-muted-foreground" /> Restock Belanja
                                 </DropdownMenuItem>
 
-                                <DropdownMenuItem v-if="row.type !== 'finished_good'" @click="router.get(`/production/create?produk_id=${row.id}`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
-                                    <TestTube class="h-3.5 w-3.5 text-muted-foreground" /> Gunakan Produksi
+                                <DropdownMenuItem v-if="row.type !== 'finished_good'" @click="router.get(`/production/create?product_id=${row.id}`)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
+                                    <TestTube class="h-3.5 w-3.5 text-muted-foreground" /> Gunakan Productsi
                                 </DropdownMenuItem>
 
                                 <DropdownMenuItem @click="openAdjustment(row)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-accent">
@@ -314,7 +314,7 @@ const exportPdf = () => {
                     Penyesuaian Stok Ledger
                 </DialogTitle>
                 <DialogDescription class="text-[12px] pt-1">
-                    Sesuaikan saldo fisik secara manual untuk item <span class="font-bold text-foreground">{{ selectedProduk?.nama }}</span>.
+                    Sesuaikan saldo fisik secara manual untuk item <span class="font-bold text-foreground">{{ selectedProduct?.name }}</span>.
                 </DialogDescription>
             </DialogHeader>
 
@@ -325,7 +325,7 @@ const exportPdf = () => {
                         <span class="text-xs font-bold uppercase tracking-widest text-muted-foreground block mb-1">Stok System</span>
                         <div class="flex items-baseline gap-1.5">
                             <span class="text-xl font-bold font-mono tracking-tighter">{{ systemQtySelectedUnit.toLocaleString('id-ID') }}</span>
-                            <span class="text-xs font-medium text-muted-foreground uppercase">{{ satuans.find(s => String(s.id) === String(adjustmentForm.satuan_id))?.nama }}</span>
+                            <span class="text-xs font-medium text-muted-foreground uppercase">{{ units.find(s => String(s.id) === String(adjustmentForm.unit_id))?.name }}</span>
                         </div>
                     </div>
                     <div class="bg-white p-4">
@@ -343,14 +343,14 @@ const exportPdf = () => {
 
                 <div class="flex flex-col gap-5">
                     <div class="flex flex-col gap-1.5">
-                        <Label class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Satuan Hitung</Label>
-                        <Select v-model="adjustmentForm.satuan_id">
+                        <Label class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Unit Hitung</Label>
+                        <Select v-model="adjustmentForm.unit_id">
                             <SelectTrigger class="h-11 rounded-xl border-slate-200 bg-secondary/20 font-medium text-[13px] shadow-none ">
-                                <SelectValue placeholder="Pilih Satuan" />
+                                <SelectValue placeholder="Pilih Unit" />
                             </SelectTrigger>
                             <SelectContent class="rounded-xl shadow-none ">
-                                <SelectItem v-for="s in satuans" :key="s.id" :value="String(s.id)" class="rounded-lg">
-                                    {{ s.nama }}
+                                <SelectItem v-for="s in units" :key="s.id" :value="String(s.id)" class="rounded-lg">
+                                    {{ s.name }}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
@@ -376,7 +376,7 @@ const exportPdf = () => {
                     <div class="flex flex-col gap-1.5 pt-1">
                         <Label class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Catatan Opname</Label>
                         <Textarea 
-                            v-model="adjustmentForm.keterangan"
+                            v-model="adjustmentForm.notes"
                             placeholder="Contoh: Barang rusak, selisih hitung gudang..." 
                             class="min-h-[80px] rounded-xl border-slate-200 bg-white text-[13px] h-20 resize-none shadow-none focus:ring-accent/10" 
                         />

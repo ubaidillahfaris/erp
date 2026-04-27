@@ -59,7 +59,7 @@ class AccountController extends Controller
         Cache::forget('trial_balance_current');
 
         return redirect()->route('accounts.index')
-            ->with('success', 'Akun berhasil ditambahkan.');
+            ->with('success', 'Akun added successfully.');
     }
 
     public function show(Account $account): Response
@@ -98,7 +98,7 @@ class AccountController extends Controller
         Cache::forget('trial_balance_current');
 
         return redirect()->route('accounts.index')
-            ->with('success', 'Akun berhasil diperbarui.');
+            ->with('success', 'Akun updated successfully.');
     }
 
     public function destroy(Request $request, Account $account)
@@ -111,7 +111,7 @@ class AccountController extends Controller
 
         if ($request->boolean('force')) {
             $account->delete();
-            $message = 'Akun berhasil dihapus permanen.';
+            $message = 'Akun deleted successfully permanen.';
         } else {
             $account->update(['is_active' => false]);
             $message = 'Akun dinonaktifkan.';

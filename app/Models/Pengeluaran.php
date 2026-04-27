@@ -7,18 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Pengeluaran extends Model
 {
     protected $fillable = [
-        'tanggal',
+        'date',
         'jenis_pengeluaran',
         'account_id',
         'nama_pengeluaran',
         'nominal',
-        'keterangan',
+        'notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'tanggal' => 'date',
+            'date' => 'date',
             'nominal' => 'decimal:2',
             'account_id' => 'integer',
         ];

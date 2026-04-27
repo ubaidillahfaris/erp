@@ -67,8 +67,8 @@ onMounted(() => {
         form.email = 'budi@warung.com';
         form.phone = '08123456789';
         form.address = 'Jl. Merdeka No. 123, Bandung';
-        form.position = 'Staf Produksi';
-        form.department = 'Produksi';
+        form.position = 'Staf Productsi';
+        form.department = 'Productsi';
         form.join_date = new Date().toISOString().split('T')[0];
         form.employment_type = 'Tetap';
         form.basic_salary = '5000000';
@@ -150,7 +150,7 @@ const submit = () => {
                 </div>
                 <div class="flex items-center gap-3">
                     <Link :href="index().url">
-                        <Button type="button" variant="outline" class="rounded-full px-6 font-normal">Batal</Button>
+                        <Button type="button" variant="outline" class="rounded-full px-6 font-normal">Cancel</Button>
                     </Link>
                     <Button type="submit" primary :disabled="form.processing" class="rounded-full px-6 font-normal gap-2 shadow-none">
                         <Save class="h-4 w-4" />
@@ -299,7 +299,7 @@ const submit = () => {
                                             <SelectValue placeholder="Pilih status..." />
                                         </SelectTrigger>
                                         <SelectContent class="rounded-xl shadow-none">
-                                            <SelectItem value="active">Aktif</SelectItem>
+                                            <SelectItem value="active">Active</SelectItem>
                                             <SelectItem value="inactive">Non-Aktif</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -374,7 +374,7 @@ const submit = () => {
                                 <div class="px-6 py-3 flex items-center bg-slate-50/30 text-[10px] uppercase tracking-[0.15em] text-slate-400 font-bold">
                                     <div class="w-24">Tipe</div>
                                     <div class="flex-1 px-4">Berkas</div>
-                                    <div class="w-10 text-right">Aksi</div>
+                                    <div class="w-10 text-right">Actions</div>
                                 </div>
 
                                 <!-- Table Rows -->
@@ -459,7 +459,7 @@ const submit = () => {
                                                 </div>
                                             </div>
                                             <a :href="`/storage/${doc.file_path}`" target="_blank" class="shrink-0 ml-4">
-                                                <Button variant="ghost" size="sm" class="h-8 rounded-lg text-[10px] uppercase tracking-wider font-bold text-blue-500 hover:text-blue-600 hover:bg-blue-50">Lihat</Button>
+                                                <Button variant="ghost" size="sm" class="h-8 rounded-lg text-[10px] uppercase tracking-wider font-bold text-blue-500 hover:text-blue-600 hover:bg-blue-50">View</Button>
                                             </a>
                                         </div>
                                     </div>

@@ -14,7 +14,7 @@ class PengeluaranController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
-        $sort = $request->input('sort') ?: 'tanggal';
+        $sort = $request->input('sort') ?: 'date';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
         $query = Pengeluaran::query();
@@ -22,7 +22,7 @@ class PengeluaranController extends Controller
         if ($request->has('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama_pengeluaran', 'like', '%'.$request->search.'%')
-                    ->orWhere('keterangan', 'like', '%'.$request->search.'%')
+                    ->orWhere('notes', 'like', '%'.$request->search.'%')
                     ->orWhere('jenis_pengeluaran', 'like', '%'.$request->search.'%');
             });
         }
@@ -53,12 +53,12 @@ class PengeluaranController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tanggal' => ['required', 'date'],
+            'date' => ['required', 'date'],
             'jenis_pengeluaran' => ['required', 'string', 'max:255'],
             'account_id' => ['nullable', 'exists:accounts,id'],
             'nama_pengeluaran' => ['required', 'string', 'max:255'],
             'nominal' => ['required', 'numeric', 'min:0'],
-            'keterangan' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string'],
         ]);
 
         Pengeluaran::create($validated);
@@ -87,7 +87,7 @@ class PengeluaranController extends Controller
         $pengeluaran->delete();
 
         return redirect()->route('pengeluaran.index')
-            ->with('success', 'Catatan pengeluaran berhasil dihapus.');
+            ->with('success', 'Catatan pengeluaran deleted successfully.');
     }
 
     public function bulkDestroy(Request $request)
@@ -99,6 +99,6 @@ class PengeluaranController extends Controller
 
         Pengeluaran::whereIn('id', $request->ids)->delete();
 
-        return to_route('pengeluaran.index')->with('success', count($request->ids).' catatan pengeluaran berhasil dihapus.');
+        return to_route('pengeluaran.index')->with('success', count($request->ids).' catatan pengeluaran deleted successfully.');
     }
 }

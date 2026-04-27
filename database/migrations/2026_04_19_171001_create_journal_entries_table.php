@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->id();
             $table->string('ref_number')->unique();
-            $table->date('tanggal');
+            $table->date('date');
             $table->text('description')->nullable();
             $table->nullableMorphs('journalable');
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');

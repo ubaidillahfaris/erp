@@ -18,11 +18,11 @@ class VendorFactory extends Factory
     public function definition(): array
     {
         return [
-            'nama' => $this->faker->company(),
-            'alamat' => $this->faker->address(),
-            'telepon' => $this->faker->phoneNumber(),
+            'name' => $this->faker->company(),
+            'address' => $this->faker->address(),
+            'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),
-            'keterangan' => $this->faker->sentence(),
+            'notes' => $this->faker->sentence(),
             'latitude' => $this->faker->latitude(-7.3, -6.8),
             'longitude' => $this->faker->longitude(110.2, 110.5),
         ];

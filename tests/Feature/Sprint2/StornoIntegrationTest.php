@@ -7,13 +7,13 @@ use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
 use App\Models\Account;
 use App\Models\JournalEntry;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\Satuan;
 use App\Models\Stock;
 use App\Models\StockOpname;
 use App\Models\StockOpnameItem;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\JournalService;
 use App\Services\StornoService;
@@ -25,9 +25,9 @@ class StornoIntegrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected Satuan $satuan;
+    protected Unit $unit;
 
-    protected Produk $produk;
+    protected Product $product;
 
     protected User $user;
 
@@ -42,23 +42,23 @@ class StornoIntegrationTest extends TestCase
         Account::create(['code' => '1102', 'name' => 'Piutang Usaha', 'type' => 'asset', 'balance_type' => 'debit']);
         Account::create(['code' => '4101', 'name' => 'Penjualan', 'type' => 'income', 'balance_type' => 'credit']);
         Account::create(['code' => '5101', 'name' => 'HPP', 'type' => 'expense', 'balance_type' => 'debit']);
-        Account::create(['code' => '1302', 'name' => 'Persediaan Barang Jadi', 'type' => 'asset', 'balance_type' => 'debit']);
+        Account::create(['code' => '1302', 'name' => 'Persediaan Finished Goods', 'type' => 'asset', 'balance_type' => 'debit']);
         Account::create(['code' => '1301', 'name' => 'Persediaan', 'type' => 'asset', 'balance_type' => 'debit']); // Generic Inventory
         Account::create(['code' => '4102', 'name' => 'Pendapatan Lainnya', 'type' => 'income', 'balance_type' => 'credit']); // Surplus
         Account::create(['code' => '6201', 'name' => 'Biaya Kerusakan', 'type' => 'expense', 'balance_type' => 'debit']); // Shrinkage
 
-        $this->satuan = Satuan::create(['nama' => 'PCS', 'simbol' => 'PCS']);
-        $this->produk = Produk::create([
+        $this->unit = Unit::create(['name' => 'PCS', 'symbol' => 'PCS']);
+        $this->product = Product::create([
             'sku' => 'TEST-SKU',
-            'nama' => 'Test Product',
-            'satuan_id' => $this->satuan->id,
+            'name' => 'Test Product',
+            'unit_id' => $this->unit->id,
             'track_stock' => true,
         ]);
 
         // Add Initial Stock
         Stock::create([
-            'produk_id' => $this->produk->id,
-            'last_satuan_id' => $this->satuan->id,
+            'product_id' => $this->product->id,
+            'last_unit_id' => $this->unit->id,
             'balance' => 100,
         ]);
     }
@@ -71,7 +71,7 @@ class StornoIntegrationTest extends TestCase
         // 1. Create a Sale
         $sale = Sale::create([
             'invoice_number' => 'INV-001',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 1000.00,
             'status' => 'draft',
             'payment_method' => 'cash',
@@ -79,8 +79,8 @@ class StornoIntegrationTest extends TestCase
 
         SaleItem::create([
             'sale_id' => $sale->id,
-            'produk_id' => $this->produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $this->product->id,
+            'unit_id' => $this->unit->id,
             'qty' => 5,
             'cost' => 100.00,
             'price' => 200.00,
@@ -95,9 +95,9 @@ class StornoIntegrationTest extends TestCase
 
         // Check stock out
         $this->assertDatabaseHas('stock_movements', [
-            'produk_id' => $this->produk->id,
+            'product_id' => $this->product->id,
             'type' => 'out',
-            'jumlah' => 5,
+            'quantity' => 5,
             'reference_id' => $sale->id,
         ]);
 
@@ -123,11 +123,11 @@ class StornoIntegrationTest extends TestCase
 
         // Verify Stock Return
         $this->assertDatabaseHas('stock_movements', [
-            'produk_id' => $this->produk->id,
+            'product_id' => $this->product->id,
             'type' => 'in',
-            'jumlah' => 5,
+            'quantity' => 5,
             'reference_id' => $sale->id,
-            'keterangan' => 'STORNO: Customer Cancelled',
+            'notes' => 'STORNO: Customer Cancelled',
         ]);
     }
 
@@ -138,18 +138,18 @@ class StornoIntegrationTest extends TestCase
 
         // 1. Create Stock Opname (Shrinkage)
         $opname = StockOpname::create([
-            'tanggal' => now(),
-            'keterangan' => 'Monthly Check',
+            'date' => now(),
+            'notes' => 'Monthly Check',
             'status' => 'draft',
         ]);
 
         StockOpnameItem::create([
             'stock_opname_id' => $opname->id,
-            'produk_id' => $this->produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $this->product->id,
+            'unit_id' => $this->unit->id,
             'system_qty' => 10,
             'physical_qty' => 8, // Shrinkage of 2
-            'harga_satuan' => 10000, // 100.00
+            'unit_price' => 10000, // 100.00
         ]);
 
         // Complete triggers journals and stock movements
@@ -167,7 +167,7 @@ class StornoIntegrationTest extends TestCase
         // Verify shrinkage journal exists
         $this->assertDatabaseHas('journal_entries', [
             'journalable_id' => $opname->id,
-            'description' => "Penyesuaian stok Opname #{$opname->id} item {$this->produk->id}",
+            'description' => "Penyesuaian stok Opname #{$opname->id} item {$this->product->id}",
         ]);
 
         // 2. Perform Storno
@@ -188,11 +188,11 @@ class StornoIntegrationTest extends TestCase
         // Original was 'out' for 2
         // Storno should be 'in' for 2
         $this->assertDatabaseHas('stock_movements', [
-            'produk_id' => $this->produk->id,
+            'product_id' => $this->product->id,
             'type' => 'in',
-            'jumlah' => 2,
+            'quantity' => 2,
             'reference_id' => $opname->id,
-            'keterangan' => 'STORNO: Entry Error',
+            'notes' => 'STORNO: Entry Error',
         ]);
     }
 
@@ -205,17 +205,17 @@ class StornoIntegrationTest extends TestCase
             $diff = (float) $item->physical_qty - (float) $item->system_qty;
             if (abs($diff) > 0.000001) {
                 app(RecordStockMovement::class)->handle([
-                    'produk_id' => $item->produk_id,
-                    'satuan_id' => $item->satuan_id,
+                    'product_id' => $item->product_id,
+                    'unit_id' => $item->unit_id,
                     'type' => $diff > 0 ? 'in' : 'out',
-                    'jumlah' => abs($diff),
+                    'quantity' => abs($diff),
                     'reference_type' => 'stock_opname',
                     'reference_id' => $opname->id,
-                    'keterangan' => 'Opname Adjustment',
+                    'notes' => 'Opname Adjustment',
                 ]);
 
                 // Journal
-                $nilaiSelisih = (int) round(abs($diff) * $item->harga_satuan);
+                $nilaiSelisih = (int) round(abs($diff) * $item->unit_price);
                 $itemsData = [];
                 $persediaanAccount = Account::where('code', '1301')->first();
 
@@ -235,8 +235,8 @@ class StornoIntegrationTest extends TestCase
 
                 app(JournalService::class)->record(new JournalEntryData(
                     items: $itemsData,
-                    description: "Penyesuaian stok Opname #{$opname->id} item {$item->produk_id}",
-                    tanggal: $opname->tanggal,
+                    description: "Penyesuaian stok Opname #{$opname->id} item {$item->product_id}",
+                    date: $opname->date,
                     journalable: $opname
                 ));
             }

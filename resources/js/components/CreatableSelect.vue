@@ -28,7 +28,7 @@ const props = defineProps<{
     error?: string;
     hideLabel?: boolean;
     hideError?: boolean;
-    displayExpr?: string; // Property to display (default: 'nama', supports nested paths like 'produk.nama')
+    displayExpr?: string; // Property to display (default: 'name', supports nested paths like 'product.name')
     valueExpr?: string;   // Property for value (default: 'id')
     class?: string;
     loading?: boolean;
@@ -41,11 +41,11 @@ const open = ref(false);
 const searchTerm = ref('');
 
 // Determinitive property keys from props
-const displayKey = props.displayExpr || 'nama';
+const displayKey = props.displayExpr || 'name';
 const valueKey = props.valueExpr || 'id';
 
 /**
- * Helper to resolve nested object paths like 'produk.nama'
+ * Helper to resolve nested object paths like 'product.name'
  */
 const resolvePath = (obj: any, path: string) => {
     if (!obj || !path) return '';
@@ -89,7 +89,7 @@ const internalFilter = (item: any, query: string) => {
     if (props.loading) return true; // Don't filter locally while loading remotely
     const term = query.toLowerCase();
     const displayText = String(resolvePath(item, displayKey) || '').toLowerCase();
-    const simbolText = String(item.simbol || '').toLowerCase();
+    const simbolText = String(item.symbol || '').toLowerCase();
     return displayText.includes(term) || simbolText.includes(term);
 };
 
@@ -103,7 +103,7 @@ const getDisplayValue = (v: any) => {
     if (!text && opt.sku) text = opt.sku;
     if (!text) text = `ID: ${opt[valueKey]}`;
 
-    const suffix = opt.simbol ? ` (${opt.simbol})` : '';
+    const suffix = opt.symbol ? ` (${opt.symbol})` : '';
     return text + suffix;
 };
 
@@ -149,7 +149,7 @@ const handleCreate = () => {
                             </ComboboxItemIndicator>
                             <span>
                                 {{ resolvePath(option, displayKey) || option.sku || `ID: ${option[valueKey]}` }}
-                                <template v-if="option.simbol"> ({{ option.simbol }})</template>
+                                <template v-if="option.symbol"> ({{ option.symbol }})</template>
                             </span>
                         </ComboboxItem>
                     </ComboboxGroup>

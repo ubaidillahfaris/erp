@@ -22,7 +22,7 @@ import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
     opname: any;
-    produks: {
+    products: {
         data: any[];
         links: any[];
         current_page: number;
@@ -45,37 +45,37 @@ const searchTerm = ref(props.filters.search || '');
 const isSearching = ref(false);
 
 const form = useForm({
-    tanggal: props.opname.tanggal.split('T')[0],
-    keterangan: props.opname.keterangan || '',
+    date: props.opname.date.split('T')[0],
+    notes: props.opname.notes || '',
     status: props.opname.status,
-    // Key: produk_id, Value: item details
+    // Key: product_id, Value: item details
     items_map: {} as Record<number, any>
 });
 
 // Initialize with existing opname items
 props.opname.items.forEach((item: any) => {
-    form.items_map[item.produk_id] = {
-        produk_id: item.produk_id,
-        nama: item.produk?.nama,
-        sku: item.produk?.sku,
-        satuan_id: item.satuan_id,
-        satuan_nama: item.satuan?.nama,
-        satuan_simbol: item.satuan?.simbol,
+    form.items_map[item.product_id] = {
+        product_id: item.product_id,
+        name: item.product?.name,
+        sku: item.product?.sku,
+        unit_id: item.unit_id,
+        satuan_name: item.unit?.name,
+        satuan_symbol: item.unit?.symbol,
         system_qty: parseFloat(item.system_qty),
         physical_qty: parseFloat(item.physical_qty) };
 });
 
 // Sync current page products to items_map if not already present
-watch(() => props.produks.data, (newProduks) => {
-    newProduks.forEach(p => {
+watch(() => props.products.data, (newProducts) => {
+    newProducts.forEach(p => {
         if (!form.items_map[p.id]) {
             form.items_map[p.id] = {
-                produk_id: p.id,
-                nama: p.nama,
+                product_id: p.id,
+                name: p.name,
                 sku: p.sku,
-                satuan_id: p.satuan_id,
-                satuan_nama: p.satuan?.nama,
-                satuan_simbol: p.satuan?.simbol,
+                unit_id: p.unit_id,
+                satuan_name: p.unit?.name,
+                satuan_symbol: p.unit?.symbol,
                 system_qty: parseFloat(p.stock?.balance || 0),
                 physical_qty: parseFloat(p.stock?.balance || 0) };
         }
@@ -160,12 +160,12 @@ const totalDiscrepancies = computed(() => {
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="space-y-2">
-                        <Label for="tanggal">Tanggal Opname</Label>
-                        <Input id="tanggal" v-model="form.tanggal" type="date" class="h-10" />
+                        <Label for="date">Tanggal Opname</Label>
+                        <Input id="date" v-model="form.date" type="date" class="h-10" />
                     </div>
                     <div class="space-y-2">
-                        <Label for="keterangan">Keterangan / Catatan</Label>
-                        <Textarea id="keterangan" v-model="form.keterangan" placeholder="Misal: Opname Bulanan"
+                        <Label for="notes">Keterangan / Catatan</Label>
+                        <Textarea id="notes" v-model="form.notes" placeholder="Misal: Opname Bulanan"
                             class="resize-none min-h-[40px]" />
                     </div>
                 </div>
@@ -207,37 +207,37 @@ const totalDiscrepancies = computed(() => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow v-for="produk in produks.data" :key="produk.id"
+                        <TableRow v-for="product in products.data" :key="product.id"
                             class="hover:bg-slate-50/60 border-b border-slate-100 transition-colors">
                             <TableCell class="px-6 py-4">
-                                <div class="font-semibold text-sm text-slate-900 capitalize">{{ produk.nama }}</div>
-                                <div class="text-xs font-mono text-slate-400 mt-0.5">{{ produk.sku }}</div>
+                                <div class="font-semibold text-sm text-slate-900 capitalize">{{ product.name }}</div>
+                                <div class="text-xs font-mono text-slate-400 mt-0.5">{{ product.sku }}</div>
                             </TableCell>
                             <TableCell class="px-4 py-4 text-right text-sm font-medium text-slate-700">
-                                {{ form.items_map[produk.id]?.system_qty }}
-                                <span class="text-xs text-slate-400 ml-1">{{ produk.satuan?.simbol }}</span>
+                                {{ form.items_map[product.id]?.system_qty }}
+                                <span class="text-xs text-slate-400 ml-1">{{ product.unit?.symbol }}</span>
                             </TableCell>
                             <TableCell class="px-4 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <Input v-if="form.items_map[produk.id]"
-                                        v-model="form.items_map[produk.id].physical_qty" type="number" step="any"
+                                    <Input v-if="form.items_map[product.id]"
+                                        v-model="form.items_map[product.id].physical_qty" type="number" step="any"
                                         class="w-28 text-right h-9 border-slate-200 bg-white text-sm" />
                                     <span class="text-xs font-bold text-slate-400 w-8 text-left uppercase">
-                                        {{ produk.satuan?.simbol || form.items_map[produk.id]?.satuan_simbol }}
+                                        {{ product.unit?.symbol || form.items_map[product.id]?.unit_simbol }}
                                     </span>
                                 </div>
                             </TableCell>
                             <TableCell class="px-6 py-4 text-right">
-                                <div v-if="form.items_map[produk.id]" class="text-sm font-bold"
-                                    :class="calculateDiff(form.items_map[produk.id]) === 0
+                                <div v-if="form.items_map[product.id]" class="text-sm font-bold"
+                                    :class="calculateDiff(form.items_map[product.id]) === 0
                                         ? 'text-slate-400'
-                                        : (calculateDiff(form.items_map[produk.id]) > 0 ? 'text-emerald-600' : 'text-red-500')">
-                                    <span v-if="calculateDiff(form.items_map[produk.id]) > 0">+</span>
-                                    {{ calculateDiff(form.items_map[produk.id]) }}
+                                        : (calculateDiff(form.items_map[product.id]) > 0 ? 'text-emerald-600' : 'text-red-500')">
+                                    <span v-if="calculateDiff(form.items_map[product.id]) > 0">+</span>
+                                    {{ calculateDiff(form.items_map[product.id]) }}
                                 </div>
                             </TableCell>
                         </TableRow>
-                        <TableRow v-if="produks.data.length === 0">
+                        <TableRow v-if="products.data.length === 0">
                             <TableCell colspan="4" class="h-32 text-center text-sm text-slate-400">
                                 Barang tidak ditemukan.
                             </TableCell>
@@ -246,7 +246,7 @@ const totalDiscrepancies = computed(() => {
                 </Table>
 
                 <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/30">
-                    <DataTablePagination :paginator="produks" />
+                    <DataTablePagination :paginator="products" />
                 </div>
             </div>
         </Card>

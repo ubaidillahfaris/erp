@@ -71,7 +71,7 @@ class BackfillJournalEntries extends Command
         $skipped = 0;
 
         foreach ($purchases as $purchase) {
-            $refNumber = sprintf('PUR-%s-%d', $purchase->tanggal->format('Ymd'), $purchase->id);
+            $refNumber = sprintf('PUR-%s-%d', $purchase->date->format('Ymd'), $purchase->id);
 
             // Skip if already journaled (unless force)
             if (! $force && JournalEntry::where('ref_number', $refNumber)->exists()) {
@@ -89,7 +89,7 @@ class BackfillJournalEntries extends Command
             }
 
             $amountCents = (int) round($amount * 100);
-            $vendorName = $purchase->vendor?->nama ?? 'Unknown Vendor';
+            $vendorName = $purchase->vendor?->name ?? 'Unknown Vendor';
             $paymentMethod = $purchase->payment_method ?? 'cash';
 
             // Credit account depends on payment_method
@@ -113,7 +113,7 @@ class BackfillJournalEntries extends Command
                         new JournalItemData($accounts['1301'], $amountCents, 'debit'),
                         new JournalItemData($accounts[$creditAccCode], $amountCents, 'credit'),
                     ],
-                    tanggal: $purchase->tanggal,
+                    date: $purchase->date,
                     ref_number: $refNumber,
                     description: $description,
                     journalable: $purchase
@@ -138,7 +138,7 @@ class BackfillJournalEntries extends Command
         $skipped = 0;
 
         foreach ($sales as $sale) {
-            $refBase = sprintf('SALE-%s-%d', $sale->tanggal->format('Ymd'), $sale->id);
+            $refBase = sprintf('SALE-%s-%d', $sale->date->format('Ymd'), $sale->id);
             $refRev = "{$refBase}-REV";
             $refCogs = "{$refBase}-COGS";
 
@@ -183,7 +183,7 @@ class BackfillJournalEntries extends Command
                             new JournalItemData($accounts['1102'], $revenueAmountCents, 'debit'),
                             new JournalItemData($accounts['4101'], $revenueAmountCents, 'credit'),
                         ],
-                        tanggal: $sale->tanggal,
+                        date: $sale->date,
                         ref_number: $refRev,
                         description: "Revenue Penjualan INV-{$invoiceNumber}",
                         journalable: $sale
@@ -197,7 +197,7 @@ class BackfillJournalEntries extends Command
                                 new JournalItemData($accounts['5101'], $cogsAmount, 'debit'),
                                 new JournalItemData($accounts['1302'], $cogsAmount, 'credit'),
                             ],
-                            tanggal: $sale->tanggal,
+                            date: $sale->date,
                             ref_number: $refCogs,
                             description: "COGS Penjualan INV-{$invoiceNumber}",
                             journalable: $sale
@@ -224,7 +224,7 @@ class BackfillJournalEntries extends Command
         $skipped = 0;
 
         foreach ($expenses as $expense) {
-            $refNumber = sprintf('EXP-%s-%04d', $expense->tanggal->format('Ymd'), $expense->id);
+            $refNumber = sprintf('EXP-%s-%04d', $expense->date->format('Ymd'), $expense->id);
 
             // Skip if already journaled (unless force)
             if (! $force && JournalEntry::where('ref_number', $refNumber)->exists()) {
@@ -255,9 +255,9 @@ class BackfillJournalEntries extends Command
                         new JournalItemData($expenseAccId, $amountCents, 'debit'),
                         new JournalItemData($accounts['1101'], $amountCents, 'credit'),
                     ],
-                    tanggal: $expense->tanggal,
+                    date: $expense->date,
                     ref_number: $refNumber,
-                    description: "Backfill Pengeluaran: {$expense->nama_pengeluaran}",
+                    description: "Backfill Pengeluaran: {$expense->name_pengeluaran}",
                     journalable: $expense
                 ));
             }

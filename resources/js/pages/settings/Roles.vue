@@ -93,14 +93,14 @@ const submit = () => {
         form.put(update(editingRoleId.value).url, {
             onSuccess: () => {
                 isDialogOpen.value = false;
-                toast.success('Role berhasil diperbarui');
+                toast.success('Role updated successfully');
             },
         });
     } else {
         form.post(store().url, {
             onSuccess: () => {
                 isDialogOpen.value = false;
-                toast.success('Role berhasil ditambahkan');
+                toast.success('Role added successfully');
             },
         });
     }
@@ -111,9 +111,9 @@ import { useConfirm } from '@/composables/useConfirm';
 const { confirmDialog } = useConfirm();
 
 const deleteRole = async (id: number) => {
-    if (await confirmDialog('Hapus Role?', 'Apakah Anda yakin ingin menghapus role ini? User dengan role ini mungkin akan kehilangan hak aksesnya.')) {
+    if (await confirmDialog('Hapus Role?', 'Are you sure you want to delete role ini? User dengan role ini mungkin akan kehilangan hak aksesnya.')) {
         form.delete(destroyRoleRoute(id).url, {
-            onSuccess: () => toast.success('Role berhasil dihapus'),
+            onSuccess: () => toast.success('Role deleted successfully'),
             onError: (err: Record<string, any>) => {
                 if (err.error) toast.error(err.error as string);
             }
@@ -155,7 +155,7 @@ const deleteRole = async (id: number) => {
                             <TableRow>
                                 <TableHead>Role</TableHead>
                                 <TableHead>Akses Menu</TableHead>
-                                <TableHead class="text-right">Aksi</TableHead>
+                                <TableHead class="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

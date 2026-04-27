@@ -4,11 +4,11 @@ namespace Tests\Feature;
 
 use App\Actions\RecordStockMovement;
 use App\Models\Account;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Restock;
-use App\Models\Satuan;
 use App\Models\Stock;
 use App\Models\StockMovement;
+use App\Models\Unit;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,7 +20,7 @@ class StockManagementTest extends TestCase
 
     protected User $user;
 
-    protected Satuan $satuan;
+    protected Unit $unit;
 
     protected Vendor $vendor;
 
@@ -36,25 +36,25 @@ class StockManagementTest extends TestCase
         $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
 
-        $this->satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
+        $this->unit = Unit::create(['name' => 'Pcs', 'symbol' => 'pcs']);
         $this->vendor = Vendor::factory()->create();
     }
 
     public function test_restock_creates_stock_movement_and_updates_balance()
     {
-        $produk = Produk::factory()->create(['satuan_id' => $this->satuan->id]);
+        $product = Product::factory()->create(['unit_id' => $this->unit->id]);
 
         $response = $this->post(route('restock.store'), [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'vendor_id' => $this->vendor->id,
             'status_pembayaran' => 'lunas',
             'total_bayar' => 10000,
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $this->satuan->id,
-                    'jumlah' => 10,
-                    'harga_satuan' => 1000,
+                    'product_id' => $product->id,
+                    'unit_id' => $this->unit->id,
+                    'quantity' => 10,
+                    'unit_price' => 1000,
                 ],
             ],
         ]);
@@ -62,85 +62,85 @@ class StockManagementTest extends TestCase
         $response->assertRedirect();
 
         $this->assertDatabaseHas('stock_movements', [
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'type' => 'in',
-            'jumlah' => 10,
+            'quantity' => 10,
             'reference_type' => 'restock',
         ]);
 
         $this->assertDatabaseHas('stocks', [
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'balance' => 10.0000,
         ]);
     }
 
     public function test_manual_adjustment_updates_stock()
     {
-        $produk = Produk::factory()->create(['satuan_id' => $this->satuan->id]);
+        $product = Product::factory()->create(['unit_id' => $this->unit->id]);
 
         $response = $this->post(route('stock.adjustment'), [
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'type' => 'in',
-            'jumlah' => 50,
-            'keterangan' => 'Initial stock opname',
+            'quantity' => 50,
+            'notes' => 'Initial stock opname',
         ]);
 
         $response->assertRedirect();
 
         $this->assertDatabaseHas('stocks', [
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'balance' => 50.0000,
         ]);
 
         // Adjustment out
         $this->post(route('stock.adjustment'), [
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'type' => 'out',
-            'jumlah' => 10,
-            'keterangan' => 'Waste',
+            'quantity' => 10,
+            'notes' => 'Waste',
         ]);
 
-        $this->assertEquals(40, (float) Stock::where('produk_id', $produk->id)->first()->balance);
+        $this->assertEquals(40, (float) Stock::where('product_id', $product->id)->first()->balance);
 
         // Test Zero Adjustment
         $this->post(route('stock.adjustment'), [
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'type' => 'in',
-            'jumlah' => 0,
-            'keterangan' => 'Zero check',
+            'quantity' => 0,
+            'notes' => 'Zero check',
         ]);
-        $this->assertEquals(40, (float) Stock::where('produk_id', $produk->id)->first()->balance);
+        $this->assertEquals(40, (float) Stock::where('product_id', $product->id)->first()->balance);
     }
 
     public function test_deleting_restock_removes_movements_and_reverts_stock()
     {
-        $produk = Produk::factory()->create(['satuan_id' => $this->satuan->id]);
+        $product = Product::factory()->create(['unit_id' => $this->unit->id]);
 
         $restock = Restock::create([
-            'tanggal' => now(),
+            'date' => now(),
             'status_pembayaran' => 'lunas',
             'total_biaya' => 1000,
             'vendor_id' => $this->vendor->id,
         ]);
 
         app(RecordStockMovement::class)->handle([
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'type' => 'in',
-            'jumlah' => 100,
+            'quantity' => 100,
             'reference_type' => 'restock',
             'reference_id' => $restock->id,
         ]);
 
-        $this->assertEquals(100, (float) $produk->stock->balance);
+        $this->assertEquals(100, (float) $product->stock->balance);
 
         // Deleting restock should delete the movements via observer
         $restock->delete();
 
-        $this->assertEquals(0, (float) Stock::where('produk_id', $produk->id)->first()->balance);
+        $this->assertEquals(0, (float) Stock::where('product_id', $product->id)->first()->balance);
         $this->assertEquals(0, StockMovement::count());
     }
 }

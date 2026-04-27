@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Price extends Model
 {
     protected $fillable = [
-        'produk_id',
-        'satuan_id',
+        'product_id',
+        'unit_id',
         'purchase_price',
         'retail_price',
         'wholesale_price',
@@ -25,13 +25,13 @@ class Price extends Model
         ];
     }
 
-    public function produk()
+    public function product()
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
-    public function satuan()
+    public function unit()
     {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Unit::class);
     }
 }

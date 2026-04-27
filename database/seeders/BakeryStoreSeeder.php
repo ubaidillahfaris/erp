@@ -8,11 +8,11 @@ use App\Models\Bom;
 use App\Models\BomItem;
 use App\Models\Category;
 use App\Models\Price;
+use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductionItem;
-use App\Models\Produk;
-use App\Models\Satuan;
 use App\Models\Stock;
+use App\Models\Unit;
 use App\Models\Vendor;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -25,308 +25,308 @@ class BakeryStoreSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-            // ─── 1. Units (Satuan) ───────────────────────────────────
+            // ─── 1. Units (Unit) ───────────────────────────────────
             // Use existing units where available, create only missing ones
-            $satuanKg = Satuan::where('simbol', 'kg')->first();
-            $satuanGr = Satuan::where('simbol', 'gr')->first();
-            $satuanPcs = Satuan::where('simbol', 'pcs')->first();
+            $unitKg = Unit::where('symbol', 'kg')->first();
+            $unitGr = Unit::where('symbol', 'gr')->first();
+            $unitPcs = Unit::where('symbol', 'pcs')->first();
 
             // Mililiter — existing DB has 'mil', reuse it
-            $satuanMl = Satuan::where('simbol', 'mil')->first();
-            if (! $satuanMl) {
-                $satuanMl = Satuan::firstOrCreate(
-                    ['simbol' => 'ml'],
-                    ['nama' => 'Mililiter', 'deskripsi' => 'Volume dalam Mililiter'],
+            $unitMl = Unit::where('symbol', 'mil')->first();
+            if (! $unitMl) {
+                $unitMl = Unit::firstOrCreate(
+                    ['symbol' => 'ml'],
+                    ['name' => 'Mililiter', 'description' => 'Volume dalam Mililiter'],
                 );
             }
 
             // Butir — for eggs
-            $satuanButir = Satuan::firstOrCreate(
-                ['simbol' => 'butir'],
-                ['nama' => 'Butir', 'deskripsi' => 'Satuan untuk telur'],
+            $unitButir = Unit::firstOrCreate(
+                ['symbol' => 'butir'],
+                ['name' => 'Butir', 'description' => 'Unit untuk telur'],
             );
 
             // Box — for packaging
-            $satuanBox = Satuan::firstOrCreate(
-                ['simbol' => 'box'],
-                ['nama' => 'Box', 'deskripsi' => 'Satuan kotak/kemasan'],
+            $unitBox = Unit::firstOrCreate(
+                ['symbol' => 'box'],
+                ['name' => 'Box', 'description' => 'Unit kotak/kemasan'],
             );
 
             // ─── 2. Categories ──────────────────────────────────────
-            $catBahanBaku = Category::firstOrCreate(['name' => 'Bahan Baku'], ['slug' => 'bahan-baku']);
+            $catBahanBaku = Category::firstOrCreate(['name' => 'Raw Materials'], ['slug' => 'bahan-baku']);
             $catAdonan = Category::firstOrCreate(['name' => 'Adonan'], ['slug' => 'adonan']);
             $catRoti = Category::firstOrCreate(['name' => 'Roti'], ['slug' => 'roti']);
             $catKue = Category::firstOrCreate(['name' => 'Kue'], ['slug' => 'kue']);
 
             // ─── 3. Vendors (Suppliers) ──────────────────────────────
             $vendorSembako = Vendor::create([
-                'nama' => 'Sembako Jaya Utama',
-                'alamat' => 'Jl. Pasar Baru No. 12, Jakarta',
-                'telepon' => '021-5551234',
+                'name' => 'Sembako Jaya Utama',
+                'address' => 'Jl. Pasar Baru No. 12, Jakarta',
+                'phone' => '021-5551234',
                 'email' => 'sales@sembakojaya.com',
-                'keterangan' => 'Supplier tepung, gula, dan bahan kering skala besar',
+                'notes' => 'Supplier tepung, gula, dan bahan kering skala besar',
             ]);
 
             $vendorDairy = Vendor::create([
-                'nama' => 'Dairy Fresh Indonesia',
-                'alamat' => 'Kawasan Industri Sentul, Bogor',
-                'telepon' => '021-8884321',
+                'name' => 'Dairy Fresh Indonesia',
+                'address' => 'Kawasan Industri Sentul, Bogor',
+                'phone' => '021-8884321',
                 'email' => 'info@dairyfresh.co.id',
-                'keterangan' => 'Supplier susu, mentega, dan keju berkualitas',
+                'notes' => 'Supplier susu, mentega, dan keju berkualitas',
             ]);
 
             $vendorTernak = Vendor::create([
-                'nama' => 'Peternakan Berkah',
-                'alamat' => 'Desa Sukamaju, Jawa Barat',
-                'telepon' => '0812-3456-7890',
+                'name' => 'Peternakan Berkah',
+                'address' => 'Desa Sukamaju, Jawa Barat',
+                'phone' => '0812-3456-7890',
                 'email' => 'admin@berkahternak.com',
-                'keterangan' => 'Supplier telur ayam fresh harian',
+                'notes' => 'Supplier telur ayam fresh harian',
             ]);
 
             // ─── 3. Products — Raw Materials ─────────────────────────
             $rawMaterials = [
                 [
                     'sku' => 'RAW-TEPUNG-001',
-                    'nama' => 'Tepung Terigu Cakra Kembar',
+                    'name' => 'Tepung Terigu Cakra Kembar',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Tepung protein tinggi untuk roti dan pastry',
-                    'satuan' => $satuanKg,
+                    'description' => 'Tepung protein tinggi untuk roti dan pastry',
+                    'unit' => $unitKg,
                     'purchase_price' => 12500,
                     'initial_stock' => 50,
-                    'stok_minimal' => 10,
+                    'min_stock' => 10,
                 ],
                 [
                     'sku' => 'RAW-TEPUNG-002',
-                    'nama' => 'Tepung Terigu Segitiga Biru',
+                    'name' => 'Tepung Terigu Segitiga Biru',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Tepung protein sedang untuk kue dan donat',
-                    'satuan' => $satuanKg,
+                    'description' => 'Tepung protein sedang untuk kue dan donat',
+                    'unit' => $unitKg,
                     'purchase_price' => 11000,
                     'initial_stock' => 30,
-                    'stok_minimal' => 5,
+                    'min_stock' => 5,
                 ],
                 [
                     'sku' => 'RAW-GULA-001',
-                    'nama' => 'Gula Pasir Rose Brand',
+                    'name' => 'Gula Pasir Rose Brand',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Gula pasir halus untuk adonan roti',
-                    'satuan' => $satuanKg,
+                    'description' => 'Gula pasir halus untuk adonan roti',
+                    'unit' => $unitKg,
                     'purchase_price' => 16000,
                     'initial_stock' => 20,
-                    'stok_minimal' => 5,
+                    'min_stock' => 5,
                 ],
                 [
                     'sku' => 'RAW-GULA-002',
-                    'nama' => 'Gula Halus / Icing Sugar',
+                    'name' => 'Gula Halus / Icing Sugar',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Gula halus untuk topping dan glaze',
-                    'satuan' => $satuanKg,
+                    'description' => 'Gula halus untuk topping dan glaze',
+                    'unit' => $unitKg,
                     'purchase_price' => 22000,
                     'initial_stock' => 5,
-                    'stok_minimal' => 2,
+                    'min_stock' => 2,
                 ],
                 [
                     'sku' => 'RAW-MARGARIN-001',
-                    'nama' => 'Margarin Blue Band',
+                    'name' => 'Margarin Blue Band',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Margarin serbaguna untuk adonan roti',
-                    'satuan' => $satuanKg,
+                    'description' => 'Margarin serbaguna untuk adonan roti',
+                    'unit' => $unitKg,
                     'purchase_price' => 45000,
                     'initial_stock' => 10,
-                    'stok_minimal' => 3,
+                    'min_stock' => 3,
                 ],
                 [
                     'sku' => 'RAW-BUTTER-001',
-                    'nama' => 'Butter Anchor Unsalted',
+                    'name' => 'Butter Anchor Unsalted',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Mentega impor untuk croissant dan danish',
-                    'satuan' => $satuanKg,
+                    'description' => 'Mentega impor untuk croissant dan danish',
+                    'unit' => $unitKg,
                     'purchase_price' => 120000,
                     'initial_stock' => 5,
-                    'stok_minimal' => 2,
+                    'min_stock' => 2,
                 ],
                 [
                     'sku' => 'RAW-RAGI-001',
-                    'nama' => 'Ragi Instan Fermipan',
+                    'name' => 'Ragi Instan Fermipan',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Ragi instan untuk fermentasi adonan roti',
-                    'satuan' => $satuanGr,
+                    'description' => 'Ragi instan untuk fermentasi adonan roti',
+                    'unit' => $unitGr,
                     'purchase_price' => 500, // per gram
                     'initial_stock' => 500,
-                    'stok_minimal' => 100,
+                    'min_stock' => 100,
                 ],
                 [
                     'sku' => 'RAW-TELUR-001',
-                    'nama' => 'Telur Ayam Fresh',
+                    'name' => 'Telur Ayam Fresh',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Telur ayam segar untuk adonan',
-                    'satuan' => $satuanButir,
+                    'description' => 'Telur ayam segar untuk adonan',
+                    'unit' => $unitButir,
                     'purchase_price' => 2500, // per butir
                     'initial_stock' => 120,
-                    'stok_minimal' => 30,
+                    'min_stock' => 30,
                 ],
                 [
                     'sku' => 'RAW-SUSU-001',
-                    'nama' => 'Susu Cair Full Cream',
+                    'name' => 'Susu Cair Full Cream',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Susu cair untuk adonan roti dan kue',
-                    'satuan' => $satuanMl,
+                    'description' => 'Susu cair untuk adonan roti dan kue',
+                    'unit' => $unitMl,
                     'purchase_price' => 20, // per ml
                     'initial_stock' => 5000,
-                    'stok_minimal' => 1000,
+                    'min_stock' => 1000,
                 ],
                 [
                     'sku' => 'RAW-COKELAT-001',
-                    'nama' => 'Dark Chocolate Compound',
+                    'name' => 'Dark Chocolate Compound',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Cokelat compound untuk coating dan filling',
-                    'satuan' => $satuanKg,
+                    'description' => 'Cokelat compound untuk coating dan filling',
+                    'unit' => $unitKg,
                     'purchase_price' => 85000,
                     'initial_stock' => 5,
-                    'stok_minimal' => 2,
+                    'min_stock' => 2,
                 ],
                 [
                     'sku' => 'RAW-KEJU-001',
-                    'nama' => 'Keju Cheddar Kraft',
+                    'name' => 'Keju Cheddar Kraft',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Keju cheddar untuk filling roti',
-                    'satuan' => $satuanKg,
+                    'description' => 'Keju cheddar untuk filling roti',
+                    'unit' => $unitKg,
                     'purchase_price' => 95000,
                     'initial_stock' => 3,
-                    'stok_minimal' => 1,
+                    'min_stock' => 1,
                 ],
                 [
                     'sku' => 'RAW-GARAM-001',
-                    'nama' => 'Garam Halus Refina',
+                    'name' => 'Garam Halus Refina',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Garam halus untuk adonan roti',
-                    'satuan' => $satuanGr,
+                    'description' => 'Garam halus untuk adonan roti',
+                    'unit' => $unitGr,
                     'purchase_price' => 15, // per gram
                     'initial_stock' => 1000,
-                    'stok_minimal' => 200,
+                    'min_stock' => 200,
                 ],
                 [
                     'sku' => 'RAW-SUSU-002',
-                    'nama' => 'Susu Bubuk Full Cream',
+                    'name' => 'Susu Bubuk Full Cream',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Susu bubuk untuk memperkaya rasa roti',
-                    'satuan' => $satuanGr,
+                    'description' => 'Susu bubuk untuk memperkaya rasa roti',
+                    'unit' => $unitGr,
                     'purchase_price' => 120, // per gram
                     'initial_stock' => 500,
-                    'stok_minimal' => 100,
+                    'min_stock' => 100,
                 ],
                 [
                     'sku' => 'RAW-VANILI-001',
-                    'nama' => 'Vanili Bubuk',
+                    'name' => 'Vanili Bubuk',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Perasa vanili untuk adonan kue dan roti',
-                    'satuan' => $satuanGr,
+                    'description' => 'Perasa vanili untuk adonan kue dan roti',
+                    'unit' => $unitGr,
                     'purchase_price' => 200, // per gram
                     'initial_stock' => 100,
-                    'stok_minimal' => 20,
+                    'min_stock' => 20,
                 ],
                 [
                     'sku' => 'RAW-MINYAK-001',
-                    'nama' => 'Minyak Goreng Bimoli',
+                    'name' => 'Minyak Goreng Bimoli',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Minyak goreng untuk menggoreng donat',
-                    'satuan' => $satuanMl,
+                    'description' => 'Minyak goreng untuk menggoreng donat',
+                    'unit' => $unitMl,
                     'purchase_price' => 18, // per ml
                     'initial_stock' => 5000,
-                    'stok_minimal' => 1000,
+                    'min_stock' => 1000,
                 ],
                 [
                     'sku' => 'RAW-SELAI-001',
-                    'nama' => 'Selai Strawberry',
+                    'name' => 'Selai Strawberry',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Selai buah untuk isian roti',
-                    'satuan' => $satuanGr,
+                    'description' => 'Selai buah untuk isian roti',
+                    'unit' => $unitGr,
                     'purchase_price' => 60, // per gram
                     'initial_stock' => 1000,
-                    'stok_minimal' => 200,
+                    'min_stock' => 200,
                 ],
                 [
                     'sku' => 'RAW-SELAI-002',
-                    'nama' => 'Selai Cokelat Nutella',
+                    'name' => 'Selai Cokelat Nutella',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Selai cokelat hazelnut premium',
-                    'satuan' => $satuanGr,
+                    'description' => 'Selai cokelat hazelnut premium',
+                    'unit' => $unitGr,
                     'purchase_price' => 150, // per gram
                     'initial_stock' => 500,
-                    'stok_minimal' => 100,
+                    'min_stock' => 100,
                 ],
                 [
                     'sku' => 'RAW-ALMOND-001',
-                    'nama' => 'Almond Slice',
+                    'name' => 'Almond Slice',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Irisan almond untuk topping pastry',
-                    'satuan' => $satuanGr,
+                    'description' => 'Irisan almond untuk topping pastry',
+                    'unit' => $unitGr,
                     'purchase_price' => 250, // per gram
                     'initial_stock' => 300,
-                    'stok_minimal' => 50,
+                    'min_stock' => 50,
                 ],
                 [
                     'sku' => 'RAW-WIJEN-001',
-                    'nama' => 'Biji Wijen Putih',
+                    'name' => 'Biji Wijen Putih',
                     'category_id' => $catBahanBaku->id,
-                    'deskripsi' => 'Wijen untuk taburan roti',
-                    'satuan' => $satuanGr,
+                    'description' => 'Wijen untuk taburan roti',
+                    'unit' => $unitGr,
                     'purchase_price' => 80, // per gram
                     'initial_stock' => 500,
-                    'stok_minimal' => 100,
+                    'min_stock' => 100,
                 ],
             ];
 
             $materialModels = [];
             foreach ($rawMaterials as $data) {
-                $produk = Produk::create([
+                $product = Product::create([
                     'sku' => $data['sku'],
-                    'nama' => $data['nama'],
+                    'name' => $data['name'],
                     'kategori' => $data['kategori'],
-                    'deskripsi' => $data['deskripsi'],
-                    'satuan_id' => $data['satuan']->id,
+                    'description' => $data['description'],
+                    'unit_id' => $data['unit']->id,
                     'type' => 'raw_material',
                     'track_stock' => true,
                     'is_active' => true,
-                    'stok_minimal' => $data['stok_minimal'],
+                    'min_stock' => $data['min_stock'],
                 ]);
 
                 Price::create([
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $data['satuan']->id,
+                    'product_id' => $product->id,
+                    'unit_id' => $data['unit']->id,
                     'purchase_price' => $data['purchase_price'],
                     'retail_price' => 0,
                     'is_current' => true,
                 ]);
 
                 Stock::create([
-                    'produk_id' => $produk->id,
-                    'last_satuan_id' => $data['satuan']->id,
+                    'product_id' => $product->id,
+                    'last_unit_id' => $data['unit']->id,
                     'balance' => $data['initial_stock'],
                 ]);
 
-                $materialModels[$data['sku']] = $produk;
+                $materialModels[$data['sku']] = $product;
             }
 
             // ─── 4. Products — Intermediate & Finished Goods ──────────
             $intermediateGoods = [
                 [
                     'sku' => 'INT-ADONAN-001',
-                    'nama' => 'Adonan Dasar Roti Manis',
+                    'name' => 'Adonan Dasar Roti Manis',
                     'category_id' => $catAdonan->id,
-                    'deskripsi' => 'Adonan dasar siap bentuk untuk aneka roti manis',
-                    'satuan_id' => $satuanGr->id,
+                    'description' => 'Adonan dasar siap bentuk untuk aneka roti manis',
+                    'unit_id' => $unitGr->id,
                     'initial_stock' => 0,
-                    'stok_minimal' => 0,
+                    'min_stock' => 0,
                     'expected_yield' => 1000,
                     'recipe' => [
-                        'RAW-TEPUNG-001' => ['jumlah' => 0.500],
-                        'RAW-GULA-001' => ['jumlah' => 0.100],
-                        'RAW-MARGARIN-001' => ['jumlah' => 0.050],
-                        'RAW-RAGI-001' => ['jumlah' => 11],
-                        'RAW-TELUR-001' => ['jumlah' => 1],
-                        'RAW-SUSU-001' => ['jumlah' => 200],
-                        'RAW-GARAM-001' => ['jumlah' => 5],
+                        'RAW-TEPUNG-001' => ['quantity' => 0.500],
+                        'RAW-GULA-001' => ['quantity' => 0.100],
+                        'RAW-MARGARIN-001' => ['quantity' => 0.050],
+                        'RAW-RAGI-001' => ['quantity' => 11],
+                        'RAW-TELUR-001' => ['quantity' => 1],
+                        'RAW-SUSU-001' => ['quantity' => 200],
+                        'RAW-GARAM-001' => ['quantity' => 5],
                     ],
                 ],
             ];
@@ -334,122 +334,122 @@ class BakeryStoreSeeder extends Seeder
             $finishedGoods = [
                 [
                     'sku' => 'FG-ROTITAWAR-001',
-                    'nama' => 'Roti Tawar Spesial',
+                    'name' => 'Roti Tawar Spesial',
                     'category_id' => $catRoti->id,
-                    'deskripsi' => 'Roti tawar premium lembut, 1 loyang isi 10 slice',
+                    'description' => 'Roti tawar premium lembut, 1 loyang isi 10 slice',
                     'retail_price' => 18000,
                     'initial_stock' => 10,
-                    'stok_minimal' => 3,
+                    'min_stock' => 3,
                     'expected_yield' => 1,
                     'recipe' => [
-                        'RAW-TEPUNG-001' => ['jumlah' => 0.450],
-                        'RAW-GULA-001' => ['jumlah' => 0.050],
-                        'RAW-MARGARIN-001' => ['jumlah' => 0.030],
-                        'RAW-RAGI-001' => ['jumlah' => 11],
-                        'RAW-TELUR-001' => ['jumlah' => 1],
-                        'RAW-SUSU-001' => ['jumlah' => 250],
-                        'RAW-GARAM-001' => ['jumlah' => 8],
-                        'RAW-SUSU-002' => ['jumlah' => 20],
+                        'RAW-TEPUNG-001' => ['quantity' => 0.450],
+                        'RAW-GULA-001' => ['quantity' => 0.050],
+                        'RAW-MARGARIN-001' => ['quantity' => 0.030],
+                        'RAW-RAGI-001' => ['quantity' => 11],
+                        'RAW-TELUR-001' => ['quantity' => 1],
+                        'RAW-SUSU-001' => ['quantity' => 250],
+                        'RAW-GARAM-001' => ['quantity' => 8],
+                        'RAW-SUSU-002' => ['quantity' => 20],
                     ],
                 ],
                 [
                     'sku' => 'FG-ROTITAWAR-002',
-                    'nama' => 'Roti Tawar Gandum',
+                    'name' => 'Roti Tawar Gandum',
                     'category_id' => $catRoti->id,
-                    'deskripsi' => 'Roti tawar whole wheat untuk pilihan sehat',
+                    'description' => 'Roti tawar whole wheat untuk pilihan sehat',
                     'retail_price' => 22000,
                     'initial_stock' => 8,
-                    'stok_minimal' => 2,
+                    'min_stock' => 2,
                     'expected_yield' => 1,
                     'recipe' => [
-                        'RAW-TEPUNG-001' => ['jumlah' => 0.300],
-                        'RAW-TEPUNG-002' => ['jumlah' => 0.200],
-                        'RAW-GULA-001' => ['jumlah' => 0.030],
-                        'RAW-MARGARIN-001' => ['jumlah' => 0.025],
-                        'RAW-RAGI-001' => ['jumlah' => 11],
-                        'RAW-TELUR-001' => ['jumlah' => 1],
-                        'RAW-SUSU-001' => ['jumlah' => 200],
-                        'RAW-GARAM-001' => ['jumlah' => 8],
-                        'RAW-WIJEN-001' => ['jumlah' => 10],
+                        'RAW-TEPUNG-001' => ['quantity' => 0.300],
+                        'RAW-TEPUNG-002' => ['quantity' => 0.200],
+                        'RAW-GULA-001' => ['quantity' => 0.030],
+                        'RAW-MARGARIN-001' => ['quantity' => 0.025],
+                        'RAW-RAGI-001' => ['quantity' => 11],
+                        'RAW-TELUR-001' => ['quantity' => 1],
+                        'RAW-SUSU-001' => ['quantity' => 200],
+                        'RAW-GARAM-001' => ['quantity' => 8],
+                        'RAW-WIJEN-001' => ['quantity' => 10],
                     ],
                 ],
                 [
                     'sku' => 'FG-ROTISOBEK-001',
-                    'nama' => 'Roti Sobek Cokelat',
+                    'name' => 'Roti Sobek Cokelat',
                     'category_id' => $catRoti->id,
-                    'deskripsi' => 'Roti sobek lembut dengan isian cokelat, isi 6 potong',
+                    'description' => 'Roti sobek lembut dengan isian cokelat, isi 6 potong',
                     'retail_price' => 25000,
                     'initial_stock' => 12,
-                    'stok_minimal' => 3,
+                    'min_stock' => 3,
                     'expected_yield' => 1,
                     'recipe' => [
-                        'RAW-TEPUNG-001' => ['jumlah' => 0.400],
-                        'RAW-GULA-001' => ['jumlah' => 0.060],
-                        'RAW-MARGARIN-001' => ['jumlah' => 0.040],
-                        'RAW-RAGI-001' => ['jumlah' => 10],
-                        'RAW-TELUR-001' => ['jumlah' => 2],
-                        'RAW-SUSU-001' => ['jumlah' => 200],
-                        'RAW-SELAI-002' => ['jumlah' => 60],
+                        'RAW-TEPUNG-001' => ['quantity' => 0.400],
+                        'RAW-GULA-001' => ['quantity' => 0.060],
+                        'RAW-MARGARIN-001' => ['quantity' => 0.040],
+                        'RAW-RAGI-001' => ['quantity' => 10],
+                        'RAW-TELUR-001' => ['quantity' => 2],
+                        'RAW-SUSU-001' => ['quantity' => 200],
+                        'RAW-SELAI-002' => ['quantity' => 60],
                     ],
                 ],
                 [
                     'sku' => 'FG-ROTIMANIS-001',
-                    'nama' => 'Roti Manis Isi Keju',
+                    'name' => 'Roti Manis Isi Keju',
                     'category_id' => $catRoti->id,
-                    'deskripsi' => 'Roti manis empuk dengan isian keju leleh',
+                    'description' => 'Roti manis empuk dengan isian keju leleh',
                     'retail_price' => 7000,
                     'initial_stock' => 20,
-                    'stok_minimal' => 5,
+                    'min_stock' => 5,
                     'expected_yield' => 8,
                     'recipe' => [
-                        'RAW-TEPUNG-001' => ['jumlah' => 0.500],
-                        'RAW-GULA-001' => ['jumlah' => 0.080],
-                        'RAW-MARGARIN-001' => ['jumlah' => 0.050],
-                        'RAW-RAGI-001' => ['jumlah' => 11],
-                        'RAW-TELUR-001' => ['jumlah' => 2],
-                        'RAW-SUSU-001' => ['jumlah' => 150],
-                        'RAW-KEJU-001' => ['jumlah' => 0.100],
-                        'RAW-SUSU-002' => ['jumlah' => 20],
+                        'RAW-TEPUNG-001' => ['quantity' => 0.500],
+                        'RAW-GULA-001' => ['quantity' => 0.080],
+                        'RAW-MARGARIN-001' => ['quantity' => 0.050],
+                        'RAW-RAGI-001' => ['quantity' => 11],
+                        'RAW-TELUR-001' => ['quantity' => 2],
+                        'RAW-SUSU-001' => ['quantity' => 150],
+                        'RAW-KEJU-001' => ['quantity' => 0.100],
+                        'RAW-SUSU-002' => ['quantity' => 20],
                     ],
                 ],
                 [
                     'sku' => 'FG-ROTIMANIS-003',
-                    'nama' => 'Roti Manis Cokelat Premium',
+                    'name' => 'Roti Manis Cokelat Premium',
                     'kategori' => 'Roti',
-                    'deskripsi' => 'Roti manis empuk menggunakan adonan dasar',
+                    'description' => 'Roti manis empuk menggunakan adonan dasar',
                     'retail_price' => 8000,
                     'initial_stock' => 10,
-                    'stok_minimal' => 5,
+                    'min_stock' => 5,
                     'expected_yield' => 10,
                     'recipe' => [
-                        'INT-ADONAN-001' => ['jumlah' => 500],
-                        'RAW-SELAI-002' => ['jumlah' => 100],
+                        'INT-ADONAN-001' => ['quantity' => 500],
+                        'RAW-SELAI-002' => ['quantity' => 100],
                     ],
                 ],
                 [
                     'sku' => 'FG-DONAT-001',
-                    'nama' => 'Donat Chocolate Glaze',
+                    'name' => 'Donat Chocolate Glaze',
                     'category_id' => $catKue->id,
-                    'deskripsi' => 'Donat empuk dengan lapisan cokelat glaze',
+                    'description' => 'Donat empuk dengan lapisan cokelat glaze',
                     'retail_price' => 8500,
                     'initial_stock' => 24,
-                    'stok_minimal' => 6,
+                    'min_stock' => 6,
                     'expected_yield' => 12,
                     'recipe' => [
-                        'RAW-TEPUNG-002' => ['jumlah' => 0.500],
-                        'RAW-GULA-001' => ['jumlah' => 0.100],
-                        'RAW-MARGARIN-001' => ['jumlah' => 0.050],
-                        'RAW-RAGI-001' => ['jumlah' => 8],
-                        'RAW-TELUR-001' => ['jumlah' => 2],
-                        'RAW-SUSU-001' => ['jumlah' => 150],
-                        'RAW-COKELAT-001' => ['jumlah' => 0.150],
-                        'RAW-MINYAK-001' => ['jumlah' => 500],
-                        'RAW-VANILI-001' => ['jumlah' => 2],
+                        'RAW-TEPUNG-002' => ['quantity' => 0.500],
+                        'RAW-GULA-001' => ['quantity' => 0.100],
+                        'RAW-MARGARIN-001' => ['quantity' => 0.050],
+                        'RAW-RAGI-001' => ['quantity' => 8],
+                        'RAW-TELUR-001' => ['quantity' => 2],
+                        'RAW-SUSU-001' => ['quantity' => 150],
+                        'RAW-COKELAT-001' => ['quantity' => 0.150],
+                        'RAW-MINYAK-001' => ['quantity' => 500],
+                        'RAW-VANILI-001' => ['quantity' => 2],
                     ],
                 ],
             ];
 
-            $satuanPcsId = $satuanPcs->id;
+            $unitPcsId = $unitPcs->id;
             $productionModels = [];
 
             // Merge and Create Products
@@ -458,62 +458,62 @@ class BakeryStoreSeeder extends Seeder
             foreach ($allBOMProducts as $data) {
                 $type = str_starts_with($data['sku'], 'FG-') ? 'finished_good' : 'intermediate_good';
 
-                $produk = Produk::create([
+                $product = Product::create([
                     'sku' => $data['sku'],
-                    'nama' => $data['nama'],
+                    'name' => $data['name'],
                     'kategori' => $data['kategori'],
-                    'deskripsi' => $data['deskripsi'],
-                    'satuan_id' => $data['satuan_id'] ?? $satuanPcsId,
+                    'description' => $data['description'],
+                    'unit_id' => $data['unit_id'] ?? $unitPcsId,
                     'type' => $type,
                     'track_stock' => true,
                     'is_active' => true,
-                    'stok_minimal' => $data['stok_minimal'] ?? 0,
+                    'min_stock' => $data['min_stock'] ?? 0,
                 ]);
 
                 Price::create([
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $produk->satuan_id,
+                    'product_id' => $product->id,
+                    'unit_id' => $product->unit_id,
                     'purchase_price' => 0,
                     'retail_price' => $data['retail_price'] ?? 0,
                     'is_current' => true,
                 ]);
 
                 Stock::create([
-                    'produk_id' => $produk->id,
-                    'last_satuan_id' => $produk->satuan_id,
+                    'product_id' => $product->id,
+                    'last_unit_id' => $product->unit_id,
                     'balance' => $data['initial_stock'] ?? 0,
                 ]);
 
                 $bom = Bom::create([
-                    'produk_id' => $produk->id,
+                    'product_id' => $product->id,
                     'sku' => 'BOM-'.$data['sku'],
-                    'nama' => 'Resep '.$data['nama'],
+                    'name' => 'Resep '.$data['name'],
                     'is_active' => true,
                     'expected_yield' => $data['expected_yield'],
                     'auto_deduct_on_sale' => true,
                 ]);
 
                 foreach ($data['recipe'] as $materialSku => $itemData) {
-                    $material = $materialModels[$materialSku] ?? Produk::where('sku', $materialSku)->first();
+                    $material = $materialModels[$materialSku] ?? Product::where('sku', $materialSku)->first();
                     if ($material) {
                         BomItem::create([
                             'bom_id' => $bom->id,
-                            'produk_id' => $material->id,
-                            'satuan_id' => $material->satuan_id,
-                            'jumlah' => $itemData['jumlah'],
+                            'product_id' => $material->id,
+                            'unit_id' => $material->unit_id,
+                            'quantity' => $itemData['quantity'],
                         ]);
                     }
                 }
 
-                app(RecalculateHpp::class)->handle($produk);
-                $productionModels[$data['sku']] = ['produk' => $produk, 'bom' => $bom];
+                app(RecalculateHpp::class)->handle($product);
+                $productionModels[$data['sku']] = ['product' => $product, 'bom' => $bom];
             }
 
             // ─── 7. Productions ──────────────────────────────────────────
             $pData = [
                 [
                     'sku' => 'PRD-'.date('ym').'-0001',
-                    'tanggal' => now()->subDays(2),
+                    'date' => now()->subDays(2),
                     'model' => $productionModels['FG-ROTITAWAR-001'],
                     'target_yield' => 20,
                     'actual_yield' => 20,
@@ -521,7 +521,7 @@ class BakeryStoreSeeder extends Seeder
                 ],
                 [
                     'sku' => 'PRD-'.date('ym').'-0002',
-                    'tanggal' => now(),
+                    'date' => now(),
                     'model' => $productionModels['FG-DONAT-001'],
                     'target_yield' => 48,
                     'actual_yield' => 0,
@@ -529,7 +529,7 @@ class BakeryStoreSeeder extends Seeder
                 ],
                 [
                     'sku' => 'PRD-'.date('ym').'-0003',
-                    'tanggal' => now()->subDays(3),
+                    'date' => now()->subDays(3),
                     'model' => $productionModels['INT-ADONAN-001'],
                     'target_yield' => 1000,
                     'actual_yield' => 1000,
@@ -537,7 +537,7 @@ class BakeryStoreSeeder extends Seeder
                 ],
                 [
                     'sku' => 'PRD-'.date('ym').'-0004',
-                    'tanggal' => now()->subDays(1),
+                    'date' => now()->subDays(1),
                     'model' => $productionModels['FG-ROTIMANIS-003'],
                     'target_yield' => 20,
                     'actual_yield' => 20,
@@ -549,9 +549,9 @@ class BakeryStoreSeeder extends Seeder
                 $m = $pd['model'];
                 $prod = Production::create([
                     'sku' => $pd['sku'],
-                    'tanggal' => $pd['tanggal'],
+                    'date' => $pd['date'],
                     'bom_id' => $m['bom']->id,
-                    'produk_id' => $m['produk']->id,
+                    'product_id' => $m['product']->id,
                     'target_yield' => $pd['target_yield'],
                     'actual_yield' => $pd['actual_yield'] ?: null,
                     'status' => $pd['status'],
@@ -562,8 +562,8 @@ class BakeryStoreSeeder extends Seeder
                 $scale = $pd['target_yield'] / $m['bom']->expected_yield;
 
                 foreach ($m['bom']->items as $item) {
-                    $itemPrice = $item->produk->currentPrice->purchase_price ?? 0;
-                    $qty = $item->jumlah * $scale;
+                    $itemPrice = $item->product->currentPrice->purchase_price ?? 0;
+                    $qty = $item->quantity * $scale;
 
                     if ($pd['status'] === 'completed') {
                         $costSum += ($itemPrice * $qty);
@@ -571,11 +571,11 @@ class BakeryStoreSeeder extends Seeder
 
                     ProductionItem::create([
                         'production_id' => $prod->id,
-                        'produk_id' => $item->produk_id,
-                        'satuan_id' => $item->satuan_id,
+                        'product_id' => $item->product_id,
+                        'unit_id' => $item->unit_id,
                         'planned_qty' => $qty,
                         'actual_qty' => ($pd['status'] === 'completed') ? $qty : 0,
-                        'harga_satuan' => $itemPrice,
+                        'unit_price' => $itemPrice,
                     ]);
                 }
 

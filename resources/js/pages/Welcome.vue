@@ -61,7 +61,7 @@ withDefaults(
                 <a href="#solutions"
                     class="text-sm font-semibold text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors">Solusi</a>
                 <a href="#pricing"
-                    class="text-sm font-semibold text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors">Harga</a>
+                    class="text-sm font-semibold text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors">Price</a>
             </div>
 
             <!-- Auth Actions -->
@@ -143,7 +143,7 @@ withDefaults(
             </h1>
             <p
                 class="mb-12 text-xl leading-8 text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200 max-w-2xl mx-auto">
-                Kelola stok, kasir, hingga produksi dalam satu platform cloud <br class="hidden md:block" />
+                Kelola stok, kasir, hingga productsi dalam satu platform cloud <br class="hidden md:block" />
                 yang dirancang khusus untuk kemajuan bisnis menengah ke bawah.
             </p>
             <div
@@ -205,9 +205,9 @@ withDefaults(
                     class="mb-8 flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:rotate-12 transition-transform dark:bg-emerald-900/30 dark:text-emerald-400">
                     <ChefHat class="h-7 w-7" />
                 </div>
-                <h3 class="mb-3 text-xl font-extrabold text-slate-900 dark:text-white">Produksi</h3>
+                <h3 class="mb-3 text-xl font-extrabold text-slate-900 dark:text-white">Productsi</h3>
                 <p class="text-sm leading-7 text-slate-600 dark:text-slate-400 italic">Kelola Bill of Materials untuk
-                    produk
+                    product
                     rakitan atau olahan makanan.</p>
             </div>
 

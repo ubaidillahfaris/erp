@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number')->unique();
-            $table->date('tanggal');
+            $table->date('date');
             $table->decimal('total_amount', 15, 2);
             $table->string('payment_method'); // cash, qris, transfer, credit
             $table->text('notes')->nullable();

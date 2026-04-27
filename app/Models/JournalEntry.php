@@ -28,7 +28,7 @@ class JournalEntry extends Model
 
     protected $fillable = [
         'ref_number',
-        'tanggal',
+        'date',
         'description',
         'journalable_id',
         'journalable_type',
@@ -38,7 +38,7 @@ class JournalEntry extends Model
     protected function casts(): array
     {
         return [
-            'tanggal' => 'date',
+            'date' => 'date',
         ];
     }
 

@@ -53,7 +53,13 @@ const handleVoid = () => {
             toast.success('Transaksi berhasil dibatalkan');
         },
         onError: (errors) => {
-            if (errors.reason) toast.error(errors.reason);
+            if (errors.period_lock) {
+                toast.error('Cannot void: accounting period is closed');
+            } else if (errors.reason) {
+                toast.error(errors.reason);
+            } else {
+                toast.error(Object.values(errors)[0] as string || 'Gagal membatalkan transaksi');
+            }
         }
     });
 };
@@ -88,7 +94,7 @@ const formatDate = (dateString: string, includeTime = false) => {
     
     <PageHeader 
         :title="`Detail Transaksi #${sale.invoice_number}`" 
-        :description="`Dibuat pada ${formatDate(sale.tanggal)}` || 'Penjualan Selesai'"
+        :description="`Dibuat pada ${formatDate(sale.date)}` || 'Penjualan Selesai'"
         back-href="/sales"
     >
         <template #actions>
@@ -100,16 +106,22 @@ const formatDate = (dateString: string, includeTime = false) => {
                     <CheckCircle2 class="h-3.5 w-3.5 mr-1.5" /> Transaksi Selesai
                 </Badge>
                 <Badge 
-                    v-else 
+                    v-else-if="sale.status === 'voided'" 
                     class="bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-50 text-[11px] uppercase font-bold px-3 h-8"
                 >
                     <Ban class="h-3.5 w-3.5 mr-1.5" /> Transaksi Dibatalkan
+                </Badge>
+                <Badge 
+                    v-else 
+                    class="bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-50 text-[11px] uppercase font-bold px-3 h-8"
+                >
+                    <AlertCircle class="h-3.5 w-3.5 mr-1.5" /> {{ sale.status }}
                 </Badge>
 
                 <Dialog v-if="sale.status === 'completed' && canVoid" v-model:open="isVoidDialogOpen">
                     <DialogTrigger as-child>
                         <Button variant="outline" class="h-8 text-xs font-bold uppercase tracking-widest text-destructive hover:bg-destructive/5 hover:text-destructive border-destructive/20">
-                            <Ban class="h-3 w-3 mr-2" /> Void Transaksi
+                            <Ban class="h-3 w-3 mr-2" /> Void Sale
                         </Button>
                     </DialogTrigger>
                     <DialogContent class="sm:max-w-[425px]">
@@ -117,37 +129,49 @@ const formatDate = (dateString: string, includeTime = false) => {
                             <DialogHeader>
                                 <DialogTitle class="flex items-center gap-2 text-destructive">
                                     <AlertCircle class="h-5 w-5" />
-                                    Batalkan Transaksi
+                                    Void Sale: {{ sale.invoice_number }}
                                 </DialogTitle>
-                                <DialogDescription>
-                                    Tindakan ini akan mengembalikan stok barang ke gudang dan menandai transaksi ini sebagai tidak sah.
+                                <DialogDescription class="space-y-3 pt-2">
+                                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-muted-foreground uppercase font-bold tracking-tight">Invoice Number</span>
+                                            <span class="font-mono font-bold">#{{ sale.invoice_number }}</span>
+                                        </div>
+                                        <div class="flex justify-between text-xs">
+                                            <span class="text-muted-foreground uppercase font-bold tracking-tight">Total Amount</span>
+                                            <span class="font-bold">{{ formatCurrency(sale.total_amount) }}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm font-bold text-rose-600">
+                                        This action will reverse all journal entries and stock movements. This cannot be undone.
+                                    </p>
                                 </DialogDescription>
                             </DialogHeader>
                             <div class="grid gap-4 py-6">
                                 <div class="space-y-2">
-                                    <Label for="reason" class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Alasan Pembatalan</Label>
+                                    <Label for="reason" class="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Void Reason</Label>
                                     <Textarea 
                                         id="reason" 
                                         v-model="voidForm.reason" 
-                                        placeholder="Contoh: Kesalahan input item, Customer batal beli..." 
+                                        placeholder="Enter reason for voiding this sale..." 
                                         class="min-h-[100px] resize-none border-slate-200 focus:border-destructive/30 focus:ring-destructive/10"
+                                        required
                                     />
                                     <p v-if="voidForm.errors.reason" class="text-xs text-destructive font-medium ml-1">{{ voidForm.errors.reason }}</p>
-                                    <p class="text-[10px] text-muted-foreground ml-1">Minimal 5 karakter diperlukan.</p>
                                 </div>
                             </div>
                             <DialogFooter>
                                 <Button type="button" variant="ghost" @click="isVoidDialogOpen = false" class="text-xs font-bold uppercase tracking-widest">
-                                    Kembali
+                                    Back
                                 </Button>
                                 <Button 
                                     type="submit" 
-                                    destructive 
+                                    variant="destructive"
                                     :disabled="voidForm.processing || voidForm.reason.length < 5"
                                     class="text-xs font-bold uppercase tracking-widest px-6"
                                 >
                                     <Loader2 v-if="voidForm.processing" class="h-3 w-3 mr-2 animate-spin" />
-                                    Konfirmasi Void
+                                    Confirm Void
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -195,7 +219,7 @@ const formatDate = (dateString: string, includeTime = false) => {
                         </div>
                         <div class="flex flex-col gap-1">
                             <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Waktu Penjualan</label>
-                            <p class="text-sm font-bold text-foreground">{{ formatDate(sale.tanggal) }}</p>
+                            <p class="text-sm font-bold text-foreground">{{ formatDate(sale.date) }}</p>
                         </div>
                         <div class="flex flex-col gap-1">
                             <label class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Metode Pembayaran</label>
@@ -303,9 +327,9 @@ const formatDate = (dateString: string, includeTime = false) => {
                     <Table>
                         <TableHeader>
                             <TableRow class="bg-slate-50/30">
-                                <TableHead class="pl-6 w-full">Produk</TableHead>
+                                <TableHead class="pl-6 w-full">Product</TableHead>
                                 <TableHead class="text-center px-4">Qty</TableHead>
-                                <TableHead class="text-right px-4">Harga</TableHead>
+                                <TableHead class="text-right px-4">Price</TableHead>
                                 <TableHead class="text-right pr-6">Subtotal</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -313,12 +337,12 @@ const formatDate = (dateString: string, includeTime = false) => {
                             <TableRow v-for="item in sale.items" :key="item.id">
                                 <TableCell class="pl-6 py-4">
                                     <div class="flex flex-col gap-0.5 min-w-0">
-                                        <p class="text-sm font-bold text-foreground truncate">{{ item.produk.nama }}</p>
-                                        <p class="text-[10px] text-muted-foreground uppercase tracking-tighter font-mono">#{{ item.produk.sku || '--' }}</p>
+                                        <p class="text-sm font-bold text-foreground truncate">{{ item.product.name }}</p>
+                                        <p class="text-[10px] text-muted-foreground uppercase tracking-tighter font-mono">#{{ item.product.sku || '--' }}</p>
                                     </div>
                                 </TableCell>
                                 <TableCell class="text-center font-bold text-foreground text-[13px]">
-                                    {{ item.qty }} <span class="text-[10px] font-normal text-muted-foreground uppercase ml-0.5">{{ item.satuan?.simbol || 'PCS' }}</span>
+                                    {{ item.qty }} <span class="text-[10px] font-normal text-muted-foreground uppercase ml-0.5">{{ item.unit?.symbol || 'PCS' }}</span>
                                 </TableCell>
                                 <TableCell class="text-right text-[13px] font-medium tabular-nums">{{ formatCurrency(item.price) }}</TableCell>
                                 <TableCell class="text-right pr-6 font-bold tabular-nums text-foreground">{{ formatCurrency(item.subtotal) }}</TableCell>
@@ -367,9 +391,9 @@ const formatDate = (dateString: string, includeTime = false) => {
                     <Table>
                         <TableHeader>
                             <TableRow class="bg-slate-50/30">
-                                <TableHead class="pl-6 py-4">Tanggal</TableHead>
+                                <TableHead class="pl-6 py-4">Date</TableHead>
                                 <TableHead class="px-4">Metode</TableHead>
-                                <TableHead class="text-right px-4">Jumlah</TableHead>
+                                <TableHead class="text-right px-4">Quantity</TableHead>
                                 <TableHead class="text-right pr-6">Dicatat Oleh</TableHead>
                             </TableRow>
                         </TableHeader>

@@ -15,7 +15,7 @@ class Sale extends Model
 
     protected $fillable = [
         'invoice_number',
-        'tanggal',
+        'date',
         'total_amount',
         'received_amount',
         'change_amount',
@@ -30,7 +30,7 @@ class Sale extends Model
     protected function casts(): array
     {
         return [
-            'tanggal' => 'date',
+            'date' => 'date',
             'total_amount' => 'decimal:2',
             'received_amount' => 'decimal:2',
             'change_amount' => 'decimal:2',

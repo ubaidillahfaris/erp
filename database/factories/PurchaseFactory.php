@@ -15,11 +15,11 @@ class PurchaseFactory extends Factory
         return [
             'no_invoice' => fake()->bothify('INV-####-??'),
             'vendor_id' => null,
-            'tanggal' => fake()->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
+            'date' => fake()->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
             'transaction_type' => 'purchase',
             'status' => 'draft',
             'total_biaya' => fake()->randomFloat(2, 10000, 5000000),
-            'keterangan' => fake()->optional()->sentence(),
+            'notes' => fake()->optional()->sentence(),
             'signature_log' => null,
         ];
     }

@@ -29,10 +29,10 @@ import QuickVendorModal from '@/components/QuickVendorModal.vue';
 import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{ 
-    produks: any[]; 
-    satuans: any[];
+    products: any[]; 
+    units: any[];
     vendors: any[];
-    produkId?: string | number;
+    productId?: string | number;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -48,25 +48,25 @@ const transactionTypes = [
 ];
 
 const form = useForm({
-    tanggal: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0],
     transaction_type: 'purchase',
     payment_method: 'cash',
     vendor_id: '' as string | number | null,
-    keterangan: '',
+    notes: '',
     no_invoice: '',
     items: [
-        { produk_id: props.produkId || '', satuan_id: '', jumlah: 1, harga_satuan: 0 }
+        { product_id: props.productId || '', unit_id: '', quantity: 1, unit_price: 0 }
     ],
     attachments: [] as File[]
 });
 
-// Auto-fill satuan_id and price if produkId is provided from backend link
-if (props.produkId) {
-    const product = props.produks.find(p => p.id == props.produkId);
+// Auto-fill unit_id and price if productId is provided from backend link
+if (props.productId) {
+    const product = props.products.find(p => p.id == props.productId);
     if (product) {
-        form.items[0].satuan_id = product.satuan_id;
+        form.items[0].unit_id = product.unit_id;
         if (product.current_price) {
-            form.items[0].harga_satuan = Number(product.current_price.purchase_price);
+            form.items[0].unit_price = Number(product.current_price.purchase_price);
         }
     }
 }
@@ -74,7 +74,7 @@ if (props.produkId) {
 const isQuickVendorOpen = ref(false);
 
 const addItem = () => {
-    form.items.push({ produk_id: '', satuan_id: '', jumlah: 1, harga_satuan: 0 });
+    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0 });
 };
 
 const removeItem = (idx: number) => {
@@ -82,21 +82,21 @@ const removeItem = (idx: number) => {
 };
 
 const handleProductChange = (idx: number, productId: string | number) => {
-    const product = props.produks.find(p => p.id == productId);
+    const product = props.products.find(p => p.id == productId);
     if (product) {
-        form.items[idx].satuan_id = product.satuan_id;
+        form.items[idx].unit_id = product.unit_id;
         if (form.transaction_type === 'purchase' && product.current_price) {
-            form.items[idx].harga_satuan = Number(product.current_price.purchase_price);
+            form.items[idx].unit_price = Number(product.current_price.purchase_price);
         }
     }
 };
 
-// Force harga_satuan to 0 if not purchase
+// Force unit_price to 0 if not purchase
 watch(() => form.transaction_type, (newType) => {
     if (newType !== 'purchase') {
         form.vendor_id = null;
         form.items.forEach(item => {
-            item.harga_satuan = 0;
+            item.unit_price = 0;
         });
     }
 });
@@ -118,11 +118,11 @@ const formatCurrency = (value: number) => {
 
 const totalBiaya = computed(() => {
     return form.items.reduce((total, item) => {
-        return total + (Number(item.jumlah) * Number(item.harga_satuan));
+        return total + (Number(item.quantity) * Number(item.unit_price));
     }, 0);
 });
 
-const handleVendorCreated = (vendor: { id: number; nama: string }) => {
+const handleVendorCreated = (vendor: { id: number; name: string }) => {
     props.vendors.push(vendor);
     form.vendor_id = vendor.id;
 };
@@ -175,9 +175,9 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                             <p class="text-xs text-muted-foreground mt-1">Selain opsi "Pembelian", harga satuan akan dikunci ke Rp0.</p>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <Label for="tanggal">Tanggal Dokumen</Label>
-                            <Input id="tanggal" type="date" v-model="form.tanggal" required />
-                            <p v-if="form.errors.tanggal" class="text-sm text-destructive">{{ form.errors.tanggal }}</p>
+                            <Label for="date">Tanggal Dokumen</Label>
+                            <Input id="date" type="date" v-model="form.date" required />
+                            <p v-if="form.errors.date" class="text-sm text-destructive">{{ form.errors.date }}</p>
                         </div>
                     </div>
 
@@ -217,7 +217,7 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                                 v-model="form.vendor_id" 
                                 :options="vendors" 
                                 placeholder="Pilih Vendor..." 
-                                display-expr="nama"
+                                display-expr="name"
                                 value-expr="id"
                                 :disabled="form.transaction_type !== 'purchase'"
                                 hide-label
@@ -227,9 +227,9 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                     </div>
                     
                     <div class="flex flex-col gap-2">
-                        <Label for="keterangan">Keterangan Tambahan (Opsional)</Label>
-                        <Textarea id="keterangan" v-model="form.keterangan" placeholder="Catatan transaksi..." rows="2" class="resize-none" />
-                        <p v-if="form.errors.keterangan" class="text-sm text-destructive">{{ form.errors.keterangan }}</p>
+                        <Label for="notes">Keterangan Tambahan (Opsional)</Label>
+                        <Textarea id="notes" v-model="form.notes" placeholder="Catatan transaksi..." rows="2" class="resize-none" />
+                        <p v-if="form.errors.notes" class="text-sm text-destructive">{{ form.errors.notes }}</p>
                     </div>
                 </div>
             </Card>
@@ -241,7 +241,7 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                         <div class="space-y-1">
                             <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Barang Masuk</h3>
                         </div>
-                        <Button type="button" variant="outline" size="sm" @click="addItem" :disabled="!!props.produkId && form.items.length === 1 && !form.items[0].produk_id">
+                        <Button type="button" variant="outline" size="sm" @click="addItem" :disabled="!!props.productId && form.items.length === 1 && !form.items[0].product_id">
                             <Plus class="mr-2 h-4 w-4" /> Tambah Baris
                         </Button>
                     </div>
@@ -249,10 +249,10 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                         <Table>
                             <TableHeader>
                                 <TableRow class="bg-slate-50">
-                                    <TableHead class="w-[35%] pl-6">Produk / Barang</TableHead>
-                                    <TableHead class="w-[20%]">Satuan</TableHead>
+                                    <TableHead class="w-[35%] pl-6">Product / Barang</TableHead>
+                                    <TableHead class="w-[20%]">Unit</TableHead>
                                     <TableHead class="w-[15%]">Kuantitas</TableHead>
-                                    <TableHead class="w-[25%]">Harga Satuan (Rp)</TableHead>
+                                    <TableHead class="w-[25%]">Harga Unit (Rp)</TableHead>
                                     <TableHead class="w-[5%] text-right pr-6"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -260,45 +260,45 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
                                 <TableRow v-for="(item, idx) in form.items" :key="idx">
                                     <TableCell class="pl-6 align-top pt-4">
                                         <CreatableSelect 
-                                            v-model="item.produk_id" 
-                                            :options="produks" 
-                                            placeholder="Pilih Produk..."
+                                            v-model="item.product_id" 
+                                            :options="products" 
+                                            placeholder="Pilih Product..."
                                             hide-label
-                                            display-expr="nama"
+                                            display-expr="name"
                                             value-expr="id"
                                             @update:modelValue="(val) => handleProductChange(idx, val)"
-                                            :disabled="!!props.produkId && idx === 0"
+                                            :disabled="!!props.productId && idx === 0"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.produk_id`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.produk_id`] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.product_id`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.product_id`] }}</p>
                                     </TableCell>
-                                    <!-- Select Satuan -->
+                                    <!-- Select Unit -->
                                     <TableCell class="align-top pt-4">
                                         <CreatableSelect 
-                                            v-model="item.satuan_id" 
-                                            :options="satuans" 
-                                            placeholder="Satuan"
+                                            v-model="item.unit_id" 
+                                            :options="units" 
+                                            placeholder="Unit"
                                             hide-label
-                                            display-expr="simbol"
+                                            display-expr="symbol"
                                             value-expr="id"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.satuan_id`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.satuan_id`] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.unit_id`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.unit_id`] }}</p>
                                     </TableCell>
                                     <!-- Input Kuantitas -->
                                     <TableCell class="align-top pt-4">
-                                        <Input type="number" step="0.0001" v-model="item.jumlah" required min="0.0001" class="text-right" />
-                                        <p v-if="form.errors[`items.${idx}.jumlah`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.jumlah`] }}</p>
+                                        <Input type="number" step="0.0001" v-model="item.quantity" required min="0.0001" class="text-right" />
+                                        <p v-if="form.errors[`items.${idx}.quantity`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.quantity`] }}</p>
                                     </TableCell>
-                                    <!-- Input Harga Satuan -->
+                                    <!-- Input Harga Unit -->
                                     <TableCell class="align-top pt-4">
                                         <Input 
                                             type="number" 
-                                            v-model="item.harga_satuan" 
+                                            v-model="item.unit_price" 
                                             required 
                                             min="0" 
                                             class="text-right"
                                             :disabled="form.transaction_type !== 'purchase'"
                                         />
-                                        <p v-if="form.errors[`items.${idx}.harga_satuan`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.harga_satuan`] }}</p>
+                                        <p v-if="form.errors[`items.${idx}.unit_price`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.unit_price`] }}</p>
                                     </TableCell>
                                     <!-- Hapus -->
                                     <TableCell class="text-right pr-6 align-top pt-4">
@@ -337,7 +337,7 @@ const handleVendorCreated = (vendor: { id: number; nama: string }) => {
 
             <div class="flex justify-end gap-4 py-4 mb-20">
                 <Link :href="index().url">
-                    <Button variant="outline" type="button" class="h-11 px-8 border-slate-200">Batal</Button>
+                    <Button variant="outline" type="button" class="h-11 px-8 border-slate-200">Cancel</Button>
                 </Link>
                 <Button type="submit" :disabled="form.processing" class="h-11 px-8 gap-2 bg-primary">
                     <Save class="h-4 w-4" />

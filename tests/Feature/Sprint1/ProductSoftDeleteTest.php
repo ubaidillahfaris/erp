@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Sprint1;
 
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
@@ -28,45 +28,45 @@ class ProductSoftDeleteTest extends TestCase
 
     public function test_a_product_can_be_soft_deleted()
     {
-        $produk = Produk::factory()->create();
+        $product = Product::factory()->create();
 
         $response = $this->actingAs($this->user)
-            ->delete(route('produk.destroy', $produk));
+            ->delete(route('product.destroy', $product));
 
-        $response->assertRedirect(route('produk.index'));
+        $response->assertRedirect(route('product.index'));
 
         // Assert it's deleted from active listing
-        $this->assertDatabaseMissing('produks', [
-            'id' => $produk->id,
+        $this->assertDatabaseMissing('products', [
+            'id' => $product->id,
             'deleted_at' => null,
         ]);
 
         // Assert it still exists in the database
-        $this->assertDatabaseHas('produks', [
-            'id' => $produk->id,
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
         ]);
 
-        $this->assertNotNull(Produk::withTrashed()->find($produk->id)->deleted_at);
+        $this->assertNotNull(Product::withTrashed()->find($product->id)->deleted_at);
     }
 
     public function test_bulk_delete_performs_soft_deletes()
     {
-        $produks = Produk::factory()->count(3)->create();
-        $ids = $produks->pluck('id')->toArray();
+        $products = Product::factory()->count(3)->create();
+        $ids = $products->pluck('id')->toArray();
 
         $response = $this->actingAs($this->user)
-            ->delete(route('produk.bulk-destroy', [
+            ->delete(route('product.bulk-destroy', [
                 'ids' => $ids,
             ]));
 
-        $response->assertRedirect(route('produk.index'));
+        $response->assertRedirect(route('product.index'));
 
         foreach ($ids as $id) {
-            $this->assertDatabaseMissing('produks', [
+            $this->assertDatabaseMissing('products', [
                 'id' => $id,
                 'deleted_at' => null,
             ]);
-            $this->assertNotNull(Produk::withTrashed()->find($id)->deleted_at);
+            $this->assertNotNull(Product::withTrashed()->find($id)->deleted_at);
         }
     }
 }

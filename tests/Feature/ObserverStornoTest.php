@@ -3,34 +3,30 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
-use App\Models\Bom;
 use App\Models\Customer;
 use App\Models\CustomerCreditSetting;
 use App\Models\CustomerStatus;
 use App\Models\CustomerType;
 use App\Models\JournalEntry;
-use App\Models\Payable;
-use App\Models\Produk;
-use App\Models\Price;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\Satuan;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
-use App\Models\Production;
+use App\Models\Unit;
 use App\Models\User;
 use App\Services\StornoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Inertia\Testing\AssertableInertia as Assert;
 
 class ObserverStornoTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $user;
-    protected Satuan $satuan;
+
+    protected Unit $unit;
 
     protected function setUp(): void
     {
@@ -39,7 +35,7 @@ class ObserverStornoTest extends TestCase
         $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
 
-        $this->satuan = Satuan::create(['nama' => 'PCS', 'simbol' => 'pcs']);
+        $this->unit = Unit::create(['name' => 'PCS', 'symbol' => 'pcs']);
 
         // Required Accounts
         Account::create(['code' => '1101', 'name' => 'Cash', 'type' => 'asset', 'balance_type' => 'debit']);
@@ -57,7 +53,7 @@ class ObserverStornoTest extends TestCase
 
         Sale::create([
             'invoice_number' => 'ERR-001',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'payment_method' => 'credit',
             'status' => 'pending',
@@ -84,10 +80,10 @@ class ObserverStornoTest extends TestCase
         $this->expectExceptionMessage('Melebihi credit limit');
 
         request()->merge(['customer_id' => $customer->id]);
-        
+
         Sale::create([
             'invoice_number' => 'ERR-002',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000, // Over limit
             'payment_method' => 'credit',
             'status' => 'pending',
@@ -96,12 +92,12 @@ class ObserverStornoTest extends TestCase
 
     public function test_storno_service_reverses_sale_properly()
     {
-        $produk = Produk::create(['sku' => 'P-001', 'nama' => 'P1', 'satuan_id' => $this->satuan->id, 'track_stock' => true]);
-        Stock::create(['produk_id' => $produk->id, 'balance' => 10, 'last_satuan_id' => $this->satuan->id]);
+        $product = Product::create(['sku' => 'P-001', 'name' => 'P1', 'unit_id' => $this->unit->id, 'track_stock' => true]);
+        Stock::create(['product_id' => $product->id, 'balance' => 10, 'last_unit_id' => $this->unit->id]);
 
         $sale = Sale::create([
             'invoice_number' => 'IV-TEST',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'payment_method' => 'cash',
             'status' => 'completed',
@@ -110,8 +106,8 @@ class ObserverStornoTest extends TestCase
 
         $item = SaleItem::create([
             'sale_id' => $sale->id,
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'qty' => 2,
             'price' => 5000,
             'cost' => 2500,
@@ -120,7 +116,7 @@ class ObserverStornoTest extends TestCase
 
         // Manually create some journal entries for the sale to reverse
         $entry = JournalEntry::create([
-            'tanggal' => now(),
+            'date' => now(),
             'description' => 'Test Sale',
             'journalable_type' => Sale::class,
             'journalable_id' => $sale->id,
@@ -137,7 +133,7 @@ class ObserverStornoTest extends TestCase
         $this->assertEquals('Customer returned', $sale->storno_reason);
 
         // Check Stock Reversed (10 - 2 = 8 after SaleItem created, now should be 10 again after storno)
-        $this->assertEquals(10, (float) $produk->stock->refresh()->balance); 
+        $this->assertEquals(10, (float) $product->stock->refresh()->balance);
 
         // Check Journal Reversed
         $this->assertDatabaseHas('journal_entries', [
@@ -148,29 +144,29 @@ class ObserverStornoTest extends TestCase
 
     public function test_storno_stock_opname()
     {
-        $produk = Produk::create(['sku' => 'P-002', 'nama' => 'P2', 'satuan_id' => $this->satuan->id]);
-        Stock::create(['produk_id' => $produk->id, 'balance' => 10, 'last_satuan_id' => $this->satuan->id]);
+        $product = Product::create(['sku' => 'P-002', 'name' => 'P2', 'unit_id' => $this->unit->id]);
+        Stock::create(['product_id' => $product->id, 'balance' => 10, 'last_unit_id' => $this->unit->id]);
 
         $opname = StockOpname::create([
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'system_qty' => 10,
             'actual_qty' => 15,
             'adjustment_qty' => 5,
             'type' => 'surplus',
             'status' => 'completed',
-            'tanggal' => now(),
+            'date' => now(),
         ]);
 
         // Create movement
         StockMovement::create([
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'type' => 'in',
-            'jumlah' => 5,
+            'quantity' => 5,
             'reference_type' => 'stock_opname',
             'reference_id' => $opname->id,
-            'keterangan' => 'Opname',
+            'notes' => 'Opname',
         ]);
 
         $stornoService = app(StornoService::class);
@@ -178,26 +174,26 @@ class ObserverStornoTest extends TestCase
 
         $opname->refresh();
         $this->assertEquals('storno', $opname->status);
-        
+
         // Stock: 10 + 5 (opname) - 5 (storno) = 10
         // Wait, our test setup above manually created movement but didn't update stock balance.
         // Storno will record a new movement 'out' of 5.
         $this->assertDatabaseHas('stock_movements', [
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'type' => 'out',
-            'jumlah' => 5,
-            'keterangan' => 'STORNO: Entry error',
+            'quantity' => 5,
+            'notes' => 'STORNO: Entry error',
         ]);
     }
 
     public function test_sale_deletion_removes_related_records()
     {
-        $produk = Produk::create(['sku' => 'P-DEL', 'nama' => 'P-DEL', 'satuan_id' => $this->satuan->id, 'track_stock' => true]);
-        Stock::create(['produk_id' => $produk->id, 'balance' => 10, 'last_satuan_id' => $this->satuan->id]);
+        $product = Product::create(['sku' => 'P-DEL', 'name' => 'P-DEL', 'unit_id' => $this->unit->id, 'track_stock' => true]);
+        Stock::create(['product_id' => $product->id, 'balance' => 10, 'last_unit_id' => $this->unit->id]);
 
         $sale = Sale::create([
             'invoice_number' => 'IV-DEL',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'payment_method' => 'cash',
             'status' => 'pending',
@@ -205,8 +201,8 @@ class ObserverStornoTest extends TestCase
 
         SaleItem::create([
             'sale_id' => $sale->id,
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'qty' => 1,
             'price' => 10000,
             'cost' => 5000,
@@ -221,6 +217,3 @@ class ObserverStornoTest extends TestCase
         $this->assertDatabaseMissing('stock_movements', ['reference_id' => $sale->id]);
     }
 }
-
-
-

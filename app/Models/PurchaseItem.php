@@ -9,17 +9,17 @@ class PurchaseItem extends Model
 {
     protected $fillable = [
         'purchase_id',
-        'produk_id',
-        'satuan_id',
-        'jumlah',
-        'harga_satuan',
+        'product_id',
+        'unit_id',
+        'quantity',
+        'unit_price',
     ];
 
     protected function casts(): array
     {
         return [
-            'jumlah' => 'decimal:4',
-            'harga_satuan' => 'decimal:2',
+            'quantity' => 'decimal:4',
+            'unit_price' => 'decimal:2',
         ];
     }
 
@@ -28,13 +28,13 @@ class PurchaseItem extends Model
         return $this->belongsTo(Purchase::class);
     }
 
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Unit::class);
     }
 }

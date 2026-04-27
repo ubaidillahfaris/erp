@@ -49,7 +49,7 @@ const sort = ref(props.filters.sort || '');
 const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'batch', label: 'Batch & Produk', sortKey: 'sku' },
+    { key: 'batch', label: 'Batch & Product', sortKey: 'sku' },
     { key: 'yield', label: 'Yield (Target / Aktual)', align: 'center' },
     { key: 'cost', label: 'Total Biaya', align: 'right', sortKey: 'total_cost' },
     { key: 'status', label: 'Status', align: 'center' },
@@ -72,20 +72,25 @@ const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | nu
 };
 
 const handleBulkDelete = async (ids: (string | number)[]) => {
-    if (await confirmDialog('Hapus Produksi Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} data produksi yang dipilih? (Produksi yang sudah selesai akan dilewati).`)) {
+    const completedCount = props.productions.data
+        .filter(p => ids.includes(p.id) && p.status === 'completed')
+        .length;
+    
+    let message = `Are you sure you want to delete ${ids.length} production orders?`;
+    if (completedCount > 0) {
+        message += ` ${completedCount} completed production(s) will be skipped.`;
+    }
+
+    if (await confirmDialog('Bulk Delete Production?', message)) {
         router.post(bulkDestroy().url, {
             _method: 'DELETE',
             ids: ids
-        }, {
-            onSuccess: () => {
-                // Flash messages handled by server
-            }
         });
     }
 };
 
 const deleteProduction = async (id: number) => {
-    if (await confirmDialog('Hapus Catatan Produksi?', 'Apakah Anda yakin ingin menghapus catatan produksi ini? Tindakan ini tidak dapat dibatalkan.')) {
+    if (await confirmDialog('Hapus Catatan Productsi?', 'Are you sure you want to delete catatan productsi ini? Tindakan ini tidak dapat dibatalkan.')) {
         router.delete(destroy({ production: id }).url);
     }
 };
@@ -125,7 +130,7 @@ const getStatusStyles = (status: string) => {
         case 'draft':
             return 'bg-secondary/40 text-muted-foreground border-transparent';
         case 'in_progress':
-            return 'bg-blue-50 text-blue-600 border-blue-100';
+            return 'bg-amber-50 text-amber-600 border-amber-100';
         case 'completed':
             return 'bg-emerald-50 text-emerald-600 border-emerald-100';
         case 'cancelled':
@@ -167,7 +172,7 @@ const getStatusStyles = (status: string) => {
                     <Link :href="create().url">
                         <Button primary>
                             <Plus class="h-4 w-4" />
-                            Mulai Produksi
+                            Mulai Productsi
                         </Button>
                     </Link>
                 </template>
@@ -177,11 +182,11 @@ const getStatusStyles = (status: string) => {
                             <Boxes class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.bom?.nama }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.bom?.name }}</p>
                             <div class="flex items-center gap-2 mt-1.5">
                                 <span class="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-widest">{{ row.sku }}</span>
                                 <span class="text-[11px] text-muted-foreground italic">•</span>
-                                <span class="text-[11px] font-medium text-muted-foreground">{{ formatDate(row.tanggal) }}</span>
+                                <span class="text-[11px] font-medium text-muted-foreground">{{ formatDate(row.date) }}</span>
                             </div>
                         </div>
                     </div>
@@ -234,7 +239,7 @@ const getStatusStyles = (status: string) => {
                                 </DropdownMenuItem>
 
                                 <DropdownMenuItem @click="handleClone(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
-                                    <RotateCcw class="h-3.5 w-3.5 text-muted-foreground" /> Duplikat Produksi
+                                    <RotateCcw class="h-3.5 w-3.5 text-muted-foreground" /> Duplikat Productsi
                                 </DropdownMenuItem>
                                 
                                 <DropdownMenuItem v-if="row.status === 'draft'" @click="deleteProduction(row.id)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-destructive focus:text-destructive focus:bg-destructive/5">
@@ -248,7 +253,7 @@ const getStatusStyles = (status: string) => {
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 opacity-20 py-12">
                         <HistoryIcon class="h-10 w-10 text-muted-foreground" />
-                        <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Log produksi kosong</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Log productsi kosong</p>
                     </div>
                 </template>
             </DataTable>

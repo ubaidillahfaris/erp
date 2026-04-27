@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Purchase;
-use App\Models\Satuan;
+use App\Models\Unit;
 use App\Models\User;
 use App\Models\Vendor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,21 +39,21 @@ class PurchaseTest extends TestCase
     public function test_admin_can_create_a_draft_purchase(): void
     {
         $vendor = Vendor::factory()->create();
-        $satuan = Satuan::factory()->create();
-        $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
+        $unit = Unit::factory()->create();
+        $product = Product::factory()->create(['unit_id' => $unit->id]);
 
         $response = $this->actingAs($this->admin)->post(route('purchasing.store'), [
             'no_invoice' => 'INV-001',
             'vendor_id' => $vendor->id,
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'transaction_type' => 'purchase',
-            'keterangan' => 'Test purchase',
+            'notes' => 'Test purchase',
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $satuan->id,
-                    'jumlah' => 10,
-                    'harga_satuan' => 5000,
+                    'product_id' => $product->id,
+                    'unit_id' => $unit->id,
+                    'quantity' => 10,
+                    'unit_price' => 5000,
                 ],
             ],
         ]);
@@ -65,31 +65,31 @@ class PurchaseTest extends TestCase
             'transaction_type' => 'purchase',
         ]);
         $this->assertDatabaseHas('purchase_items', [
-            'produk_id' => $produk->id,
-            'jumlah' => 10,
+            'product_id' => $product->id,
+            'quantity' => 10,
         ]);
     }
 
     public function test_finalizing_purchase_updates_stock_and_price_stats(): void
     {
         $vendor = Vendor::factory()->create();
-        $satuan = Satuan::factory()->create();
-        $produk = Produk::factory()->create(['satuan_id' => $satuan->id, 'track_stock' => true]);
+        $unit = Unit::factory()->create();
+        $product = Product::factory()->create(['unit_id' => $unit->id, 'track_stock' => true]);
 
         // Create a draft purchase
         $purchase = Purchase::create([
             'vendor_id' => $vendor->id,
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'transaction_type' => 'purchase',
             'status' => 'draft',
             'total_biaya' => 50000,
         ]);
 
         $purchase->items()->create([
-            'produk_id' => $produk->id,
-            'satuan_id' => $satuan->id,
-            'jumlah' => 10,
-            'harga_satuan' => 5000,
+            'product_id' => $product->id,
+            'unit_id' => $unit->id,
+            'quantity' => 10,
+            'unit_price' => 5000,
         ]);
 
         // Finalize
@@ -106,16 +106,16 @@ class PurchaseTest extends TestCase
 
         // Assert stock movement was recorded
         $this->assertDatabaseHas('stock_movements', [
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'type' => 'in',
-            'jumlah' => 10,
+            'quantity' => 10,
             'reference_type' => 'purchase',
         ]);
 
         // Assert price stats were updated
         $this->assertDatabaseHas('product_price_stats', [
-            'produk_id' => $produk->id,
-            'satuan_id' => $satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $unit->id,
             'avg_price' => 5000,
             'min_price' => 5000,
             'max_price' => 5000,
@@ -124,21 +124,21 @@ class PurchaseTest extends TestCase
 
     public function test_gift_purchase_forces_price_to_zero_and_vendor_to_null(): void
     {
-        $satuan = Satuan::factory()->create();
-        $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
+        $unit = Unit::factory()->create();
+        $product = Product::factory()->create(['unit_id' => $unit->id]);
         $vendor = Vendor::factory()->create();
 
         $response = $this->actingAs($this->admin)->post(route('purchasing.store'), [
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'transaction_type' => 'gift',
             'vendor_id' => $vendor->id, // Sent intentionally by TF
-            'keterangan' => 'Bonus dari distributor',
+            'notes' => 'Bonus dari distributor',
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $satuan->id,
-                    'jumlah' => 5,
-                    'harga_satuan' => 1000000, // Sent intentionally by TF
+                    'product_id' => $product->id,
+                    'unit_id' => $unit->id,
+                    'quantity' => 5,
+                    'unit_price' => 1000000, // Sent intentionally by TF
                 ],
             ],
         ]);
@@ -151,8 +151,8 @@ class PurchaseTest extends TestCase
             'total_biaya' => 0, // Should be computed as 0
         ]);
         $this->assertDatabaseHas('purchase_items', [
-            'jumlah' => 5,
-            'harga_satuan' => 0, // Should be forced to 0
+            'quantity' => 5,
+            'unit_price' => 0, // Should be forced to 0
         ]);
     }
 
@@ -161,21 +161,21 @@ class PurchaseTest extends TestCase
         $vendor = Vendor::factory()->create();
         $purchase = Purchase::factory()->create(['vendor_id' => $vendor->id]);
 
-        $satuan = Satuan::factory()->create();
-        $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
+        $unit = Unit::factory()->create();
+        $product = Product::factory()->create(['unit_id' => $unit->id]);
 
         $response = $this->actingAs($this->admin)->put(route('purchasing.update', $purchase), [
             'no_invoice' => 'INV-REVISED',
             'vendor_id' => $vendor->id,
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'transaction_type' => 'purchase',
-            'keterangan' => 'Revised via edit',
+            'notes' => 'Revised via edit',
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $satuan->id,
-                    'jumlah' => 20, // Changed qty
-                    'harga_satuan' => 10000,
+                    'product_id' => $product->id,
+                    'unit_id' => $unit->id,
+                    'quantity' => 20, // Changed qty
+                    'unit_price' => 10000,
                 ],
             ],
         ]);
@@ -184,11 +184,11 @@ class PurchaseTest extends TestCase
         $this->assertDatabaseHas('purchases', [
             'id' => $purchase->id,
             'no_invoice' => 'INV-REVISED',
-            'keterangan' => 'Revised via edit',
+            'notes' => 'Revised via edit',
         ]);
         $this->assertDatabaseHas('purchase_items', [
             'purchase_id' => $purchase->id,
-            'jumlah' => 20,
+            'quantity' => 20,
         ]);
     }
 
@@ -197,19 +197,19 @@ class PurchaseTest extends TestCase
         $vendor = Vendor::factory()->create();
         $purchase = Purchase::factory()->finalized()->create(['vendor_id' => $vendor->id]);
 
-        $satuan = Satuan::factory()->create();
-        $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
+        $unit = Unit::factory()->create();
+        $product = Product::factory()->create(['unit_id' => $unit->id]);
 
         $response = $this->actingAs($this->admin)->put(route('purchasing.update', $purchase), [
             'vendor_id' => $vendor->id,
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'transaction_type' => 'purchase',
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $satuan->id,
-                    'jumlah' => 10,
-                    'harga_satuan' => 5000,
+                    'product_id' => $product->id,
+                    'unit_id' => $unit->id,
+                    'quantity' => 10,
+                    'unit_price' => 5000,
                 ],
             ],
         ]);
@@ -224,15 +224,15 @@ class PurchaseTest extends TestCase
 
     public function test_purchase_type_requires_vendor(): void
     {
-        $satuan = Satuan::factory()->create();
-        $produk = Produk::factory()->create(['satuan_id' => $satuan->id]);
+        $unit = Unit::factory()->create();
+        $product = Product::factory()->create(['unit_id' => $unit->id]);
 
         $response = $this->actingAs($this->admin)->post(route('purchasing.store'), [
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'transaction_type' => 'purchase',
             'vendor_id' => null, // no vendor
             'items' => [
-                ['produk_id' => $produk->id, 'satuan_id' => $satuan->id, 'jumlah' => 1, 'harga_satuan' => 1000],
+                ['product_id' => $product->id, 'unit_id' => $unit->id, 'quantity' => 1, 'unit_price' => 1000],
             ],
         ]);
 

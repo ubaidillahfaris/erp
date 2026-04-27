@@ -37,7 +37,7 @@ class PeriodLockTest extends TestCase
         // 2. Attempt to POST to POS with date in April 2024
         $response = $this->actingAs($this->user)
             ->post(route('pos.store'), [
-                'tanggal' => '2024-04-15',
+                'date' => '2024-04-15',
                 // other POS data...
             ]);
 
@@ -60,7 +60,7 @@ class PeriodLockTest extends TestCase
         // If it passes middleware, it might fail validation (422) or something else, but not 403 from period lock.
         $response = $this->actingAs($this->user)
             ->post(route('pos.store'), [
-                'tanggal' => '2024-04-15',
+                'date' => '2024-04-15',
             ]);
 
         $this->assertNotEquals(403, $response->getStatusCode());

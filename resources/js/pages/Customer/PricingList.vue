@@ -73,7 +73,7 @@ const formatCurrency = (value: number) => {
                 :data="customers" 
                 :columns="columns" 
                 v-model:search="search"
-                search-placeholder="Cari nama pelanggan..."
+                search-placeholder="Search name pelanggan..."
                 :show-selection="false"
             >
                 <!-- CELL: Customer Profile -->

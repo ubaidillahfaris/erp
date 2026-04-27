@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Bom;
-use App\Models\Produk;
-use App\Models\Satuan;
+use App\Models\Product;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,11 +20,11 @@ class BomFactory extends Factory
     public function definition(): array
     {
         return [
-            'produk_id' => Produk::factory(),
+            'product_id' => Product::factory(),
             'sku' => 'BOM-'.$this->faker->unique()->numberBetween(1000, 9999),
-            'nama' => $this->faker->words(3, true),
+            'name' => $this->faker->words(3, true),
             'expected_yield' => $this->faker->numberBetween(10, 100),
-            'yield_satuan_id' => Satuan::factory(),
+            'yield_unit_id' => Unit::factory(),
         ];
     }
 }

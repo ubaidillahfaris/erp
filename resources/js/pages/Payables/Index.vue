@@ -312,7 +312,7 @@ const getTypeLabel = (type: string) => {
                 
                 <!-- Center Text -->
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Aktif</span>
+                    <span class="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">Active</span>
                     <span class="text-sm font-black text-slate-900 leading-none">{{ formatCurrency(donutTotal) }}</span>
                 </div>
             </div>
@@ -418,7 +418,7 @@ const getTypeLabel = (type: string) => {
                     </div>
                     <div class="flex flex-col">
                         <span class="text-[12px] font-bold text-foreground leading-none">
-                            {{ row.party?.nama || row.party?.name || 'External Party' }}
+                            {{ row.party?.name || row.party?.name || 'External Party' }}
                         </span>
                         <span class="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
                             {{ row.party_type }}

@@ -159,7 +159,7 @@ const submit = () => {
 
                     <div class="flex justify-end gap-3 pt-4">
                         <Button as-child variant="ghost" class="h-10 px-6 text-slate-500 font-bold hover:bg-slate-100">
-                            <Link href="/accounting/accounts">Batal</Link>
+                            <Link href="/accounting/accounts">Cancel</Link>
                         </Button>
                         <Button 
                             type="submit" 

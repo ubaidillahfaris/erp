@@ -52,7 +52,7 @@ const date_end = ref(props.filters.date_end || '');
 const payment_method = ref(props.filters.payment_method || 'all');
 const status = ref(props.filters.status || 'all');
 const perPage = ref(props.filters.per_page || String(props.sales.per_page));
-const sort = ref(props.filters.sort || 'tanggal');
+const sort = ref(props.filters.sort || 'date');
 const direction = ref(props.filters.direction || 'desc');
 
 const columns = [
@@ -185,7 +185,7 @@ const hasActiveFilters = computed(() => {
                     </div>
                     <div class="min-w-0">
                         <p class="text-[13px] font-bold text-foreground font-mono leading-none">#{{ row.invoice_number }}</p>
-                        <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-tighter mt-1.5">{{ formatDate(row.tanggal) }}</p>
+                        <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-tighter mt-1.5">{{ formatDate(row.date) }}</p>
                     </div>
                 </div>
             </template>

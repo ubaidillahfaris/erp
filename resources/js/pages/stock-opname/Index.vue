@@ -2,7 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
 import { Plus, Eye, Search, Trash2, Edit2, MoreHorizontal, ClipboardList, ChevronRight, RotateCcw } from 'lucide-vue-next';
-import { storno } from '@/actions/App/Http/Controllers/StockOpnameController';
+import { stornoOpname } from '@/actions/App/Http/Controllers/StockOpnameController';
 import { ref, watch } from 'vue';
 import PageHeader from '@/components/PageHeader.vue';
 import DataTable from '@/components/DataTable.vue';
@@ -57,14 +57,14 @@ watch([search, perPage], debounce(([newSearch, newPerPage]) => {
 const { confirmDialog } = useConfirm();
 
 const deleteOpname = async (id: number) => {
-    if (await confirmDialog('Hapus Data Opname?', 'Apakah Anda yakin ingin menghapus data opname ini? Data yang terhapus tidak dapat dikembalikan.')) {
+    if (await confirmDialog('Hapus Data Opname?', 'Are you sure you want to delete data opname ini? Data yang terhapus tidak dapat dikembalikan.')) {
         router.delete(`/stock-opname/${id}`);
     }
 };
 
 const cancelOpname = async (id: number) => {
     if (await confirmDialog('Batalkan Hasil Opname?', 'Batalkan hasil penyesuaian stok ini? Saldo stok akan dikembalikan ke kondisi semula. Tindakan ini akan tercatat sebagai pembatalan.')) {
-        router.post(storno.url(id));
+        router.post(stornoOpname.url(id));
     }
 };
 
@@ -127,12 +127,12 @@ const formatStatus = (status: string) => {
                         <div class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                             <ClipboardList class="h-4 w-4" />
                         </div>
-                        <span class="text-[13px] font-bold text-foreground capitalize tabular-nums leading-none">{{ formatDate(row.tanggal) }}</span>
+                        <span class="text-[13px] font-bold text-foreground capitalize tabular-nums leading-none">{{ formatDate(row.date) }}</span>
                     </div>
                 </template>
 
                 <template #cell(info)="{ row }">
-                    <p class="text-[13px] text-muted-foreground max-w-[200px] line-clamp-1 leading-relaxed tracking-tight">{{ row.keterangan || '-' }}</p>
+                    <p class="text-[13px] text-muted-foreground max-w-[200px] line-clamp-1 leading-relaxed tracking-tight">{{ row.notes || '-' }}</p>
                 </template>
 
                 <template #cell(status)="{ row }">

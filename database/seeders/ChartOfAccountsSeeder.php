@@ -29,13 +29,13 @@ class ChartOfAccountsSeeder extends Seeder
             ],
             [
                 'code' => '1301',
-                'name' => 'Persediaan Bahan Baku',
+                'name' => 'Persediaan Raw Materials',
                 'type' => 'asset',
                 'balance_type' => 'debit',
             ],
             [
                 'code' => '1302',
-                'name' => 'Persediaan Barang Jadi',
+                'name' => 'Persediaan Finished Goods',
                 'type' => 'asset',
                 'balance_type' => 'debit',
             ],

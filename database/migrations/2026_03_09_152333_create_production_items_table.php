@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('production_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('production_id')->constrained()->onDelete('cascade');
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('restrict');
-            $table->foreignId('satuan_id')->constrained('satuans')->onDelete('restrict');
+            $table->foreignId('product_id')->constrained('products')->onDelete('restrict');
+            $table->foreignId('unit_id')->constrained('units')->onDelete('restrict');
             $table->decimal('planned_qty', 8, 4);
             $table->decimal('actual_qty', 8, 4);
-            $table->decimal('harga_satuan', 12, 2)->default(0);
+            $table->decimal('unit_price', 12, 2)->default(0);
             $table->timestamps();
         });
     }

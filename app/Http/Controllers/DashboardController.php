@@ -21,18 +21,18 @@ class DashboardController extends Controller
         $interval = $request->query('interval', 'D');
 
         // 1. Total Penjualan Hari Ini
-        $salesToday = Sale::whereDate('tanggal', $today)->sum('total_amount');
+        $salesToday = Sale::whereDate('date', $today)->sum('total_amount');
 
-        // 2. Produksi Aktif
+        // 2. Productsi Aktif
         $activeProductions = Production::where('status', '!=', 'selesai')->count();
 
         // 3. Stok Kritis
-        $criticalStockCount = Stock::whereHas('produk', function ($q) {
+        $criticalStockCount = Stock::whereHas('product', function ($q) {
             $q->where('track_stock', true);
         })->where('balance', '<=', 10)->count();
 
         // 4. Pengeluaran Hari Ini
-        $expensesToday = Pengeluaran::whereDate('tanggal', $today)->sum('nominal');
+        $expensesToday = Pengeluaran::whereDate('date', $today)->sum('nominal');
 
         // Recent Sales
         $recentSales = Sale::latest()->take(5)->get();
@@ -51,22 +51,22 @@ class DashboardController extends Controller
             ],
             'W' => [
                 'range' => now()->subWeeks(12),
-                'col' => 'tanggal',
+                'col' => 'date',
                 'trunc' => 'week',
             ],
             'M' => [
                 'range' => now()->subMonths(12),
-                'col' => 'tanggal',
+                'col' => 'date',
                 'trunc' => 'month',
             ],
             'Y' => [
                 'range' => now()->subYears(5),
-                'col' => 'tanggal',
+                'col' => 'date',
                 'trunc' => 'year',
             ],
             default => [
                 'range' => now()->subDays(30),
-                'col' => 'tanggal',
+                'col' => 'date',
                 'trunc' => 'day',
             ],
         };

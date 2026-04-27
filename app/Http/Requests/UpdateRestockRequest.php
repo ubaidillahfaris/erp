@@ -35,19 +35,19 @@ class UpdateRestockRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tanggal' => 'required|date',
-            'keterangan' => 'nullable|string|max:255',
+            'date' => 'required|date',
+            'notes' => 'nullable|string|max:255',
             'status_pembayaran' => 'required|string|in:lunas,hutang,bayar_berkala',
             'vendor_id' => 'required_if:status_pembayaran,hutang|required_if:status_pembayaran,bayar_berkala|nullable|exists:vendors,id',
             'total_bayar' => 'required|numeric|min:0',
             'biaya_tambahan' => 'nullable|array',
-            'biaya_tambahan.*.nama' => 'required|string|max:255',
+            'biaya_tambahan.*.name' => 'required|string|max:255',
             'biaya_tambahan.*.nominal' => 'required|numeric',
             'items' => 'required|array|min:1',
-            'items.*.produk_id' => 'required|exists:produks,id',
-            'items.*.satuan_id' => 'required|exists:satuans,id',
-            'items.*.jumlah' => 'required|numeric|min:0.0001',
-            'items.*.harga_satuan' => 'required|numeric|min:0',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.unit_id' => 'required|exists:units,id',
+            'items.*.quantity' => 'required|numeric|min:0.0001',
+            'items.*.unit_price' => 'required|numeric|min:0',
         ];
     }
 

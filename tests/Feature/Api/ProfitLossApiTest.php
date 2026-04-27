@@ -27,7 +27,7 @@ class ProfitLossApiTest extends TestCase
 
         // Seed income
         Journal::factory()->create([
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'type' => 'debit',
             'amount' => 5000,
             'category' => 'sales',
@@ -35,7 +35,7 @@ class ProfitLossApiTest extends TestCase
 
         // Seed expense
         Journal::factory()->create([
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'type' => 'kredit',
             'amount' => 2000,
             'category' => 'expense',
@@ -64,14 +64,14 @@ class ProfitLossApiTest extends TestCase
 
         // Entry in current month
         Journal::factory()->create([
-            'tanggal' => now()->toDateString(),
+            'date' => now()->toDateString(),
             'type' => 'debit',
             'amount' => 1000,
         ]);
 
         // Entry in last month
         Journal::factory()->create([
-            'tanggal' => now()->subMonth()->toDateString(),
+            'date' => now()->subMonth()->toDateString(),
             'type' => 'debit',
             'amount' => 500,
         ]);

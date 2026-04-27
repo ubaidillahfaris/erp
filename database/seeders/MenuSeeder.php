@@ -17,10 +17,10 @@ class MenuSeeder extends Seeder
         Menu::whereIn('path', [
             '/customers',
             '/pos',
-            '/produk',
+            '/product',
             '/vendors',
             '/settings/users',
-            '/settings/roles'
+            '/settings/roles',
         ])->whereNull('route_name')->delete();
 
         // Platform (Slug: platform)
@@ -46,9 +46,9 @@ class MenuSeeder extends Seeder
 
         // Inventory (Slug: inventory)
         $this->seedMenu([
-            'name' => 'Produk (Barang)',
-            'path' => '/produk',
-            'route_name' => 'produk.index',
+            'name' => 'Product (Barang)',
+            'path' => '/product',
+            'route_name' => 'product.index',
             'icon' => 'Package',
             'permission_name' => 'manage products',
             'module_slug' => 'inventory',
@@ -87,7 +87,7 @@ class MenuSeeder extends Seeder
 
         // Production (Slug: production)
         $this->seedMenu([
-            'name' => 'Produksi',
+            'name' => 'Productsi',
             'path' => '/production',
             'route_name' => 'production.index',
             'icon' => 'PackageOpen',
@@ -192,9 +192,9 @@ class MenuSeeder extends Seeder
 
         // Settings (Slug: settings)
         $this->seedMenu([
-            'name' => 'Satuan Barang',
+            'name' => 'Product Units',
             'path' => '/satuan',
-            'route_name' => 'satuan.index',
+            'route_name' => 'unit.index',
             'icon' => 'Ruler',
             'permission_name' => 'manage products',
             'module_slug' => 'settings',

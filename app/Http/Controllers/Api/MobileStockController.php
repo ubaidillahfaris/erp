@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ProdukResource;
-use App\Models\Produk;
+use App\Http\Resources\ProductResource;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 /**
@@ -17,10 +17,10 @@ class MobileStockController extends Controller
     /**
      * Lookup Barcode
      *
-     * Mencari detail produk berdasarkan Barcode atau ID untuk cek harga & stok kilat.
+     * Mencari detail product berdasarkan Barcode atau ID untuk cek harga & stok kilat.
      *
-     * @queryParam barcode string Barcode produk (required jika ID kosong). Example: 899123456789
-     * @queryParam id int ID produk (required jika Barcode kosong). Example: 5
+     * @queryParam barcode string Barcode product (required jika ID kosong). Example: 899123456789
+     * @queryParam id int ID product (required jika Barcode kosong). Example: 5
      */
     public function lookup(Request $request)
     {
@@ -29,7 +29,7 @@ class MobileStockController extends Controller
             'id' => 'required_without:barcode',
         ]);
 
-        $query = Produk::query()->with(['currentPrice', 'satuan', 'stock']);
+        $query = Product::query()->with(['currentPrice', 'unit', 'stock']);
 
         if ($request->has('barcode')) {
             $query->where('barcode', $request->barcode);
@@ -37,16 +37,16 @@ class MobileStockController extends Controller
             $query->where('id', $request->id);
         }
 
-        $produk = $query->first();
+        $product = $query->first();
 
-        if (! $produk) {
+        if (! $product) {
             return response()->json([
                 'success' => false,
-                'message' => 'Produk tidak ditemukan',
+                'message' => 'Product tidak ditemukan',
             ], 404);
         }
 
-        return new ProdukResource($produk);
+        return new ProductResource($product);
     }
 
     public function adjustment(Request $request)

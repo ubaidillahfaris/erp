@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Bom;
 use App\Models\Price;
-use App\Models\Produk;
-use App\Models\Satuan;
+use App\Models\Product;
 use App\Models\Stock;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,69 +26,69 @@ class BomSalesDeductionTest extends TestCase
         parent::setUp();
         $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
-        $this->pcs = Satuan::create(['nama' => 'pcs', 'simbol' => 'pcs']);
-        $this->gram = Satuan::create(['nama' => 'gram', 'simbol' => 'g']);
+        $this->pcs = Unit::create(['name' => 'pcs', 'symbol' => 'pcs']);
+        $this->gram = Unit::create(['name' => 'gram', 'symbol' => 'g']);
     }
 
     public function test_warung_kopi_scenario_deducts_only_ingredients()
     {
         // Kopi Cangkir: track_stock=false, auto_deduct_on_sale=true
-        $coffee = Produk::create(['nama' => 'Kopi Bubuk', 'sku' => 'RM-COFFEE', 'satuan_id' => $this->gram->id, 'type' => 'raw_material']);
-        Stock::create(['produk_id' => $coffee->id, 'balance' => 1000, 'last_satuan_id' => $this->gram->id]);
+        $coffee = Product::create(['name' => 'Kopi Bubuk', 'sku' => 'RM-COFFEE', 'unit_id' => $this->gram->id, 'type' => 'raw_material']);
+        Stock::create(['product_id' => $coffee->id, 'balance' => 1000, 'last_unit_id' => $this->gram->id]);
 
-        $kopiCangkir = Produk::create([
-            'nama' => 'Kopi Cangkir',
+        $kopiCangkir = Product::create([
+            'name' => 'Kopi Cangkir',
             'sku' => 'FG-KOPI',
-            'satuan_id' => $this->pcs->id,
+            'unit_id' => $this->pcs->id,
             'type' => 'finished_good',
             'track_stock' => false,
         ]);
-        Stock::create(['produk_id' => $kopiCangkir->id, 'balance' => 0, 'last_satuan_id' => $this->pcs->id]);
-        Price::create(['produk_id' => $kopiCangkir->id, 'satuan_id' => $this->pcs->id, 'retail_price' => 5000, 'purchase_price' => 2000, 'is_current' => true]);
+        Stock::create(['product_id' => $kopiCangkir->id, 'balance' => 0, 'last_unit_id' => $this->pcs->id]);
+        Price::create(['product_id' => $kopiCangkir->id, 'unit_id' => $this->pcs->id, 'retail_price' => 5000, 'purchase_price' => 2000, 'is_current' => true]);
 
-        $bom = Bom::create(['produk_id' => $kopiCangkir->id, 'nama' => 'Resep', 'is_active' => true, 'auto_deduct_on_sale' => true]);
-        $bom->items()->create(['produk_id' => $coffee->id, 'satuan_id' => $this->gram->id, 'jumlah' => 10]);
+        $bom = Bom::create(['product_id' => $kopiCangkir->id, 'name' => 'Resep', 'is_active' => true, 'auto_deduct_on_sale' => true]);
+        $bom->items()->create(['product_id' => $coffee->id, 'unit_id' => $this->gram->id, 'quantity' => 10]);
 
         $this->post(route('pos.store'), [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'payment_method' => 'cash',
-            'items' => [['produk_id' => $kopiCangkir->id, 'satuan_id' => $this->pcs->id, 'qty' => 1, 'price' => 5000, 'cost' => 2000]],
+            'items' => [['product_id' => $kopiCangkir->id, 'unit_id' => $this->pcs->id, 'qty' => 1, 'price' => 5000, 'cost' => 2000]],
         ]);
 
         // Assert Ingredient deducted
-        $this->assertEquals(990, (float) Stock::where('produk_id', $coffee->id)->first()->balance);
+        $this->assertEquals(990, (float) Stock::where('product_id', $coffee->id)->first()->balance);
         // Assert FG stock NOT deducted (remains 0)
-        $this->assertEquals(0, (float) Stock::where('produk_id', $kopiCangkir->id)->first()->balance);
+        $this->assertEquals(0, (float) Stock::where('product_id', $kopiCangkir->id)->first()->balance);
     }
 
     public function test_pabrik_mie_scenario_deducts_only_finished_good()
     {
         // Mie Telur: track_stock=true, auto_deduct_on_sale=false
-        $flour = Produk::create(['nama' => 'Terigu', 'sku' => 'RM-FLOUR', 'satuan_id' => $this->gram->id, 'type' => 'raw_material']);
-        Stock::create(['produk_id' => $flour->id, 'balance' => 1000, 'last_satuan_id' => $this->gram->id]);
+        $flour = Product::create(['name' => 'Terigu', 'sku' => 'RM-FLOUR', 'unit_id' => $this->gram->id, 'type' => 'raw_material']);
+        Stock::create(['product_id' => $flour->id, 'balance' => 1000, 'last_unit_id' => $this->gram->id]);
 
-        $mieTelur = Produk::create([
-            'nama' => 'Mie Telur',
+        $mieTelur = Product::create([
+            'name' => 'Mie Telur',
             'sku' => 'FG-MIE',
-            'satuan_id' => $this->gram->id,
+            'unit_id' => $this->gram->id,
             'type' => 'finished_good',
             'track_stock' => true,
         ]);
-        Stock::create(['produk_id' => $mieTelur->id, 'balance' => 50, 'last_satuan_id' => $this->gram->id]); // Already produced 50g
-        Price::create(['produk_id' => $mieTelur->id, 'satuan_id' => $this->gram->id, 'retail_price' => 10000, 'purchase_price' => 4000, 'is_current' => true]);
+        Stock::create(['product_id' => $mieTelur->id, 'balance' => 50, 'last_unit_id' => $this->gram->id]); // Already produced 50g
+        Price::create(['product_id' => $mieTelur->id, 'unit_id' => $this->gram->id, 'retail_price' => 10000, 'purchase_price' => 4000, 'is_current' => true]);
 
-        $bom = Bom::create(['produk_id' => $mieTelur->id, 'nama' => 'Resep Mie', 'is_active' => true, 'auto_deduct_on_sale' => false]);
-        $bom->items()->create(['produk_id' => $flour->id, 'satuan_id' => $this->gram->id, 'jumlah' => 0.8]); // 0.8g flour for 1g mie
+        $bom = Bom::create(['product_id' => $mieTelur->id, 'name' => 'Resep Mie', 'is_active' => true, 'auto_deduct_on_sale' => false]);
+        $bom->items()->create(['product_id' => $flour->id, 'unit_id' => $this->gram->id, 'quantity' => 0.8]); // 0.8g flour for 1g mie
 
         $this->post(route('pos.store'), [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'payment_method' => 'cash',
-            'items' => [['produk_id' => $mieTelur->id, 'satuan_id' => $this->gram->id, 'qty' => 10, 'price' => 10000, 'cost' => 4000]],
+            'items' => [['product_id' => $mieTelur->id, 'unit_id' => $this->gram->id, 'qty' => 10, 'price' => 10000, 'cost' => 4000]],
         ]);
 
         // Assert Ingredient NOT deducted (remains 1000)
-        $this->assertEquals(1000, (float) Stock::where('produk_id', $flour->id)->first()->balance);
+        $this->assertEquals(1000, (float) Stock::where('product_id', $flour->id)->first()->balance);
         // Assert FG stock deducted (50 - 10 = 40)
-        $this->assertEquals(40, (float) Stock::where('produk_id', $mieTelur->id)->first()->balance);
+        $this->assertEquals(40, (float) Stock::where('product_id', $mieTelur->id)->first()->balance);
     }
 }

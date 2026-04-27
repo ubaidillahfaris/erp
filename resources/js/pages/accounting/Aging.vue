@@ -128,7 +128,7 @@ const handleRowClick = (row: any) => {
                     <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
                         Aging Report <AlertTriangle class="h-5 w-5 text-amber-500" />
                     </h1>
-                    <p class="text-sm text-slate-400 mt-0.5">Laporan Umur Hutang & Piutang per tanggal: {{ formatDate(as_of_date) }}</p>
+                    <p class="text-sm text-slate-400 mt-0.5">Laporan Umur Hutang & Piutang per date: {{ formatDate(as_of_date) }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">

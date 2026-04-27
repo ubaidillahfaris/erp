@@ -5,10 +5,10 @@ namespace Tests\Feature;
 use App\Models\Account;
 use App\Models\JournalEntry;
 use App\Models\Price;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Sale;
-use App\Models\Satuan;
 use App\Models\Stock;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -33,18 +33,18 @@ class SalesProcessTest extends TestCase
         $user = User::factory()->superadmin()->create();
         $this->actingAs($user);
 
-        $satuan = Satuan::create(['nama' => 'pcs', 'simbol' => 'pcs']);
-        $produk = Produk::create([
-            'nama' => 'Kopi Kapal Api',
+        $unit = Unit::create(['name' => 'pcs', 'symbol' => 'pcs']);
+        $product = Product::create([
+            'name' => 'Kopi Kapal Api',
             'sku' => 'KKOPI-001',
-            'satuan_id' => $satuan->id,
+            'unit_id' => $unit->id,
             'is_active' => true,
         ]);
 
         // Setup Price
         Price::create([
-            'produk_id' => $produk->id,
-            'satuan_id' => $satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $unit->id,
             'purchase_price' => 1000,
             'retail_price' => 2500,
             'is_current' => true,
@@ -52,20 +52,20 @@ class SalesProcessTest extends TestCase
 
         // Setup Initial Stock
         Stock::create([
-            'produk_id' => $produk->id,
+            'product_id' => $product->id,
             'balance' => 100,
-            'last_satuan_id' => $satuan->id,
+            'last_unit_id' => $unit->id,
         ]);
 
         $payload = [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'payment_method' => 'cash',
             'received_amount' => 15000,
             'change_amount' => 2500,
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $satuan->id,
+                    'product_id' => $product->id,
+                    'unit_id' => $unit->id,
                     'qty' => 5,
                     'price' => 2500,
                     'cost' => 1000,
@@ -88,7 +88,7 @@ class SalesProcessTest extends TestCase
         $this->assertCount(1, $sale->items);
 
         // 2. Assert Stock deducted (100 - 5 = 95)
-        $stock = Stock::where('produk_id', $produk->id)->first();
+        $stock = Stock::where('product_id', $product->id)->first();
         $this->assertEquals(95, (float) $stock->balance);
 
         // 3. Assert Double-Entry Journaling

@@ -5,7 +5,7 @@ Proses penjualan barang ke pelanggan.
 ```mermaid
 erDiagram
     SALES ||--o{ SALE_ITEMS : "sold_list"
-    PRODUKS ||--o{ SALE_ITEMS : "sold_item"
+    PRODUCTS ||--o{ SALE_ITEMS : "sold_item"
     SATUANS ||--o{ SALE_ITEMS : "selling_unit"
 
     SALES {

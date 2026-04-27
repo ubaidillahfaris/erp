@@ -70,7 +70,7 @@ const getPositionBadge = (position: string) => {
             <DataTable 
                 :data="employees" 
                 :columns="columns" 
-                search-placeholder="Cari nama, NIK..." 
+                search-placeholder="Search name, NIK..." 
                 toolbar-title="Daftar Pegawai"
                 :total-count="employees.total"
             >

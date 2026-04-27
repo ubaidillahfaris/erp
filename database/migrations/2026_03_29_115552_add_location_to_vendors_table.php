@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('vendors', function (Blueprint $table) {
-            $table->decimal('latitude', 10, 8)->nullable()->after('alamat');
+            $table->decimal('latitude', 10, 8)->nullable()->after('address');
             $table->decimal('longitude', 11, 8)->nullable()->after('latitude');
         });
     }

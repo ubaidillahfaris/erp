@@ -8,29 +8,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StockMovement extends Model
 {
     protected $fillable = [
-        'produk_id',
-        'satuan_id',
+        'product_id',
+        'unit_id',
         'type',
-        'jumlah',
+        'quantity',
         'reference_type',
         'reference_id',
-        'keterangan',
+        'notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'jumlah' => 'decimal:4',
+            'quantity' => 'decimal:4',
         ];
     }
 
-    public function produk(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Produk::class);
+        return $this->belongsTo(Product::class);
     }
 
-    public function satuan(): BelongsTo
+    public function unit(): BelongsTo
     {
-        return $this->belongsTo(Satuan::class);
+        return $this->belongsTo(Unit::class);
     }
 }

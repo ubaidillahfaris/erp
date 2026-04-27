@@ -45,8 +45,8 @@ const sort = ref(props.filters.sort || '');
 const direction = ref(props.filters.direction || '');
 
 const columns = [
-    { key: 'reference', label: 'Reference & Produk', sortKey: 'sku' },
-    { key: 'info', label: 'Recipe Info', sortKey: 'nama' },
+    { key: 'reference', label: 'Reference & Product', sortKey: 'sku' },
+    { key: 'info', label: 'Recipe Info', sortKey: 'name' },
     { key: 'estimation', label: 'Estimation', align: 'center' },
     { key: 'status', label: 'Status', align: 'center' },
 ] as const;
@@ -68,7 +68,7 @@ const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | nu
 };
 
 const handleBulkDelete = async (ids: (string | number)[]) => {
-    if (await confirmDialog('Hapus Resep Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} resep yang dipilih?`)) {
+    if (await confirmDialog('Hapus Resep Terpilih?', `Are you sure you want to delete ${ids.length} resep yang dipilih?`)) {
         router.post(bulkDestroy().url, {
             _method: 'DELETE',
             ids: ids
@@ -81,7 +81,7 @@ const handleBulkDelete = async (ids: (string | number)[]) => {
 };
 
 const deleteBom = async (id: number) => {
-    if (await confirmDialog('Hapus Resep BOM?', 'Apakah Anda yakin ingin menghapus resep produksi ini? Data yang terkait mungkin ikut terhapus.')) {
+    if (await confirmDialog('Hapus Resep BOM?', 'Are you sure you want to delete resep productsi ini? Data yang terkait mungkin ikut terhapus.')) {
         router.delete(destroy.url({ bom: id }));
     }
 };
@@ -101,7 +101,7 @@ const formatCurrency = (value: number) => {
     <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
         <PageHeader 
             title="Recipes & BOM" 
-            description="Master Formula & Komposisi Produksi" 
+            description="Master Formula & Komposisi Productsi" 
             back-href="/dashboard"
             :count="boms.total"
         />
@@ -117,7 +117,7 @@ const formatCurrency = (value: number) => {
                 :direction="direction as any"
                 @sort-change="handleSortChange"
                 @bulk-delete="handleBulkDelete"
-                search-placeholder="Cari resep atau produk..."
+                search-placeholder="Cari resep atau product..."
                 toolbar-title="Master Formula"
                 :title="'Recipes & BOM'"
                 :total-count="boms.total"
@@ -136,7 +136,7 @@ const formatCurrency = (value: number) => {
                             <BookOpen class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.produk.nama }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.product.name }}</p>
                             <p class="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-widest mt-1.5">Ref: {{ row.sku }}</p>
                         </div>
                     </div>
@@ -144,18 +144,18 @@ const formatCurrency = (value: number) => {
 
                 <template #cell(info)="{ row }">
                     <div class="flex flex-col gap-0.5">
-                        <span class="text-[13px] font-bold text-foreground">{{ row.nama || 'Unnamed recipe' }}</span>
+                        <span class="text-[13px] font-bold text-foreground">{{ row.name || 'Unnamed recipe' }}</span>
                         <div class="flex items-center gap-1.5 text-[10px] text-muted-foreground italic tracking-tight opacity-70">
-                            <span class="font-bold text-foreground/70">{{ row.expected_yield }} {{ row.yield_satuan?.nama || row.produk?.satuan?.nama }}</span>
+                            <span class="font-bold text-foreground/70">{{ row.expected_yield }} {{ row.yield_unit?.name || row.product?.unit?.name }}</span>
                             <span>•</span>
-                            <span>SKU: {{ row.produk.sku }}</span>
+                            <span>SKU: {{ row.product.sku }}</span>
                         </div>
                     </div>
                 </template>
 
                 <template #cell(estimation)="{ row }">
                     <span class="text-[13px] font-bold text-foreground tabular-nums">
-                        {{ formatCurrency(row.produk?.current_price?.purchase_price || 0) }}
+                        {{ formatCurrency(row.product?.current_price?.purchase_price || 0) }}
                     </span>
                 </template>
 
@@ -192,7 +192,7 @@ const formatCurrency = (value: number) => {
                 <template #empty>
                     <div class="flex flex-col items-center gap-3 opacity-20 py-12">
                         <Package class="h-10 w-10 text-muted-foreground" />
-                        <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Belum ada resep produksi</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Belum ada resep productsi</p>
                     </div>
                 </template>
             </DataTable>

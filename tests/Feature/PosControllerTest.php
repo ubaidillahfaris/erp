@@ -7,21 +7,23 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\CustomerStatus;
 use App\Models\CustomerType;
-use App\Models\Produk;
 use App\Models\Price;
-use App\Models\Satuan;
+use App\Models\Product;
 use App\Models\Stock;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\TestCase;
 
 class PosControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $user;
-    protected Satuan $satuan;
+
+    protected Unit $unit;
+
     protected Category $category;
 
     protected function setUp(): void
@@ -31,7 +33,7 @@ class PosControllerTest extends TestCase
         $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
 
-        $this->satuan = Satuan::create(['nama' => 'PCS', 'simbol' => 'pcs']);
+        $this->unit = Unit::create(['name' => 'PCS', 'symbol' => 'pcs']);
         $this->category = Category::create(['name' => 'Bakery', 'slug' => 'bakery']);
 
         // Required Accounts for Sale Observer
@@ -49,11 +51,11 @@ class PosControllerTest extends TestCase
 
     public function test_index_displays_pos_screen_with_data()
     {
-        Produk::create([
+        Product::create([
             'sku' => 'PROD-001',
-            'nama' => 'Product 1',
+            'name' => 'Product 1',
             'type' => 'finished_good',
-            'satuan_id' => $this->satuan->id,
+            'unit_id' => $this->unit->id,
             'category_id' => $this->category->id,
             'is_active' => true,
         ]);
@@ -61,7 +63,7 @@ class PosControllerTest extends TestCase
         $this->get(route('pos.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Pos/Index')
-                ->has('produks')
+                ->has('products')
                 ->has('customers')
                 ->has('categories')
             );
@@ -69,25 +71,25 @@ class PosControllerTest extends TestCase
 
     public function test_get_price_returns_correct_retail_price()
     {
-        $produk = Produk::create([
+        $product = Product::create([
             'sku' => 'PROD-002',
-            'nama' => 'Product 2',
+            'name' => 'Product 2',
             'type' => 'finished_good',
-            'satuan_id' => $this->satuan->id,
+            'unit_id' => $this->unit->id,
             'is_active' => true,
         ]);
 
         Price::create([
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'retail_price' => 10000,
             'purchase_price' => 8000,
             'is_current' => true,
         ]);
 
         $response = $this->getJson(route('pos.price', [
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
         ]));
 
         $response->assertOk()
@@ -106,17 +108,17 @@ class PosControllerTest extends TestCase
             'customer_status_id' => $status->id,
         ]);
 
-        $produk = Produk::create([
+        $product = Product::create([
             'sku' => 'PROD-003',
-            'nama' => 'Product 3',
+            'name' => 'Product 3',
             'type' => 'finished_good',
-            'satuan_id' => $this->satuan->id,
+            'unit_id' => $this->unit->id,
             'is_active' => true,
         ]);
 
         Price::create([
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'retail_price' => 10000,
             'wholesale_price' => 9000,
             'purchase_price' => 8000,
@@ -124,8 +126,8 @@ class PosControllerTest extends TestCase
         ]);
 
         $response = $this->getJson(route('pos.price', [
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'customer_id' => $customer->id,
         ]));
 
@@ -136,31 +138,31 @@ class PosControllerTest extends TestCase
 
     public function test_store_creates_sale_successfully()
     {
-        $produk = Produk::create([
+        $product = Product::create([
             'sku' => 'PROD-004',
-            'nama' => 'Product 4',
+            'name' => 'Product 4',
             'type' => 'finished_good',
-            'satuan_id' => $this->satuan->id,
+            'unit_id' => $this->unit->id,
             'is_active' => true,
         ]);
 
         Stock::create([
-            'produk_id' => $produk->id,
-            'last_satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'last_unit_id' => $this->unit->id,
             'balance' => 100,
         ]);
 
         $payload = [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'payment_method' => 'cash',
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $this->satuan->id,
+                    'product_id' => $product->id,
+                    'unit_id' => $this->unit->id,
                     'qty' => 2,
                     'price' => 5000,
                     'cost' => 3000,
-                ]
+                ],
             ],
             'received_amount' => 10000,
             'change_amount' => 0,
@@ -178,37 +180,37 @@ class PosControllerTest extends TestCase
 
     public function test_store_fails_if_stock_insufficient()
     {
-        $produk = Produk::create([
+        $product = Product::create([
             'sku' => 'PROD-005',
-            'nama' => 'Product 5',
+            'name' => 'Product 5',
             'type' => 'finished_good',
-            'satuan_id' => $this->satuan->id,
+            'unit_id' => $this->unit->id,
             'is_active' => true,
         ]);
 
         Stock::create([
-            'produk_id' => $produk->id,
-            'last_satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'last_unit_id' => $this->unit->id,
             'balance' => 1, // Only 1 in stock
         ]);
 
         $payload = [
-            'tanggal' => now()->format('Y-m-d'),
+            'date' => now()->format('Y-m-d'),
             'payment_method' => 'cash',
             'items' => [
                 [
-                    'produk_id' => $produk->id,
-                    'satuan_id' => $this->satuan->id,
+                    'product_id' => $product->id,
+                    'unit_id' => $this->unit->id,
                     'qty' => 5, // Requesting 5
                     'price' => 5000,
                     'cost' => 3000,
-                ]
+                ],
             ],
         ];
 
         $this->post(route('pos.store'), $payload)
             ->assertSessionHasErrors(['checkout']);
-            
+
         $this->assertDatabaseMissing('sales', ['status' => 'completed']);
     }
 }

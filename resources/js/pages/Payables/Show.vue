@@ -158,7 +158,7 @@ const typeColor = computed(() => props.payable.type === 'payable' ? 'text-rose-6
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="space-y-2">
                                         <Label
-                                            class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Tanggal</Label>
+                                            class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Date</Label>
                                         <Input type="date" v-model="paymentForm.payment_date"
                                             class="rounded-xl border-slate-200" />
                                     </div>
@@ -316,7 +316,7 @@ const typeColor = computed(() => props.payable.type === 'payable' ? 'text-rose-6
                                     <UserCircle class="h-6 w-6 text-accent" />
                                 </div>
                                 <div class="flex flex-col">
-                                    <p class="text-sm font-bold text-foreground">{{ party?.nama || party?.name ||
+                                    <p class="text-sm font-bold text-foreground">{{ party?.name || party?.name ||
                                         'External'
                                         }}</p>
                                     <p class="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
@@ -355,9 +355,9 @@ const typeColor = computed(() => props.payable.type === 'payable' ? 'text-rose-6
                     <Table>
                         <TableHeader>
                             <TableRow class="bg-slate-50/30">
-                                <TableHead class="pl-6">Tanggal</TableHead>
+                                <TableHead class="pl-6">Date</TableHead>
                                 <TableHead>Metode</TableHead>
-                                <TableHead class="text-right">Jumlah</TableHead>
+                                <TableHead class="text-right">Quantity</TableHead>
                                 <TableHead>Dicatat Oleh</TableHead>
                                 <TableHead class="pr-6">Catatan</TableHead>
                             </TableRow>

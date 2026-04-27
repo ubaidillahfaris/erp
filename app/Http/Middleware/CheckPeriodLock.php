@@ -10,18 +10,21 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckPeriodLock
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        $date = $request->input('tanggal') ?? $request->input('date') ?? now();
+        // Allow read-only access
+        if ($request->isMethod('GET') || $request->isMethod('HEAD')) {
+            return $next($request);
+        }
+
+        $date = $request->input('date') ?? $request->input('tanggal') ?? now();
 
         if (PeriodLock::isLocked($date)) {
             $dt = Carbon::parse($date);
-            abort(403, "Periode Akuntansi {$dt->format('F Y')} sudah dikunci. Transaksi tidak dapat dilakukan.");
+            $monthName = $dt->translatedFormat('F');
+            $message = "Periode Akuntansi {$monthName} {$dt->year} sudah dikunci. Transaksi tidak dapat dilakukan.";
+
+            abort(403, $message);
         }
 
         return $next($request);

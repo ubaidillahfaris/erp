@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('bom_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('bom_id')->constrained('boms')->onDelete('cascade');
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
-            $table->decimal('jumlah', 15, 4);
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->decimal('quantity', 15, 4);
             $table->timestamps();
         });
     }

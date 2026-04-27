@@ -48,7 +48,7 @@ const direction = ref(props.filters.direction || '');
 
 const columns = [
     { key: 'detail', label: 'Detail Pengeluaran', sortKey: 'nama_pengeluaran' },
-    { key: 'kategori', label: 'Kategori & Tanggal', sortKey: 'tanggal' },
+    { key: 'kategori', label: 'Kategori & Tanggal', sortKey: 'date' },
     { key: 'nominal', label: 'Nominal', align: 'right', sortKey: 'nominal' },
 ] as const;
 
@@ -69,7 +69,7 @@ const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | nu
 };
 
 const handleBulkDelete = async (ids: (string | number)[]) => {
-    if (await confirmDialog('Hapus Pengeluaran Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} catatan pengeluaran yang dipilih?`)) {
+    if (await confirmDialog('Hapus Pengeluaran Terpilih?', `Are you sure you want to delete ${ids.length} catatan pengeluaran yang dipilih?`)) {
         router.post(pengeluaranBulkDestroy().url, {
             _method: 'DELETE',
             ids: ids
@@ -140,8 +140,8 @@ const formatDate = (dateString: string) => {
                             <ReceiptText class="h-4 w-4" />
                         </div>
                         <div class="min-w-0 pr-4">
-                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.nama_pengeluaran }}</p>
-                            <p class="text-[10px] text-muted-foreground line-clamp-1 mt-1.5 italic">{{ row.keterangan || 'No internal notes' }}</p>
+                            <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.name_pengeluaran }}</p>
+                            <p class="text-[10px] text-muted-foreground line-clamp-1 mt-1.5 italic">{{ row.notes || 'No internal notes' }}</p>
                         </div>
                     </div>
                 </template>
@@ -154,7 +154,7 @@ const formatDate = (dateString: string) => {
                                 {{ row.account.code }}
                             </span>
                         </div>
-                        <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{{ formatDate(row.tanggal) }}</span>
+                        <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{{ formatDate(row.date) }}</span>
                     </div>
                 </template>
 

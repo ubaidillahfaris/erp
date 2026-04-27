@@ -4,11 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\RecordStockMovement;
 use App\Jobs\GenerateStockMutationPdfJob;
-use App\Models\Produk;
-use App\Models\Satuan;
-use App\Models\SatuanConversion;
+use App\Models\Product;
 use App\Models\StockMovement;
-use App\Services\SatuanService;
+use App\Models\Unit;
+use App\Models\UnitConversion;
+use App\Services\UnitService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -18,14 +18,14 @@ class StockController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Produk::query()
+        $query = Product::query()
             ->whereIn('type', ['raw_material', 'intermediate_good'])
-            ->with(['stock', 'satuan'])
+            ->with(['stock', 'unit'])
             ->withCount('stockMovements');
         $perPage = $request->input('per_page', 10);
 
         if ($request->has('search') && ! empty($request->search)) {
-            $query->where('nama', 'like', "%{$request->search}%")
+            $query->where('name', 'like', "%{$request->search}%")
                 ->orWhere('sku', 'like', "%{$request->search}%");
         }
 
@@ -33,32 +33,32 @@ class StockController extends Controller
             $query->where('type', $request->type);
         }
 
-        $produks = $query->paginate($perPage)->withQueryString();
-        $satuans = Satuan::all();
-        $conversions = SatuanConversion::all();
+        $products = $query->paginate($perPage)->withQueryString();
+        $units = Unit::all();
+        $conversions = UnitConversion::all();
 
         return Inertia::render('stock/Index', [
-            'produks' => $produks,
-            'satuans' => $satuans,
+            'products' => $products,
+            'units' => $units,
             'conversions' => $conversions,
             'filters' => $request->only(['search', 'type', 'per_page']),
         ]);
     }
 
-    public function show(Produk $produk, Request $request): Response
+    public function show(Product $product, Request $request): Response
     {
-        $produk->load(['stock', 'satuan']);
+        $product->load(['stock', 'unit']);
 
         $perPage = $request->input('per_page', 10);
 
-        $movements = StockMovement::where('produk_id', $produk->id)
-            ->with('satuan')
+        $movements = StockMovement::where('product_id', $product->id)
+            ->with('unit')
             ->latest()
             ->paginate($perPage)
             ->withQueryString();
 
         return Inertia::render('stock/Show', [
-            'produk' => $produk,
+            'product' => $product,
             'movements' => $movements,
             'filters' => $request->only(['per_page']),
         ]);
@@ -67,20 +67,20 @@ class StockController extends Controller
     public function adjustment(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'produk_id' => 'required|exists:produks,id',
-            'satuan_id' => 'required|exists:satuans,id',
+            'product_id' => 'required|exists:products,id',
+            'unit_id' => 'required|exists:units,id',
             'type' => 'sometimes|in:in,out',
-            'jumlah' => 'sometimes|numeric',
+            'quantity' => 'sometimes|numeric',
             'physical_qty' => 'sometimes|numeric',
-            'keterangan' => 'required|string|max:255',
+            'notes' => 'required|string|max:255',
         ]);
 
         if ($request->has('physical_qty')) {
-            $produk = Produk::with('stock')->findOrFail($request->produk_id);
-            $currentBalance = (float) ($produk->stock->balance ?? 0);
+            $product = Product::with('stock')->findOrFail($request->product_id);
+            $currentBalance = (float) ($product->stock->balance ?? 0);
 
             // Convert physical_qty to base unit
-            $ratio = app(SatuanService::class)->getConversionRatio($produk->satuan_id, $request->satuan_id);
+            $ratio = app(UnitService::class)->getConversionRatio($product->unit_id, $request->unit_id);
             $physicalQtyBase = (float) $request->physical_qty / ($ratio ?: 1);
 
             $diff = $physicalQtyBase - $currentBalance;
@@ -90,7 +90,7 @@ class StockController extends Controller
             }
 
             $validated['type'] = $diff > 0 ? 'in' : 'out';
-            $validated['jumlah'] = abs($diff) * ($ratio ?: 1);
+            $validated['quantity'] = abs($diff) * ($ratio ?: 1);
         }
 
         app(RecordStockMovement::class)->handle(array_merge($validated, [
@@ -106,7 +106,7 @@ class StockController extends Controller
         $validated = $request->validate([
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
-            'produk_id' => 'nullable|exists:produks,id',
+            'product_id' => 'nullable|exists:products,id',
         ]);
 
         GenerateStockMutationPdfJob::dispatch($validated);

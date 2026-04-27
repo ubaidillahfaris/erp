@@ -20,7 +20,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
-    produk: any;
+    product: any;
     movements: {
         data: any[];
         links: any[];
@@ -38,7 +38,7 @@ const props = defineProps<{
 const perPage = ref(props.filters.per_page || String(props.movements.per_page));
 
 watch(perPage, debounce((newPerPage) => {
-    router.get(`/stock/${props.produk.id}`, {
+    router.get(`/stock/${props.product.id}`, {
         per_page: newPerPage
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
@@ -46,7 +46,7 @@ watch(perPage, debounce((newPerPage) => {
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Stok Inventori', href: '/stock' },
-    { title: props.produk.nama, href: `/stock/${props.produk.id}` },
+    { title: props.product.name, href: `/stock/${props.product.id}` },
 ];
 
 const formatDate = (dateString: string) => {
@@ -63,9 +63,9 @@ const getMovementDetails = (movement: any) => {
         case 'restock':
             return { label: 'Restock', color: 'bg-blue-100 text-blue-700', refHref: `/restock/${movement.reference_id}/edit` };
         case 'production_usage':
-            return { label: 'Pemakaian Produksi', color: 'bg-orange-100 text-orange-700', refHref: `/production` };
+            return { label: 'Pemakaian Productsi', color: 'bg-orange-100 text-orange-700', refHref: `/production` };
         case 'production_yield':
-            return { label: 'Hasil Produksi', color: 'bg-green-100 text-green-700', refHref: `/production` };
+            return { label: 'Hasil Productsi', color: 'bg-green-100 text-green-700', refHref: `/production` };
         case 'adjustment':
             return { label: 'Penyesuaian Manual', color: 'bg-purple-100 text-purple-700', refHref: null };
         default:
@@ -75,13 +75,13 @@ const getMovementDetails = (movement: any) => {
 </script>
 
 <template>
-<Head :title="`Histori Stok - ${produk.nama}`" />
+<Head :title="`Histori Stok - ${product.name}`" />
 
 <AppLayout :breadcrumbs="breadcrumbs">
     <div class="p-6 flex flex-col gap-6">
         <PageHeader 
             title="Histori Mutasi Stok" 
-            :description="`${produk.nama} (${produk.sku})`"
+            :description="`${product.name} (${product.sku})`"
             back-href="/stock"
         >
             <template #actions>
@@ -89,12 +89,12 @@ const getMovementDetails = (movement: any) => {
                     <div class="text-center border-r border-slate-200 pr-6">
                         <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Saldo Saat Ini</p>
                         <p class="text-2xl font-bold text-foreground">
-                            {{ parseFloat(produk.stock?.balance || 0).toLocaleString('id-ID') }}
+                            {{ parseFloat(product.stock?.balance || 0).toLocaleString('id-ID') }}
                         </p>
                     </div>
                     <div class="text-left">
-                        <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Satuan</p>
-                        <p class="text-sm font-bold text-muted-foreground">{{ produk.satuan?.nama }}</p>
+                        <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Unit</p>
+                        <p class="text-sm font-bold text-muted-foreground">{{ product.unit?.name }}</p>
                     </div>
                 </div>
             </template>
@@ -103,7 +103,7 @@ const getMovementDetails = (movement: any) => {
         <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
             <div class="px-6 py-4 border-b border-slate-100">
                 <h3 class="text-sm font-semibold text-slate-900 leading-none">Histori Pergerakan</h3>
-                <p class="text-xs text-slate-400 mt-1">Daftar lengkap transaksi masuk dan keluar untuk produk ini.</p>
+                <p class="text-xs text-slate-400 mt-1">Daftar lengkap transaksi masuk dan keluar untuk product ini.</p>
             </div>
             <div class="p-6">
                 <div class="rounded-xl border border-slate-200 bg-white shadow-none shadow-none overflow-hidden">
@@ -141,15 +141,15 @@ const getMovementDetails = (movement: any) => {
                                         <ArrowDownCircle v-else class="h-4 w-4" />
                                         <span class="font-bold">
                                             {{ (m.type === 'in' ? '+' : '-') }} {{
-                                                parseFloat(m.jumlah).toLocaleString('id-ID') }}
+                                                parseFloat(m.quantity).toLocaleString('id-ID') }}
                                         </span>
-                                        <span class="text-xs text-muted-foreground font-sans">{{ m.satuan?.nama
+                                        <span class="text-xs text-muted-foreground font-sans">{{ m.unit?.name
                                         }}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div class="flex flex-col gap-0.5">
-                                        <p class="text-sm">{{ m.keterangan || '-' }}</p>
+                                        <p class="text-sm">{{ m.notes || '-' }}</p>
                                         <p v-if="m.reference_type && m.reference_id"
                                             class="text-xs text-muted-foreground italic flex items-center gap-1">
                                             <Info class="h-3 w-3" />

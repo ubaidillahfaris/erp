@@ -3,22 +3,23 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\Satuan;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
-use Inertia\Testing\AssertableInertia as Assert;
 
 class SalesControllerTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $user;
-    protected Satuan $satuan;
+
+    protected Unit $unit;
 
     protected function setUp(): void
     {
@@ -27,7 +28,7 @@ class SalesControllerTest extends TestCase
         $this->user = User::factory()->superadmin()->create();
         $this->actingAs($this->user);
 
-        $this->satuan = Satuan::create(['nama' => 'PCS', 'simbol' => 'pcs']);
+        $this->unit = Unit::create(['name' => 'PCS', 'symbol' => 'pcs']);
 
         // Required Accounts for Storno
         Account::create(['code' => '1101', 'name' => 'Cash', 'type' => 'asset', 'balance_type' => 'debit']);
@@ -41,7 +42,7 @@ class SalesControllerTest extends TestCase
     {
         Sale::create([
             'invoice_number' => 'IV-001',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'payment_method' => 'cash',
             'status' => 'completed',
@@ -58,7 +59,7 @@ class SalesControllerTest extends TestCase
     {
         Sale::create([
             'invoice_number' => 'IV-ALPHA',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'payment_method' => 'cash',
             'status' => 'completed',
@@ -66,7 +67,7 @@ class SalesControllerTest extends TestCase
 
         Sale::create([
             'invoice_number' => 'IV-BETA',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 20000,
             'payment_method' => 'cash',
             'status' => 'completed',
@@ -83,7 +84,7 @@ class SalesControllerTest extends TestCase
     {
         $sale = Sale::create([
             'invoice_number' => 'IV-DETAIL',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'payment_method' => 'cash',
             'status' => 'completed',
@@ -100,7 +101,7 @@ class SalesControllerTest extends TestCase
     {
         $sale = Sale::create([
             'invoice_number' => 'IV-VOID',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'payment_method' => 'cash',
             'status' => 'completed',
@@ -118,17 +119,17 @@ class SalesControllerTest extends TestCase
     {
         // Ensure permission exists and is assigned to superadmin (which we use in setUp)
         Permission::firstOrCreate(['name' => 'void sales']);
-        
-        $produk = Produk::create([
+
+        $product = Product::create([
             'sku' => 'SKU-001',
-            'nama' => 'Produk 1',
-            'satuan_id' => $this->satuan->id,
+            'name' => 'Product 1',
+            'unit_id' => $this->unit->id,
             'track_stock' => false,
         ]);
 
         $sale = Sale::create([
             'invoice_number' => 'IV-STORNO',
-            'tanggal' => now(),
+            'date' => now(),
             'total_amount' => 10000,
             'payment_method' => 'cash',
             'status' => 'completed',
@@ -137,8 +138,8 @@ class SalesControllerTest extends TestCase
 
         SaleItem::create([
             'sale_id' => $sale->id,
-            'produk_id' => $produk->id,
-            'satuan_id' => $this->satuan->id,
+            'product_id' => $product->id,
+            'unit_id' => $this->unit->id,
             'qty' => 1,
             'price' => 10000,
             'cost' => 5000,

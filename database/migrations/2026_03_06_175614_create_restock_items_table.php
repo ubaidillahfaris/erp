@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('restock_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('restock_id')->constrained('restocks')->onDelete('cascade');
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
-            $table->decimal('jumlah', 15, 4);
-            $table->decimal('harga_satuan', 15, 2)->default(0);
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->decimal('quantity', 15, 4);
+            $table->decimal('unit_price', 15, 2)->default(0);
             $table->timestamps();
         });
     }

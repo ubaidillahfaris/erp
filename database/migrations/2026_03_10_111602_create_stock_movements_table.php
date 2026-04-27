@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('stock_movements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
-            $table->foreignId('satuan_id')->constrained('satuans')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
             $table->enum('type', ['in', 'out']);
-            $table->decimal('jumlah', 15, 4);
+            $table->decimal('quantity', 15, 4);
             $table->string('reference_type')->nullable(); // restock, production_usage, production_yield, adjustment
             $table->unsignedBigInteger('reference_id')->nullable();
-            $table->text('keterangan')->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

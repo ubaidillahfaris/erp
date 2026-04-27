@@ -11,7 +11,7 @@ class Journal extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tanggal',
+        'date',
         'type',
         'amount',
         'balance',

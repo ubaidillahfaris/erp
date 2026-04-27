@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('stock_opname_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stock_opname_id')->constrained('stock_opnames')->onDelete('cascade');
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
-            $table->foreignId('satuan_id')->constrained('satuans')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('unit_id')->constrained('units')->onDelete('cascade');
             $table->decimal('system_qty', 15, 4);
             $table->decimal('physical_qty', 15, 4);
             $table->timestamps();

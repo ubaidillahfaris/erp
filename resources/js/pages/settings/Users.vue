@@ -144,14 +144,14 @@ const submit = () => {
         form.put(update(editingUserId.value).url, {
             onSuccess: () => {
                 isDialogOpen.value = false;
-                toast.success('User berhasil diperbarui');
+                toast.success('User updated successfully');
             },
         });
     } else {
         form.post(store().url, {
             onSuccess: () => {
                 isDialogOpen.value = false;
-                toast.success('User berhasil ditambahkan');
+                toast.success('User added successfully');
             },
         });
     }
@@ -162,9 +162,9 @@ import { useConfirm } from '@/composables/useConfirm';
 const { confirmDialog } = useConfirm();
 
 const deleteUser = async (id: number) => {
-    if (await confirmDialog('Hapus User?', 'Apakah Anda yakin ingin menghapus user ini? Akses loginnya akan segera dicabut.')) {
+    if (await confirmDialog('Hapus User?', 'Are you sure you want to delete user ini? Akses loginnya akan segera dicabut.')) {
         form.delete(destroyUserRoute(id).url, {
-            onSuccess: () => toast.success('User berhasil dihapus'),
+            onSuccess: () => toast.success('User deleted successfully'),
         });
     }
 };
@@ -178,7 +178,7 @@ const deleteUser = async (id: number) => {
     <SettingsLayout>
         <div class="space-y-6">
             <DataTable :data="users" :columns="columns" v-model:search="search" v-model:perPage="perPage"
-                search-placeholder="Cari nama atau email..." toolbar-title="Daftar Pengguna" :sort="sort"
+                search-placeholder="Search name atau email..." toolbar-title="Daftar Pengguna" :sort="sort"
                 :direction="direction as any" :filter-options="filterOptions" v-model:active-filters="activeFilters"
                 @sort-change="handleSortChange" :total-count="users.total">
                 <template #header-actions>
@@ -263,7 +263,7 @@ const deleteUser = async (id: number) => {
 
                 <div class="grid gap-4 py-4">
                     <div class="grid gap-2">
-                        <Label for="name">Nama</Label>
+                        <Label for="name">Name</Label>
                         <Input id="name" v-model="form.name" placeholder="John Doe" />
                         <span v-if="form.errors.name" class="text-sm text-destructive">{{ form.errors.name }}</span>
                     </div>

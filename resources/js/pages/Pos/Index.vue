@@ -28,7 +28,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 defineOptions({ layout: AppLayout });
 
 const props = defineProps<{
-    produks: any[];
+    products: any[];
     customers: any[];
     categories: any[];
 }>();
@@ -41,7 +41,7 @@ const getCategoryIcon = (name: string) => {
     const n = name.toLowerCase();
     if (n.includes('material') || n.includes('bangunan')) return HardHat;
     if (n.includes('cat') || n.includes('finish')) return Paintbrush;
-    if (n.includes('plastik') || n.includes('produk')) return Layers;
+    if (n.includes('plastik') || n.includes('product')) return Layers;
     if (n.includes('baku')) return Box;
     if (n.includes('penolong')) return Settings;
     return Package;
@@ -128,11 +128,11 @@ const employee = ref<{ name: string; initial: string; checkedInAt: string } | nu
 });
 
 // ============ Computed ============
-const filteredProduks = computed(() => {
-    return props.produks.filter(p => {
+const filteredProducts = computed(() => {
+    return props.products.filter(p => {
         const q = searchQuery.value.toLowerCase();
         const matchesQuery = !q ||
-            p.nama.toLowerCase().includes(q) ||
+            p.name.toLowerCase().includes(q) ||
             p.sku?.toLowerCase().includes(q) ||
             p.barcode?.toLowerCase().includes(q);
 
@@ -169,12 +169,12 @@ const formatCurrency = (value: number) => {
     }).format(value || 0);
 };
 
-const fetchPrice = async (produkId: number, satuanId: number, customerId: number | null) => {
+const fetchPrice = async (productId: number, satuanId: number, customerId: number | null) => {
     try {
         const response = await axios.get('/pos/price', {
             params: {
-                produk_id: produkId,
-                satuan_id: satuanId,
+                product_id: productId,
+                unit_id: satuanId,
                 customer_id: customerId
             }
         });
@@ -185,28 +185,28 @@ const fetchPrice = async (produkId: number, satuanId: number, customerId: number
     }
 };
 
-const addToCart = async (produk: any) => {
-    const existingIndex = cart.value.findIndex(item => item.produk_id === produk.id);
+const addToCart = async (product: any) => {
+    const existingIndex = cart.value.findIndex(item => item.product_id === product.id);
 
     // Check stock first
-    if (produk.track_stock) {
+    if (product.track_stock) {
         const currentQty = existingIndex > -1 ? cart.value[existingIndex].qty : 0;
-        if (currentQty + 1 > produk.stock) {
-            toast.error(`Stok tidak mencukupi. Sisa: ${produk.stock}`);
+        if (currentQty + 1 > product.stock) {
+            toast.error(`Stok tidak mencukupi. Sisa: ${product.stock}`);
             return;
         }
     }
 
-    const priceData = await fetchPrice(produk.id, produk.satuan_id, selectedCustomerId.value);
+    const priceData = await fetchPrice(product.id, product.unit_id, selectedCustomerId.value);
 
     if (existingIndex > -1) {
         cart.value[existingIndex].qty += 1;
         cart.value[existingIndex].price = priceData.price;
     } else {
         cart.value.push({
-            ...produk,
+            ...product,
             qty: 1,
-            produk_id: produk.id,
+            product_id: product.id,
             price: priceData.price,
             original_price: priceData.original_price,
             discount_rate: priceData.discount_rate,
@@ -215,15 +215,15 @@ const addToCart = async (produk: any) => {
     }
 };
 
-const updateQty = (produkId: number, delta: number) => {
-    const index = cart.value.findIndex(l => l.produk_id === produkId);
+const updateQty = (productId: number, delta: number) => {
+    const index = cart.value.findIndex(l => l.product_id === productId);
     if (index === -1) return;
 
-    const produk = props.produks.find(p => p.id === produkId);
+    const product = props.products.find(p => p.id === productId);
     const newQty = cart.value[index].qty + delta;
 
-    if (delta > 0 && produk?.track_stock && newQty > (produk.stock || 0)) {
-        toast.error(`Stok tidak mencukupi. Maksimal: ${produk.stock}`);
+    if (delta > 0 && product?.track_stock && newQty > (product.stock || 0)) {
+        toast.error(`Stok tidak mencukupi. Maksimal: ${product.stock}`);
         return;
     }
 
@@ -233,16 +233,16 @@ const updateQty = (produkId: number, delta: number) => {
     }
 };
 
-const setQty = (produkId: number, val: number) => {
-    const index = cart.value.findIndex(l => l.produk_id === produkId);
+const setQty = (productId: number, val: number) => {
+    const index = cart.value.findIndex(l => l.product_id === productId);
     if (index === -1) return;
 
-    const produk = props.produks.find(p => p.id === produkId);
-    if (produk?.track_stock && val > (produk.stock || 0)) {
-        toast.error(`Stok tidak mencukupi. Maksimal: ${produk.stock}`);
+    const product = props.products.find(p => p.id === productId);
+    if (product?.track_stock && val > (product.stock || 0)) {
+        toast.error(`Stok tidak mencukupi. Maksimal: ${product.stock}`);
         // Reset to max stock or previous value? 
         // Let's set it to max stock for better UX
-        cart.value[index].qty = produk.stock;
+        cart.value[index].qty = product.stock;
         return;
     }
 
@@ -251,8 +251,8 @@ const setQty = (produkId: number, val: number) => {
     cart.value[index].qty = isNaN(val) ? 0 : Math.max(0, val);
 };
 
-const removeFromCart = (produkId: number) => {
-    const index = cart.value.findIndex(l => l.produk_id === produkId);
+const removeFromCart = (productId: number) => {
+    const index = cart.value.findIndex(l => l.product_id === productId);
     if (index > -1) cart.value.splice(index, 1);
 };
 
@@ -260,7 +260,7 @@ const clearCart = () => cart.value = [];
 
 // ============ Form & Checkout ============
 const form = useForm({
-    tanggal: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0],
     payment_method: 'cash' as PaymentMethod,
     customer_id: null as number | null,
     received_amount: 0,
@@ -291,8 +291,8 @@ watch(showPayment, (isOpen) => {
 const handleCheckout = () => {
     form.customer_id = selectedCustomerId.value;
     form.items = cart.value.map(item => ({
-        produk_id: item.produk_id,
-        satuan_id: item.satuan_id,
+        product_id: item.product_id,
+        unit_id: item.unit_id,
         qty: item.qty,
         price: item.price,
         cost: item.cost,
@@ -440,7 +440,7 @@ const selectAmount = (amount: number) => {
             </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-                <button v-for="p in filteredProduks" :key="p.id" :disabled="p.stock === 0" @click="addToCart(p)"
+                <button v-for="p in filteredProducts" :key="p.id" :disabled="p.stock === 0" @click="addToCart(p)"
                     class="group relative flex flex-col text-left rounded-2xl bg-white border border-slate-200 p-3 transition hover:border-primary hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none">
                     <span v-if="p.track_stock && p.stock <= 0"
                         class="absolute top-2 right-2 z-10 text-[10px] font-bold uppercase tracking-wider bg-destructive text-white px-2 py-0.5 rounded-full">
@@ -459,7 +459,7 @@ const selectAmount = (amount: number) => {
                     </div>
 
                     <h3 class="text-[13px] font-bold leading-snug line-clamp-2 min-h-[2.4em] mb-2 text-slate-800">
-                        {{ p.nama }}
+                        {{ p.name }}
                     </h3>
 
                     <div class="flex items-center justify-between mt-auto">
@@ -529,7 +529,7 @@ const selectAmount = (amount: number) => {
             </div>
 
             <div class="flex-1 overflow-y-auto p-5 space-y-3 min-h-[200px] custom-scrollbar">
-                <div v-for="line in cart" :key="line.produk_id" class="flex gap-3 items-start group">
+                <div v-for="line in cart" :key="line.product_id" class="flex gap-3 items-start group">
                     <div
                         class="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
                         <Package class="h-5 w-5 text-slate-300" />
@@ -537,25 +537,25 @@ const selectAmount = (amount: number) => {
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between gap-2">
                             <div class="min-w-0">
-                                <h4 class="text-sm font-bold leading-tight truncate text-slate-800">{{ line.nama }}</h4>
+                                <h4 class="text-sm font-bold leading-tight truncate text-slate-800">{{ line.name }}</h4>
                                 <p class="text-xs text-slate-400 font-medium mt-0.5">{{ formatCurrency(line.price) }}
                                 </p>
                             </div>
-                            <button @click="removeFromCart(line.produk_id)"
+                            <button @click="removeFromCart(line.product_id)"
                                 class="opacity-0 group-hover:opacity-100 transition text-slate-300 hover:text-destructive">
                                 <X class="h-4 w-4" />
                             </button>
                         </div>
                         <div class="mt-2 flex items-center justify-between">
                             <div class="flex items-center gap-1 bg-slate-100 rounded-full p-0.5">
-                                <button @click="updateQty(line.produk_id, -1)"
+                                <button @click="updateQty(line.product_id, -1)"
                                     class="h-7 w-7 rounded-full bg-white hover:bg-slate-50  flex items-center justify-center text-slate-600 transition shadow-sm active:scale-90">
                                     <Minus class="h-3 w-3" />
                                 </button>
                                 <input type="number" :value="line.qty"
-                                    @input="e => setQty(line.produk_id, parseInt((e.target as HTMLInputElement).value) || 0)"
+                                    @input="e => setQty(line.product_id, parseInt((e.target as HTMLInputElement).value) || 0)"
                                     class="w-12 text-center text-sm font-bold tabular-nums text-slate-800 bg-transparent border-0 focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                                <button @click="updateQty(line.produk_id, 1)"
+                                <button @click="updateQty(line.product_id, 1)"
                                     class="h-7 w-7 rounded-full bg-slate-900 text-white flex items-center justify-center transition shadow-sm active:scale-90">
                                     <Plus class="h-3 w-3" />
                                 </button>
@@ -713,7 +713,7 @@ const selectAmount = (amount: number) => {
                             Konfirmasi & Cetak
                         </Button>
                         <Button variant="ghost" @click="showPayment = false"
-                            class="w-full h-12 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">Batal</Button>
+                            class="w-full h-12 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all">Cancel</Button>
                     </div>
                 </div>
             </div>
@@ -777,7 +777,7 @@ const selectAmount = (amount: number) => {
                 </div>
                 <div class="flex gap-3">
                     <Button variant="ghost" @click="showShift = false"
-                        class="flex-1 h-12 font-bold uppercase">Batal</Button>
+                        class="flex-1 h-12 font-bold uppercase">Cancel</Button>
                     <Button
                         @click="shiftOpen = !shiftOpen; employee = shiftOpen ? null : { name: 'Rizal A.', initial: 'RA', checkedInAt: '08:00' }; showShift = false"
                         class="flex-1 h-12 bg-slate-900 text-white font-bold uppercase">

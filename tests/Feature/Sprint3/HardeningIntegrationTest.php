@@ -6,8 +6,8 @@ use App\Models\Account;
 use App\Models\PeriodLock;
 use App\Models\Production;
 use App\Models\Sale;
-use App\Models\Satuan;
 use App\Models\StockOpname;
+use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
@@ -19,13 +19,13 @@ class HardeningIntegrationTest extends TestCase
 
     protected User $admin;
 
-    protected Satuan $satuan;
+    protected Unit $unit;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->admin = User::factory()->superadmin()->create();
-        $this->satuan = Satuan::factory()->create(['nama' => 'pcs']);
+        $this->unit = Unit::factory()->create(['name' => 'pcs']);
 
         // Setup essential accounts
         Account::create(['code' => '1101', 'name' => 'Cash', 'type' => 'asset', 'balance_type' => 'debit']);
@@ -60,7 +60,7 @@ class HardeningIntegrationTest extends TestCase
     /** @test */
     public function test_storno_sale_is_blocked_by_period_lock()
     {
-        $sale = Sale::factory()->create(['tanggal' => now()]);
+        $sale = Sale::factory()->create(['date' => now()]);
 
         PeriodLock::create([
             'period_month' => now()->month,
@@ -80,9 +80,9 @@ class HardeningIntegrationTest extends TestCase
     public function test_stock_opname_listing_and_storno()
     {
         $opname = StockOpname::create([
-            'tanggal' => now(),
+            'date' => now(),
             'status' => 'completed',
-            'keterangan' => 'Monthly Check',
+            'notes' => 'Monthly Check',
         ]);
 
         $response = $this->actingAs($this->admin)->get(route('stock-opname.index'));
@@ -119,17 +119,17 @@ class HardeningIntegrationTest extends TestCase
 
         // 1. POS Store
         $this->actingAs($this->admin)
-            ->post(route('pos.store'), ['tanggal' => now()->toDateString()])
+            ->post(route('pos.store'), ['date' => now()->toDateString()])
             ->assertStatus(403);
 
         // 2. Production Store
         $this->actingAs($this->admin)
-            ->post(route('production.store'), ['tanggal' => now()->toDateString()])
+            ->post(route('production.store'), ['date' => now()->toDateString()])
             ->assertStatus(403);
 
         // 3. Stock Adjustment
         $this->actingAs($this->admin)
-            ->post(route('stock.adjustment'), ['tanggal' => now()->toDateString()])
+            ->post(route('stock.adjustment'), ['date' => now()->toDateString()])
             ->assertStatus(403);
     }
 }

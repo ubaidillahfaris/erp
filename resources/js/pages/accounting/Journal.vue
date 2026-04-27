@@ -42,7 +42,7 @@ const date_start = ref(props.filters.date_start || '');
 const date_end = ref(props.filters.date_end || '');
 const type = ref(props.filters.type || 'all');
 const perPage = ref(props.filters.per_page || String(props.journals.per_page));
-const sort = ref(props.filters.sort || 'tanggal');
+const sort = ref(props.filters.sort || 'date');
 const direction = ref(props.filters.direction || 'desc');
 
 const columns = [
@@ -138,7 +138,7 @@ const getTypeVariant = (morphType: string) => {
                 :columns="columns" 
                 v-model:search="search" 
                 v-model:perPage="perPage"
-                search-placeholder="Cari Ref / Deskripsi..." 
+                search-placeholder="Cari Ref / Description..." 
                 toolbar-title="Financial Ledger" 
                 :title="'Journal Entries'"
                 :sort="sort"
@@ -163,7 +163,7 @@ const getTypeVariant = (morphType: string) => {
                             <SelectContent>
                                 <SelectItem value="all">Semua Type</SelectItem>
                                 <SelectItem value="SALE">Penjualan</SelectItem>
-                                <SelectItem value="PRD">Produksi</SelectItem>
+                                <SelectItem value="PRD">Productsi</SelectItem>
                                 <SelectItem value="PUR">Pembelian</SelectItem>
                             </SelectContent>
                         </Select>
@@ -181,7 +181,7 @@ const getTypeVariant = (morphType: string) => {
                         </div>
                         <div class="min-w-0">
                             <p class="text-[13px] font-bold text-slate-900 font-mono tracking-tight">{{ row.ref_number }}</p>
-                            <p class="text-xs text-slate-500">{{ formatDate(row.tanggal) }}</p>
+                            <p class="text-xs text-slate-500">{{ formatDate(row.date) }}</p>
                         </div>
                     </div>
                 </template>
@@ -258,7 +258,7 @@ const getTypeVariant = (morphType: string) => {
                         <BookOpen class="h-12 w-12 text-muted-foreground" />
                         <div>
                             <p class="text-sm font-bold uppercase tracking-widest text-muted-foreground">Belum ada transaksi</p>
-                            <p class="text-xs text-muted-foreground mt-1">Gunakan modul Kasir, Produksi, atau Pembelian untuk menjurnal</p>
+                            <p class="text-xs text-muted-foreground mt-1">Gunakan modul Kasir, Productsi, atau Pembelian untuk menjurnal</p>
                         </div>
                     </div>
                 </template>

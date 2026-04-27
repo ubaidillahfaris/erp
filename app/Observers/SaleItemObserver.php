@@ -11,45 +11,45 @@ class SaleItemObserver
 {
     public function created(SaleItem $saleItem): void
     {
-        $produk = $saleItem->produk()->with('bom.items')->first();
+        $product = $saleItem->product()->with('bom.items')->first();
 
         // 1. Deduct Ingredients (BOM) if configured
-        if ($produk->bom && $produk->bom->auto_deduct_on_sale && $produk->bom->is_active) {
-            foreach ($produk->bom->items as $bomItem) {
+        if ($product->bom && $product->bom->auto_deduct_on_sale && $product->bom->is_active) {
+            foreach ($product->bom->items as $bomItem) {
                 (new RecordStockMovement)->handle([
-                    'produk_id' => $bomItem->produk_id,
-                    'satuan_id' => $bomItem->satuan_id,
+                    'product_id' => $bomItem->product_id,
+                    'unit_id' => $bomItem->unit_id,
                     'type' => 'out',
-                    'jumlah' => $bomItem->jumlah * $saleItem->qty,
+                    'quantity' => $bomItem->quantity * $saleItem->qty,
                     'reference_type' => Sale::class,
                     'reference_id' => $saleItem->sale_id,
-                    'keterangan' => "Auto BOM: Penjualan INV-{$saleItem->sale->invoice_number} ({$produk->nama})",
+                    'notes' => "Auto BOM: Penjualan INV-{$saleItem->sale->invoice_number} ({$product->name})",
                 ]);
             }
         }
 
         // 2. Deduct Product Stock if configured
-        if ($produk->track_stock) {
+        if ($product->track_stock) {
             (new RecordStockMovement)->handle([
-                'produk_id' => $saleItem->produk_id,
-                'satuan_id' => $saleItem->satuan_id,
+                'product_id' => $saleItem->product_id,
+                'unit_id' => $saleItem->unit_id,
                 'type' => 'out',
-                'jumlah' => $saleItem->qty,
+                'quantity' => $saleItem->qty,
                 'reference_type' => Sale::class,
                 'reference_id' => $saleItem->sale_id,
-                'keterangan' => "Penjualan INV-{$saleItem->sale->invoice_number}",
+                'notes' => "Penjualan INV-{$saleItem->sale->invoice_number}",
             ]);
         }
 
         // 2. Record COGS Journal per item
         if ($saleItem->cost > 0) {
             Journal::create([
-                'tanggal' => $saleItem->sale->tanggal->format('Y-m-d'),
+                'date' => $saleItem->sale->date->format('Y-m-d'),
                 'type' => 'kredit',
                 'amount' => $saleItem->cost * $saleItem->qty,
                 'category' => 'hpp',
                 'payment_method' => 'stok',
-                'description' => "HPP {$saleItem->produk->nama} INV-{$saleItem->sale->invoice_number}",
+                'description' => "HPP {$saleItem->product->name} INV-{$saleItem->sale->invoice_number}",
                 'reference_type' => Sale::class,
                 'reference_id' => $saleItem->sale_id,
             ]);

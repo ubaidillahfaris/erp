@@ -31,7 +31,7 @@ class AgingReportTest extends TestCase
 
     public function test_payable_without_installment_uses_due_date()
     {
-        $vendor = Vendor::factory()->create(['nama' => 'Test Vendor']);
+        $vendor = Vendor::factory()->create(['name' => 'Test Vendor']);
 
         Payable::create([
             'type' => 'payable',

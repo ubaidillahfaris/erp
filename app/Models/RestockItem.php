@@ -8,17 +8,17 @@ class RestockItem extends Model
 {
     protected $fillable = [
         'restock_id',
-        'produk_id',
-        'satuan_id',
-        'jumlah',
-        'harga_satuan',
+        'product_id',
+        'unit_id',
+        'quantity',
+        'unit_price',
     ];
 
     protected function casts(): array
     {
         return [
-            'jumlah' => 'decimal:4',
-            'harga_satuan' => 'decimal:2',
+            'quantity' => 'decimal:4',
+            'unit_price' => 'decimal:2',
         ];
     }
 
@@ -27,13 +27,13 @@ class RestockItem extends Model
         return $this->belongsTo(Restock::class);
     }
 
-    public function produk()
+    public function product()
     {
-        return $this->belongsTo(Produk::class, 'produk_id');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
-    public function satuan()
+    public function unit()
     {
-        return $this->belongsTo(Satuan::class, 'satuan_id');
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 }

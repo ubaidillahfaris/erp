@@ -9,10 +9,10 @@ use App\Exceptions\MissingOverheadRateException;
 use App\Models\Account;
 use App\Models\Bom;
 use App\Models\JournalEntry;
+use App\Models\Product;
 use App\Models\Production;
 use App\Models\ProductionItem;
-use App\Models\Produk;
-use App\Models\Satuan;
+use App\Models\Unit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -33,14 +33,14 @@ class ProductionJournalTest extends TestCase
         // Setup Account codes
         $this->rawMaterialAcc = Account::create([
             'code' => '1301',
-            'name' => 'Persediaan Bahan Baku',
+            'name' => 'Persediaan Raw Materials',
             'type' => 'asset',
             'balance_type' => 'debit',
         ]);
 
         $this->finishedGoodAcc = Account::create([
             'code' => '1302',
-            'name' => 'Persediaan Barang Jadi',
+            'name' => 'Persediaan Finished Goods',
             'type' => 'asset',
             'balance_type' => 'debit',
         ]);
@@ -55,30 +55,30 @@ class ProductionJournalTest extends TestCase
 
     public function test_complete_production_records_balanced_journal_with_overhead(): void
     {
-        $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
+        $unit = Unit::create(['name' => 'Pcs', 'symbol' => 'pcs']);
 
-        $fgProduct = Produk::create([
+        $fgProduct = Product::create([
             'sku' => 'FG-001',
-            'nama' => 'Finished Good',
+            'name' => 'Finished Good',
             'type' => 'finished_good',
-            'satuan_id' => $satuan->id,
+            'unit_id' => $unit->id,
             'overhead_rate_per_unit' => 500, // Rp 5,00
             'is_active' => true,
             'track_stock' => false,
         ]);
 
         $bom = Bom::create([
-            'produk_id' => $fgProduct->id,
+            'product_id' => $fgProduct->id,
             'sku' => 'BOM-001',
-            'nama' => 'BOM 001',
+            'name' => 'BOM 001',
             'expected_yield' => 10,
         ]);
 
         $production = Production::create([
             'sku' => 'PRD-001',
-            'tanggal' => now(),
+            'date' => now(),
             'bom_id' => $bom->id,
-            'produk_id' => $fgProduct->id,
+            'product_id' => $fgProduct->id,
             'target_yield' => 10,
             'actual_yield' => 10,
             'total_cost' => 1000.00, // Material cost
@@ -86,20 +86,20 @@ class ProductionJournalTest extends TestCase
         ]);
 
         // Add a production item (raw material usage)
-        $rawMaterial = Produk::create([
+        $rawMaterial = Product::create([
             'sku' => 'RAW-001',
-            'nama' => 'Raw Material',
-            'satuan_id' => $satuan->id,
+            'name' => 'Raw Material',
+            'unit_id' => $unit->id,
             'track_stock' => false,
         ]);
 
         ProductionItem::create([
             'production_id' => $production->id,
-            'produk_id' => $rawMaterial->id,
-            'satuan_id' => $satuan->id,
+            'product_id' => $rawMaterial->id,
+            'unit_id' => $unit->id,
             'planned_qty' => 5,
             'actual_qty' => 5,
-            'harga_satuan' => 200,
+            'unit_price' => 200,
         ]);
 
         // Execute action
@@ -144,29 +144,29 @@ class ProductionJournalTest extends TestCase
 
     public function test_complete_production_throws_exception_if_overhead_missing(): void
     {
-        $satuan = Satuan::create(['nama' => 'Pcs', 'simbol' => 'pcs']);
+        $unit = Unit::create(['name' => 'Pcs', 'symbol' => 'pcs']);
 
-        $fgProduct = Produk::create([
+        $fgProduct = Product::create([
             'sku' => 'FG-002',
-            'nama' => 'Finished Good No Overhead',
+            'name' => 'Finished Good No Overhead',
             'type' => 'finished_good',
-            'satuan_id' => $satuan->id,
+            'unit_id' => $unit->id,
             'overhead_rate_per_unit' => 0, // Missing
             'is_active' => true,
         ]);
 
         $bom = Bom::create([
-            'produk_id' => $fgProduct->id,
+            'product_id' => $fgProduct->id,
             'sku' => 'BOM-002',
-            'nama' => 'BOM 002',
+            'name' => 'BOM 002',
             'expected_yield' => 10,
         ]);
 
         $production = Production::create([
             'sku' => 'PRD-002',
-            'tanggal' => now(),
+            'date' => now(),
             'bom_id' => $bom->id,
-            'produk_id' => $fgProduct->id,
+            'product_id' => $fgProduct->id,
             'target_yield' => 10,
             'actual_yield' => 10,
             'total_cost' => 1000.00,

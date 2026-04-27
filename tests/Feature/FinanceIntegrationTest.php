@@ -28,10 +28,10 @@ class FinanceIntegrationTest extends TestCase
     {
         $date = now()->startOfDay();
         $restock = Restock::create([
-            'tanggal' => $date,
+            'date' => $date,
             'total_biaya' => 100000,
             'status_pembayaran' => 'lunas',
-            'keterangan' => 'Test Restock',
+            'notes' => 'Test Restock',
         ]);
 
         // Verify Journal Entry (Double-Entry)
@@ -60,7 +60,7 @@ class FinanceIntegrationTest extends TestCase
     {
         $date = now()->startOfDay();
         $pengeluaran = Pengeluaran::create([
-            'tanggal' => $date,
+            'date' => $date,
             'jenis_pengeluaran' => 'Operasional',
             'nama_pengeluaran' => 'Listrik',
             'nominal' => 50000,
@@ -84,7 +84,7 @@ class FinanceIntegrationTest extends TestCase
     {
         $date = now()->startOfDay();
         $restock = Restock::create([
-            'tanggal' => $date,
+            'date' => $date,
             'total_biaya' => 100000,
             'status_pembayaran' => 'lunas',
         ]);

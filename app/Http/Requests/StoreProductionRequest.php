@@ -15,13 +15,13 @@ class StoreProductionRequest extends FormRequest
     {
         return [
             'sku' => ['nullable', 'string', 'unique:productions'],
-            'tanggal' => ['required', 'date'],
+            'date' => ['required', 'date'],
             'bom_id' => ['required', 'exists:boms,id'],
-            'produk_id' => ['required', 'exists:produks,id'],
+            'product_id' => ['required', 'exists:products,id'],
             'target_yield' => ['required', 'numeric', 'min:0'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.produk_id' => ['required', 'exists:produks,id'],
-            'items.*.satuan_id' => ['required', 'exists:satuans,id'],
+            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.unit_id' => ['required', 'exists:units,id'],
             'items.*.planned_qty' => ['required', 'numeric', 'min:0'],
         ];
     }

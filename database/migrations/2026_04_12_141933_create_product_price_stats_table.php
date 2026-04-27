@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('product_price_stats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('produk_id')->constrained()->onDelete('cascade');
-            $table->foreignId('satuan_id')->constrained()->onDelete('cascade');
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->foreignId('unit_id')->constrained()->onDelete('cascade');
             $table->decimal('avg_price', 15, 2)->default(0);
             $table->decimal('min_price', 15, 2)->default(0);
             $table->decimal('max_price', 15, 2)->default(0);
             $table->decimal('last_purchase_price', 15, 2)->default(0);
             $table->timestamps();
 
-            $table->unique(['produk_id', 'satuan_id']);
+            $table->unique(['product_id', 'unit_id']);
         });
     }
 

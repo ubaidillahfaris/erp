@@ -23,9 +23,9 @@ import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{ 
     bahanBakus: any[]; 
-    satuans: any[];
+    units: any[];
     vendors: any[];
-    produkId?: string | number;
+    productId?: string | number;
 }>();
 
 const paymentStatuses = [
@@ -41,30 +41,30 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = useForm({
-    tanggal: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0],
     vendor_id: '' as string | number,
-    keterangan: '',
+    notes: '',
     status_pembayaran: 'lunas',
     total_bayar: 0,
-    biaya_tambahan: [] as { nama: string, nominal: number }[],
+    biaya_tambahan: [] as { name: string, nominal: number }[],
     items: [
-        { produk_id: props.produkId || '', satuan_id: '', jumlah: 1, harga_satuan: 0 }
+        { product_id: props.productId || '', unit_id: '', quantity: 1, unit_price: 0 }
     ]
 });
 
-// Auto-fill satuan_id and price if produkId is provided
-if (props.produkId) {
-    const product = props.bahanBakus.find(p => p.id == props.produkId);
+// Auto-fill unit_id and price if productId is provided
+if (props.productId) {
+    const product = props.bahanBakus.find(p => p.id == props.productId);
     if (product) {
-        form.items[0].satuan_id = product.satuan_id;
+        form.items[0].unit_id = product.unit_id;
         if (product.current_price) {
-            form.items[0].harga_satuan = Number(product.current_price.purchase_price);
+            form.items[0].unit_price = Number(product.current_price.purchase_price);
         }
     }
 }
 
 const addItem = () => {
-    form.items.push({ produk_id: '', satuan_id: '', jumlah: 1, harga_satuan: 0 });
+    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0 });
 };
 
 const removeItem = (index: number) => {
@@ -72,21 +72,21 @@ const removeItem = (index: number) => {
 };
 
 const addAdjustment = () => {
-    form.biaya_tambahan.push({ nama: '', nominal: 0 });
+    form.cost_tambahan.push({ name: '', nominal: 0 });
 };
 
 const removeAdjustment = (index: number) => {
-    form.biaya_tambahan.splice(index, 1);
+    form.cost_tambahan.splice(index, 1);
 };
 
-const handleProductChange = (index: number, produkId: string | number) => {
-    const product = props.bahanBakus.find(p => p.id == produkId);
+const handleProductChange = (index: number, productId: string | number) => {
+    const product = props.bahanBakus.find(p => p.id == productId);
     if (product) {
-        form.items[index].satuan_id = product.satuan_id;
+        form.items[index].unit_id = product.unit_id;
         
         // Auto-fill last purchase price if available
         if (product.current_price) {
-            form.items[index].harga_satuan = Number(product.current_price.purchase_price);
+            form.items[index].unit_price = Number(product.current_price.purchase_price);
         }
     }
 };
@@ -105,10 +105,10 @@ const formatCurrency = (value: number) => {
 
 const totalBiaya = computed(() => {
     const itemsTotal = form.items.reduce((total, item) => {
-        return total + (item.jumlah * item.harga_satuan);
+        return total + (item.quantity * item.unit_price);
     }, 0);
     
-    const adjustmentsTotal = form.biaya_tambahan.reduce((total, adj) => {
+    const adjustmentsTotal = form.cost_tambahan.reduce((total, adj) => {
         return total + Number(adj.nominal || 0);
     }, 0);
     
@@ -163,7 +163,7 @@ watch(totalBiaya, (newTotal) => {
             </Link>
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-slate-900">Catat Restock Baru</h1>
-                <p class="text-sm text-slate-400 mt-0.5">Catat bahan baku yang baru dibeli untuk menambah stok produksi.</p>
+                <p class="text-sm text-slate-400 mt-0.5">Catat bahan baku yang baru dibeli untuk menambah stok productsi.</p>
             </div>
         </div>
 
@@ -184,26 +184,26 @@ watch(totalBiaya, (newTotal) => {
                 <div class="p-6 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="space-y-2">
-                            <Label for="tanggal">Tanggal Pembelian</Label>
-                            <Input id="tanggal" type="date" v-model="form.tanggal" required />
-                            <p v-if="form.errors.tanggal" class="text-sm text-destructive">{{ form.errors.tanggal }}
+                            <Label for="date">Tanggal Pembelian</Label>
+                            <Input id="date" type="date" v-model="form.date" required />
+                            <p v-if="form.errors.date" class="text-sm text-destructive">{{ form.errors.date }}
                             </p>
                         </div>
                         <div class="space-y-2">
                             <Label>Supplier / Vendor</Label>
                             <Combobox 
                                 v-model="form.vendor_id" 
-                                :options="vendors.map(v => ({ value: v.id.toString(), label: v.nama }))" 
+                                :options="vendors.map(v => ({ value: v.id.toString(), label: v.name }))" 
                                 placeholder="Pilih Vendor" 
                             />
                             <InputError :message="form.errors.vendor_id" />
                         </div>
                         <div class="space-y-2 col-span-1 md:col-span-1">
-                            <Label for="keterangan">Keterangan Tambahan (Opsional)</Label>
-                            <Input id="keterangan" v-model="form.keterangan"
+                            <Label for="notes">Keterangan Tambahan (Opsional)</Label>
+                            <Input id="notes" v-model="form.notes"
                                 placeholder="Misal: No Nota, Catatan tambahan" />
-                            <p v-if="form.errors.keterangan" class="text-sm text-destructive">{{
-                                form.errors.keterangan }}</p>
+                            <p v-if="form.errors.notes" class="text-sm text-destructive">{{
+                                form.errors.notes }}</p>
                         </div>
                     </div>
 
@@ -232,10 +232,10 @@ watch(totalBiaya, (newTotal) => {
             <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
                 <div class="px-6 py-4 border-b border-slate-100 flex flex-row items-center justify-between">
                     <div class="space-y-1">
-                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Bahan Baku Dibeli</h3>
+                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Daftar Raw Materials Dibeli</h3>
                         <p class="text-xs text-slate-400 mt-1">Tambahkan bahan baku berserta jumlah dan harga satuannya.</p>
                     </div>
-                    <Button type="button" variant="outline" size="sm" @click="addItem" :disabled="!!props.produkId">
+                    <Button type="button" variant="outline" size="sm" @click="addItem" :disabled="!!props.productId">
                         <Plus class="mr-2 h-4 w-4" />
                         Tambah Baris
                     </Button>
@@ -244,10 +244,10 @@ watch(totalBiaya, (newTotal) => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Bahan Baku</TableHead>
-                                <TableHead width="150">Satuan</TableHead>
-                                <TableHead width="120">Jumlah</TableHead>
-                                <TableHead width="200">Harga Satuan (Rp)</TableHead>
+                                <TableHead>Raw Materials</TableHead>
+                                <TableHead width="150">Unit</TableHead>
+                                <TableHead width="120">Quantity</TableHead>
+                                <TableHead width="200">Harga Unit (Rp)</TableHead>
                                 <TableHead width="200" class="text-right">Subtotal</TableHead>
                                 <TableHead width="50"></TableHead>
                             </TableRow>
@@ -257,39 +257,39 @@ watch(totalBiaya, (newTotal) => {
                                 <!-- Select Bahan -->
                                 <TableCell>
                                     <Combobox 
-                                        v-model="item.produk_id" 
-                                        :options="bahanBakus.map(b => ({ value: b.id.toString(), label: b.nama }))" 
+                                        v-model="item.product_id" 
+                                        :options="bahanBakus.map(b => ({ value: b.id.toString(), label: b.name }))" 
                                         placeholder="Pilih Bahan"
                                         @update:modelValue="(val) => handleProductChange(idx, val)"
-                                        :disabled="!!props.produkId && idx === 0"
+                                        :disabled="!!props.productId && idx === 0"
                                     />
-                                    <InputError :message="form.errors[`items.${idx}.produk_id`]" />
+                                    <InputError :message="form.errors[`items.${idx}.product_id`]" />
                                 </TableCell>
-                                <!-- Select Satuan -->
+                                <!-- Select Unit -->
                                 <TableCell>
                                     <CreatableSelect 
-                                        v-model="item.satuan_id" 
-                                        :options="satuans" 
-                                        placeholder="Satuan"
+                                        v-model="item.unit_id" 
+                                        :options="units" 
+                                        placeholder="Unit"
                                         hide-label
-                                        display-expr="simbol"
+                                        display-expr="symbol"
                                         value-expr="id"
                                     />
-                                    <InputError :message="form.errors[`items.${idx}.satuan_id`]" />
+                                    <InputError :message="form.errors[`items.${idx}.unit_id`]" />
                                 </TableCell>
                                 <!-- Input Jumlah -->
                                 <TableCell>
-                                    <Input type="number" step="0.0001" v-model="item.jumlah" required min="0.0001" />
-                                    <InputError :message="form.errors[`items.${idx}.jumlah`]" />
+                                    <Input type="number" step="0.0001" v-model="item.quantity" required min="0.0001" />
+                                    <InputError :message="form.errors[`items.${idx}.quantity`]" />
                                 </TableCell>
-                                <!-- Input Harga Satuan -->
+                                <!-- Input Harga Unit -->
                                 <TableCell>
-                                    <InputCurrency v-model="item.harga_satuan" required />
-                                    <InputError :message="form.errors[`items.${idx}.harga_satuan`]" />
+                                    <InputCurrency v-model="item.unit_price" required />
+                                    <InputError :message="form.errors[`items.${idx}.unit_price`]" />
                                 </TableCell>
                                 <!-- Subtotal Text -->
                                 <TableCell class="text-right font-medium">
-                                    {{ formatCurrency(item.jumlah * item.harga_satuan) }}
+                                    {{ formatCurrency(item.quantity * item.unit_price) }}
                                 </TableCell>
                                 <!-- Tombol Hapus -->
                                 <TableCell>
@@ -317,7 +317,7 @@ watch(totalBiaya, (newTotal) => {
                     </Button>
                 </div>
                 <div class="p-6">
-                    <Table v-if="form.biaya_tambahan.length > 0">
+                    <Table v-if="form.cost_tambahan.length > 0">
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Nama Biaya / Penyesuaian</TableHead>
@@ -326,10 +326,10 @@ watch(totalBiaya, (newTotal) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <TableRow v-for="(adj, adjIdx) in form.biaya_tambahan" :key="adjIdx">
+                            <TableRow v-for="(adj, adjIdx) in form.cost_tambahan" :key="adjIdx">
                                 <TableCell>
-                                    <Input v-model="adj.nama" placeholder="Misal: Ongkir, Diskon" />
-                                    <InputError :message="form.errors[`biaya_tambahan.${adjIdx}.nama`]" />
+                                    <Input v-model="adj.name" placeholder="Misal: Ongkir, Diskon" />
+                                    <InputError :message="form.errors[`biaya_tambahan.${adjIdx}.name`]" />
                                 </TableCell>
                                 <TableCell>
                                     <InputCurrency v-model="adj.nominal" placeholder="Gunakan minus untuk diskon" />

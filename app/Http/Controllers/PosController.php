@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\CustomerPrice;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleCustomer;
 use Illuminate\Http\Request;
@@ -17,29 +17,29 @@ class PosController extends Controller
 {
     public function index(): Response
     {
-        $produks = Produk::where('is_active', true)
+        $products = Product::where('is_active', true)
             ->where('type', 'finished_good')
-            ->with(['currentPrice', 'satuan', 'stock', 'category'])
+            ->with(['currentPrice', 'unit', 'stock', 'category'])
             ->get()
-            ->map(function ($produk) {
+            ->map(function ($product) {
                 return [
-                    'id' => $produk->id,
-                    'nama' => $produk->nama,
-                    'sku' => $produk->sku,
-                    'barcode' => $produk->barcode,
-                    'category_id' => $produk->category_id,
-                    'kategori' => $produk->category?->name,
-                    'type' => $produk->type,
-                    'satuan_id' => $produk->satuan_id,
-                    'base_unit' => $produk->satuan->nama,
-                    'price' => (float) ($produk->currentPrice?->retail_price ?? 0),
-                    'cost' => (float) ($produk->currentPrice?->purchase_price ?? 0),
-                    'stock' => (float) ($produk->stock?->balance ?? 0),
-                    'track_stock' => (bool) $produk->track_stock,
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'barcode' => $product->barcode,
+                    'category_id' => $product->category_id,
+                    'kategori' => $product->category?->name,
+                    'type' => $product->type,
+                    'unit_id' => $product->unit_id,
+                    'base_unit' => $product->unit->name,
+                    'price' => (float) ($product->currentPrice?->retail_price ?? 0),
+                    'cost' => (float) ($product->currentPrice?->purchase_price ?? 0),
+                    'stock' => (float) ($product->stock?->balance ?? 0),
+                    'track_stock' => (bool) $product->track_stock,
                 ];
             });
 
-        $categories = Category::whereHas('produks', function ($query) {
+        $categories = Category::whereHas('products', function ($query) {
             $query->where('type', 'finished_good')
                 ->where('is_active', true);
         })->orderBy('name')->get(['id', 'name']);
@@ -58,7 +58,7 @@ class PosController extends Controller
             });
 
         return Inertia::render('Pos/Index', [
-            'produks' => $produks,
+            'products' => $products,
             'customers' => $customers,
             'categories' => $categories,
         ]);
@@ -70,18 +70,18 @@ class PosController extends Controller
     public function getPrice(Request $request)
     {
         $request->validate([
-            'produk_id' => 'required|exists:produks,id',
-            'satuan_id' => 'required|exists:satuans,id',
+            'product_id' => 'required|exists:products,id',
+            'unit_id' => 'required|exists:units,id',
             'customer_id' => 'nullable|exists:customers,id',
         ]);
 
-        $produkId = $request->produk_id;
-        $satuanId = $request->satuan_id;
+        $productId = $request->product_id;
+        $unitId = $request->unit_id;
         $customerId = $request->customer_id;
 
         // Ensure it's a finished good
-        $produk = Produk::where('id', $produkId)->where('type', 'finished_good')->firstOrFail();
-        $currentPrice = $produk->currentPrice;
+        $product = Product::where('id', $productId)->where('type', 'finished_good')->firstOrFail();
+        $currentPrice = $product->currentPrice;
 
         if (! $currentPrice) {
             return response()->json([
@@ -98,8 +98,8 @@ class PosController extends Controller
         // 1. Check for Custom Price
         if ($customerId) {
             $customPrice = CustomerPrice::where('customer_id', $customerId)
-                ->where('produk_id', $produkId)
-                ->where('satuan_id', $satuanId)
+                ->where('product_id', $productId)
+                ->where('unit_id', $unitId)
                 ->where('is_active', true)
                 ->where(function ($query) {
                     $query->whereNull('valid_until')
@@ -130,7 +130,7 @@ class PosController extends Controller
             if ($customer) {
                 // a. Check Category Discount
                 $categoryDiscount = $customer->categoryDiscounts()
-                    ->where('category_id', $produk->category_id)
+                    ->where('category_id', $product->category_id)
                     ->where('is_active', true)
                     ->first();
 
@@ -157,15 +157,15 @@ class PosController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'tanggal' => ['required', 'date'],
+            'date' => ['required', 'date'],
             'payment_method' => ['required', 'string'],
             'customer_id' => ['nullable', 'exists:customers,id', 'required_if:payment_method,credit'],
             'received_amount' => ['nullable', 'numeric', 'min:0'],
             'change_amount' => ['nullable', 'numeric'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
-            'items.*.produk_id' => ['required', 'exists:produks,id'],
-            'items.*.satuan_id' => ['required', 'exists:satuans,id'],
+            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.unit_id' => ['required', 'exists:units,id'],
             'items.*.qty' => ['required', 'numeric', 'min:0.001'],
             'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.cost' => ['required', 'numeric', 'min:0'],
@@ -182,7 +182,7 @@ class PosController extends Controller
 
                 $sale = Sale::create([
                     'invoice_number' => $invoiceNumber,
-                    'tanggal' => $validated['tanggal'],
+                    'date' => $validated['date'],
                     'total_amount' => $totalAmount,
                     'received_amount' => $validated['received_amount'] ?? $totalAmount,
                     'change_amount' => $validated['change_amount'] ?? 0,
@@ -194,8 +194,8 @@ class PosController extends Controller
                 // Save items
                 foreach ($validated['items'] as $item) {
                     $sale->items()->create([
-                        'produk_id' => $item['produk_id'],
-                        'satuan_id' => $item['satuan_id'],
+                        'product_id' => $item['product_id'],
+                        'unit_id' => $item['unit_id'],
                         'qty' => $item['qty'],
                         'price' => $item['price'],
                         'cost' => $item['cost'],

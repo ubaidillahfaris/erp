@@ -14,7 +14,7 @@ class JournalEntryData
      */
     public function __construct(
         public array $items,
-        public ?DateTimeInterface $tanggal = null,
+        public ?DateTimeInterface $date = null,
         public ?string $ref_number = null,
         public ?string $description = null,
         public ?Model $journalable = null,

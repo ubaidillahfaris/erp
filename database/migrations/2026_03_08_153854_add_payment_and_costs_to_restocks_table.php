@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('restocks', function (Blueprint $table) {
-            $table->string('status_pembayaran')->default('lunas')->after('keterangan');
+            $table->string('status_pembayaran')->default('lunas')->after('notes');
             $table->decimal('total_bayar', 15, 2)->default(0)->after('status_pembayaran');
             $table->json('biaya_tambahan')->nullable()->after('total_bayar');
         });

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bom_items', function (Blueprint $table) {
-            $table->foreignId('satuan_id')->nullable()->after('jumlah')->constrained('satuans')->nullOnDelete();
+            $table->foreignId('unit_id')->nullable()->after('quantity')->constrained('units')->nullOnDelete();
         });
     }
 
@@ -22,8 +22,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bom_items', function (Blueprint $table) {
-            $table->dropForeign(['satuan_id']);
-            $table->dropColumn('satuan_id');
+            $table->dropForeign(['unit_id']);
+            $table->dropColumn('unit_id');
         });
     }
 };

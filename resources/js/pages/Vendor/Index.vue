@@ -54,9 +54,9 @@ const sort = ref(props.filters.sort || 'created_at');
 const direction = ref(props.filters.direction || 'desc');
 
 const columns = [
-    { key: 'profil', label: 'Profil Vendor', sortKey: 'nama' },
+    { key: 'profil', label: 'Profil Vendor', sortKey: 'name' },
     { key: 'kontak', label: 'Kontak & Alamat', sortable: false },
-    { key: 'info', label: 'Info Tambahan', sortKey: 'keterangan' },
+    { key: 'info', label: 'Info Tambahan', sortKey: 'notes' },
 ];
 
 watch([search, perPage, sort, direction], debounce(([newSearch, newPerPage, newSort, newDirection]) => {
@@ -74,7 +74,7 @@ const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | nu
 };
 
 const handleBulkDelete = async (ids: (string | number)[]) => {
-    if (await confirmDialog('Hapus Vendor Terpilih?', `Apakah Anda yakin ingin menghapus ${ids.length} vendor yang dipilih? Data yang memiliki riwayat pembelian akan dilewati.`)) {
+    if (await confirmDialog('Hapus Vendor Terpilih?', `Are you sure you want to delete ${ids.length} vendor yang dipilih? Data yang memiliki riwayat pembelian akan dilewati.`)) {
         router.post(bulkDestroy().url, {
             _method: 'DELETE',
             ids: ids
@@ -85,7 +85,7 @@ const handleBulkDelete = async (ids: (string | number)[]) => {
 const { confirmDialog } = useConfirm();
 
 const deleteVendor = async (id: number) => {
-    if (await confirmDialog('Hapus Vendor?', 'Apakah Anda yakin ingin menghapus vendor ini? Data pemasok yang terhapus tidak bisa dikembalikan.')) {
+    if (await confirmDialog('Hapus Vendor?', 'Are you sure you want to delete vendor ini? Data pemasok yang terhapus tidak bisa dikembalikan.')) {
         router.delete(destroy({ vendor: id }).url);
     }
 };
@@ -134,7 +134,7 @@ const deleteVendor = async (id: number) => {
                         <Building2 class="h-4 w-4" />
                     </div>
                     <div class="min-w-0 pr-4">
-                        <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.nama }}</p>
+                        <p class="text-[13px] font-bold text-foreground capitalize truncate leading-none">{{ row.name }}</p>
                         <p v-if="row.email"
                             class="text-[11px] text-muted-foreground font-mono mt-1.5 flex items-center gap-1.5 tracking-tight">
                             <Mail class="h-3 w-3 opacity-70" /> {{ row.email }}
@@ -145,23 +145,23 @@ const deleteVendor = async (id: number) => {
 
             <template #cell(kontak)="{ row }">
                 <div class="flex flex-col gap-1">
-                    <div v-if="row.telepon"
+                    <div v-if="row.phone"
                         class="flex items-center text-[11px] font-bold text-foreground tracking-tight">
                         <Phone class="mr-2 h-3 w-3 text-accent" />
-                        {{ row.telepon }}
+                        {{ row.phone }}
                     </div>
-                    <div v-if="row.alamat"
+                    <div v-if="row.address"
                         class="flex items-start text-[10px] text-muted-foreground max-w-[180px] leading-relaxed pl-5">
-                        <span class="line-clamp-2 italic">{{ row.alamat }}</span>
+                        <span class="line-clamp-2 italic">{{ row.address }}</span>
                     </div>
                 </div>
             </template>
 
             <template #cell(info)="{ row }">
-                <div v-if="row.keterangan"
+                <div v-if="row.notes"
                     class="flex items-start text-xs text-muted-foreground italic leading-snug max-w-[180px]">
                     <Info class="mr-2 h-3.5 w-3.5 mt-0.5 shrink-0 text-muted-foreground" />
-                    <span class="line-clamp-2">{{ row.keterangan }}</span>
+                    <span class="line-clamp-2">{{ row.notes }}</span>
                 </div>
                 <span v-else class="text-xs font-bold uppercase tracking-widest text-muted-foreground italic">No
                     notes</span>

@@ -24,16 +24,16 @@ class StoreBOMRequest extends FormRequest
     {
         return [
             'sku' => 'nullable|string|max:50|unique:boms,sku',
-            'produk_id' => 'required|exists:produks,id|unique:boms,produk_id',
-            'nama' => 'nullable|string|max:255',
+            'product_id' => 'required|exists:products,id|unique:boms,product_id',
+            'name' => 'nullable|string|max:255',
             'is_active' => 'boolean',
             'auto_deduct_on_sale' => 'boolean',
             'expected_yield' => 'required|numeric|min:0.0001',
-            'yield_satuan_id' => 'required|exists:satuans,id',
+            'yield_unit_id' => 'required|exists:units,id',
             'items' => 'required|array|min:1',
-            'items.*.produk_id' => 'required|exists:produks,id',
-            'items.*.satuan_id' => 'nullable|exists:satuans,id',
-            'items.*.jumlah' => 'required|numeric|min:0.0001',
+            'items.*.product_id' => 'required|exists:products,id',
+            'items.*.unit_id' => 'nullable|exists:units,id',
+            'items.*.quantity' => 'required|numeric|min:0.0001',
         ];
     }
 }

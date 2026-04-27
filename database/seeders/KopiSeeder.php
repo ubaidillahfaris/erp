@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
-use App\Models\Produk;
+use App\Models\Product;
 use App\Models\Restock;
 use App\Models\RestockItem;
-use App\Models\Satuan;
+use App\Models\Unit;
 use Illuminate\Database\Seeder;
 
 class KopiSeeder extends Seeder
@@ -17,44 +17,44 @@ class KopiSeeder extends Seeder
     public function run(): void
     {
         // 1. Create or get 'Kilogram' unit
-        $satuanKg = Satuan::firstOrCreate(
-            ['simbol' => 'kg'],
-            ['nama' => 'Kilogram', 'deskripsi' => 'Satuan berat (Kilogram)']
+        $unitKg = Unit::firstOrCreate(
+            ['symbol' => 'kg'],
+            ['name' => 'Kilogram', 'description' => 'Unit berat (Kilogram)']
         );
 
-        $catBahanBaku = Category::firstOrCreate(['name' => 'Bahan Baku'], ['slug' => 'bahan-baku']);
+        $catBahanBaku = Category::firstOrCreate(['name' => 'Raw Materials'], ['slug' => 'bahan-baku']);
 
         // 2. Create or get 'Kopi Bubuk' raw material
-        $kopi = Produk::firstOrCreate(
+        $kopi = Product::firstOrCreate(
             ['sku' => 'RAW-KOPI-01'],
             [
-                'nama' => 'Kopi Bubuk House Blend',
+                'name' => 'Kopi Bubuk House Blend',
                 'category_id' => $catBahanBaku->id,
-                'stok_minimal' => 2,
-                'satuan_id' => $satuanKg->id,
+                'min_stock' => 2,
+                'unit_id' => $unitKg->id,
                 'type' => 'raw_material',
-                'deskripsi' => 'Bahan baku utama untuk minuman kopi',
+                'description' => 'Bahan baku utama untuk minuman kopi',
                 'is_active' => true,
             ]
         );
 
         // 3. Create Restock record (Include Ongkir)
-        $hargaKopi = 174000;
+        $priceKopi = 174000;
         $ongkir = 15000;
-        $totalBiaya = $hargaKopi + $ongkir;
+        $totalBiaya = $priceKopi + $ongkir;
 
         $restock = Restock::create([
-            'tanggal' => now(),
-            'keterangan' => 'Restock Kopi 1kg + Ongkir 15rb',
+            'date' => now(),
+            'notes' => 'Restock Kopi 1kg + Ongkir 15rb',
             'total_biaya' => $totalBiaya,
         ]);
 
         // 4. Create Restock Item
         RestockItem::create([
             'restock_id' => $restock->id,
-            'produk_id' => $kopi->id,
-            'jumlah' => 1,
-            'harga_satuan' => $hargaKopi,
+            'product_id' => $kopi->id,
+            'quantity' => 1,
+            'unit_price' => $priceKopi,
         ]);
 
         $this->command->info('Berhasil membuat data seeder Kopi 1kg (174rb + Ongkir 15rb)');

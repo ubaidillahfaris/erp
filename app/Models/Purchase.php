@@ -15,19 +15,19 @@ class Purchase extends Model
     protected $fillable = [
         'no_invoice',
         'vendor_id',
-        'tanggal',
+        'date',
         'transaction_type',
         'payment_method',
         'status',
         'total_biaya',
-        'keterangan',
+        'notes',
         'signature_log',
     ];
 
     protected function casts(): array
     {
         return [
-            'tanggal' => 'date',
+            'date' => 'date',
             'signature_log' => 'array',
             'total_biaya' => 'decimal:2',
         ];

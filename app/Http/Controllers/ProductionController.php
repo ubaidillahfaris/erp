@@ -6,11 +6,11 @@ use App\Actions\CompleteProduction;
 use App\Exceptions\MissingOverheadRateException;
 use App\Http\Requests\StoreProductionRequest;
 use App\Http\Requests\UpdateProductionRequest;
+use App\Models\Product;
 use App\Models\Production;
-use App\Models\Produk;
-use App\Models\Satuan;
-use App\Models\SatuanConversion;
-use App\Services\SatuanService;
+use App\Models\Unit;
+use App\Models\UnitConversion;
+use App\Services\UnitService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,15 +22,15 @@ class ProductionController extends Controller
     public function index(Request $request): Response
     {
         $perPage = $request->input('per_page', 10);
-        $sort = $request->input('sort') ?: 'tanggal';
+        $sort = $request->input('sort') ?: 'date';
         $direction = str_contains(strtolower($request->input('direction', 'desc')), 'asc') ? 'asc' : 'desc';
 
-        $query = Production::with(['produk', 'bom', 'items.produk.currentPrice']);
+        $query = Production::with(['product', 'bom', 'items.product.currentPrice']);
 
         if ($request->has('search') && ! empty($request->search)) {
             $query->where('sku', 'like', "%{$request->search}%")
-                ->orWhereHas('produk', function ($q) use ($request) {
-                    $q->where('nama', 'like', "%{$request->search}%");
+                ->orWhereHas('product', function ($q) use ($request) {
+                    $q->where('name', 'like', "%{$request->search}%");
                 });
         }
 
@@ -43,13 +43,13 @@ class ProductionController extends Controller
             if ($production->status === 'in_progress' && is_null($production->total_cost)) {
                 $estimatedCost = 0.0;
                 foreach ($production->items as $item) {
-                    $basePrice = (float) $item->harga_satuan;
+                    $basePrice = (float) $item->unit_price;
                     if ($basePrice <= 0) {
-                        $basePrice = (float) ($item->produk->currentPrice->purchase_price ?? 0);
+                        $basePrice = (float) ($item->product->currentPrice->purchase_price ?? 0);
                     }
                     $ratio = 1.0;
-                    if ($item->produk && $item->produk->satuan_id !== $item->satuan_id) {
-                        $ratio = app(SatuanService::class)->getConversionRatio($item->produk->satuan_id, $item->satuan_id);
+                    if ($item->product && $item->product->unit_id !== $item->unit_id) {
+                        $ratio = app(UnitService::class)->getConversionRatio($item->product->unit_id, $item->unit_id);
                     }
                     $estimatedCost += ($basePrice / ($ratio ?: 1)) * (float) $item->planned_qty;
                 }
@@ -68,18 +68,18 @@ class ProductionController extends Controller
 
     public function create(Request $request): Response
     {
-        $satuans = Satuan::all();
-        $conversions = SatuanConversion::all();
+        $units = Unit::all();
+        $conversions = UnitConversion::all();
 
         $reproduceFrom = null;
         if ($request->has('reproduce_from')) {
-            $reproduceFrom = Production::with(['items.produk.satuan', 'produk.satuan', 'bom'])
+            $reproduceFrom = Production::with(['items.product.unit', 'product.unit', 'bom'])
                 ->find($request->reproduce_from);
         }
 
         return Inertia::render('production/Create', [
             'boms' => [],
-            'satuans' => $satuans,
+            'units' => $units,
             'conversions' => $conversions,
             'reproduceFrom' => $reproduceFrom,
         ]);
@@ -102,39 +102,39 @@ class ProductionController extends Controller
 
             foreach ($request->items as $item) {
                 // Capture current HPP for estimation
-                $ingredient = Produk::with('currentPrice')->find($item['produk_id']);
+                $ingredient = Product::with('currentPrice')->find($item['product_id']);
                 $currentHpp = $ingredient->currentPrice ? $ingredient->currentPrice->purchase_price : 0;
 
                 $production->items()->create([
-                    'produk_id' => $item['produk_id'],
-                    'satuan_id' => $item['satuan_id'],
+                    'product_id' => $item['product_id'],
+                    'unit_id' => $item['unit_id'],
                     'planned_qty' => $item['planned_qty'],
                     'actual_qty' => 0,
-                    'harga_satuan' => $currentHpp,
+                    'unit_price' => $currentHpp,
                 ]);
             }
         });
 
-        return redirect()->route('production.index')->with('success', 'Produksi berhasil dimulai.');
+        return redirect()->route('production.index')->with('success', 'Productsi berhasil dimulai.');
     }
 
     public function show(Production $production): Response
     {
-        $production->load(['produk.satuan', 'bom', 'items.produk.satuan', 'items.satuan', 'items.produk.currentPrice']);
+        $production->load(['product.unit', 'bom', 'items.product.unit', 'items.unit', 'items.product.currentPrice']);
 
         $estimatedTotal = 0.0;
 
         // Calculate subtotal for each item including conversion
         $production->items->each(function ($item) use ($production, &$estimatedTotal) {
-            // Use current price if harga_satuan is not set (for legacy records)
-            $basePrice = (float) $item->harga_satuan;
+            // Use current price if unit_price is not set (for legacy records)
+            $basePrice = (float) $item->unit_price;
             if ($basePrice <= 0) {
-                $basePrice = (float) ($item->produk->currentPrice->purchase_price ?? 0);
+                $basePrice = (float) ($item->product->currentPrice->purchase_price ?? 0);
             }
             $ratio = 1.0;
 
-            if ($item->produk && $item->produk->satuan_id !== $item->satuan_id) {
-                $ratio = app(SatuanService::class)->getConversionRatio($item->produk->satuan_id, $item->satuan_id);
+            if ($item->product && $item->product->unit_id !== $item->unit_id) {
+                $ratio = app(UnitService::class)->getConversionRatio($item->product->unit_id, $item->unit_id);
             }
 
             // If in progress, use planned_qty for the "cost" attribute used in UI
@@ -154,16 +154,21 @@ class ProductionController extends Controller
         ]);
     }
 
-    public function edit(Production $production): Response
+    public function edit(Production $production)
     {
-        $production->load(['produk.satuan', 'bom', 'items.produk.satuan', 'items.satuan', 'items.produk.currentPrice']);
+        if ($production->status === 'completed') {
+            return redirect()->route('production.show', $production)
+                ->with('error', 'Produksi yang sudah selesai tidak dapat diubah.');
+        }
 
-        $satuans = Satuan::all();
-        $conversions = SatuanConversion::all();
+        $production->load(['product.unit', 'bom', 'items.product.unit', 'items.unit', 'items.product.currentPrice']);
+
+        $units = Unit::all();
+        $conversions = UnitConversion::all();
 
         return Inertia::render('production/Edit', [
             'production' => $production,
-            'satuans' => $satuans,
+            'units' => $units,
             'conversions' => $conversions,
         ]);
     }
@@ -171,7 +176,7 @@ class ProductionController extends Controller
     public function update(UpdateProductionRequest $request, Production $production): RedirectResponse
     {
         if ($production->status === 'completed') {
-            abort(403, 'Produksi sudah selesai dan tidak dapat diubah lagi.');
+            abort(403, 'Productsi sudah selesai dan tidak dapat diubah lagi.');
         }
 
         try {
@@ -185,16 +190,16 @@ class ProductionController extends Controller
                     $item = $production->items()->find($itemData['id']);
 
                     // Get the current HPP of the ingredient
-                    $ingredientProduk = Produk::with('currentPrice')->find($itemData['produk_id']);
-                    $basePricePerUnit = $ingredientProduk->currentPrice ? $ingredientProduk->currentPrice->purchase_price : 0;
+                    $ingredientProduct = Product::with('currentPrice')->find($itemData['product_id']);
+                    $basePricePerUnit = $ingredientProduct->currentPrice ? $ingredientProduct->currentPrice->purchase_price : 0;
 
                     // Calculate scale factor if units differ
-                    $ingredientBaseSatuanId = $ingredientProduk->satuan_id;
-                    $usedSatuanId = $itemData['satuan_id'];
+                    $ingredientBaseUnitId = $ingredientProduct->unit_id;
+                    $usedUnitId = $itemData['unit_id'];
 
                     $conversionRatio = 1;
-                    if ($ingredientBaseSatuanId !== $usedSatuanId) {
-                        $conversionRatio = app(SatuanService::class)->getConversionRatio($ingredientBaseSatuanId, $usedSatuanId);
+                    if ($ingredientBaseUnitId !== $usedUnitId) {
+                        $conversionRatio = app(UnitService::class)->getConversionRatio($ingredientBaseUnitId, $usedUnitId);
                     }
 
                     // Cost for this ingredient = (price_per_base_unit / conversion_multiplier) * (qty_used)
@@ -203,7 +208,7 @@ class ProductionController extends Controller
 
                     $item->update([
                         'actual_qty' => $itemData['actual_qty'],
-                        'harga_satuan' => $basePricePerUnit,
+                        'unit_price' => $basePricePerUnit,
                     ]);
                 }
 
@@ -222,19 +227,19 @@ class ProductionController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('production.index')->with('success', 'Produksi berhasil diselesaikan.');
+        return redirect()->route('production.index')->with('success', 'Productsi berhasil diselesaikan.');
     }
 
     public function destroy(Production $production): RedirectResponse
     {
         // Add safeguard to prevent deleting completed productions unless handling reversals
         if ($production->status === 'completed') {
-            abort(403, 'Produksi yang sudah selesai tidak dapat dihapus.');
+            abort(403, 'Productsi yang sudah selesai tidak dapat dihapus.');
         }
 
         $production->delete();
 
-        return redirect()->route('production.index')->with('success', 'Produksi berhasil dihapus.');
+        return redirect()->route('production.index')->with('success', 'Productsi deleted successfully.');
     }
 
     public function bulkDestroy(Request $request)
@@ -257,7 +262,7 @@ class ProductionController extends Controller
             }
         }
 
-        $message = "{$deletedCount} data produksi berhasil dihapus.";
+        $message = "{$deletedCount} data productsi deleted successfully.";
         if ($skippedCount > 0) {
             $message .= " {$skippedCount} data dilewati karena sudah selesai.";
         }

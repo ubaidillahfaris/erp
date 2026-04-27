@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Plus, Trash2, ArrowLeft, Save, Info } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { index as bomIndex, update } from '@/actions/App/Http/Controllers/BOMController';
-import quickSatuanAction from '@/actions/App/Http/Controllers/QuickCreateSatuanController';
+import quickUnitAction from '@/actions/App/Http/Controllers/QuickCreateUnitController';
 import CreatableSelect from '@/components/CreatableSelect.vue';
 import Combobox from '@/components/ui/combobox/Combobox.vue';
 import { Button } from '@/components/ui/button';
@@ -21,12 +21,12 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 interface BOMItem {
-    produk_id: string;
-    satuan_id: string | number | null;
-    jumlah: number;
+    product_id: string;
+    unit_id: string | number | null;
+    quantity: number;
 }
 
-const props = defineProps<{ bom: any; produks: any[]; bahanBakus: any[]; satuans: any[]; conversions: any[]; latest_production_yield?: number | null; }>();
+const props = defineProps<{ bom: any; products: any[]; bahanBakus: any[]; units: any[]; conversions: any[]; latest_production_yield?: number | null; }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -36,31 +36,31 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const form = useForm({
     sku: props.bom.sku || '',
-    produk_id: props.bom.produk_id.toString(),
-    nama: props.bom.nama || '',
+    product_id: props.bom.product_id.toString(),
+    name: props.bom.name || '',
     is_active: props.bom.is_active === true || Number(props.bom.is_active) === 1,
     expected_yield: props.bom.expected_yield || 1,
-    yield_satuan_id: props.bom.yield_satuan_id ? props.bom.yield_satuan_id.toString() : '',
+    yield_unit_id: props.bom.yield_unit_id ? props.bom.yield_unit_id.toString() : '',
     auto_deduct_on_sale: props.bom.auto_deduct_on_sale === true || Number(props.bom.auto_deduct_on_sale) === 1,
     items: props.bom.items.map((item: any) => ({
-        produk_id: item.produk_id.toString(),
-        satuan_id: item.satuan_id ? item.satuan_id.toString() : null,
-        jumlah: Number(item.jumlah)
+        product_id: item.product_id.toString(),
+        unit_id: item.unit_id ? item.unit_id.toString() : null,
+        quantity: Number(item.quantity)
     })) as BOMItem[]
 });
 
-const selectedYieldSatuanSimbol = computed(() => {
-    const sat = props.satuans.find(s => s.id.toString() === form.yield_satuan_id?.toString());
-    return sat?.simbol || '';
+const selectedYieldUnitSimbol = computed(() => {
+    const sat = props.units.find(s => s.id.toString() === form.yield_unit_id?.toString());
+    return sat?.symbol || '';
 });
 
 import { watch } from 'vue';
 
-watch(() => form.produk_id, (newVal) => {
+watch(() => form.product_id, (newVal) => {
     if (newVal) {
-        const prd = props.produks.find((p: any) => p.id.toString() === newVal);
-        if (prd && prd.satuan_id) {
-            form.yield_satuan_id = prd.satuan_id.toString();
+        const prd = props.products.find((p: any) => p.id.toString() === newVal);
+        if (prd && prd.unit_id) {
+            form.yield_unit_id = prd.unit_id.toString();
         }
     }
 });
@@ -77,39 +77,39 @@ const syncYield = () => {
 };
 
 const addItem = () => {
-    form.items.push({ produk_id: '', satuan_id: null, jumlah: 1 } as BOMItem);
+    form.items.push({ product_id: '', unit_id: null, quantity: 1 } as BOMItem);
 };
 
 const removeItem = (index: number | string) => {
     form.items.splice(Number(index), 1);
 };
 
-const onBahanSelected = (item: any, selectedProdukId: string) => {
-    const bahan = props.bahanBakus.find(b => b.id.toString() === selectedProdukId);
-    if (bahan && bahan.satuan_id) {
-        item.satuan_id = bahan.satuan_id.toString();
+const onBahanSelected = (item: any, selectedProductId: string) => {
+    const bahan = props.bahanBakus.find(b => b.id.toString() === selectedProductId);
+    if (bahan && bahan.unit_id) {
+        item.unit_id = bahan.unit_id.toString();
     }
 };
 
 import { toast } from 'vue-sonner';
 
-const handleCreateSatuan = async (nama: string, callback?: (id: number) => void) => {
+const handleCreateUnit = async (name: string, callback?: (id: number) => void) => {
     try {
         const simbol = nama.substring(0, 3).toLowerCase();
-        const response = await axios.post(quickSatuanAction().url, {
+        const response = await axios.post(quickUnitAction().url, {
             nama,
             simbol });
 
-        const newSatuan = response.data.satuan;
-        props.satuans.push(newSatuan);
+        const newUnit = response.data.unit;
+        props.units.push(newUnit);
 
         if (callback) {
-            callback(newSatuan.id);
+            callback(newUnit.id);
         }
-        toast.success(`Satuan ${nama} berhasil ditambahkan`);
+        toast.success(`Unit ${nama} added successfully`);
     } catch (error) {
         console.error('Gagal menambah satuan:', error);
-        toast.error('Gagal menambah satuan. Mungkin nama/simbol sudah ada.');
+        toast.error('Gagal menambah unit. Mungkin nama/simbol sudah ada.');
     }
 };
 
@@ -134,17 +134,17 @@ const getConversionRatio = (fromId: number, toId: number) => {
 
         // Direct
         for (const conv of props.conversions) {
-            if (conv.satuan_id === currentId && !visited.has(conv.to_satuan_id)) {
-                visited.add(conv.to_satuan_id);
-                queue.push([conv.to_satuan_id, currentRatio * Number(conv.rasio)]);
+            if (conv.unit_id === currentId && !visited.has(conv.to_unit_id)) {
+                visited.add(conv.to_unit_id);
+                queue.push([conv.to_unit_id, currentRatio * Number(conv.rasio)]);
             }
         }
 
         // Inverse
         for (const conv of props.conversions) {
-            if (conv.to_satuan_id === currentId && !visited.has(conv.satuan_id)) {
-                visited.add(conv.satuan_id);
-                queue.push([conv.satuan_id, currentRatio * (1.0 / Number(conv.rasio))]);
+            if (conv.to_unit_id === currentId && !visited.has(conv.unit_id)) {
+                visited.add(conv.unit_id);
+                queue.push([conv.unit_id, currentRatio * (1.0 / Number(conv.rasio))]);
             }
         }
     }
@@ -153,13 +153,13 @@ const getConversionRatio = (fromId: number, toId: number) => {
 };
 
 const getItemCost = (item: any) => {
-    const bahan = props.bahanBakus.find(b => b.id.toString() === item.produk_id);
-    if (bahan && item.jumlah) {
+    const bahan = props.bahanBakus.find(b => b.id.toString() === item.product_id);
+    if (bahan && item.quantity) {
         const ingredientPrice = Number(bahan.current_price?.purchase_price || 0);
-        const fromUnitId = bahan.satuan_id || bahan.current_price?.satuan_id;
-        const ratio = getConversionRatio(Number(fromUnitId), Number(item.satuan_id));
+        const fromUnitId = bahan.unit_id || bahan.current_price?.unit_id;
+        const ratio = getConversionRatio(Number(fromUnitId), Number(item.unit_id));
 
-        return (ingredientPrice * ratio * Number(item.jumlah));
+        return (ingredientPrice * ratio * Number(item.quantity));
     }
     return 0;
 };
@@ -186,7 +186,7 @@ const submit = () => {
             </Link>
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-slate-900">Edit BOM</h1>
-                <p class="text-sm text-slate-400 mt-0.5">Sesuaikan resep produksi untuk barang jadi.</p>
+                <p class="text-sm text-slate-400 mt-0.5">Sesuaikan resep productsi untuk barang jadi.</p>
             </div>
         </div>
 
@@ -196,10 +196,10 @@ const submit = () => {
                 <div class="flex gap-3">
                     <Info class="h-5 w-5 mt-0.5 shrink-0" />
                     <div class="space-y-1">
-                        <p class="font-medium">Data Produksi Aktual Berbeda</p>
-                        <p class="text-sm opacity-90">Sistem mendeteksi bahwa pada produksi terbaru, resep ini
-                            menghasilkan <strong>{{ latest_production_yield }} {{ selectedYieldSatuanSimbol }}</strong>
-                            aktual (berbeda dari estimasi {{ form.expected_yield }} {{ selectedYieldSatuanSimbol }}).</p>
+                        <p class="font-medium">Data Productsi Aktual Berbeda</p>
+                        <p class="text-sm opacity-90">Sistem mendeteksi bahwa pada productsi terbaru, resep ini
+                            menghasilkan <strong>{{ latest_production_yield }} {{ selectedYieldUnitSimbol }}</strong>
+                            aktual (berbeda dari estimasi {{ form.expected_yield }} {{ selectedYieldUnitSimbol }}).</p>
                     </div>
                 </div>
                 <Button type="button" @click="syncYield" variant="default"
@@ -211,18 +211,18 @@ const submit = () => {
             <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
                 <div class="px-6 py-4 border-b border-slate-100">
                     <h3 class="text-sm font-semibold text-slate-900 leading-none">Informasi Utama</h3>
-                    <p class="text-xs text-slate-400 mt-1">Pilih produk hasil akhir dan beri nama resep.</p>
+                    <p class="text-xs text-slate-400 mt-1">Pilih product hasil akhir dan beri nama resep.</p>
                 </div>
                 <div class="p-6 space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
-                            <Label>Barang Jadi / Setengah Jadi</Label>
+                            <Label>Finished Goods / Setengah Jadi</Label>
                             <Combobox 
-                                v-model="form.produk_id"
-                                :options="produks.map(p => ({ value: p.id.toString(), label: p.nama }))"
-                                placeholder="Pilih Produk"
+                                v-model="form.product_id"
+                                :options="products.map(p => ({ value: p.id.toString(), label: p.name }))"
+                                placeholder="Pilih Product"
                             />
-                            <InputError :message="form.errors.produk_id" />
+                            <InputError :message="form.errors.product_id" />
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -234,9 +234,9 @@ const submit = () => {
                                 diubah</p>
                         </div>
                         <div class="space-y-2">
-                            <Label for="nama">Nama Resep (Opsional)</Label>
-                            <Input id="nama" v-model="form.nama" placeholder="Contoh: Resep Standar" />
-                            <p v-if="form.errors.nama" class="text-sm text-destructive">{{ form.errors.nama }}</p>
+                            <Label for="name">Nama Resep (Opsional)</Label>
+                            <Input id="name" v-model="form.name" placeholder="Contoh: Resep Standar" />
+                            <p v-if="form.errors.name" class="text-sm text-destructive">{{ form.errors.name }}</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -246,15 +246,15 @@ const submit = () => {
                                 <Input id="expected_yield" type="number" step="0.0001" min="0.0001"
                                     v-model="form.expected_yield" class="w-1/2" />
                                 <div class="flex-1">
-                                    <CreatableSelect v-model="form.yield_satuan_id" :options="satuans"
-                                        placeholder="Pilih Satuan" hide-label hide-error display-expr="simbol"
-                                        @create="(nama: string) => handleCreateSatuan(nama, (id: number) => form.yield_satuan_id = id)" />
+                                    <CreatableSelect v-model="form.yield_unit_id" :options="units"
+                                        placeholder="Pilih Unit" hide-label hide-error display-expr="symbol"
+                                        @create="(name: string) => handleCreateUnit(nama, (id: number) => form.yield_unit_id = id)" />
                                 </div>
                             </div>
                             <p v-if="form.errors.expected_yield" class="text-sm text-destructive">{{
                                 form.errors.expected_yield }}</p>
-                            <p v-if="form.errors.yield_satuan_id" class="text-sm text-destructive">{{
-                                form.errors.yield_satuan_id }}</p>
+                            <p v-if="form.errors.yield_unit_id" class="text-sm text-destructive">{{
+                                form.errors.yield_unit_id }}</p>
                             <p class="text-xs text-muted-foreground">Jumlah barang jadi yang dihasilkan dari komposisi di bawah.</p>
                         </div>
 
@@ -282,7 +282,7 @@ const submit = () => {
             <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
                 <div class="px-6 py-4 border-b border-slate-100 flex flex-row items-center justify-between">
                     <div class="space-y-1">
-                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Bahan Baku & Komposisi</h3>
+                        <h3 class="text-sm font-semibold text-slate-900 leading-none">Raw Materials & Komposisi</h3>
                         <p class="text-xs text-slate-400 mt-1">Daftar bahan baku yang dibutuhkan untuk 1 unit barang jadi.
                         </p>
                     </div>
@@ -295,10 +295,10 @@ const submit = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Bahan Baku</TableHead>
-                                <TableHead width="150">Jumlah</TableHead>
-                                <TableHead width="200">Satuan</TableHead>
-                                <TableHead class="text-right">Harga</TableHead>
+                                <TableHead>Raw Materials</TableHead>
+                                <TableHead width="150">Quantity</TableHead>
+                                <TableHead width="200">Unit</TableHead>
+                                <TableHead class="text-right">Price</TableHead>
                                 <TableHead width="50"></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -306,19 +306,19 @@ const submit = () => {
                             <TableRow v-for="(item, idx) in form.items" :key="idx">
                                 <TableCell>
                                     <Combobox
-                                        v-model="item.produk_id"
-                                        :options="bahanBakus.map(b => ({ value: b.id.toString(), label: b.nama }))"
+                                        v-model="item.product_id"
+                                        :options="bahanBakus.map(b => ({ value: b.id.toString(), label: b.name }))"
                                         placeholder="Pilih Bahan"
                                         @update:modelValue="onBahanSelected(item, $event)"
                                     />
                                 </TableCell>
                                 <TableCell>
-                                    <Input type="number" step="0.0001" v-model="item.jumlah" />
+                                    <Input type="number" step="0.0001" v-model="item.quantity" />
                                 </TableCell>
                                 <TableCell>
-                                    <CreatableSelect v-model="item.satuan_id" :options="satuans" placeholder="Satuan"
-                                        hide-label hide-error display-expr="simbol"
-                                        @create="(nama: string) => handleCreateSatuan(nama, (id: number) => item.satuan_id = id)" />
+                                    <CreatableSelect v-model="item.unit_id" :options="units" placeholder="Unit"
+                                        hide-label hide-error display-expr="symbol"
+                                        @create="(name: string) => handleCreateUnit(nama, (id: number) => item.unit_id = id)" />
                                 </TableCell>
                                 <TableCell class="text-right whitespace-nowrap">
                                     {{ formatCurrency(getItemCost(item)) }}
@@ -343,7 +343,7 @@ const submit = () => {
                         <span class="text-lg font-semibold">{{ formatCurrency(totalEstimatedCost) }}</span>
                     </div>
                     <div class="text-right">
-                        <span class="text-sm text-muted-foreground block">Estimasi HPP per {{ selectedYieldSatuanSimbol ||
+                        <span class="text-sm text-muted-foreground block">Estimasi HPP per {{ selectedYieldUnitSimbol ||
                             'Unit' }}:</span>
                         <span class="text-2xl font-bold text-primary">{{ formatCurrency(totalEstimatedCost /
                             (form.expected_yield || 1)) }}</span>

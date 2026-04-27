@@ -109,7 +109,7 @@ const handleFinalize = async () => {
                             DRAFT
                         </Badge>
                     </h1>
-                    <p class="text-muted-foreground mt-1">{{ formatDate(purchase.tanggal) }} &bull; TR-{{ String(purchase.id).padStart(5, '0') }}</p>
+                    <p class="text-muted-foreground mt-1">{{ formatDate(purchase.date) }} &bull; TR-{{ String(purchase.id).padStart(5, '0') }}</p>
                 </div>
             </div>
 
@@ -158,8 +158,8 @@ const handleFinalize = async () => {
                                 <Store class="h-4 w-4" /> Vendor Pengirim
                             </div>
                             <div v-if="purchase.vendor">
-                                <p class="font-bold text-foreground">{{ purchase.vendor.nama }}</p>
-                                <p class="text-xs text-muted-foreground mt-0.5 line-clamp-2">{{ purchase.vendor.alamat || 'Alamat tidak diisi' }}</p>
+                                <p class="font-bold text-foreground">{{ purchase.vendor.name }}</p>
+                                <p class="text-xs text-muted-foreground mt-0.5 line-clamp-2">{{ purchase.vendor.address || 'Alamat tidak diisi' }}</p>
                             </div>
                             <div v-else class="text-sm font-medium italic text-muted-foreground">
                                 Transaksi Internal / Tanpa Vendor
@@ -170,7 +170,7 @@ const handleFinalize = async () => {
                                 <FileText class="h-4 w-4" /> Referensi
                             </div>
                             <p class="font-bold text-foreground">{{ purchase.no_invoice || 'Tanpa Referensi' }}</p>
-                            <p class="text-xs text-muted-foreground mt-0.5 italic line-clamp-2">{{ purchase.keterangan || 'Tidak ada catatan tambahan' }}</p>
+                            <p class="text-xs text-muted-foreground mt-0.5 italic line-clamp-2">{{ purchase.notes || 'Tidak ada catatan tambahan' }}</p>
                         </div>
                     </div>
                 </Card>
@@ -184,9 +184,9 @@ const handleFinalize = async () => {
                         <Table>
                             <TableHeader>
                                 <TableRow class="bg-slate-50">
-                                    <TableHead class="pl-6 w-[45%]">Deskripsi Produk</TableHead>
+                                    <TableHead class="pl-6 w-[45%]">Description Product</TableHead>
                                     <TableHead class="text-right">Qty</TableHead>
-                                    <TableHead class="text-right">Hrg. Satuan</TableHead>
+                                    <TableHead class="text-right">Hrg. Unit</TableHead>
                                     <TableHead class="text-right pr-6">Subtotal</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -198,20 +198,20 @@ const handleFinalize = async () => {
                                                 <PackageOpen class="h-4 w-4 text-muted-foreground" />
                                             </div>
                                             <div class="flex flex-col">
-                                                <span class="font-bold text-sm">{{ item.produk.nama }}</span>
-                                                <span class="text-xs text-muted-foreground">{{ item.produk.sku || '--' }}</span>
+                                                <span class="font-bold text-sm">{{ item.product.name }}</span>
+                                                <span class="text-xs text-muted-foreground">{{ item.product.sku || '--' }}</span>
                                             </div>
                                         </div>
                                     </TableCell>
                                     <TableCell class="text-right font-medium">
-                                        {{ Number(item.jumlah) }} <span class="text-xs text-muted-foreground ml-1">{{ item.produk.satuan?.simbol || '-' }}</span>
+                                        {{ Number(item.quantity) }} <span class="text-xs text-muted-foreground ml-1">{{ item.product.unit?.symbol || '-' }}</span>
                                     </TableCell>
                                     <TableCell class="text-right">
-                                        <span v-if="Number(item.harga_satuan) > 0">{{ formatCurrency(Number(item.harga_satuan)) }}</span>
+                                        <span v-if="Number(item.unit_price) > 0">{{ formatCurrency(Number(item.unit_price)) }}</span>
                                         <Badge v-else variant="outline" class="text-xs bg-slate-50 text-slate-500 rounded">Rp 0</Badge>
                                     </TableCell>
                                     <TableCell class="text-right pr-6 font-bold">
-                                        {{ formatCurrency(Number(item.jumlah) * Number(item.harga_satuan)) }}
+                                        {{ formatCurrency(Number(item.quantity) * Number(item.unit_price)) }}
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
