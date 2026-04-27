@@ -53,6 +53,7 @@ const form = useForm({
     type: props.product.type || 'finished_good',
     is_active: !!Number(props.product.is_active),
     track_stock: !!Number(props.product.track_stock),
+    is_batch_tracked: !!Number(props.product.is_batch_tracked),
     overhead_rate: props.overhead_rate || 0,
     retail_price: props.product.current_price?.retail_price || 0,
     wholesale_price: props.product.current_price?.wholesale_price || 0 });
@@ -204,6 +205,24 @@ const handleCreateUnit = async (name: string, onCreated?: (id: number) => void) 
                             </label>
                             <p class="text-xs text-muted-foreground">
                                 Jika aktif, sistem akan menghitung saldo barang ini secara otomatis.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div v-if="form.track_stock" class="flex items-center space-x-3 py-4 border-b border-muted/50">
+                        <input 
+                            type="checkbox"
+                            id="is_batch_tracked" 
+                            v-model="form.is_batch_tracked"
+                            class="h-4 w-4 rounded border-slate-200 bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary cursor-pointer"
+                        />
+                        <div class="grid gap-1.5 leading-none">
+                            <label for="is_batch_tracked"
+                                class="text-sm font-bold leading-none cursor-pointer">
+                                Lacak Batch & Expiry
+                            </label>
+                            <p class="text-xs text-muted-foreground">
+                                Aktifkan untuk mencatat nomor batch, lot, dan tanggal kadaluarsa (FEFO).
                             </p>
                         </div>
                     </div>

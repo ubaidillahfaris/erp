@@ -117,6 +117,9 @@ class RestockController extends Controller
                     'reference_type' => 'restock',
                     'reference_id' => $restock->id,
                     'notes' => "Restock ref: {$restock->id}",
+                    'batch_number' => $item['batch_number'] ?? null,
+                    'lot_number' => $item['lot_number'] ?? null,
+                    'expiry_date' => $item['expiry_date'] ?? null,
                 ]);
             }
         });

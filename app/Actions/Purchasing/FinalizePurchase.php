@@ -50,6 +50,9 @@ class FinalizePurchase
                     'reference_type' => 'purchase',
                     'reference_id' => $purchase->id,
                     'notes' => "Purchase ref: {$purchase->id} ({$purchase->transaction_type})",
+                    'batch_number' => $item->batch_number,
+                    'lot_number' => $item->lot_number,
+                    'expiry_date' => $item->expiry_date,
                 ]);
 
                 // 4. Update Price Aggregates (AVG/MIN/MAX)

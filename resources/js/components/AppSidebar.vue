@@ -6,7 +6,7 @@ import {
     ClipboardList, Building2, Landmark, Users, ShieldCheck,
     Search, Zap, ChevronsUpDown, Settings, LifeBuoy, Bell,
     Store, History as HistoryIcon, Menu, Warehouse, ArrowRightLeft,
-    Tag, TrendingUp, RotateCcw
+    Tag, TrendingUp, RotateCcw, HelpCircle
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
@@ -99,31 +99,18 @@ const groupedMenus = computed(() => {
     <!-- ── FOOTER: Settings & User ── -->
     <SidebarFooter class="px-3 pb-6 pt-4 space-y-1">
         <!-- System Nav -->
-        <!-- <SidebarMenu class="px-2 mb-4">
+        <SidebarMenu class="px-2 mb-4">
             <SidebarMenuItem>
                 <SidebarMenuButton as-child
                     class="h-10 px-3 rounded-xl hover:bg-slate-50 text-slate-500 transition-all dark:hover:bg-slate-800">
-                    <Link href="/settings" class="flex items-center gap-3">
-                        <Settings class="h-4 w-4 shrink-0" />
+                    <Link href="/help" class="flex items-center gap-3">
+                        <HelpCircle class="h-4 w-4 shrink-0" />
                         <span
-                            class="text-[13px] font-bold group-data-[collapsible=icon]:hidden uppercase tracking-wider">Settings</span>
+                            class="text-[13px] font-bold group-data-[collapsible=icon]:hidden uppercase tracking-wider text-slate-900">Bantuan</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton as-child
-                    class="h-10 px-3 rounded-xl hover:bg-slate-50 text-slate-500 transition-all dark:hover:bg-slate-800">
-                    <Link href="/support" class="flex items-center gap-3">
-                        <LifeBuoy class="h-4 w-4 shrink-0" />
-                        <span
-                            class="text-[13px] font-bold group-data-[collapsible=icon]:hidden uppercase tracking-wider">Support</span>
-                        <div
-                            class="ml-auto flex h-5 w-5 items-center justify-center rounded-md bg-blue-600 text-xs font-black text-white group-data-[collapsible=icon]:hidden shadow-none ">
-                            8</div>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-        </SidebarMenu> -->
+        </SidebarMenu>
 
         <NavUser />
     </SidebarFooter>

@@ -46,9 +46,9 @@ const form = useForm({
     notes: '',
     status_pembayaran: 'lunas',
     total_bayar: 0,
-    biaya_tambahan: [] as { name: string, nominal: number }[],
+    cost_tambahan: [] as { name: string, nominal: number }[],
     items: [
-        { product_id: props.productId || '', unit_id: '', quantity: 1, unit_price: 0 }
+        { product_id: props.productId || '', unit_id: '', quantity: 1, unit_price: 0, batch_number: '', lot_number: '', expiry_date: '' }
     ]
 });
 
@@ -64,7 +64,7 @@ if (props.productId) {
 }
 
 const addItem = () => {
-    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0 });
+    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0, batch_number: '', lot_number: '', expiry_date: '' });
 };
 
 const removeItem = (index: number) => {
@@ -245,10 +245,11 @@ watch(totalBiaya, (newTotal) => {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Raw Materials</TableHead>
-                                <TableHead width="150">Unit</TableHead>
-                                <TableHead width="120">Quantity</TableHead>
-                                <TableHead width="200">Harga Unit (Rp)</TableHead>
-                                <TableHead width="200" class="text-right">Subtotal</TableHead>
+                                <TableHead width="100">Unit</TableHead>
+                                <TableHead width="100">Qty</TableHead>
+                                <TableHead width="150">Harga Unit</TableHead>
+                                <TableHead>Batch / Exp (FEFO)</TableHead>
+                                <TableHead width="150" class="text-right">Subtotal</TableHead>
                                 <TableHead width="50"></TableHead>
                             </TableRow>
                         </TableHeader>
@@ -286,6 +287,21 @@ watch(totalBiaya, (newTotal) => {
                                 <TableCell>
                                     <InputCurrency v-model="item.unit_price" required />
                                     <InputError :message="form.errors[`items.${idx}.unit_price`]" />
+                                </TableCell>
+                                <!-- Batch Info -->
+                                <TableCell>
+                                    <div v-if="bahanBakus.find(p => p.id == item.product_id)?.is_batch_tracked" class="flex flex-col gap-2 min-w-[200px]">
+                                        <Input v-model="item.batch_number" placeholder="Nomor Batch" class="h-8 text-xs" />
+                                        <div class="flex gap-1 items-center">
+                                            <span class="text-[10px] text-muted-foreground shrink-0 w-8">Exp:</span>
+                                            <Input type="date" v-model="item.expiry_date" class="h-8 text-xs" />
+                                        </div>
+                                        <InputError :message="form.errors[`items.${idx}.batch_number`]" />
+                                        <InputError :message="form.errors[`items.${idx}.expiry_date`]" />
+                                    </div>
+                                    <div v-else class="text-xs text-muted-foreground italic">
+                                        Tidak dilacak
+                                    </div>
                                 </TableCell>
                                 <!-- Subtotal Text -->
                                 <TableCell class="text-right font-medium">
@@ -329,11 +345,11 @@ watch(totalBiaya, (newTotal) => {
                             <TableRow v-for="(adj, adjIdx) in form.cost_tambahan" :key="adjIdx">
                                 <TableCell>
                                     <Input v-model="adj.name" placeholder="Misal: Ongkir, Diskon" />
-                                    <InputError :message="form.errors[`biaya_tambahan.${adjIdx}.name`]" />
+                                    <InputError :message="form.errors[`cost_tambahan.${adjIdx}.name`]" />
                                 </TableCell>
                                 <TableCell>
                                     <InputCurrency v-model="adj.nominal" placeholder="Gunakan minus untuk diskon" />
-                                    <InputError :message="form.errors[`biaya_tambahan.${adjIdx}.nominal`]" />
+                                    <InputError :message="form.errors[`cost_tambahan.${adjIdx}.nominal`]" />
                                 </TableCell>
                                 <TableCell>
                                     <Button type="button" variant="ghost" size="icon" @click="removeAdjustment(adjIdx)">

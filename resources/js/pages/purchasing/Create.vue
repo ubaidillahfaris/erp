@@ -55,7 +55,7 @@ const form = useForm({
     notes: '',
     no_invoice: '',
     items: [
-        { product_id: props.productId || '', unit_id: '', quantity: 1, unit_price: 0 }
+        { product_id: props.productId || '', unit_id: '', quantity: 1, unit_price: 0, batch_number: '', expiry_date: '' }
     ],
     attachments: [] as File[]
 });
@@ -74,7 +74,7 @@ if (props.productId) {
 const isQuickVendorOpen = ref(false);
 
 const addItem = () => {
-    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0 });
+    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0, batch_number: '', expiry_date: '' });
 };
 
 const removeItem = (idx: number) => {
@@ -269,6 +269,14 @@ const handleVendorCreated = (vendor: { id: number; name: string }) => {
                                             @update:modelValue="(val) => handleProductChange(idx, val)"
                                             :disabled="!!props.productId && idx === 0"
                                         />
+                                        <!-- Batch Info -->
+                                        <div v-if="products.find(p => p.id == item.product_id)?.is_batch_tracked" class="mt-2 flex flex-col gap-1 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                            <div class="flex gap-2">
+                                                <Input v-model="item.batch_number" placeholder="No. Batch" class="h-7 text-[10px]" />
+                                                <Input type="date" v-model="item.expiry_date" class="h-7 text-[10px]" />
+                                            </div>
+                                            <p class="text-[9px] text-muted-foreground italic">Lacak batch & expiry untuk FEFO</p>
+                                        </div>
                                         <p v-if="form.errors[`items.${idx}.product_id`]" class="text-xs text-destructive mt-1">{{ form.errors[`items.${idx}.product_id`] }}</p>
                                     </TableCell>
                                     <!-- Select Unit -->

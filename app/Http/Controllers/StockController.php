@@ -136,14 +136,28 @@ class StockController extends Controller
             $movementsQuery->where('warehouse_id', $warehouseId);
         }
 
-        $movements = $movementsQuery->with('unit', 'warehouse')
+        $movements = $movementsQuery->with('unit', 'warehouse', 'stockBatch')
             ->latest()
             ->paginate($perPage)
             ->withQueryString();
 
+        $batches = [];
+        if ($product->is_batch_tracked) {
+            $batchesQuery = $product->batches()
+                ->available()
+                ->with(['warehouse', 'unit']);
+            
+            if ($warehouseId && $warehouseId !== 'all') {
+                $batchesQuery->where('warehouse_id', $warehouseId);
+            }
+
+            $batches = $batchesQuery->orderByRaw('expiry_date IS NULL, expiry_date ASC')->get();
+        }
+
         return Inertia::render('stock/Show', [
             'product' => $product,
             'movements' => $movements,
+            'batches' => $batches,
             'warehouses' => Warehouse::all(),
             'currentWarehouseId' => $targetWarehouseId,
             'filters' => $request->only(['per_page', 'warehouse_id']),

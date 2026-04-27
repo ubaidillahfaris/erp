@@ -56,7 +56,9 @@ const initialItems = props.restock.items.map((item: any) => {
         product_id: item.product_id.toString(),
         unit_id: satuanId,
         quantity: Number(item.quantity),
-        unit_price: Number(item.unit_price)
+        unit_price: Number(item.unit_price),
+        batch_number: item.batch_number || '',
+        expiry_date: item.expiry_date ? item.expiry_date.split('T')[0] : ''
     };
 });
 
@@ -66,12 +68,12 @@ const form = useForm({
     notes: props.restock.notes || '',
     status_pembayaran: props.restock.status_pembayaran || 'lunas',
     total_bayar: Number(props.restock.total_bayar || 0),
-    biaya_tambahan: (props.restock.cost_tambahan || []) as { name: string, nominal: number }[],
-    items: initialItems.length > 0 ? initialItems : [{ product_id: '', unit_id: '', quantity: 1, unit_price: 0 }]
+    cost_tambahan: (props.restock.cost_tambahan || []) as { name: string, nominal: number }[],
+    items: initialItems.length > 0 ? initialItems : [{ product_id: '', unit_id: '', quantity: 1, unit_price: 0, batch_number: '', expiry_date: '' }]
 });
 
 const addItem = () => {
-    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0 });
+    form.items.push({ product_id: '', unit_id: '', quantity: 1, unit_price: 0, batch_number: '', expiry_date: '' });
 };
 
 const removeItem = (index: number) => {
@@ -264,6 +266,14 @@ watch(totalBiaya, (newTotal) => {
                                         placeholder="Pilih Bahan"
                                         @update:modelValue="(val: any) => handleProductChange(idx as number, val)"
                                     />
+                                    <!-- Batch Info -->
+                                    <div v-if="bahanBakus.find(b => b.id == item.product_id)?.is_batch_tracked" class="mt-2 flex flex-col gap-1 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                        <div class="flex gap-2">
+                                            <Input v-model="item.batch_number" placeholder="No. Batch" class="h-7 text-[10px]" />
+                                            <Input type="date" v-model="item.expiry_date" class="h-7 text-[10px]" />
+                                        </div>
+                                        <p class="text-[9px] text-muted-foreground italic">Lacak batch & expiry untuk FEFO</p>
+                                    </div>
                                     <InputError :message="form.errors[`items.${idx}.product_id` as keyof typeof form.errors]" />
                                 </TableCell>
                                 <!-- Select Unit -->
@@ -330,11 +340,11 @@ watch(totalBiaya, (newTotal) => {
                             <TableRow v-for="(adj, adjIdx) in form.cost_tambahan" :key="adjIdx">
                                 <TableCell>
                                     <Input v-model="adj.name" placeholder="Misal: Ongkir, Diskon" />
-                                    <InputError :message="form.errors[`biaya_tambahan.${adjIdx}.name`]" />
+                                    <InputError :message="form.errors[`cost_tambahan.${adjIdx}.name`]" />
                                 </TableCell>
                                 <TableCell>
                                     <InputCurrency v-model="adj.nominal" placeholder="Gunakan minus untuk diskon" />
-                                    <InputError :message="form.errors[`biaya_tambahan.${adjIdx}.nominal`]" />
+                                    <InputError :message="form.errors[`cost_tambahan.${adjIdx}.nominal`]" />
                                 </TableCell>
                                 <TableCell>
                                     <Button type="button" variant="ghost" size="icon" @click="removeAdjustment(adjIdx)">

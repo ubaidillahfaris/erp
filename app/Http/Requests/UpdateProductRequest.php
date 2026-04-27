@@ -29,6 +29,7 @@ class UpdateProductRequest extends FormRequest
             'wholesale_price' => ['nullable', 'numeric', 'min:0'],
             'unit_id' => ['required', 'exists:units,id'],
             'track_stock' => ['nullable', 'boolean'],
+            'is_batch_tracked' => ['nullable', 'boolean'],
             'overhead_rate' => ['nullable', 'numeric', 'min:0'],
         ];
     }

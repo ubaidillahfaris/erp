@@ -28,6 +28,7 @@ class Product extends Model
         'unit_id',
         'type',
         'track_stock',
+        'is_batch_tracked',
         'overhead_rate_per_unit',
     ];
 
@@ -58,6 +59,7 @@ class Product extends Model
             'min_stock' => 'integer',
             'is_active' => 'boolean',
             'track_stock' => 'boolean',
+            'is_batch_tracked' => 'boolean',
             'overhead_rate_per_unit' => 'integer',
         ];
     }
@@ -137,5 +139,10 @@ class Product extends Model
     public function customerPrices(): HasMany
     {
         return $this->hasMany(CustomerPrice::class, 'product_id');
+    }
+
+    public function batches(): HasMany
+    {
+        return $this->hasMany(StockBatch::class, 'product_id');
     }
 }

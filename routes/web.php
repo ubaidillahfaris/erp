@@ -22,6 +22,7 @@ use App\Http\Controllers\QuickCreateUnitController;
 use App\Http\Controllers\QuickCreateVendorController;
 use App\Http\Controllers\RestockController;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\StockBatchController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\StockTransferController;
@@ -29,6 +30,7 @@ use App\Http\Controllers\System\AuditLogController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\System\HelpController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -110,6 +112,10 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::resource('stock-opname', StockOpnameController::class);
         Route::post('stock-opname/{stock_opname}/storno', [StockOpnameController::class, 'stornoOpname'])->name('stock-opname.storno');
         Route::post('stock-opname/{stock_opname}/reopen', [StockOpnameController::class, 'reopen'])->name('stock-opname.reopen');
+
+        // Batches
+        Route::get('stock-batches', [StockBatchController::class, 'index'])->name('stock-batches.index');
+        Route::get('stock-batches/{batch}', [StockBatchController::class, 'show'])->name('stock-batches.show');
 
         // Warehouses
         Route::resource('warehouses', WarehouseController::class);
@@ -196,6 +202,9 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // Employee Management
     Route::resource('employees', EmployeeController::class);
+    // Help Page
+    Route::get('/help', [HelpController::class, 'index'])->name('help');
+    Route::get('/help/{slug}', [HelpController::class, 'show'])->name('help.show');
 });
 
 require __DIR__.'/settings.php';

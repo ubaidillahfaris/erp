@@ -38,6 +38,7 @@ const props = defineProps<{
     };
     warehouses: any[];
     currentWarehouseId: number;
+    batches?: any[];
 }>();
 
 const perPage = ref(props.filters.per_page || String(props.movements.per_page));
@@ -122,6 +123,59 @@ const getMovementDetails = (movement: any) => {
                 </div>
             </template>
         </PageHeader>
+
+        <!-- Batch Breakdown Section -->
+        <Card v-if="product.is_batch_tracked" class="border-orange-200 shadow-none bg-orange-50/20 rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-orange-100 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-orange-900 leading-none">Rincian Per Batch (FEFO)</h3>
+                    <p class="text-xs text-orange-600 mt-1">Daftar batch yang tersedia di lokasi terpilih.</p>
+                </div>
+                <Badge variant="outline" class="bg-white text-orange-700 border-orange-200">
+                    {{ batches?.length || 0 }} Batch Aktif
+                </Badge>
+            </div>
+            <div class="p-0">
+                <Table>
+                    <TableHeader>
+                        <TableRow class="hover:bg-transparent border-orange-100">
+                            <TableHead class="text-orange-900 font-bold">Nomor Batch</TableHead>
+                            <TableHead class="text-orange-900 font-bold text-center">Gudang</TableHead>
+                            <TableHead class="text-orange-900 font-bold text-center">Tgl Kadaluarsa</TableHead>
+                            <TableHead class="text-orange-900 font-bold text-right">Stok</TableHead>
+                            <TableHead class="text-orange-900 font-bold text-center">Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow v-for="b in batches" :key="b.id" class="border-orange-50 hover:bg-orange-50/50">
+                            <TableCell class="font-mono font-medium text-slate-700">{{ b.batch_number }}</TableCell>
+                            <TableCell class="text-center">
+                                <span class="text-xs px-2 py-0.5 bg-white border rounded-full text-slate-600">{{ b.warehouse?.name }}</span>
+                            </TableCell>
+                            <TableCell class="text-center font-medium">
+                                <span :class="b.status === 'expired' ? 'text-red-600' : (b.status === 'expiring_soon' ? 'text-orange-600' : 'text-slate-600')">
+                                    {{ b.expiry_date ? new Date(b.expiry_date).toLocaleDateString('id-ID') : 'Tanpa Expiry' }}
+                                </span>
+                            </TableCell>
+                            <TableCell class="text-right">
+                                <span class="font-bold text-slate-900">{{ parseFloat(b.quantity_on_hand).toLocaleString('id-ID') }}</span>
+                                <span class="text-[10px] ml-1 text-slate-400">{{ b.unit?.symbol }}</span>
+                            </TableCell>
+                            <TableCell class="text-center">
+                                <Badge v-if="b.status === 'expired'" variant="destructive" class="text-[10px] h-5">EXPIRED</Badge>
+                                <Badge v-else-if="b.status === 'expiring_soon'" variant="warning" class="text-[10px] h-5 bg-orange-500">WARNING</Badge>
+                                <Badge v-else variant="secondary" class="text-[10px] h-5 bg-emerald-500 text-white border-none">OK</Badge>
+                            </TableCell>
+                        </TableRow>
+                        <TableRow v-if="batches?.length === 0">
+                            <TableCell colspan="5" class="h-20 text-center text-orange-400 text-sm italic">
+                                Tidak ada batch tersedia di lokasi ini.
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </div>
+        </Card>
 
         <Card class="border border-slate-200 rounded-xl bg-white shadow-none">
             <div class="px-6 py-4 border-b border-slate-100">

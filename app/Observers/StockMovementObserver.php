@@ -85,5 +85,14 @@ class StockMovementObserver
             'last_unit_id' => $movement->unit_id,
             'last_movement_id' => $event === 'created' ? $movement->id : $stock->last_movement_id,
         ]);
+
+        // Update Batch balance if applicable
+        if ($movement->stock_batch_id) {
+            $batch = \App\Models\StockBatch::find($movement->stock_batch_id);
+            if ($batch) {
+                // $change is already in base unit
+                $batch->increment('quantity_on_hand', $change);
+            }
+        }
     }
 }

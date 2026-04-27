@@ -66,6 +66,16 @@ class MenuSeeder extends Seeder
         ]);
 
         $this->seedMenu([
+            'name' => 'Batch & Expiry',
+            'path' => '/stock-batches',
+            'route_name' => 'stock-batches.index',
+            'icon' => 'CalendarClock',
+            'permission_name' => 'manage stock',
+            'module_slug' => 'inventory',
+            'order_priority' => 125,
+        ]);
+
+        $this->seedMenu([
             'name' => 'Stock Opname',
             'path' => '/stock-opname',
             'route_name' => 'stock-opname.index',

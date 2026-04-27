@@ -49,6 +49,7 @@ const form = useForm({
     unit_id: '',
     type: 'finished_good',
     track_stock: true,
+    is_batch_tracked: false,
     overhead_rate: 0,
     add_another: false });
 
@@ -199,6 +200,24 @@ const handleCreateUnit = async (nama: string) => {
                             </label>
                             <p class="text-xs text-muted-foreground">
                                 Jika aktif, sistem akan menghitung saldo barang ini secara otomatis.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div v-if="form.track_stock" class="flex items-center space-x-3 py-4 border-b border-muted/50">
+                        <input 
+                            type="checkbox"
+                            id="is_batch_tracked" 
+                            v-model="form.is_batch_tracked"
+                            class="h-4 w-4 rounded border-slate-200 bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary cursor-pointer"
+                        />
+                        <div class="grid gap-1.5 leading-none">
+                            <label for="is_batch_tracked"
+                                class="text-sm font-bold leading-none cursor-pointer">
+                                Lacak Batch & Expiry
+                            </label>
+                            <p class="text-xs text-muted-foreground">
+                                Aktifkan untuk mencatat nomor batch, lot, dan tanggal kadaluarsa (FEFO).
                             </p>
                         </div>
                     </div>

@@ -17,6 +17,7 @@ class StockMovement extends Model
         'reference_id',
         'notes',
         'condition',
+        'stock_batch_id',
     ];
 
     protected function casts(): array
@@ -39,5 +40,10 @@ class StockMovement extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function stockBatch(): BelongsTo
+    {
+        return $this->belongsTo(StockBatch::class);
     }
 }

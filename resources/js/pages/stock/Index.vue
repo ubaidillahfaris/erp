@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import debounce from 'lodash/debounce';
-import { Search, History as HistoryIcon, Settings2, AlertTriangle, CheckCircle2, Loader2, MoreHorizontal, ShoppingCart, TestTube, ChevronRight, Package, Boxes, Warehouse, Printer } from 'lucide-vue-next';
+import { Search, History as HistoryIcon, Settings2, AlertTriangle, CheckCircle2, Loader2, MoreHorizontal, ShoppingCart, TestTube, ChevronRight, Package, Boxes, Warehouse, Printer, CalendarClock } from 'lucide-vue-next';
 import { exportMutationPdf } from '@/actions/App/Http/Controllers/StockController';
 import { ref, watch } from 'vue';
 import PageHeader from '@/components/PageHeader.vue';
@@ -215,7 +215,18 @@ const exportPdf = () => {
             description="Manajemen Saldo & Inventaris Gudang" 
             back-href="/dashboard"
             :count="products.total"
-        />
+        >
+            <template #actions>
+                <div class="flex items-center gap-2">
+                    <Link href="/stock-batches">
+                        <Button variant="outline" class="h-10 px-4 gap-2 border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800 rounded-xl">
+                            <CalendarClock class="h-4 w-4" />
+                            Batch & Expiry Control
+                        </Button>
+                    </Link>
+                </div>
+            </template>
+        </PageHeader>
 
         <!-- ====== CONTENT AREA ====== -->
         <div class="w-full max-w-7xl mx-auto">
