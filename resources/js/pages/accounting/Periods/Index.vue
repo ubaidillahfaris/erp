@@ -122,7 +122,8 @@ const getSuggestionLabel = (suggestion: any) => {
     return `${formatMonth(suggestion.month)} ${suggestion.year}`;
 };
 
-const handleSuggestionSelect = (value: string) => {
+const handleSuggestionSelect = (value: string | any) => {
+    if (!value) return;
     const [month, year] = value.split('-');
     addForm.period_month = month;
     addForm.period_year = year;
