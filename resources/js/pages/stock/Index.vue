@@ -34,6 +34,7 @@ import type { BreadcrumbItem } from '@/types';
 
 import DataTable from '@/components/DataTable.vue';
 import DateRangePicker from '@/components/DateRangePicker.vue';
+import { Slider } from '@/components/ui/slider';
 
 // Persistent Layout Fix
 defineOptions({ layout: AppLayout });
@@ -53,8 +54,13 @@ const props = defineProps<{
     filters: {
         search?: string;
         type?: string;
-        per_page?: string;
+    per_page?: string;
+        warehouse_id?: string;
+        min_stock?: string;
+        max_stock?: string;
     };
+    warehouses: any[];
+    currentWarehouseId: number;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -65,6 +71,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 const search = ref(props.filters.search || '');
 const type = ref(props.filters.type || 'all');
 const perPage = ref(props.filters.per_page || String(props.products.per_page));
+const warehouseId = ref(props.filters.warehouse_id || String(props.currentWarehouseId));
+const stockRange = ref([Number(props.filters.min_stock || 0), Number(props.filters.max_stock || 5000)]);
 
 const columns = [
     { key: 'product', label: 'Product Specification' },
@@ -73,11 +81,14 @@ const columns = [
     { key: 'status', label: 'Status', align: 'center' },
 ] as const;
 
-watch([search, type, perPage], debounce(([newSearch, newType, newPerPage]) => {
+watch([search, type, perPage, warehouseId, stockRange], debounce(([newSearch, newType, newPerPage, newWarehouseId, newRange]) => {
     router.get('/stock', {
         search: newSearch,
         type: newType === 'all' ? undefined : newType,
-        per_page: newPerPage
+        per_page: newPerPage,
+        warehouse_id: newWarehouseId === 'all' ? undefined : newWarehouseId,
+        min_stock: newRange[0],
+        max_stock: newRange[1]
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
@@ -86,6 +97,7 @@ const isAdjustmentOpen = ref(false);
 const selectedProduct = ref<any>(null);
 const adjustmentForm = useForm({
     product_id: null as number | null,
+    warehouse_id: null as number | null,
     unit_id: '' as string | number,
     physical_qty: 1,
     notes: '',
@@ -136,6 +148,7 @@ watch([() => adjustmentForm.physical_qty, () => adjustmentForm.unit_id], () => {
 const openAdjustment = (product: any) => {
     selectedProduct.value = product;
     adjustmentForm.product_id = product.id;
+    adjustmentForm.warehouse_id = Number(warehouseId.value);
     adjustmentForm.unit_id = String(product.unit_id);
     // Set initial physical qty to current system qty
     const currentBalance = parseFloat(product.stock?.balance || 0);
@@ -154,7 +167,7 @@ const submitAdjustment = () => {
 };
 
 const getStockStatus = (product: any) => {
-    const balance = parseFloat(product.stock?.balance || 0);
+    const balance = parseFloat(product.display_balance || 0);
     const min = product.min_stock || 0;
 
     if (balance <= 0) return { label: 'OOS', variant: 'destructive', icon: AlertTriangle, styles: 'bg-destructive/5 text-destructive border-destructive/10' };
@@ -208,9 +221,34 @@ const exportPdf = () => {
                 v-model:search="search"
                 v-model:perPage="perPage"
                 search-placeholder="Cari SKU atau Nama Product..."
-                toolbar-title="Global Inventory"
+                :toolbar-title="warehouseId === 'all' ? 'Inventory Konsolidasi' : `Inventory: ${warehouses.find(w => String(w.id) === warehouseId)?.name || 'Gudang'}`"
             >
                 <template #toolbar-actions>
+                    <div class="flex items-center gap-2 mr-3 px-3 border-r border-slate-100">
+                        <Label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Gudang:</Label>
+                        <Select v-model="warehouseId">
+                            <SelectTrigger class="h-8 w-40 border-slate-200 text-xs font-bold bg-white shadow-none focus:ring-0">
+                                <SelectValue placeholder="Pilih Gudang" />
+                            </SelectTrigger>
+                            <SelectContent class="rounded-xl shadow-none">
+                                <SelectItem value="all">Semua Gudang</SelectItem>
+                                <SelectItem v-for="w in warehouses" :key="w.id" :value="String(w.id)">
+                                    {{ w.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div class="flex items-center gap-4 mr-6 px-3 border-r border-slate-100 min-w-[200px]">
+                        <div class="flex flex-col gap-1 w-full">
+                            <div class="flex items-center justify-between">
+                                <Label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Range Stok:</Label>
+                                <span class="text-[10px] font-mono font-bold text-accent">{{ stockRange[0] }} - {{ stockRange[1] }}</span>
+                            </div>
+                            <Slider v-model="stockRange" :min="0" :max="5000" :step="1" class="w-full h-4" />
+                        </div>
+                    </div>
+
                     <Button 
                         variant="outline" 
                         size="sm" 
@@ -248,8 +286,8 @@ const exportPdf = () => {
 
                 <template #cell(balance)="{ row }">
                     <div class="flex flex-col items-end gap-0.5">
-                        <span class="text-[18px] font-bold tabular-nums tracking-tighter" :class="parseFloat(row.stock?.balance || 0) <= row.min_stock ? 'text-destructive' : 'text-foreground'">
-                            {{ parseFloat(row.stock?.balance || 0).toLocaleString('id-ID') }}
+                        <span class="text-[18px] font-bold tabular-nums tracking-tighter" :class="parseFloat(row.display_balance || 0) <= row.min_stock ? 'text-destructive' : 'text-foreground'">
+                            {{ parseFloat(row.display_balance || 0).toLocaleString('id-ID') }}
                         </span>
                         <span class="text-xs font-bold uppercase tracking-tighter text-muted-foreground">Min. {{ row.min_stock }}</span>
                     </div>
@@ -287,7 +325,7 @@ const exportPdf = () => {
                                     <TestTube class="h-3.5 w-3.5 text-muted-foreground" /> Gunakan Productsi
                                 </DropdownMenuItem>
 
-                                <DropdownMenuItem @click="openAdjustment(row)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-accent">
+                                <DropdownMenuItem v-if="warehouseId !== 'all'" @click="openAdjustment(row)" class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium text-accent">
                                     <Settings2 class="h-3.5 w-3.5" /> Adjust (Opname)
                                 </DropdownMenuItem>
                             </DropdownMenuContent>

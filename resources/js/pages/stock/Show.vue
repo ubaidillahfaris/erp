@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import PageHeader from '@/components/PageHeader.vue';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -31,15 +33,20 @@ const props = defineProps<{
         next_page_url: string | null;
     };
     filters: {
-        per_page?: string;
-    }
+    per_page?: string;
+        warehouse_id?: string;
+    };
+    warehouses: any[];
+    currentWarehouseId: number;
 }>();
 
 const perPage = ref(props.filters.per_page || String(props.movements.per_page));
+const warehouseId = ref(props.filters.warehouse_id || String(props.currentWarehouseId));
 
-watch(perPage, debounce((newPerPage) => {
+watch([perPage, warehouseId], debounce(([newPerPage, newWarehouseId]) => {
     router.get(`/stock/${props.product.id}`, {
-        per_page: newPerPage
+        per_page: newPerPage,
+        warehouse_id: newWarehouseId
     }, { preserveState: true, replace: true, preserveScroll: true });
 }, 300));
 
@@ -85,16 +92,32 @@ const getMovementDetails = (movement: any) => {
             back-href="/stock"
         >
             <template #actions>
-                <div class="flex items-center gap-6 bg-white border border-slate-200 rounded-xl px-6 py-3 shadow-none">
-                    <div class="text-center border-r border-slate-200 pr-6">
-                        <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Saldo Saat Ini</p>
-                        <p class="text-2xl font-bold text-foreground">
-                            {{ parseFloat(product.stock?.balance || 0).toLocaleString('id-ID') }}
-                        </p>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl h-full">
+                        <Label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pilih Lokasi:</Label>
+                        <Select v-model="warehouseId">
+                            <SelectTrigger class="h-8 w-44 border-none shadow-none text-xs font-bold bg-transparent">
+                                <SelectValue placeholder="Pilih Gudang" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Gudang (Konsolidasi)</SelectItem>
+                                <SelectItem v-for="w in warehouses" :key="w.id" :value="String(w.id)">
+                                    {{ w.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
-                    <div class="text-left">
-                        <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Unit</p>
-                        <p class="text-sm font-bold text-muted-foreground">{{ product.unit?.name }}</p>
+                    <div class="flex items-center gap-6 bg-white border border-slate-200 rounded-xl px-6 py-3 shadow-none">
+                        <div class="text-center border-r border-slate-200 pr-6">
+                            <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">{{ warehouseId === 'all' ? 'Saldo Total' : 'Saldo Lokasi' }}</p>
+                            <p class="text-2xl font-bold text-foreground">
+                                {{ parseFloat(warehouseId === 'all' ? product.total_balance : (product.stock?.balance || 0)).toLocaleString('id-ID') }}
+                            </p>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-xs text-muted-foreground uppercase font-black tracking-widest">Unit</p>
+                            <p class="text-sm font-bold text-muted-foreground">{{ product.unit?.name }}</p>
+                        </div>
                     </div>
                 </div>
             </template>

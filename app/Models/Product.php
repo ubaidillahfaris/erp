@@ -119,7 +119,15 @@ class Product extends Model
     }
 
     /**
-     * Get the stock summary for the product.
+     * Get all stock records for the product (one per warehouse).
+     */
+    public function stocks(): HasMany
+    {
+        return $this->hasMany(Stock::class, 'product_id');
+    }
+
+    /**
+     * Get a specific stock record for the product (context dependent).
      */
     public function stock(): HasOne
     {

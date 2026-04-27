@@ -8,6 +8,7 @@ use App\Models\CustomerPrice;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleCustomer;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -15,11 +16,17 @@ use Inertia\Response;
 
 class PosController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $warehouseId = $request->input('warehouse_id');
+        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+        $targetWarehouseId = $warehouseId ?: $defaultWarehouseId;
+
         $products = Product::where('is_active', true)
             ->where('type', 'finished_good')
-            ->with(['currentPrice', 'unit', 'stock', 'category'])
+            ->with(['currentPrice', 'unit', 'stock' => function ($q) use ($targetWarehouseId) {
+                $q->where('warehouse_id', $targetWarehouseId);
+            }, 'category'])
             ->get()
             ->map(function ($product) {
                 return [
@@ -34,7 +41,7 @@ class PosController extends Controller
                     'base_unit' => $product->unit->name,
                     'price' => (float) ($product->currentPrice?->retail_price ?? 0),
                     'cost' => (float) ($product->currentPrice?->purchase_price ?? 0),
-                    'stock' => (float) ($product->stock?->balance ?? 0),
+                    'stock' => (float) ($product->stock->first()?->balance ?? 0),
                     'track_stock' => (bool) $product->track_stock,
                 ];
             });
@@ -57,10 +64,14 @@ class PosController extends Controller
                 ];
             });
 
+        $warehouses = Warehouse::where('is_active', true)->get(['id', 'name']);
+
         return Inertia::render('Pos/Index', [
             'products' => $products,
             'customers' => $customers,
             'categories' => $categories,
+            'warehouses' => $warehouses,
+            'currentWarehouseId' => (int) $targetWarehouseId,
         ]);
     }
 
@@ -158,6 +169,7 @@ class PosController extends Controller
     {
         $validated = $request->validate([
             'date' => ['required', 'date'],
+            'warehouse_id' => ['required', 'exists:warehouses,id'],
             'payment_method' => ['required', 'string'],
             'customer_id' => ['nullable', 'exists:customers,id', 'required_if:payment_method,credit'],
             'received_amount' => ['nullable', 'numeric', 'min:0'],
@@ -182,6 +194,7 @@ class PosController extends Controller
 
                 $sale = Sale::create([
                     'invoice_number' => $invoiceNumber,
+                    'warehouse_id' => $validated['warehouse_id'],
                     'date' => $validated['date'],
                     'total_amount' => $totalAmount,
                     'received_amount' => $validated['received_amount'] ?? $totalAmount,
@@ -214,7 +227,7 @@ class PosController extends Controller
                     ]);
                 }
 
-                return redirect()->route('pos.index')->with('success', 'Transaksi berhasil. No Invoice: '.$sale->invoice_number);
+                return redirect()->route('pos.index', ['warehouse_id' => $validated['warehouse_id']])->with('success', 'Transaksi berhasil. No Invoice: '.$sale->invoice_number);
             });
         } catch (\Exception $e) {
             return back()->withErrors(['checkout' => $e->getMessage()]);

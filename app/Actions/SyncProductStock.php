@@ -6,6 +6,8 @@ use App\Models\Production;
 use App\Models\Purchase;
 use App\Models\Restock;
 use App\Models\Stock;
+use App\Models\StockMovement;
+use App\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
 
 class SyncProductStock
@@ -14,11 +16,19 @@ class SyncProductStock
      * Rebuild the entire stock history from scratch based on Restocks,
      * Purchases, and Productions.
      */
-    public function handle(): void
+    public function handle(?int $warehouseId = null): void
     {
-        DB::transaction(function () {
+        DB::transaction(function () use ($warehouseId) {
+            $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+            $targetWarehouseId = $warehouseId ?: $defaultWarehouseId;
+
             // 1. Clear existing history (PostgreSQL compatible)
-            DB::statement('TRUNCATE TABLE stock_movements, stocks RESTART IDENTITY CASCADE;');
+            if (! $warehouseId) {
+                DB::statement('TRUNCATE TABLE stock_movements, stocks RESTART IDENTITY CASCADE;');
+            } else {
+                StockMovement::where('warehouse_id', $warehouseId)->delete();
+                Stock::where('warehouse_id', $warehouseId)->delete();
+            }
 
             // 2. Fetch all sources and sort by date for accurate Stock Card
             // Legacy Restocks
@@ -64,11 +74,11 @@ class SyncProductStock
 
                 if ($type === 'restock') {
                     foreach ($model->items as $item) {
-                        $this->recordInbound($item->product_id, $item->unit_id, $item->quantity, 'restock', $model->id, "Legacy Restock ref: {$model->id}");
+                        $this->recordInbound($item->product_id, $targetWarehouseId, $item->unit_id, $item->quantity, 'restock', $model->id, "Legacy Restock ref: {$model->id}");
                     }
                 } elseif ($type === 'purchase') {
                     foreach ($model->items as $item) {
-                        $this->recordInbound($item->product_id, $item->unit_id, $item->quantity, 'purchase', $model->id, "Purchase ref: {$model->id}");
+                        $this->recordInbound($item->product_id, $targetWarehouseId, $item->unit_id, $item->quantity, 'purchase', $model->id, "Purchase ref: {$model->id}");
                     }
                 } elseif ($type === 'production') {
                     // Ingredient Usage (OUT)
@@ -76,6 +86,7 @@ class SyncProductStock
                         if ($pItem->actual_qty > 0) {
                             app(RecordStockMovement::class)->handle([
                                 'product_id' => $pItem->product_id,
+                                'warehouse_id' => $targetWarehouseId,
                                 'unit_id' => $pItem->unit_id,
                                 'type' => 'out',
                                 'quantity' => $pItem->actual_qty,
@@ -88,17 +99,18 @@ class SyncProductStock
 
                     // Yield Produced (IN)
                     if ($model->actual_yield > 0) {
-                        $this->recordInbound($model->product_id, $model->product->unit_id, $model->actual_yield, 'production_yield', $model->id, "Initial sync production yield SKU: {$model->sku}");
+                        $this->recordInbound($model->product_id, $targetWarehouseId, $model->product->unit_id, $model->actual_yield, 'production_yield', $model->id, "Initial sync production yield SKU: {$model->sku}");
                     }
                 }
             }
         });
     }
 
-    protected function recordInbound($productId, $unitId, $quantity, $refType, $refId, $notes): void
+    protected function recordInbound($productId, $warehouseId, $unitId, $quantity, $refType, $refId, $notes): void
     {
         app(RecordStockMovement::class)->handle([
             'product_id' => $productId,
+            'warehouse_id' => $warehouseId,
             'unit_id' => $unitId,
             'type' => 'in',
             'quantity' => $quantity,

@@ -44,11 +44,15 @@ class StockMovementObserver
 
         // Sprint 3.2: Pessimistic Locking
         // Use lockForUpdate to ensure serialized access to the stock row
-        $stock = Stock::where('product_id', $product->id)->lockForUpdate()->first();
+        $stock = Stock::where('product_id', $product->id)
+            ->where('warehouse_id', $movement->warehouse_id)
+            ->lockForUpdate()
+            ->first();
 
         if (! $stock) {
             $stock = Stock::create([
                 'product_id' => $product->id,
+                'warehouse_id' => $movement->warehouse_id,
                 'balance' => 0,
                 'last_unit_id' => $baseUnitId,
             ]);
@@ -69,7 +73,8 @@ class StockMovementObserver
         $isAdjustment = in_array($movement->reference_type, ['stock_opname', 'adjustment']) || $isStorno;
 
         if ($product->track_stock && ! $isAdjustment && $change < 0 && ($stock->balance + $change) < 0) {
-            throw new \RuntimeException("Stok {$product->name} tidak mencukupi untuk transaksi ini (Sisa: {$stock->balance}, Diminta: ".abs($change).')');
+            $warehouseName = $movement->warehouse->name ?? 'Gudang';
+            throw new \RuntimeException("Stok {$product->name} di {$warehouseName} tidak mencukupi untuk transaksi ini (Sisa: {$stock->balance}, Diminta: ".abs($change).')');
         }
 
         $stock->increment('balance', $change);

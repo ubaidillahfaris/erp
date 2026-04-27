@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\StockMovement;
+use App\Models\Warehouse;
 
 class RecordStockMovement
 {
@@ -12,8 +13,15 @@ class RecordStockMovement
      */
     public function handle(array $data): StockMovement
     {
+        $warehouseId = $data['warehouse_id'] ?? null;
+
+        if (! $warehouseId) {
+            $warehouseId = Warehouse::where('is_default', true)->value('id');
+        }
+
         return StockMovement::create([
             'product_id' => $data['product_id'],
+            'warehouse_id' => $warehouseId,
             'unit_id' => $data['unit_id'],
             'type' => $data['type'], // 'in' or 'out'
             'quantity' => $data['quantity'],

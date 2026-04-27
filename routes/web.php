@@ -22,9 +22,11 @@ use App\Http\Controllers\RestockController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\System\AuditLogController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VendorController;
+use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -106,6 +108,18 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         Route::resource('stock-opname', StockOpnameController::class);
         Route::post('stock-opname/{stock_opname}/storno', [StockOpnameController::class, 'stornoOpname'])->name('stock-opname.storno');
         Route::post('stock-opname/{stock_opname}/reopen', [StockOpnameController::class, 'reopen'])->name('stock-opname.reopen');
+
+        // Warehouses
+        Route::resource('warehouses', WarehouseController::class);
+
+        // Stock Transfers
+        Route::get('stock-transfers', [StockTransferController::class, 'index'])->name('stock-transfers.index');
+        Route::get('stock-transfers/create', [StockTransferController::class, 'create'])->name('stock-transfers.create');
+        Route::post('stock-transfers', [StockTransferController::class, 'store'])->name('stock-transfers.store');
+        Route::get('stock-transfers/{stock_transfer}', [StockTransferController::class, 'show'])->name('stock-transfers.show');
+        Route::post('stock-transfers/{stock_transfer}/dispatch', [StockTransferController::class, 'dispatch'])->name('stock-transfers.dispatch');
+        Route::post('stock-transfers/{stock_transfer}/receive', [StockTransferController::class, 'receive'])->name('stock-transfers.receive');
+        Route::post('stock-transfers/{stock_transfer}/cancel', [StockTransferController::class, 'cancel'])->name('stock-transfers.cancel');
     });
 
     // 4. FINANCIALS & EXPENSES (view reports)

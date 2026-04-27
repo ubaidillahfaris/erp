@@ -5,24 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class StockMovement extends Model
+class StockTransferItem extends Model
 {
     protected $fillable = [
+        'stock_transfer_id',
         'product_id',
-        'warehouse_id',
         'unit_id',
-        'type',
-        'quantity',
-        'reference_type',
-        'reference_id',
+        'quantity_requested',
+        'quantity_received',
         'notes',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'quantity_requested' => 'decimal:4',
+        'quantity_received' => 'decimal:4',
+    ];
+
+    public function stockTransfer(): BelongsTo
     {
-        return [
-            'quantity' => 'decimal:4',
-        ];
+        return $this->belongsTo(StockTransfer::class);
     }
 
     public function product(): BelongsTo
@@ -33,10 +34,5 @@ class StockMovement extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
-    }
-
-    public function warehouse(): BelongsTo
-    {
-        return $this->belongsTo(Warehouse::class);
     }
 }

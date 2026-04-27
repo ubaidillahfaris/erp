@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -15,6 +16,7 @@ class Sale extends Model
 
     protected $fillable = [
         'invoice_number',
+        'warehouse_id',
         'date',
         'total_amount',
         'received_amount',
@@ -37,6 +39,11 @@ class Sale extends Model
             'cogs_amount' => 'integer',
             'storno_at' => 'datetime',
         ];
+    }
+
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 
     public function items(): HasMany

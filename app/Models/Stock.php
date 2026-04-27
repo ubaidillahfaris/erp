@@ -9,6 +9,7 @@ class Stock extends Model
 {
     protected $fillable = [
         'product_id',
+        'warehouse_id',
         'last_unit_id',
         'balance',
         'last_movement_id',
@@ -34,5 +35,10 @@ class Stock extends Model
     public function lastMovement(): BelongsTo
     {
         return $this->belongsTo(StockMovement::class, 'last_movement_id');
+    }
+
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
     }
 }

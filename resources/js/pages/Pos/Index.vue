@@ -31,7 +31,12 @@ const props = defineProps<{
     products: any[];
     customers: any[];
     categories: any[];
+    warehouses: any[];
+    defaultWarehouseId: number;
 }>();
+
+// ============ State ============
+const selectedWarehouseId = ref(props.defaultWarehouseId);
 
 // ============ Types & Constants ============
 type PaymentMethod = "cash" | "qris" | "transfer" | "credit";
@@ -267,6 +272,11 @@ const form = useForm({
     change_amount: 0,
     notes: '',
     items: [] as any[],
+    warehouse_id: props.defaultWarehouseId,
+});
+
+watch(selectedWarehouseId, (val) => {
+    form.warehouse_id = val;
 });
 
 watch(() => form.payment_method, (newMethod) => {
@@ -367,6 +377,12 @@ const selectAmount = (amount: number) => {
             </div>
 
             <div class="hidden md:flex items-center gap-2">
+                <div class="flex items-center gap-2 mr-2 bg-slate-100/80 border border-slate-200 rounded-full px-4 h-9 transition hover:bg-slate-100">
+                    <Warehouse class="h-3.5 w-3.5 text-slate-400" />
+                    <select v-model="selectedWarehouseId" class="bg-transparent border-none text-[11px] font-bold uppercase tracking-wider text-slate-600 focus:ring-0 cursor-pointer py-0 outline-none">
+                        <option v-for="w in warehouses" :key="w.id" :value="w.id">{{ w.name }}</option>
+                    </select>
+                </div>
                 <StatusPill :icon="shiftOpen ? Unlock : Lock" :label="shiftOpen ? 'Shift Aktif · 06:42' : 'Shift Tutup'"
                     :tone="shiftOpen ? 'primary' : 'muted'" />
                 <StatusPill :icon="online ? Wifi : WifiOff"

@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\StockMovement;
 use App\Models\Unit;
 use App\Models\UnitConversion;
+use App\Models\Warehouse;
 use App\Services\UnitService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,41 +19,116 @@ class StockController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = Product::query()
-            ->whereIn('type', ['raw_material', 'intermediate_good'])
-            ->with(['stock', 'unit'])
-            ->withCount('stockMovements');
-        $perPage = $request->input('per_page', 10);
+        $warehouseId = $request->input('warehouse_id');
 
-        if ($request->has('search') && ! empty($request->search)) {
-            $query->where('name', 'like', "%{$request->search}%")
-                ->orWhere('sku', 'like', "%{$request->search}%");
+        $query = Product::query()
+            ->with(['unit'])
+            ->withCount('stockMovements');
+
+        if ($warehouseId && $warehouseId !== 'all') {
+            $query->with(['stock' => function ($q) use ($warehouseId) {
+                $q->where('warehouse_id', $warehouseId);
+            }]);
+            $currentWarehouseId = (int) $warehouseId;
+        } else {
+            // Consolidated view
+            $query->withSum('stocks as total_balance', 'balance');
+            $currentWarehouseId = 'all';
         }
 
-        if ($request->has('type') && ! empty($request->type)) {
+        $perPage = $request->input('per_page', 10);
+        $minStock = $request->input('min_stock');
+        $maxStock = $request->input('max_stock');
+
+        if ($request->has('search') && ! empty($request->search)) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', "%{$request->search}%")
+                    ->orWhere('sku', 'like', "%{$request->search}%");
+            });
+        }
+
+        if ($request->has('type') && ! empty($request->type) && $request->type !== 'all') {
             $query->where('type', $request->type);
         }
 
+        // Stock Level Filtering
+        if ($warehouseId && $warehouseId !== 'all') {
+            if ($minStock !== null || $maxStock !== null) {
+                $query->whereHas('stocks', function ($q) use ($warehouseId, $minStock, $maxStock) {
+                    $q->where('warehouse_id', $warehouseId);
+                    if ($minStock !== null) {
+                        $q->where('balance', '>=', $minStock);
+                    }
+                    if ($maxStock !== null) {
+                        $q->where('balance', '<=', $maxStock);
+                    }
+                });
+            }
+        } else {
+            if ($minStock !== null || $maxStock !== null) {
+                // For consolidated view, we use having if we used withSum,
+                // but withSum adds a subquery column, so we might need to use a subquery in where
+                $query->where(function ($q) use ($minStock, $maxStock) {
+                    $subquery = \DB::table('stocks')
+                        ->selectRaw('SUM(balance)')
+                        ->whereColumn('product_id', 'products.id');
+
+                    if ($minStock !== null) {
+                        $q->whereRaw("({$subquery->toSql()}) >= ?", [$minStock]);
+                    }
+                    if ($maxStock !== null) {
+                        $q->whereRaw("({$subquery->toSql()}) <= ?", [$maxStock]);
+                    }
+                });
+            }
+        }
+
         $products = $query->paginate($perPage)->withQueryString();
+
+        // Transform products to have a consistent 'balance' attribute
+        $products->getCollection()->transform(function ($product) use ($warehouseId) {
+            if ($warehouseId && $warehouseId !== 'all') {
+                $product->display_balance = $product->stock->balance ?? 0;
+            } else {
+                $product->display_balance = $product->total_balance ?? 0;
+            }
+
+            return $product;
+        });
+
         $units = Unit::all();
         $conversions = UnitConversion::all();
+        $warehouses = Warehouse::all();
 
         return Inertia::render('stock/Index', [
             'products' => $products,
             'units' => $units,
             'conversions' => $conversions,
-            'filters' => $request->only(['search', 'type', 'per_page']),
+            'warehouses' => $warehouses,
+            'currentWarehouseId' => $currentWarehouseId,
+            'filters' => $request->only(['search', 'type', 'per_page', 'warehouse_id', 'min_stock', 'max_stock']),
         ]);
     }
 
     public function show(Product $product, Request $request): Response
     {
-        $product->load(['stock', 'unit']);
+        $warehouseId = $request->input('warehouse_id');
+        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+        $targetWarehouseId = ($warehouseId && $warehouseId !== 'all') ? $warehouseId : $defaultWarehouseId;
+
+        $product->load(['stock' => function ($q) use ($targetWarehouseId) {
+            $q->where('warehouse_id', $targetWarehouseId);
+        }, 'unit'])->loadSum('stocks as total_balance', 'balance');
 
         $perPage = $request->input('per_page', 10);
 
-        $movements = StockMovement::where('product_id', $product->id)
-            ->with('unit')
+        $movementsQuery = StockMovement::where('product_id', $product->id);
+
+        if ($warehouseId && $warehouseId !== 'all') {
+            $movementsQuery->where('warehouse_id', $warehouseId);
+        }
+
+        $movements = $movementsQuery->with('unit', 'warehouse')
             ->latest()
             ->paginate($perPage)
             ->withQueryString();
@@ -60,7 +136,9 @@ class StockController extends Controller
         return Inertia::render('stock/Show', [
             'product' => $product,
             'movements' => $movements,
-            'filters' => $request->only(['per_page']),
+            'warehouses' => Warehouse::all(),
+            'currentWarehouseId' => $targetWarehouseId,
+            'filters' => $request->only(['per_page', 'warehouse_id']),
         ]);
     }
 
@@ -68,6 +146,7 @@ class StockController extends Controller
     {
         $validated = $request->validate([
             'product_id' => 'required|exists:products,id',
+            'warehouse_id' => 'required|exists:warehouses,id',
             'unit_id' => 'required|exists:units,id',
             'type' => 'sometimes|in:in,out',
             'quantity' => 'sometimes|numeric',
@@ -76,7 +155,10 @@ class StockController extends Controller
         ]);
 
         if ($request->has('physical_qty')) {
-            $product = Product::with('stock')->findOrFail($request->product_id);
+            $product = Product::with(['stock' => function ($q) use ($request) {
+                $q->where('warehouse_id', $request->warehouse_id);
+            }])->findOrFail($request->product_id);
+
             $currentBalance = (float) ($product->stock->balance ?? 0);
 
             // Convert physical_qty to base unit
@@ -107,6 +189,7 @@ class StockController extends Controller
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date',
             'product_id' => 'nullable|exists:products,id',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
         ]);
 
         GenerateStockMutationPdfJob::dispatch($validated);

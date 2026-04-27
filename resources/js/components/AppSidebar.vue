@@ -5,7 +5,7 @@ import {
     FileText, ReceiptText, PieChart, PackageOpen, Boxes,
     ClipboardList, Building2, Landmark, Users, ShieldCheck,
     Search, Zap, ChevronsUpDown, Settings, LifeBuoy, Bell,
-    Store, History as HistoryIcon, Menu
+    Store, History as HistoryIcon, Menu, Warehouse, ArrowRightLeft
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
@@ -31,25 +31,34 @@ const iconMap: Record<string, any> = {
     LayoutGrid, Package, Ruler, ShoppingCart, ShoppingBag,
     FileText, ReceiptText, PieChart, PackageOpen, Boxes,
     ClipboardList, Building2, Landmark, Users, ShieldCheck,
-    HistoryIcon,
+    HistoryIcon, Warehouse, ArrowRightLeft
 };
 
 const getIcon = (name: string) => iconMap[name] || Package;
 
 const groupedMenus = computed(() => {
-    return menus.value.reduce((acc: Record<string, any[]>, module: any) => {
-        acc[module.name] = (module.menus || []).map((menu: any) => ({
-            title: menu.name,
-            href: menu.path || '#',
-            icon: getIcon(menu.icon),
-            children: menu.children?.map((child: any) => ({
-                title: child.name,
-                href: child.path || '#',
-                icon: getIcon(child.icon),
-            })),
-        }));
-        return acc;
-    }, {});
+    const groups: Record<string, any[]> = {};
+
+    menus.value.forEach((module: any) => {
+        (module.menus || []).forEach((menu: any) => {
+            const groupKey = menu.group_name || module.name;
+            if (!groups[groupKey]) {
+                groups[groupKey] = [];
+            }
+            groups[groupKey].push({
+                title: menu.name,
+                href: menu.path || '#',
+                icon: getIcon(menu.icon),
+                children: menu.children?.map((child: any) => ({
+                    title: child.name,
+                    href: child.path || '#',
+                    icon: getIcon(child.icon),
+                })),
+            });
+        });
+    });
+
+    return groups;
 });
 </script>
 

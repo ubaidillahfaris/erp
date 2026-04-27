@@ -18,6 +18,7 @@ class SaleItemObserver
             foreach ($product->bom->items as $bomItem) {
                 (new RecordStockMovement)->handle([
                     'product_id' => $bomItem->product_id,
+                    'warehouse_id' => $saleItem->sale->warehouse_id,
                     'unit_id' => $bomItem->unit_id,
                     'type' => 'out',
                     'quantity' => $bomItem->quantity * $saleItem->qty,
@@ -32,6 +33,7 @@ class SaleItemObserver
         if ($product->track_stock) {
             (new RecordStockMovement)->handle([
                 'product_id' => $saleItem->product_id,
+                'warehouse_id' => $saleItem->sale->warehouse_id,
                 'unit_id' => $saleItem->unit_id,
                 'type' => 'out',
                 'quantity' => $saleItem->qty,
