@@ -278,4 +278,69 @@ class CreditNoteTest extends TestCase
 
         return $cn;
     }
+
+    public function test_can_view_credit_notes_index()
+    {
+        $sale = $this->createSale();
+        $this->createCreditNote($sale, 2);
+
+        $this->actingAs($this->user);
+        $response = $this->get(route('credit-notes.index'));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('CreditNotes/Index')
+            ->has('creditNotes.data', 1)
+        );
+    }
+
+    public function test_can_view_credit_note_show()
+    {
+        $sale = $this->createSale();
+        $cn = $this->createCreditNote($sale, 2);
+
+        $this->actingAs($this->user);
+        $response = $this->get(route('credit-notes.show', $cn->id));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('CreditNotes/Show')
+            ->has('creditNote')
+        );
+    }
+
+    public function test_can_view_credit_note_create_general()
+    {
+        $this->actingAs($this->user);
+        $response = $this->get(route('credit-notes.create-general'));
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->component('CreditNotes/Create')
+        );
+    }
+
+    public function test_can_get_sale_details()
+    {
+        $sale = $this->createSale();
+
+        $this->actingAs($this->user);
+        $response = $this->getJson(route('credit-notes.sale-details', $sale->id));
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'id',
+            'invoice_number',
+            'items' => [
+                '*' => [
+                    'id',
+                    'product',
+                    'unit',
+                    'qty',
+                    'price',
+                    'returnable_qty',
+                ]
+            ]
+        ]);
+    }
 }
