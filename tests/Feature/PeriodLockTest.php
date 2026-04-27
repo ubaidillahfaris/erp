@@ -36,12 +36,12 @@ class PeriodLockTest extends TestCase
 
         // 2. Attempt to POST to POS with date in April 2024
         $response = $this->actingAs($this->user)
-            ->post(route('pos.store'), [
+            ->postJson(route('pos.store'), [
                 'date' => '2024-04-15',
                 // other POS data...
             ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(422);
         $response->assertSee('Periode Akuntansi April 2024 sudah dikunci');
     }
 
@@ -80,9 +80,9 @@ class PeriodLockTest extends TestCase
 
         // Attempt POST without date
         $response = $this->actingAs($this->user)
-            ->post(route('pos.store'), []);
+            ->postJson(route('pos.store'), []);
 
-        $response->assertStatus(403);
+        $response->assertStatus(422);
     }
 
     /** @test */

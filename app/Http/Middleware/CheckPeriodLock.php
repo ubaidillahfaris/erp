@@ -24,7 +24,9 @@ class CheckPeriodLock
             $monthName = $dt->translatedFormat('F');
             $message = "Periode Akuntansi {$monthName} {$dt->year} sudah dikunci. Transaksi tidak dapat dilakukan.";
 
-            abort(403, $message);
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'period_lock' => $message
+            ]);
         }
 
         return $next($request);
