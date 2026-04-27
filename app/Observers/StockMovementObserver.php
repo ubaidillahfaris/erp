@@ -46,6 +46,7 @@ class StockMovementObserver
         // Use lockForUpdate to ensure serialized access to the stock row
         $stock = Stock::where('product_id', $product->id)
             ->where('warehouse_id', $movement->warehouse_id)
+            ->where('condition', $movement->condition ?? 'good')
             ->lockForUpdate()
             ->first();
 
@@ -53,8 +54,10 @@ class StockMovementObserver
             $stock = Stock::create([
                 'product_id' => $product->id,
                 'warehouse_id' => $movement->warehouse_id,
+                'condition' => $movement->condition ?? 'good',
                 'balance' => 0,
                 'last_unit_id' => $baseUnitId,
+                'is_sellable' => ($movement->condition ?? 'good') === 'good',
             ]);
             // Refresh with lock
             $stock = Stock::where('id', $stock->id)->lockForUpdate()->first();

@@ -20,12 +20,12 @@ class PosController extends Controller
     {
         $user = auth()->user();
         $isSuperAdmin = $user->hasRole('superadmin');
-        
+
         $warehouseId = $request->input('warehouse_id');
         $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
-        
+
         // Logic: If NOT SuperAdmin and has a linked warehouse, ALWAYS use the linked one.
-        if (!$isSuperAdmin && $user->warehouse_id) {
+        if (! $isSuperAdmin && $user->warehouse_id) {
             $targetWarehouseId = $user->warehouse_id;
         } else {
             $targetWarehouseId = $warehouseId ?: $defaultWarehouseId;
@@ -34,7 +34,8 @@ class PosController extends Controller
         $products = Product::where('is_active', true)
             ->where('type', 'finished_good')
             ->with(['currentPrice', 'unit', 'stock' => function ($q) use ($targetWarehouseId) {
-                $q->where('warehouse_id', $targetWarehouseId);
+                $q->where('warehouse_id', $targetWarehouseId)
+                    ->where('is_sellable', true);
             }, 'category'])
             ->get()
             ->map(function ($product) {

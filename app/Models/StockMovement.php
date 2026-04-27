@@ -16,6 +16,7 @@ class StockMovement extends Model
         'reference_type',
         'reference_id',
         'notes',
+        'condition',
     ];
 
     protected function casts(): array

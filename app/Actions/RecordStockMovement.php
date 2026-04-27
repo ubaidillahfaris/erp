@@ -28,6 +28,7 @@ class RecordStockMovement
             'reference_type' => $data['reference_type'] ?? null,
             'reference_id' => $data['reference_id'] ?? null,
             'notes' => $data['notes'] ?? null,
+            'condition' => $data['condition'] ?? 'good',
         ]);
     }
 }

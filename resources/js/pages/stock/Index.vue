@@ -58,6 +58,7 @@ const props = defineProps<{
         warehouse_id?: string;
         min_stock?: string;
         max_stock?: string;
+        condition?: string;
     };
     warehouses: any[];
     currentWarehouseId: number;
@@ -72,21 +73,24 @@ const search = ref(props.filters.search || '');
 const type = ref(props.filters.type || 'all');
 const perPage = ref(props.filters.per_page || String(props.products.per_page));
 const warehouseId = ref(props.filters.warehouse_id || String(props.currentWarehouseId));
+const condition = ref(props.filters.condition || 'all');
 const stockRange = ref([Number(props.filters.min_stock || 0), Number(props.filters.max_stock || 5000)]);
 
 const columns = [
     { key: 'product', label: 'Product Specification' },
     { key: 'type', label: 'Tipe' },
+    { key: 'condition', label: 'Kondisi' },
     { key: 'balance', label: 'Saldo Saat Ini', align: 'right' },
     { key: 'status', label: 'Status', align: 'center' },
 ] as const;
 
-watch([search, type, perPage, warehouseId, stockRange], debounce(([newSearch, newType, newPerPage, newWarehouseId, newRange]) => {
+watch([search, type, perPage, warehouseId, condition, stockRange], debounce(([newSearch, newType, newPerPage, newWarehouseId, newCondition, newRange]) => {
     router.get('/stock', {
         search: newSearch,
         type: newType === 'all' ? undefined : newType,
         per_page: newPerPage,
         warehouse_id: newWarehouseId === 'all' ? undefined : newWarehouseId,
+        condition: newCondition === 'all' ? undefined : newCondition,
         min_stock: newRange[0],
         max_stock: newRange[1]
     }, { preserveState: true, replace: true, preserveScroll: true });
@@ -239,6 +243,22 @@ const exportPdf = () => {
                         </Select>
                     </div>
 
+                    <div class="flex items-center gap-2 mr-3 px-3 border-r border-slate-100">
+                        <Label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kondisi:</Label>
+                        <Select v-model="condition">
+                            <SelectTrigger class="h-8 w-32 border-slate-200 text-xs font-bold bg-white shadow-none focus:ring-0">
+                                <SelectValue placeholder="Semua" />
+                            </SelectTrigger>
+                            <SelectContent class="rounded-xl shadow-none">
+                                <SelectItem value="all">Semua Kondisi</SelectItem>
+                                <SelectItem value="good">Layak Jual (Good)</SelectItem>
+                                <SelectItem value="quarantine">Karantina (Retur)</SelectItem>
+                                <SelectItem value="damaged">Rusak (Damaged)</SelectItem>
+                                <SelectItem value="refurbished">Refurbished</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     <div class="flex items-center gap-4 mr-6 px-3 border-r border-slate-100 min-w-[200px]">
                         <div class="flex flex-col gap-1 w-full">
                             <div class="flex items-center justify-between">
@@ -281,6 +301,21 @@ const exportPdf = () => {
                 <template #cell(type)="{ row }">
                     <Badge variant="outline" class="h-4 px-1 rounded-sm text-[9px] font-black uppercase tracking-widest border-slate-200 text-muted-foreground shadow-none ">
                         {{ row.type?.replace('_', ' ') }}
+                    </Badge>
+                </template>
+
+                <template #cell(condition)="{ row }">
+                    <Badge 
+                        variant="outline" 
+                        class="h-4 px-1 rounded-sm text-[9px] font-black uppercase tracking-widest border-slate-200 shadow-none"
+                        :class="{
+                            'bg-blue-50 text-blue-600 border-blue-100': (row.stock?.condition || 'good') === 'good',
+                            'bg-amber-50 text-amber-600 border-amber-100': (row.stock?.condition) === 'quarantine',
+                            'bg-rose-50 text-rose-600 border-rose-100': (row.stock?.condition) === 'damaged',
+                            'bg-indigo-50 text-indigo-600 border-indigo-100': (row.stock?.condition) === 'refurbished',
+                        }"
+                    >
+                        {{ row.stock?.condition || 'good' }}
                     </Badge>
                 </template>
 

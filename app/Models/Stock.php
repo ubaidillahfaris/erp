@@ -13,6 +13,8 @@ class Stock extends Model
         'last_unit_id',
         'balance',
         'last_movement_id',
+        'condition',
+        'is_sellable',
     ];
 
     protected function casts(): array

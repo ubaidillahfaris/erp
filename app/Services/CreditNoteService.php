@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Models\CreditNote;
 use App\Models\CreditNoteItem;
 use App\Models\Sale;
+use App\Models\Warehouse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -84,6 +85,11 @@ class CreditNoteService
     {
         $sale = $creditNote->sale;
 
+        $quarantineWarehouse = Warehouse::firstOrCreate(
+            ['code' => 'WH-QRT'],
+            ['name' => 'Gudang Karantina', 'is_active' => true]
+        );
+
         foreach ($creditNote->items as $item) {
             if ($item->quantity_returned <= 0) {
                 continue;
@@ -91,13 +97,14 @@ class CreditNoteService
 
             $this->recordStockMovement->handle([
                 'product_id' => $item->product_id,
-                'warehouse_id' => $sale->warehouse_id,
+                'warehouse_id' => $quarantineWarehouse->id,
                 'unit_id' => $item->saleItem->unit_id,
                 'type' => 'in',
                 'quantity' => $item->quantity_returned,
                 'reference_type' => 'credit_note',
                 'reference_id' => $creditNote->id,
                 'notes' => "Return from Credit Note #{$creditNote->credit_note_number}",
+                'condition' => 'quarantine',
             ]);
         }
     }

@@ -11,6 +11,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\InventoryDispositionController;
 use App\Http\Controllers\PayableController;
 use App\Http\Controllers\PengeluaranController;
 use App\Http\Controllers\PosController;
@@ -176,6 +177,10 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
             Route::post('credit-notes', [CreditNoteController::class, 'store'])->name('credit-notes.store');
             Route::post('credit-notes/{credit_note}/post', [CreditNoteController::class, 'post'])->name('credit-notes.post');
         });
+
+        // Inventory Disposition (Quarantine)
+        Route::get('quarantine', [InventoryDispositionController::class, 'index'])->name('quarantine.index');
+        Route::post('dispositions', [InventoryDispositionController::class, 'store'])->name('dispositions.store');
     });
 
     // 6. PAYABLES & RECEIVABLES

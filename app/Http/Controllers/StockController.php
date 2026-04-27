@@ -20,19 +20,27 @@ class StockController extends Controller
     public function index(Request $request): Response
     {
         $warehouseId = $request->input('warehouse_id');
+        $condition = $request->input('condition');
 
         $query = Product::query()
             ->with(['unit'])
             ->withCount('stockMovements');
 
         if ($warehouseId && $warehouseId !== 'all') {
-            $query->with(['stock' => function ($q) use ($warehouseId) {
+            $query->with(['stock' => function ($q) use ($warehouseId, $condition) {
                 $q->where('warehouse_id', $warehouseId);
+                if ($condition && $condition !== 'all') {
+                    $q->where('condition', $condition);
+                }
             }]);
             $currentWarehouseId = (int) $warehouseId;
         } else {
             // Consolidated view
-            $query->withSum('stocks as total_balance', 'balance');
+            $query->withSum(['stocks as total_balance' => function ($q) use ($condition) {
+                if ($condition && $condition !== 'all') {
+                    $q->where('condition', $condition);
+                }
+            }], 'balance');
             $currentWarehouseId = 'all';
         }
 
@@ -106,7 +114,7 @@ class StockController extends Controller
             'conversions' => $conversions,
             'warehouses' => $warehouses,
             'currentWarehouseId' => $currentWarehouseId,
-            'filters' => $request->only(['search', 'type', 'per_page', 'warehouse_id', 'min_stock', 'max_stock']),
+            'filters' => $request->only(['search', 'type', 'per_page', 'warehouse_id', 'min_stock', 'max_stock', 'condition']),
         ]);
     }
 
