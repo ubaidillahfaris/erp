@@ -58,6 +58,10 @@ class SalesController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
+        if ($request->wantsJson()) {
+            return response()->json($sales);
+        }
+
         return Inertia::render('Sales/Index', [
             'sales' => $sales,
             'filters' => $request->only(['search', 'date_start', 'date_end', 'payment_method', 'status', 'per_page', 'sort', 'direction']),

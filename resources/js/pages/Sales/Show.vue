@@ -118,6 +118,12 @@ const formatDate = (dateString: string, includeTime = false) => {
                     <AlertCircle class="h-3.5 w-3.5 mr-1.5" /> {{ sale.status }}
                 </Badge>
 
+                <Button v-if="sale.status === 'completed'" variant="outline" as-child class="h-8 text-xs font-bold uppercase tracking-widest text-amber-600 hover:bg-amber-50 hover:text-amber-700 border-amber-200">
+                    <Link :href="`/sales/${sale.id}/return`">
+                        <HistoryIcon class="h-3 w-3 mr-2" /> Create Return
+                    </Link>
+                </Button>
+
                 <Dialog v-if="sale.status === 'completed' && canVoid" v-model:open="isVoidDialogOpen">
                     <DialogTrigger as-child>
                         <Button variant="outline" class="h-8 text-xs font-bold uppercase tracking-widest text-destructive hover:bg-destructive/5 hover:text-destructive border-destructive/20">

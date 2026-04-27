@@ -18,9 +18,18 @@ class PosController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = auth()->user();
+        $isSuperAdmin = $user->hasRole('superadmin');
+        
         $warehouseId = $request->input('warehouse_id');
         $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
-        $targetWarehouseId = $warehouseId ?: $defaultWarehouseId;
+        
+        // Logic: If NOT SuperAdmin and has a linked warehouse, ALWAYS use the linked one.
+        if (!$isSuperAdmin && $user->warehouse_id) {
+            $targetWarehouseId = $user->warehouse_id;
+        } else {
+            $targetWarehouseId = $warehouseId ?: $defaultWarehouseId;
+        }
 
         $products = Product::where('is_active', true)
             ->where('type', 'finished_good')

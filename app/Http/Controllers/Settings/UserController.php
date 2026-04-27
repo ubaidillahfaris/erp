@@ -56,6 +56,8 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->roles->first()?->name,
+                'warehouse_id' => $user->warehouse_id,
+                'warehouse_name' => $user->warehouse?->name,
                 'created_at' => $user->created_at->format('d M Y'),
             ])
             ->withQueryString();
@@ -63,6 +65,7 @@ class UserController extends Controller
         return Inertia::render('settings/Users', [
             'users' => $users,
             'roles' => Role::all()->pluck('name'),
+            'warehouses' => \App\Models\Warehouse::all(),
             'filters' => $request->only(['search', 'active_filters', 'per_page', 'sort', 'direction']),
         ]);
     }
@@ -76,6 +79,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'warehouse_id' => $request->warehouse_id,
         ]);
 
         $user->assignRole($request->role);
@@ -91,6 +95,7 @@ class UserController extends Controller
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'warehouse_id' => $request->warehouse_id,
         ]);
 
         if ($request->filled('password')) {

@@ -32,11 +32,11 @@ const props = defineProps<{
     customers: any[];
     categories: any[];
     warehouses: any[];
-    defaultWarehouseId: number;
+    currentWarehouseId: number;
 }>();
 
 // ============ State ============
-const selectedWarehouseId = ref(props.defaultWarehouseId);
+const selectedWarehouseId = ref(props.currentWarehouseId);
 
 // ============ Types & Constants ============
 type PaymentMethod = "cash" | "qris" | "transfer" | "credit";
@@ -272,7 +272,7 @@ const form = useForm({
     change_amount: 0,
     notes: '',
     items: [] as any[],
-    warehouse_id: props.defaultWarehouseId,
+    warehouse_id: props.currentWarehouseId,
 });
 
 watch(selectedWarehouseId, (val) => {
@@ -376,22 +376,30 @@ const selectAmount = (amount: number) => {
                 </div>
             </div>
 
-            <div class="hidden md:flex items-center gap-2">
-                <div class="flex items-center gap-2 mr-2 bg-slate-100/80 border border-slate-200 rounded-full px-4 h-9 transition hover:bg-slate-100">
-                    <Warehouse class="h-3.5 w-3.5 text-slate-400" />
-                    <select v-model="selectedWarehouseId" class="bg-transparent border-none text-[11px] font-bold uppercase tracking-wider text-slate-600 focus:ring-0 cursor-pointer py-0 outline-none">
-                        <option v-for="w in warehouses" :key="w.id" :value="w.id">{{ w.name }}</option>
-                    </select>
-                </div>
+            <div class="hidden md:flex items-center gap-3">
                 <StatusPill :icon="shiftOpen ? Unlock : Lock" :label="shiftOpen ? 'Shift Aktif · 06:42' : 'Shift Tutup'"
                     :tone="shiftOpen ? 'primary' : 'muted'" />
                 <StatusPill :icon="online ? Wifi : WifiOff"
                     :label="online ? 'Online · ERP synced' : 'Offline · 12 antrian'"
                     :tone="online ? 'success' : 'warning'" />
-                <StatusPill :icon="Printer" label="Printer Ready" tone="muted" />
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 h-10 transition hover:bg-amber-100/50 group">
+                    <div class="h-6 w-6 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                        <Warehouse class="h-3.5 w-3.5 text-amber-600" />
+                    </div>
+                    <div class="flex flex-col -space-y-0.5">
+                        <span class="text-[9px] font-bold text-amber-600/60 uppercase tracking-tighter">Lokasi Stok</span>
+                    <select 
+                        v-model="selectedWarehouseId" 
+                        :disabled="!$page.props.auth.user.roles.includes('superadmin')"
+                        class="bg-transparent border-none text-[11px] font-black uppercase tracking-tight text-amber-900 focus:ring-0 cursor-pointer py-0 outline-none -ml-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <option v-for="w in warehouses" :key="w.id" :value="w.id">{{ w.name }}</option>
+                    </select>
+                    </div>
+                </div>
                 <Button :variant="shiftOpen ? 'outline' : 'default'" size="sm" @click="showShift = true"
                     :class="cn('gap-2 rounded-full h-9', !shiftOpen && 'bg-primary text-white')">
                     <component :is="shiftOpen ? LogOut : LogIn" class="h-4 w-4" />
@@ -413,9 +421,9 @@ const selectAmount = (amount: number) => {
     </header>
 
     <!-- ===== Body ===== -->
-    <main class="mx-auto p-4 grid grid-cols-9 gap-6">
+    <main class="mx-auto p-4 grid grid-cols-12 gap-6">
         <!-- ====== LEFT: Catalog & Tables ====== -->
-        <section class="col-span-6 space-y-5">
+        <section class="col-span-7 space-y-5">
             <div class="bg-white rounded-3xl  border border-slate-200 p-4 space-y-4">
                 <div class="flex flex-col md:flex-row gap-3">
                     <div class="relative flex-1">
@@ -493,7 +501,7 @@ const selectAmount = (amount: number) => {
 
         <!-- ====== RIGHT: Cart ====== -->
         <aside
-            class="col-span-3 lg:sticky lg:top-20 lg:h-[calc(100vh-100px)] bg-white rounded-3xl border border-slate-200  flex flex-col overflow-hidden">
+            class="col-span-5 lg:sticky lg:top-20 lg:h-[calc(100vh-100px)] bg-white rounded-3xl border border-slate-200  flex flex-col overflow-hidden shadow-sm">
             <div class="p-5 border-b border-slate-200">
                 <div class="flex items-center justify-between mb-3">
                     <div>

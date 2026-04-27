@@ -187,6 +187,12 @@ const deleteCustomer = async (id: number) => {
                                     <Edit2 class="h-3.5 w-3.5 text-muted-foreground" /> Edit Detail
                                 </Link>
                             </DropdownMenuItem>
+                            <DropdownMenuItem as-child>
+                                <Link :href="`/customers/${row.id}/prices`"
+                                    class="flex items-center w-full rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] font-medium">
+                                    <Tag class="h-3.5 w-3.5 text-muted-foreground" /> Kelola Harga
+                                </Link>
+                            </DropdownMenuItem>
                             <DropdownMenuItem @click="deleteCustomer(row.id)"
                                 class="rounded-lg h-9 px-2.5 gap-2.5 cursor-pointer text-[12px] text-destructive font-medium focus:text-destructive focus:bg-destructive/5">
                                 <Trash2 class="h-3.5 w-3.5" /> Hapus Customer

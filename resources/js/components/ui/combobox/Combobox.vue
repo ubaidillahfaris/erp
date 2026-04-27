@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { Check, ChevronsUpDown, Search } from 'lucide-vue-next';
+import { ref, computed, watch } from 'vue';
+import { Check, ChevronsUpDown, Search, Loader2 } from 'lucide-vue-next';
 import {
     Popover,
     PopoverContent,
@@ -20,18 +20,24 @@ interface Props {
     placeholder?: string;
     searchPlaceholder?: string;
     disabled?: boolean;
+    loading?: boolean;
     class?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
     placeholder: 'Pilih...',
     searchPlaceholder: 'Cari...',
+    loading: false,
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'search']);
 
 const open = ref(false);
 const searchTerm = ref('');
+
+watch(searchTerm, (val) => {
+    emit('search', val);
+});
 
 // Fix Bug 2: compare as string untuk handle number vs string mismatch
 const selectedLabel = computed(() => {
@@ -46,6 +52,8 @@ const selectedLabel = computed(() => {
 
 // Fix Bug 1: filter manual, tidak pakai ComboboxRoot filtering
 const filteredOptions = computed(() => {
+    // If we are doing server-side search, we might not want to filter locally 
+    // but usually it's fine to do both.
     if (!searchTerm.value.trim()) return props.options;
     const term = searchTerm.value.toLowerCase();
     return props.options.filter(opt =>
@@ -66,7 +74,10 @@ const clearSelection = () => {
 // Reset search saat popover dibuka
 const handleOpenChange = (val: boolean) => {
     open.value = val;
-    if (val) searchTerm.value = '';
+    if (val) {
+        searchTerm.value = '';
+        emit('search', '');
+    }
 };
 </script>
 
@@ -87,7 +98,8 @@ const handleOpenChange = (val: boolean) => {
         align="start" :side-offset="4">
         <!-- Search input -->
         <div class="flex items-center gap-2 border-b border-slate-100 px-3">
-            <Search class="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <Loader2 v-if="loading" class="h-3.5 w-3.5 shrink-0 text-muted-foreground animate-spin" />
+            <Search v-else class="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <input v-model="searchTerm" :placeholder="searchPlaceholder"
                 class="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
                 @keydown.enter.prevent @keydown.escape="open = false" />

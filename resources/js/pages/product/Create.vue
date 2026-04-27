@@ -66,7 +66,7 @@ const submit = (addAnother = false) => {
 
 import { toast } from 'vue-sonner';
 
-const handleCreateUnit = async (name: string) => {
+const handleCreateUnit = async (nama: string) => {
     try {
         const simbol = nama.substring(0, 3).toLowerCase();
         const response = await axios.post(quickUnitAction().url, {

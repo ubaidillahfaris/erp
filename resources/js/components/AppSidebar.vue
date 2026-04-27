@@ -5,7 +5,8 @@ import {
     FileText, ReceiptText, PieChart, PackageOpen, Boxes,
     ClipboardList, Building2, Landmark, Users, ShieldCheck,
     Search, Zap, ChevronsUpDown, Settings, LifeBuoy, Bell,
-    Store, History as HistoryIcon, Menu, Warehouse, ArrowRightLeft
+    Store, History as HistoryIcon, Menu, Warehouse, ArrowRightLeft,
+    Tag, TrendingUp, RotateCcw
 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import NavMain from '@/components/NavMain.vue';
@@ -31,7 +32,8 @@ const iconMap: Record<string, any> = {
     LayoutGrid, Package, Ruler, ShoppingCart, ShoppingBag,
     FileText, ReceiptText, PieChart, PackageOpen, Boxes,
     ClipboardList, Building2, Landmark, Users, ShieldCheck,
-    HistoryIcon, Warehouse, ArrowRightLeft
+    HistoryIcon, Warehouse, ArrowRightLeft,
+    Tag, TrendingUp, RotateCcw
 };
 
 const getIcon = (name: string) => iconMap[name] || Package;

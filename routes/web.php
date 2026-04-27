@@ -6,6 +6,7 @@ use App\Http\Controllers\Accounting\JournalController;
 use App\Http\Controllers\Accounting\PeriodLockController;
 use App\Http\Controllers\Accounting\TrialBalanceController;
 use App\Http\Controllers\BOMController;
+use App\Http\Controllers\CreditNoteController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\DashboardController;
@@ -155,11 +156,26 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
         });
     });
 
-    // 5. SALES MANAGEMENT (void sales)
-    Route::middleware(['permission:void sales', 'period_lock'])->group(function () {
+    // 5. SALES MANAGEMENT (void sales, returns)
+    Route::middleware(['permission:void sales'])->group(function () {
         Route::get('sales', [SalesController::class, 'index'])->name('sales.index');
         Route::get('sales/{sale}', [SalesController::class, 'show'])->name('sales.show');
-        Route::post('sales/{sale}/void', [SalesController::class, 'stornoSale'])->name('sales.void');
+
+        Route::middleware('period_lock')->group(function () {
+            Route::post('sales/{sale}/void', [SalesController::class, 'stornoSale'])->name('sales.void');
+        });
+
+        // Credit Notes (Partial Returns)
+        Route::get('credit-notes', [CreditNoteController::class, 'index'])->name('credit-notes.index');
+        Route::get('credit-notes/create', [CreditNoteController::class, 'createGeneral'])->name('credit-notes.create-general');
+        Route::get('credit-notes/sale-details/{sale}', [CreditNoteController::class, 'getSaleDetails'])->name('credit-notes.sale-details');
+        Route::get('credit-notes/{credit_note}', [CreditNoteController::class, 'show'])->name('credit-notes.show');
+        Route::get('sales/{sale}/return', [CreditNoteController::class, 'create'])->name('credit-notes.create');
+
+        Route::middleware('period_lock')->group(function () {
+            Route::post('credit-notes', [CreditNoteController::class, 'store'])->name('credit-notes.store');
+            Route::post('credit-notes/{credit_note}/post', [CreditNoteController::class, 'post'])->name('credit-notes.post');
+        });
     });
 
     // 6. PAYABLES & RECEIVABLES

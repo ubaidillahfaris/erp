@@ -4,7 +4,7 @@ import { ref, computed, watch } from 'vue';
 import {
     Plus, MoreHorizontal, User as UserIcon,
     Mail, Calendar, Shield, Trash2, Edit2, Loader2,
-    Pencil, Filter
+    Pencil, Filter, Store
 } from 'lucide-vue-next';
 import PageHeader from '@/components/PageHeader.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -42,6 +42,8 @@ interface UserData {
     name: string;
     email: string;
     role: string;
+    warehouse_id: number | null;
+    warehouse_name: string | null;
     created_at: string;
 }
 
@@ -52,6 +54,7 @@ const breadcrumbItems: BreadcrumbItem[] = [
 const props = defineProps<{
     users: any;
     roles: string[];
+    warehouses: any[];
     filters: any;
 }>();
 
@@ -118,6 +121,7 @@ const form = useForm({
     password: '',
     password_confirmation: '',
     role: '',
+    warehouse_id: null as number | null,
 });
 
 const openCreateDialog = () => {
@@ -136,6 +140,7 @@ const openEditDialog = (user: UserData) => {
     form.name = user.name;
     form.email = user.email;
     form.role = user.role;
+    form.warehouse_id = user.warehouse_id;
     isDialogOpen.value = true;
 };
 
@@ -202,12 +207,17 @@ const deleteUser = async (id: number) => {
             </template>
 
                 <template #cell(role)="{ row }">
-                    <Badge :class="[
-                        getRoleBadgeColor(row.role),
-                        'text-[10px] uppercase font-bold px-2 h-5 tracking-widest border-none shadow-none'
-                    ]">
-                        {{ row.role }}
-                    </Badge>
+                    <div class="flex flex-col gap-1">
+                        <Badge :class="[
+                            getRoleBadgeColor(row.role),
+                            'text-[10px] uppercase font-bold px-2 h-5 tracking-widest border-none shadow-none w-fit'
+                        ]">
+                            {{ row.role }}
+                        </Badge>
+                        <span v-if="row.warehouse_name" class="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <Store class="h-3 w-3" /> {{ row.warehouse_name }}
+                        </span>
+                    </div>
                 </template>
 
                 <template #cell(created_at)="{ row }">
@@ -286,6 +296,23 @@ const deleteUser = async (id: number) => {
                         </Select>
                         <span v-if="form.errors.role" class="text-sm text-destructive">{{ form.errors.role }}</span>
                     </div>
+                    <div class="grid gap-2">
+                        <Label for="warehouse">Assigned Warehouse (Optional)</Label>
+                        <Select v-model="form.warehouse_id" @update:model-value="v => form.warehouse_id = v === 'null' ? null : Number(v)">
+                            <SelectTrigger id="warehouse">
+                                <SelectValue placeholder="Pilih Gudang (Opsional)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="null">-- Tidak Terikat Gudang --</SelectItem>
+                                <SelectItem v-for="w in warehouses" :key="w.id" :value="String(w.id)">
+                                    {{ w.name }}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <span v-if="form.errors.warehouse_id" class="text-sm text-destructive">{{ form.errors.warehouse_id }}</span>
+                        <p class="text-[10px] text-muted-foreground">Jika diisi, user hanya bisa transaksi di gudang ini (kecuali Super Admin).</p>
+                    </div>
+
                     <div class="grid gap-2">
                         <Label for="password">{{ isEditing ? 'Password (Kosongkan jika tidak diubah)' : 'Password'
                         }}</Label>

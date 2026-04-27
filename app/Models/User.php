@@ -27,7 +27,13 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'warehouse_id',
     ];
+
+    public function warehouse(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
