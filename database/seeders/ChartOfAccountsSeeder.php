@@ -99,6 +99,24 @@ class ChartOfAccountsSeeder extends Seeder
                 'type' => 'expense',
                 'balance_type' => 'debit',
             ],
+            [
+                'code' => '1401',
+                'name' => 'Peralatan & Mesin',
+                'type' => 'asset',
+                'balance_type' => 'debit',
+            ],
+            [
+                'code' => '1499',
+                'name' => 'Akumulasi Penyusutan',
+                'type' => 'asset',
+                'balance_type' => 'credit',
+            ],
+            [
+                'code' => '6301',
+                'name' => 'Beban Penyusutan',
+                'type' => 'expense',
+                'balance_type' => 'debit',
+            ],
         ];
 
         foreach ($accounts as $account) {

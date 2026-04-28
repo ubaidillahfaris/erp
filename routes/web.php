@@ -5,12 +5,15 @@ use App\Http\Controllers\Accounting\AgingReportController;
 use App\Http\Controllers\Accounting\JournalController;
 use App\Http\Controllers\Accounting\PeriodLockController;
 use App\Http\Controllers\Accounting\TrialBalanceController;
+use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\BOMController;
 use App\Http\Controllers\CreditNoteController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPriceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DepreciationController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\FixedAssetController;
 use App\Http\Controllers\InventoryDispositionController;
 use App\Http\Controllers\PayableController;
 use App\Http\Controllers\PengeluaranController;
@@ -27,16 +30,19 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\System\AuditLogController;
+use App\Http\Controllers\System\HelpController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WarehouseController;
-use App\Http\Controllers\System\HelpController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
 Route::inertia('/', 'Welcome', [
     'canRegister' => Features::enabled(Features::registration()),
 ])->name('home');
+
+Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])->name('socialite.redirect');
+Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])->name('socialite.callback');
 
 Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     // Accessible by anyone with 'view dashboard' permission
@@ -202,6 +208,17 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
 
     // Employee Management
     Route::resource('employees', EmployeeController::class);
+    // 7. ASSET MANAGEMENT
+    Route::middleware('permission:manage assets')->group(function () {
+        Route::resource('fixed-assets', FixedAssetController::class);
+        Route::post('fixed-assets/{fixed_asset}/dispose', [FixedAssetController::class, 'dispose'])->name('fixed-assets.dispose');
+    });
+
+    Route::middleware('permission:post depreciation')->group(function () {
+        Route::get('accounting/depreciation', [DepreciationController::class, 'index'])->name('accounting.depreciation.index');
+        Route::post('accounting/depreciation/post', [DepreciationController::class, 'post'])->name('accounting.depreciation.post');
+    });
+
     // Help Page
     Route::get('/help', [HelpController::class, 'index'])->name('help');
     Route::get('/help/{slug}', [HelpController::class, 'show'])->name('help.show');

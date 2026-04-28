@@ -14,7 +14,8 @@ import {
     PlayCircle,
     FileText,
     MessageCircle,
-    ArrowRight
+    ArrowRight,
+    Building2
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -78,6 +79,18 @@ const categories = [
             { title: 'Memahami Trial Balance & Profit Loss', slug: 'financial-reports' },
             { title: 'Cara mengunci periode (Period Lock)', slug: 'period-lock' },
             { title: 'Melacak perubahan melalui Audit Log', slug: 'audit-log' }
+        ]
+    },
+    {
+        title: 'Manajemen Aset Tetap',
+        description: 'Kelola inventaris aset, nilai residu, dan penyusutan otomatis.',
+        icon: Building2,
+        color: 'bg-peach-50 text-peach-600',
+        articles: [
+            { title: 'Cara registrasi aset tetap baru', slug: 'fixed-asset-registration' },
+            { title: 'Memahami tarif & metode penyusutan', slug: 'depreciation-rates' },
+            { title: 'Posting beban penyusutan bulanan', slug: 'monthly-depreciation-posting' },
+            { title: 'Manajemen nilai residu (Salvage Value)', slug: 'salvage-value-guide' }
         ]
     }
 ];

@@ -13,7 +13,8 @@ import {
     Zap,
     ShoppingCart,
     BarChart3,
-    FileText
+    FileText,
+    Building2
 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,8 @@ const iconMap: Record<string, any> = {
     Zap,
     ShoppingCart,
     BarChart3,
-    FileText
+    FileText,
+    Building2
 };
 
 const getIcon = (name: string) => iconMap[name] || BookOpen;
@@ -98,7 +100,7 @@ function formatText(text: string) {
 
 <AppLayout :breadcrumbs="breadcrumbs">
     <div class="px-6 py-12 bg-slate-50 min-h-[calc(100vh-64px)] flex justify-center font-sans">
-        <div class="max-w-4xl w-full flex flex-col gap-8">
+        <div class=" w-full flex flex-col gap-8">
             <!-- Navigation & Actions -->
             <div class="flex items-center justify-between">
                 <Link href="/help">

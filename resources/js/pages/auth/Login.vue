@@ -16,6 +16,10 @@ defineProps<{
     canResetPassword: boolean;
     canRegister: boolean;
 }>();
+
+const loginWithSocial = (provider: string) => {
+    window.location.href = `/auth/${provider}/redirect`;
+};
 </script>
 
 <template>
@@ -101,6 +105,34 @@ defineProps<{
                     <Spinner v-if="processing" />
                     Log in
                 </Button>
+
+                <div class="relative mt-6">
+                    <div class="absolute inset-0 flex items-center">
+                        <span class="w-full border-t" />
+                    </div>
+                    <div class="relative flex justify-center text-xs uppercase">
+                        <span class="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-2 gap-4">
+                    <Button
+                        variant="outline"
+                        type="button"
+                        class="w-full hover:bg-slate-50 transition-colors"
+                        @click="loginWithSocial('google')"
+                    >
+                        Google
+                    </Button>
+                    <Button
+                        variant="outline"
+                        type="button"
+                        class="w-full hover:bg-slate-50 transition-colors"
+                        @click="loginWithSocial('facebook')"
+                    >
+                        Facebook
+                    </Button>
+                </div>
             </div>
 
             <div

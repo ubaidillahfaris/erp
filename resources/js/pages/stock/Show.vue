@@ -163,8 +163,8 @@ const getMovementDetails = (movement: any) => {
                             </TableCell>
                             <TableCell class="text-center">
                                 <Badge v-if="b.status === 'expired'" variant="destructive" class="text-[10px] h-5">EXPIRED</Badge>
-                                <Badge v-else-if="b.status === 'expiring_soon'" variant="warning" class="text-[10px] h-5 bg-orange-500">WARNING</Badge>
-                                <Badge v-else variant="secondary" class="text-[10px] h-5 bg-emerald-500 text-white border-none">OK</Badge>
+                                <Badge v-else-if="b.status === 'expiring_soon'" variant="warning" class="text-[10px] h-5">WARNING</Badge>
+                                <Badge v-else variant="success" class="text-[10px] h-5">OK</Badge>
                             </TableCell>
                         </TableRow>
                         <TableRow v-if="batches?.length === 0">

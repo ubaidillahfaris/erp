@@ -28,6 +28,8 @@ type MetricData = {
   active_productions: number;
   critical_stocks: number;
   expenses_today: number;
+  asset_value: number;
+  fully_depreciated: number;
 };
 
 type SaleInfo = {
@@ -42,12 +44,22 @@ type VendorInfo = {
   name: string;
 };
 
+type AuditLog = {
+  id: number;
+  event: string;
+  auditable_id: number;
+  auditable_type: string;
+  user?: { name: string };
+  created_at: string;
+};
+
 const props = defineProps<{
   metrics: MetricData;
   recent_sales: SaleInfo[];
   vendors: VendorInfo[];
-  cash_flow_trend: Array<{ month: string; income: number; expense: number; }>;
+  cash_flow_trend: Array<{ month: string; income: number; expense: number }>;
   heatmap_data: Array<{ date: string; count: number }>;
+  recent_audits: AuditLog[];
   current_interval: string;
 }>();
 
@@ -268,10 +280,11 @@ const isNetPositive = computed(() => netCashFlow.value >= 0);
       <article
         class="col-span-1 bg-card rounded-3xl p-5 shadow-none border border-border/40 flex flex-col items-center justify-center text-center relative overflow-hidden group">
         <div
-          class="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+          class="absolute inset-0 bg-gradient-to-br from-peach-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
         </div>
-        <Lock class="h-8 w-8 text-emerald-500 drop-shadow-none transition-transform group-hover:scale-110 duration-500" />
-        <div class="mt-4 text-sm font-bold tracking-wide relative z-10">Otomasi Aktif</div>
+        <Building2 class="h-8 w-8 text-peach-500 drop-shadow-none transition-transform group-hover:scale-110 duration-500" />
+        <div class="mt-4 text-sm font-bold tracking-wide relative z-10">Aset: {{ formatRupiah(metrics.asset_value) }}</div>
+        <div class="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{{ metrics.fully_depreciated }} Fully Depr.</div>
       </article>
 
       <!-- Live Node Server -->

@@ -127,7 +127,7 @@ withDefaults(
         </div>
 
         <!-- Hero Content -->
-        <div class="max-w-4xl">
+        <div class="">
             <div
                 class="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50/50 px-4 py-1.5 text-xs font-bold text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/50 dark:text-blue-400 animate-in fade-in slide-in-from-top-4 duration-1000">
                 <span class="relative flex h-2 w-2">

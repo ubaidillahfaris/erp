@@ -178,6 +178,27 @@ class MenuSeeder extends Seeder
             'order_priority' => 450,
         ]);
 
+        $this->seedMenu([
+            'name' => 'Penyusutan Aset',
+            'path' => '/accounting/depreciation',
+            'route_name' => 'accounting.depreciation.index',
+            'icon' => 'Calculator',
+            'permission_name' => 'post depreciation',
+            'module_slug' => 'finance',
+            'order_priority' => 460,
+        ]);
+
+        // Assets (Slug: assets)
+        $this->seedMenu([
+            'name' => 'Inventaris Aset',
+            'path' => '/fixed-assets',
+            'route_name' => 'fixed-assets.index',
+            'icon' => 'Building2',
+            'permission_name' => 'manage assets',
+            'module_slug' => 'assets',
+            'order_priority' => 10,
+        ]);
+
         // CRM (Slug: crm)
         $this->seedMenu([
             'name' => 'Master Customer',

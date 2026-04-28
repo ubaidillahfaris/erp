@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\FixedAsset;
 use App\Models\Pengeluaran;
 use App\Models\Production;
 use App\Models\Sale;
@@ -143,6 +144,8 @@ class DashboardController extends Controller
                 'active_productions' => $activeProductions,
                 'critical_stocks' => $criticalStockCount,
                 'expenses_today' => (float) $expensesToday,
+                'asset_value' => (float) (FixedAsset::where('status', '!=', 'disposed')->sum('current_book_value') / 100),
+                'fully_depreciated' => FixedAsset::where('status', 'fully_depreciated')->count(),
             ],
             'recent_sales' => $recentSales,
             'vendors' => $vendors,

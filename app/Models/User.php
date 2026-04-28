@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -28,9 +29,12 @@ class User extends Authenticatable
         'email',
         'password',
         'warehouse_id',
+        'social_id',
+        'social_type',
+        'social_avatar',
     ];
 
-    public function warehouse(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }

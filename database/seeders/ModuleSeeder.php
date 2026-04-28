@@ -23,6 +23,7 @@ class ModuleSeeder extends Seeder
             ['id' => 8, 'name' => 'Report', 'slug' => 'report', 'order_priority' => 8],
             ['id' => 9, 'name' => 'Settings', 'slug' => 'settings', 'order_priority' => 9],
             ['id' => 10, 'name' => 'Transaksi', 'slug' => 'transaksi', 'order_priority' => 5],
+            ['id' => 11, 'name' => 'Assets', 'slug' => 'assets', 'order_priority' => 6],
         ];
 
         foreach ($modules as $module) {
