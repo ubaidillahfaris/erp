@@ -23,7 +23,7 @@ class StoreProductRequest extends FormRequest
             'category_id' => ['nullable', 'exists:categories,id'],
             'description' => ['nullable', 'string'],
             'min_stock' => ['required', 'integer', 'min:0'],
-            'type' => ['required', 'string', 'in:raw_material,intermediate_good,finished_good'],
+            'type' => ['required', 'string', 'in:raw_material,intermediate_good,finished_good,service'],
             'unit_id' => ['required', 'exists:units,id'],
             'retail_price' => ['nullable', 'numeric', 'min:0'],
             'wholesale_price' => ['nullable', 'numeric', 'min:0'],

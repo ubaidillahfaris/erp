@@ -24,7 +24,7 @@ class UpdateProductRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'min_stock' => ['required', 'integer', 'min:0'],
             'is_active' => ['required', 'boolean'],
-            'type' => ['required', 'string', 'in:raw_material,intermediate_good,finished_good'],
+            'type' => ['required', 'string', 'in:raw_material,intermediate_good,finished_good,service'],
             'retail_price' => ['nullable', 'numeric', 'min:0'],
             'wholesale_price' => ['nullable', 'numeric', 'min:0'],
             'unit_id' => ['required', 'exists:units,id'],

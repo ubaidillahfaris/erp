@@ -26,21 +26,30 @@ class TransaksiModuleSeeder extends Seeder
             ]
         );
 
-        // 2. Map operational transaction menus to this module
+        // 2. Map ONLY core transaction menus to this module (POS + Sales history)
         $transaksiMenus = [
+            'pos.index',
             'sales.index',
-            'purchasing.index',
-            'restock.index',
-            'pengeluaran.index',
         ];
 
         Menu::whereIn('route_name', $transaksiMenus)->update(['module_id' => $transaksiModule->id]);
 
-        // 3. Ensure 'Laba Rugi' and 'Jurnal Umum' stay in Finance (Module 5)
-        Menu::whereIn('route_name', ['profit-loss.index', 'journal.index'])
-            ->update(['module_id' => 5]);
+        // 3. Ensure finance menus stay in Finance module (id=5)
+        // pengeluaran belongs to finance, not transaksi
+        Menu::whereIn('route_name', [
+            'profit-loss.index',
+            'journal.index',
+            'pengeluaran.index',
+        ])->update(['module_id' => 5]);
 
-        // 4. Link Transaksi module to roles for visibility
+        // 4. Ensure purchasing/restock stay in Purchasing module (id=4)
+        Menu::whereIn('route_name', [
+            'purchasing.index',
+            'restock.index',
+            'vendor.index',
+        ])->update(['module_id' => 4]);
+
+        // 5. Link Transaksi module to roles for visibility
         $rolesToSync = Role::whereIn('name', ['superadmin', 'cashier'])->get();
         foreach ($rolesToSync as $role) {
             $role->modules()->syncWithoutDetaching([$transaksiModule->id]);

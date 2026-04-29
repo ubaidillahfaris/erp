@@ -35,12 +35,12 @@ class MenuSeeder extends Seeder
         ]);
 
         $this->seedMenu([
-            'name' => 'Penjualan (POS)',
+            'name' => 'Order Laundry / POS',
             'path' => '/pos',
             'route_name' => 'pos.index',
             'icon' => 'ShoppingCart',
             'permission_name' => 'make sales',
-            'module_slug' => 'platform',
+            'module_slug' => 'transaksi',
             'order_priority' => 20,
         ]);
 
@@ -250,6 +250,17 @@ class MenuSeeder extends Seeder
             'permission_name' => 'manage roles',
             'module_slug' => 'settings',
             'order_priority' => 930,
+        ]);
+
+        // Report (Slug: report)
+        $this->seedMenu([
+            'name' => 'Laporan Harian',
+            'path' => '/sales',
+            'route_name' => 'sales.index',
+            'icon' => 'BarChart3',
+            'permission_name' => 'void sales',
+            'module_slug' => 'report',
+            'order_priority' => 810,
         ]);
 
         // Deactivate Legacy Menus

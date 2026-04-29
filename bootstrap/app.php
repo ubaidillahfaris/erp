@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CheckPeriodLock;
 use App\Http\Middleware\DynamicMenuMiddleware;
+use App\Http\Middleware\EnsureHasCompany;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -34,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'dynamic_menu' => DynamicMenuMiddleware::class,
             'period_lock' => CheckPeriodLock::class,
+            'ensure_company' => EnsureHasCompany::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

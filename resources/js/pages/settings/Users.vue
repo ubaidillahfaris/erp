@@ -102,7 +102,8 @@ const formatDate = (dateString: string) => {
     });
 };
 
-const getRoleBadgeColor = (role: string) => {
+const getRoleBadgeColor = (role: string | null | undefined) => {
+    if (!role) return 'bg-slate-100 text-slate-600 border-slate-200';
     const r = role.toLowerCase();
     if (r.includes('super')) return 'bg-purple-50 text-purple-700 border-purple-100';
     if (r.includes('admin')) return 'bg-blue-50 text-blue-700 border-blue-100';
@@ -212,7 +213,7 @@ const deleteUser = async (id: number) => {
                             getRoleBadgeColor(row.role),
                             'text-[10px] uppercase font-bold px-2 h-5 tracking-widest border-none shadow-none w-fit'
                         ]">
-                            {{ row.role }}
+                            {{ row.role || 'No Role' }}
                         </Badge>
                         <span v-if="row.warehouse_name" class="text-[10px] text-muted-foreground flex items-center gap-1">
                             <Store class="h-3 w-3" /> {{ row.warehouse_name }}

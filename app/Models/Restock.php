@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 
 class Restock extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
         'date',
         'vendor_id',

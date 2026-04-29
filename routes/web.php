@@ -5,6 +5,7 @@ use App\Http\Controllers\Accounting\AgingReportController;
 use App\Http\Controllers\Accounting\JournalController;
 use App\Http\Controllers\Accounting\PeriodLockController;
 use App\Http\Controllers\Accounting\TrialBalanceController;
+use App\Http\Controllers\Auth\OnboardingController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\BOMController;
 use App\Http\Controllers\CreditNoteController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\QuickCreateUnitController;
 use App\Http\Controllers\QuickCreateVendorController;
 use App\Http\Controllers\RestockController;
 use App\Http\Controllers\SalesController;
+use App\Http\Controllers\ServiceOrderController;
 use App\Http\Controllers\StockBatchController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockOpnameController;
@@ -44,7 +46,12 @@ Route::inertia('/', 'Welcome', [
 Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])->name('socialite.redirect');
 Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])->name('socialite.callback');
 
-Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
+Route::middleware(['auth'])->group(function () {
+    Route::get('/onboarding', [OnboardingController::class, 'show'])->name('onboarding.show');
+    Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
+});
+
+Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company'])->group(function () {
     // Accessible by anyone with 'view dashboard' permission
     Route::middleware('permission:view dashboard')->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -217,6 +224,15 @@ Route::middleware(['auth', 'verified', 'dynamic_menu'])->group(function () {
     Route::middleware('permission:post depreciation')->group(function () {
         Route::get('accounting/depreciation', [DepreciationController::class, 'index'])->name('accounting.depreciation.index');
         Route::post('accounting/depreciation/post', [DepreciationController::class, 'post'])->name('accounting.depreciation.post');
+    });
+
+    // 8. SERVICE ORDERS (Laundry, etc)
+    Route::middleware(['permission:make sales', 'period_lock'])->group(function () {
+        Route::get('service-orders/create', [ServiceOrderController::class, 'create'])->name('service-orders.create');
+        Route::post('service-orders', [ServiceOrderController::class, 'store'])->name('service-orders.store');
+        Route::get('service-orders/board', [ServiceOrderController::class, 'board'])->name('service-orders.board');
+        Route::patch('service-orders/{service_order}/status', [ServiceOrderController::class, 'updateStatus'])->name('service-orders.update-status');
+        Route::post('service-orders/{service_order}/pay', [ServiceOrderController::class, 'pay'])->name('service-orders.pay');
     });
 
     // Help Page

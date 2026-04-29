@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Module;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
 class RoleAndPermissionSeeder extends Seeder
@@ -45,6 +46,9 @@ class RoleAndPermissionSeeder extends Seeder
         $superAdminRole = Role::firstOrCreate(['name' => 'superadmin']);
         $superAdminRole->givePermissionTo(Permission::all());
 
+        $ownerRole = Role::firstOrCreate(['name' => 'owner']);
+        $ownerRole->givePermissionTo(Permission::all());
+
         $cashierRole = Role::firstOrCreate(['name' => 'cashier']);
         $cashierRole->givePermissionTo([
             'view dashboard',
@@ -69,5 +73,12 @@ class RoleAndPermissionSeeder extends Seeder
         $staffRole->givePermissionTo([
             'view dashboard',
         ]);
+
+        // Sync all modules to full access roles
+        $allModuleIds = Module::pluck('id')->toArray();
+        $fullAccessRoles = Role::whereIn('name', ['superadmin', 'owner'])->get();
+        foreach ($fullAccessRoles as $role) {
+            $role->modules()->sync($allModuleIds);
+        }
     }
 }

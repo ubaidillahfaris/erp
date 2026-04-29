@@ -31,7 +31,20 @@ const productTypes = [
     { value: 'finished_good', label: 'Product Jadi (Finished Good)' },
     { value: 'intermediate_good', label: 'Bahan Setengah Jadi (Intermediate Good)' },
     { value: 'raw_material', label: 'Raw Materials (Raw Material)' },
+    { value: 'service', label: 'Jasa / Layanan' },
 ];
+
+import { watch } from 'vue';
+
+watch(() => form.type, (newType) => {
+    if (newType === 'service') {
+        form.track_stock = false;
+        form.is_batch_tracked = false;
+        form.min_stock = 0;
+    } else {
+        form.track_stock = true;
+    }
+});
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -127,8 +140,8 @@ const handleCreateUnit = async (nama: string) => {
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <Label for="name">Nama Product</Label>
-                        <Input id="name" v-model="form.name" placeholder="Contoh: Indomie Goreng Original" required />
+                        <Label for="name">{{ form.type === 'service' ? 'Nama Jasa / Layanan' : 'Nama Product' }}</Label>
+                        <Input id="name" v-model="form.name" :placeholder="form.type === 'service' ? 'Contoh: Cuci Kiloan Reguler' : 'Contoh: Indomie Goreng Original'" required />
                         <InputError :message="form.errors.name" />
                     </div>
 
@@ -147,7 +160,7 @@ const handleCreateUnit = async (nama: string) => {
                             </Select>
                             <InputError :message="form.errors.category_id" />
                         </div>
-                        <div class="flex flex-col gap-2">
+                        <div v-if="form.type !== 'service'" class="flex flex-col gap-2">
                             <Label for="min_stock">Stok Minimal Alert</Label>
                             <Input id="min_stock" type="number" v-model="form.min_stock" required />
                             <InputError :message="form.errors.min_stock" />
@@ -186,7 +199,7 @@ const handleCreateUnit = async (nama: string) => {
                         <InputError :message="form.errors.overhead_rate" />
                     </div>
 
-                    <div class="flex items-center space-x-3 py-4 border-b border-muted/50">
+                    <div v-if="form.type !== 'service'" class="flex items-center space-x-3 py-4 border-b border-muted/50">
                         <input 
                             type="checkbox"
                             id="track_stock" 

@@ -76,6 +76,7 @@ const tabs = [
     { value: 'all', label: 'All Products' },
     { value: 'raw_material', label: 'Raw Materials' },
     { value: 'finished_good', label: 'Finished Goods' },
+    { value: 'service', label: 'Jasa / Layanan' },
 ];
 
 const filterOptions = [
@@ -85,6 +86,7 @@ const filterOptions = [
         options: [
             { value: 'raw_material', label: 'Raw Materials' },
             { value: 'finished_good', label: 'Finished Goods' },
+            { value: 'service', label: 'Jasa / Layanan' },
         ]
     }
 ];
@@ -174,6 +176,7 @@ const formatCurrency = (value: number) => {
                     <div
                         class="h-9 w-9 shrink-0 rounded-lg bg-secondary/50 flex items-center justify-center text-muted-foreground transition-colors group-hover:bg-accent group-hover:text-white">
                         <Package v-if="row.type === 'finished_good'" class="h-4 w-4" />
+                        <TestTube v-else-if="row.type === 'service'" class="h-4 w-4" />
                         <Boxes v-else class="h-4 w-4" />
                     </div>
                     <div class="min-w-0 pr-4">
@@ -201,7 +204,11 @@ const formatCurrency = (value: number) => {
             </template>
 
             <template #cell(stock)="{ row }">
-                <div :class="[
+                <div v-if="row.type === 'service'" class="flex flex-col items-center">
+                    <span class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Non-Stok</span>
+                    <span class="text-[10px] opacity-60 font-bold uppercase tracking-tighter">Layanan Jasa</span>
+                </div>
+                <div v-else :class="[
                     'inline-flex flex-col items-center gap-1 px-2.5 py-1 rounded-lg border transition-all min-w-[60px]',
                     row.stok <= (row.min_stock || 0)
                         ? 'bg-rose-50 text-rose-600 border-rose-100 shadow-sm shadow-rose-100/50'

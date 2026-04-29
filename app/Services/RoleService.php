@@ -22,9 +22,9 @@ class RoleService
         }
 
         return Cache::remember($cacheKey, now()->addDay(), function () use ($user) {
-            // 0. Ensure user roles are loaded for reliable checking
-            if (! $user->relationLoaded('roles')) {
-                $user->load('roles');
+            // 0. Ensure user roles and company are loaded for reliable checking
+            if (! $user->relationLoaded('roles') || ! $user->relationLoaded('company')) {
+                $user->load(['roles', 'company']);
             }
 
             // 1. Get all root menus with their children and modules
@@ -59,8 +59,47 @@ class RoleService
             $modules = Module::active()->orderBy('order_priority')->get();
 
             // Add modules that have at least one authorized menu
+            $businessType = $user->company?->business_type;
+            // allowedModules: ['slug' => '*'] or ['slug' => ['route.name', ...]] or empty []
+            $allowedModules = $businessType ? config("business_presets.{$businessType}.modules") : [];
+
             foreach ($modules as $module) {
+                // If it's not a superadmin, filter modules based on business preset
+                if (! $user->hasRole('superadmin') && ! array_key_exists($module->slug, $allowedModules)) {
+                    continue;
+                }
+
                 $moduleMenus = $grouped->get($module->id, collect());
+
+                // For non-superadmin: apply per-menu granularity if the preset specifies route names
+                if (! $user->hasRole('superadmin')) {
+                    $allowedRoutes = $allowedModules[$module->slug] ?? '*';
+                    if ($allowedRoutes !== '*' && is_array($allowedRoutes)) {
+                        $moduleMenus = $moduleMenus->filter(function ($menu) use ($allowedRoutes) {
+                            $routeName = $menu->route_name ?? null;
+
+                            return in_array($routeName, $allowedRoutes) || array_key_exists($routeName, $allowedRoutes);
+                        })->map(function ($menu) use ($allowedRoutes) {
+                            $routeName = $menu->route_name ?? null;
+                            $options = $allowedRoutes[$routeName] ?? null;
+
+                            if ($options) {
+                                if (is_string($options)) {
+                                    $menu->name = $options;
+                                } elseif (is_array($options)) {
+                                    if (isset($options['name'])) {
+                                        $menu->name = $options['name'];
+                                    }
+                                    if (isset($options['icon'])) {
+                                        $menu->icon = $options['icon'];
+                                    }
+                                }
+                            }
+
+                            return $menu;
+                        });
+                    }
+                }
 
                 // Show module if there are menus, or if user is superadmin
                 if ($moduleMenus->isNotEmpty() || $user->hasRole('superadmin')) {
@@ -76,7 +115,39 @@ class RoleService
 
             // 5. virtual "General" module for menus without module_id
             $generalMenus = $grouped->get(null, collect());
+
+            // If not superadmin, check if "general" is an allowed module
+            if (! $user->hasRole('superadmin') && ! array_key_exists('general', $allowedModules)) {
+                $generalMenus = collect();
+            }
+
             if ($generalMenus->isNotEmpty()) {
+                // Apply aliasing for General module if needed
+                if (! $user->hasRole('superadmin')) {
+                    $allowedRoutes = $allowedModules['general'] ?? '*';
+                    if ($allowedRoutes !== '*' && is_array($allowedRoutes)) {
+                        $generalMenus = $generalMenus->map(function ($menu) use ($allowedRoutes) {
+                            $routeName = $menu->route_name ?? null;
+                            $options = $allowedRoutes[$routeName] ?? null;
+
+                            if ($options) {
+                                if (is_string($options)) {
+                                    $menu->name = $options;
+                                } elseif (is_array($options)) {
+                                    if (isset($options['name'])) {
+                                        $menu->name = $options['name'];
+                                    }
+                                    if (isset($options['icon'])) {
+                                        $menu->icon = $options['icon'];
+                                    }
+                                }
+                            }
+
+                            return $menu;
+                        });
+                    }
+                }
+
                 $result[] = [
                     'id' => null,
                     'name' => 'General',

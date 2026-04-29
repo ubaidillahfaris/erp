@@ -13,12 +13,11 @@ class MenuRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $superAdmin = Role::where('name', 'superadmin')->first();
+        $rolesWithFullAccess = Role::whereIn('name', ['superadmin', 'owner'])->get();
+        $menuIds = Menu::pluck('id')->toArray();
 
-        if ($superAdmin) {
-            // Attach all menus to superadmin
-            $menuIds = Menu::pluck('id')->toArray();
-            $superAdmin->menus()->sync($menuIds);
+        foreach ($rolesWithFullAccess as $role) {
+            $role->menus()->sync($menuIds);
         }
 
         $cashier = Role::where('name', 'cashier')->first();

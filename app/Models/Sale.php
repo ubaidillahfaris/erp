@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Sale extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, BelongsToCompany, HasFactory;
 
     protected $fillable = [
         'invoice_number',
@@ -65,5 +66,10 @@ class Sale extends Model
     {
         return $this->hasOne(Payable::class, 'reference_id')
             ->where('reference_type', 'sale');
+    }
+
+    public function laundryOrder(): HasOne
+    {
+        return $this->hasOne(LaundryOrder::class);
     }
 }

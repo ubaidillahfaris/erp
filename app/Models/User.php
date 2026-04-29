@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Traits\BelongsToCompany;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +18,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasRoles, Notifiable, Searchable, TwoFactorAuthenticatable;
+    use BelongsToCompany, HasApiTokens, HasFactory, HasRoles, Notifiable, Searchable, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +33,7 @@ class User extends Authenticatable
         'social_id',
         'social_type',
         'social_avatar',
+        'company_id',
     ];
 
     public function warehouse(): BelongsTo

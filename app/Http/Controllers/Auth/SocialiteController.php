@@ -49,7 +49,6 @@ class SocialiteController extends Controller
                     'social_avatar' => $socialUser->getAvatar(),
                 ]);
             } else {
-                // Create new user
                 $user = User::create([
                     'name' => $socialUser->getName() ?? $socialUser->getNickname() ?? $socialUser->getEmail(),
                     'email' => $socialUser->getEmail(),
@@ -64,6 +63,11 @@ class SocialiteController extends Controller
             $user->update([
                 'social_avatar' => $socialUser->getAvatar(),
             ]);
+        }
+
+        // Ensure user has a role
+        if (! $user->hasAnyRole(['superadmin', 'owner', 'manager', 'cashier', 'staff'])) {
+            $user->assignRole('owner');
         }
 
         Auth::login($user);

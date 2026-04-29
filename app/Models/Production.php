@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Laravel\Scout\Searchable;
 
 class Production extends Model
 {
-    use Auditable, HasFactory, Searchable;
+    use Auditable, BelongsToCompany, HasFactory, Searchable;
 
     protected $fillable = [
         'sku',
