@@ -36,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'dynamic_menu' => DynamicMenuMiddleware::class,
             'period_lock' => CheckPeriodLock::class,
             'ensure_company' => EnsureHasCompany::class,
+            'business_preset' => \App\Http\Middleware\EnsureBusinessPresetAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

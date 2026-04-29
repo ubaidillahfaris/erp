@@ -51,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/onboarding', [OnboardingController::class, 'store'])->name('onboarding.store');
 });
 
-Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company'])->group(function () {
+Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'business_preset'])->group(function () {
     // Accessible by anyone with 'view dashboard' permission
     Route::middleware('permission:view dashboard')->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
