@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { 
   ArrowLeft, Plus, Search, Calendar as CalendarIcon, Clock, User, Phone, 
   Trash2, CreditCard, Receipt, CheckCircle2, Wrench, PauseCircle, PlayCircle, 
-  PackageCheck, Users, ChevronLeft, ChevronRight, Briefcase, X, Filter, ShoppingBag
+  PackageCheck, Users, ChevronLeft, ChevronRight, Briefcase, X, Filter, ShoppingBag, History
 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'vue-sonner';
 import AppLayout from '@/layouts/AppLayout.vue';
+import { cn } from '@/lib/utils';
 
 // Persistent Layout Fix
 defineOptions({ layout: AppLayout });
@@ -193,218 +194,198 @@ const selectCustomer = (c: any) => {
 </script>
 
 <template>
-    <Head title="Service POS" />
+<Head title="Service POS · Terminal" />
 
-    <div class="p-0 lg:p-4 space-y-4">
-        <!-- ===== Top bar (Compact ERP Style) ===== -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card p-6 rounded-[2rem] border border-border shadow-sm">
-          <div class="flex items-center gap-4">
-            <div class="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-inner">
-              <Briefcase class="h-6 w-6" />
-            </div>
-            <div class="leading-tight">
-              <h1 class="text-xl font-black tracking-tight">Service Terminal</h1>
-              <p class="text-[11px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">Booking & Order Pipeline</p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 bg-secondary/50 p-1 rounded-full border border-border/50">
-            <button
-              @click="tab = 'new'"
-              :class="['px-6 h-10 rounded-full text-xs font-black uppercase tracking-widest transition-all', tab === 'new' ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:text-foreground']"
-            >
-              <Plus class="inline h-3.5 w-3.5 -mt-0.5 mr-1.5" /> New Booking
-            </button>
-            <button
-              @click="tab = 'track'"
-              :class="['px-6 h-10 rounded-full text-xs font-black uppercase tracking-widest transition-all relative', tab === 'track' ? 'bg-card text-foreground shadow-sm ring-1 ring-border' : 'text-muted-foreground hover:text-foreground']"
-            >
-              <Wrench class="inline h-3.5 w-3.5 -mt-0.5 mr-1.5" /> Pipeline
-              <Badge v-if="orders.length > 0" class="absolute -top-1 -right-1 bg-primary text-white border-white scale-75">{{ orders.length }}</Badge>
-            </button>
-          </div>
-        </header>
-
-        <div v-if="tab === 'new'" class="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
-            <!-- ---------- LEFT: Catalog ---------- -->
-            <section class="rounded-[2.5rem] bg-card border border-border p-8 space-y-8 shadow-sm">
-              <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div class="relative flex-1">
-                  <Search class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    v-model="search"
-                    placeholder="Search services (e.g. Cuci Lipat, AC Service...)"
-                    class="h-14 pl-12 rounded-[1.25rem] bg-background border-none ring-offset-transparent focus-visible:ring-primary/20 focus-visible:bg-card transition-all text-sm font-medium shadow-inner"
-                  />
+<div class="min-h-screen bg-[#F8F9FA] font-sans text-slate-900">
+    <!-- ===== Top Bar ===== -->
+    <header class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="mx-auto px-5 md:px-8 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <Link href="/dashboard"
+                    class="h-10 w-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+                    <ArrowLeft class="h-4 w-4" />
+                </Link>
+                <div class="leading-tight">
+                    <h1 class="text-base font-bold">Service Terminal</h1>
+                    <p class="text-xs text-slate-400 font-medium -mt-0.5">Service Center · Terminal #03</p>
                 </div>
-                
-                <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide no-scrollbar">
-                  <button
-                      v-for="c in categories"
-                      :key="c"
-                      @click="activeCat = c"
-                      :class="['shrink-0 h-11 px-6 rounded-2xl text-[11px] font-black uppercase tracking-widest border transition-all', 
-                        activeCat === c ? 'bg-foreground text-card border-foreground shadow-lg' : 'bg-card border-border text-muted-foreground hover:border-muted hover:bg-secondary'
-                      ]"
-                  >
-                      {{ c }}
-                  </button>
-                </div>
-              </div>
+            </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-5">
+            <div class="hidden md:flex items-center gap-2 bg-slate-100 p-1 rounded-full">
                 <button
-                    v-for="s in filteredServices"
-                    :key="s.id"
-                    @click="addToCart(s)"
-                    class="text-left rounded-[2rem] border border-border/50 p-6 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/5 transition-all bg-card group relative overflow-hidden"
+                  @click="tab = 'new'"
+                  :class="['px-6 h-8 rounded-full text-xs font-bold uppercase tracking-wider transition-all', tab === 'new' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900']"
                 >
-                    <div class="flex items-start justify-between relative z-10">
-                      <div class="text-4xl bg-secondary h-16 w-16 rounded-2xl flex items-center justify-center group-hover:bg-primary/10 group-hover:scale-110 transition-all duration-500 shadow-inner">{{ s.emoji }}</div>
-                      <Badge variant="outline" class="text-[9px] uppercase tracking-[0.2em] font-black border-border bg-background/50 backdrop-blur-sm px-2 py-1">{{ s.category }}</Badge>
-                    </div>
-                    <div class="mt-6 relative z-10">
-                        <h4 class="font-black text-foreground text-lg leading-tight line-clamp-2 min-h-[3rem] group-hover:text-primary transition-colors tracking-tight">{{ s.name }}</h4>
-                        <div class="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
-                          <span class="text-[10px] text-muted-foreground font-black uppercase tracking-widest inline-flex items-center gap-1.5">
-                            <Clock class="h-3.5 w-3.5 text-primary" /> {{ s.duration || 60 }}m
-                          </span>
-                          <span class="font-black text-xl text-primary tabular-nums tracking-tighter">{{ fmtIdr(s.price) }}</span>
+                  <Plus class="inline h-3.5 w-3.5 -mt-0.5 mr-1" /> New Booking
+                </button>
+                <button
+                  @click="tab = 'track'"
+                  :class="['px-6 h-8 rounded-full text-xs font-bold uppercase tracking-wider transition-all relative', tab === 'track' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900']"
+                >
+                  <Wrench class="inline h-3.5 w-3.5 -mt-0.5 mr-1" /> Pipeline
+                  <Badge v-if="orders.length > 0" class="absolute -top-1 -right-1 bg-primary text-white scale-75">{{ orders.length }}</Badge>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <Button variant="ghost" size="sm" class="rounded-full h-9 gap-2 text-slate-500">
+                    <History class="h-4 w-4" /> Riwayat
+                </Button>
+            </div>
+        </div>
+    </header>
+
+    <main class="mx-auto p-4 max-w-[1600px]">
+        <div v-if="tab === 'new'" class="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
+            <!-- ====== LEFT: Catalog ====== -->
+            <section class="space-y-5">
+                <div class="bg-white rounded-3xl border border-slate-200 p-4 space-y-4">
+                    <div class="flex flex-col md:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <Search class="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <Input v-model="search" placeholder="Cari layanan, sparepart, atau jasa..."
+                                class="h-12 pl-11 rounded-2xl bg-slate-50 border-0 text-sm focus-visible:ring-primary/20" />
                         </div>
                     </div>
-                    <!-- Hover Decoration -->
-                    <div class="absolute -right-4 -bottom-4 h-24 w-24 bg-primary/5 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-                
-                <div v-if="filteredServices.length === 0" class="col-span-full text-center py-24 bg-secondary/30 rounded-[2.5rem] border border-dashed border-border">
-                    <p class="text-muted-foreground font-black uppercase tracking-widest text-[11px]">No services found</p>
+
+                    <div class="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
+                        <button v-for="cat in categories" :key="cat"
+                            @click="activeCat = cat" :class="cn(
+                                'shrink-0 h-11 px-5 rounded-2xl flex items-center gap-2 text-sm font-bold transition border',
+                                activeCat === cat
+                                    ? 'bg-slate-900 text-white border-slate-900'
+                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                            )">
+                            {{ cat }}
+                        </button>
+                    </div>
                 </div>
-              </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4">
+                    <button v-for="s in filteredServices" :key="s.id"
+                        @click="addToCart(s)"
+                        class="group relative flex flex-col text-left rounded-2xl bg-white border border-slate-200 p-3 transition hover:border-primary hover:shadow-lg hover:-translate-y-0.5">
+                        <div class="aspect-square w-full rounded-xl bg-slate-50 flex items-center justify-center mb-3 group-hover:bg-primary/5 transition-colors text-4xl">
+                            {{ s.emoji }}
+                        </div>
+
+                        <h3 class="text-[13px] font-bold leading-snug line-clamp-2 min-h-[2.4em] mb-2 text-slate-800">
+                            {{ s.name }}
+                        </h3>
+
+                        <div class="flex items-center justify-between mt-auto pt-2 border-t border-slate-50">
+                            <div>
+                                <p class="text-sm font-bold text-slate-900 tabular-nums">
+                                    {{ fmtIdr(s.price) }}
+                                </p>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                                    {{ s.duration || 60 }} mins
+                                </p>
+                            </div>
+                            <span class="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-primary group-hover:text-white flex items-center justify-center transition shrink-0">
+                                <Plus class="h-4 w-4" />
+                            </span>
+                        </div>
+                    </button>
+                </div>
             </section>
 
-            <!-- ---------- RIGHT: Booking Side Panel ---------- -->
+            <!-- ====== RIGHT: Booking Panel ====== -->
             <aside class="space-y-4">
-                <div class="rounded-[2.5rem] bg-card border border-border p-8 flex flex-col gap-8 shadow-xl shadow-border/20 sticky top-6">
-                    <!-- Section: Customer -->
-                    <div class="space-y-4">
-                        <h3 class="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                          <span class="h-1 w-4 bg-primary rounded-full" /> Customer Information
-                        </h3>
-                        <div class="space-y-3">
-                            <Input
-                                v-model="customer.name"
-                                placeholder="Full Name"
-                                class="h-12 rounded-xl border-border bg-secondary/50 focus-visible:bg-card focus-visible:ring-primary/20 font-bold"
-                            />
-                            <div class="relative">
-                                <Phone class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    v-model="customer.phone"
-                                    placeholder="WhatsApp / Phone"
-                                    class="h-12 rounded-xl pl-12 border-border bg-secondary/50 focus-visible:bg-card focus-visible:ring-primary/20 font-bold"
-                                />
+                <div class="bg-white rounded-3xl border border-slate-200 flex flex-col shadow-sm sticky top-20">
+                    <div class="p-6 border-b border-slate-100 space-y-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Detail Booking</h2>
+                            <p class="text-xs text-slate-400 font-medium mt-0.5">Lengkapi informasi customer dan jadwal</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Customer</label>
+                                <Input v-model="customer.name" placeholder="Nama lengkap..." class="h-11 rounded-xl bg-slate-50 border-0" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">WhatsApp</label>
+                                <Input v-model="customer.phone" placeholder="08xxx..." class="h-11 rounded-xl bg-slate-50 border-0" />
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Tanggal</label>
+                                    <Input v-model="bookingDate" type="date" class="h-11 rounded-xl bg-slate-50 border-0" />
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Waktu</label>
+                                    <select v-model="bookingTime" class="w-full h-11 rounded-xl bg-slate-50 border-0 px-3 text-sm font-medium focus:ring-primary/20">
+                                        <option v-for="t in timeSlots" :key="t" :value="t">{{ t }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Pilih Staff</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button v-for="e in employees" :key="e.id"
+                                        @click="staff = e.id"
+                                        :class="cn(
+                                            'p-3 rounded-xl border text-left transition',
+                                            staff === e.id ? 'border-primary bg-primary/5' : 'border-slate-100 bg-slate-50 hover:bg-slate-100'
+                                        )">
+                                        <p class="text-[11px] font-bold text-slate-900 leading-tight">{{ e.name }}</p>
+                                        <p class="text-[9px] text-slate-400 font-bold uppercase">{{ e.position }}</p>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Section: Schedule -->
-                    <div class="space-y-4">
-                        <h3 class="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                          <span class="h-1 w-4 bg-primary rounded-full" /> Schedule & Priority
-                        </h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <Input
-                                type="date"
-                                v-model="bookingDate"
-                                class="h-12 rounded-xl border-border bg-secondary/50 font-bold"
-                            />
-                            <div class="relative">
-                              <select
-                                  v-model="bookingTime"
-                                  class="w-full h-12 rounded-xl border border-border bg-secondary/50 px-4 text-sm font-black text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
-                              >
-                                  <option v-for="t in timeSlots" :key="t" :value="t">{{ t }}</option>
-                              </select>
-                              <Clock class="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Section: Staff -->
-                    <div class="space-y-4">
-                        <h3 class="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                          <span class="h-1 w-4 bg-primary rounded-full" /> Assigned Staff
-                        </h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button
-                                v-for="s in employees"
-                                :key="s.id"
-                                @click="staff = s.id"
-                                :class="['text-left p-4 rounded-2xl border transition-all duration-300 relative overflow-hidden', 
-                                    staff === s.id ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-border hover:bg-secondary/50'
-                                ]"
-                            >
-                                <p class="font-black text-foreground text-[11px] uppercase tracking-tight">{{ s.name }}</p>
-                                <p class="text-[9px] text-muted-foreground font-black uppercase tracking-tighter mt-0.5">{{ s.position }}</p>
-                                <CheckCircle2 v-if="staff === s.id" class="absolute -right-1 -bottom-1 h-6 w-6 text-primary/20" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Section: Items -->
-                    <div class="flex-1 space-y-4">
+                    <!-- Cart Items -->
+                    <div class="p-6 flex-1 space-y-4">
                         <div class="flex items-center justify-between">
-                          <h3 class="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                            <span class="h-1 w-4 bg-primary rounded-full" /> Selection ({{ cart.length }})
-                          </h3>
-                          <button v-if="cart.length > 0" @click="clearAll" class="text-[9px] font-black text-destructive uppercase tracking-widest hover:underline">Clear all</button>
+                            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Layanan Terpilih ({{ cart.length }})</h3>
+                            <button v-if="cart.length > 0" @click="clearAll" class="text-[10px] font-bold text-rose-500 uppercase hover:underline">Reset</button>
                         </div>
                         
-                        <div class="max-h-[320px] overflow-y-auto -mx-2 px-2 space-y-3 custom-scrollbar">
-                            <div v-if="cart.length === 0" class="text-center py-12 bg-secondary/30 rounded-[2rem] border border-dashed border-border">
-                                <p class="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">Cart is empty</p>
+                        <div class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                            <div v-if="cart.length === 0" class="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <p class="text-xs text-slate-400 font-medium">Belum ada layanan dipilih</p>
                             </div>
-                            <div v-else v-for="l in cart" :key="l.id" class="flex items-center gap-4 p-4 rounded-[1.5rem] bg-secondary/40 border border-border/50 hover:border-border transition-all group">
-                                <span class="text-3xl bg-card h-12 w-12 rounded-xl flex items-center justify-center shadow-sm">{{ l.emoji }}</span>
-                                <div class="flex-1 min-w-0">
-                                  <p class="text-[13px] font-black text-foreground truncate leading-tight">{{ l.name }}</p>
-                                  <p class="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mt-0.5">{{ fmtIdr(l.price) }} · {{ l.duration || 60 }}m</p>
+                            <div v-for="item in cart" :key="item.id" class="flex gap-3 items-center group">
+                                <div class="h-10 w-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-xl shrink-0">
+                                    {{ item.emoji }}
                                 </div>
-                                <div class="flex flex-col items-end gap-2">
-                                  <div class="flex items-center gap-1 bg-card rounded-full p-0.5 border border-border shadow-sm">
-                                    <button @click="adjustQty(l.id, -1)" class="h-6 w-6 flex items-center justify-center hover:bg-secondary rounded-full text-muted-foreground transition-colors" aria-label="Decrease">
-                                      <ChevronLeft class="h-3 w-3" />
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-xs font-bold truncate text-slate-800">{{ item.name }}</h4>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase">{{ fmtIdr(item.price) }}</p>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button @click="adjustQty(item.id, -1)" class="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 transition">
+                                        <ChevronLeft class="h-3 w-3" />
                                     </button>
-                                    <span class="w-4 text-center text-xs font-black text-foreground tabular-nums">{{ l.qty }}</span>
-                                    <button @click="adjustQty(l.id, 1)" class="h-6 w-6 flex items-center justify-center hover:bg-secondary rounded-full text-primary transition-colors" aria-label="Increase">
-                                      <ChevronRight class="h-3 w-3" />
+                                    <span class="text-xs font-bold w-4 text-center">{{ item.qty }}</span>
+                                    <button @click="adjustQty(item.id, 1)" class="h-6 w-6 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-slate-800 transition">
+                                        <ChevronRight class="h-3 w-3" />
                                     </button>
-                                  </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Totals & Checkout -->
-                    <div class="space-y-6 border-t border-border pt-8">
-                        <div class="space-y-2">
-                          <div class="flex justify-between text-[11px] font-black text-muted-foreground uppercase tracking-widest"><span>Subtotal</span><span class="text-foreground">{{ fmtIdr(subtotal) }}</span></div>
-                          <div class="flex justify-between text-[11px] font-black text-muted-foreground uppercase tracking-widest"><span>Tax (11%)</span><span class="text-foreground">{{ fmtIdr(tax) }}</span></div>
-                          <div class="flex justify-between text-[11px] font-black text-primary uppercase tracking-widest"><span>Est. Duration</span><span>{{ Math.floor(totalDuration/60) }}h {{ totalDuration%60 }}m</span></div>
+                    <div class="p-6 bg-slate-50 border-t border-slate-100 rounded-b-3xl space-y-4">
+                        <div class="space-y-1 text-xs">
+                            <div class="flex justify-between text-slate-500"><span>Subtotal</span><span class="font-bold text-slate-800">{{ fmtIdr(subtotal) }}</span></div>
+                            <div class="flex justify-between text-slate-500"><span>Pajak (11%)</span><span class="font-bold text-slate-800">{{ fmtIdr(tax) }}</span></div>
                         </div>
-                        
-                        <div class="flex items-end justify-between pt-2">
-                            <div class="flex flex-col">
-                              <span class="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Grand Total</span>
-                              <span class="text-3xl font-black text-foreground tracking-tighter tabular-nums">{{ fmtIdr(total) }}</span>
+                        <div class="flex items-end justify-between">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Grand Total</p>
+                                <p class="text-2xl font-bold text-slate-900 tracking-tight">{{ fmtIdr(total) }}</p>
                             </div>
-                            <div class="h-12 w-12 rounded-2xl bg-secondary flex items-center justify-center border border-border">
-                              <Receipt class="h-6 w-6 text-muted-foreground" />
+                            <div class="text-right">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Estimasi Durasi</p>
+                                <p class="text-xs font-bold text-slate-800">{{ Math.floor(totalDuration/60) }}j {{ totalDuration%60 }}m</p>
                             </div>
                         </div>
-
-                        <Button class="w-full h-16 rounded-[1.5rem] bg-foreground hover:bg-primary text-card font-black text-lg uppercase tracking-widest shadow-2xl shadow-foreground/10 transition-all duration-500 active:scale-95 group" @click="confirmBooking">
-                            <CheckCircle2 class="h-6 w-6 mr-3 group-hover:animate-bounce" /> Complete Booking
+                        <Button @click="confirmBooking" class="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase tracking-widest shadow-lg shadow-slate-900/10">
+                            Konfirmasi Booking
                         </Button>
                     </div>
                 </div>
@@ -413,156 +394,114 @@ const selectCustomer = (c: any) => {
 
         <!-- ---------- TRACKING TAB ---------- -->
         <div v-else class="space-y-6">
-          <Tabs defaultValue="all" class="space-y-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card p-4 rounded-[2rem] border border-border shadow-sm">
-              <TabsList class="rounded-full bg-secondary p-1 h-12">
-                <TabsTrigger value="all" class="rounded-full px-10 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-lg">All Status</TabsTrigger>
-                <TabsTrigger value="active" class="rounded-full px-10 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-foreground data-[state=active]:text-card">Active</TabsTrigger>
-                <TabsTrigger value="done" class="rounded-full px-10 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-primary data-[state=active]:text-card">Completed</TabsTrigger>
-              </TabsList>
-              
-              <div class="flex items-center gap-3">
-                <div class="relative w-64">
-                  <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Filter orders..." class="h-10 pl-10 rounded-full bg-secondary/50 border-none text-[11px] font-bold" />
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm">
+                <div class="flex gap-2">
+                    <button class="px-6 h-10 rounded-full text-xs font-bold uppercase tracking-wider bg-slate-900 text-white">Semua</button>
+                    <button class="px-6 h-10 rounded-full text-xs font-bold uppercase tracking-wider bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">Aktif</button>
+                    <button class="px-6 h-10 rounded-full text-xs font-bold uppercase tracking-wider bg-white text-slate-600 border border-slate-200 hover:bg-slate-50">Selesai</button>
                 </div>
-                <Button variant="outline" size="sm" class="rounded-full h-10 px-6 font-black uppercase text-[10px] tracking-widest text-muted-foreground hover:bg-secondary">
-                  <Filter class="h-3.5 w-3.5 mr-2" /> More Filters
-                </Button>
-              </div>
+                <div class="relative w-full md:w-80">
+                    <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input placeholder="Cari booking..." class="h-10 pl-10 rounded-full bg-slate-50 border-0 text-sm" />
+                </div>
             </div>
 
-            <div v-for="view in ['all', 'active', 'done']" :key="view">
-              <TabsContent :value="view" class="m-0">
-                <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
-                  <article 
-                    v-for="o in orders.filter(o => {
-                        if (view === 'active') return ['Queued', 'Confirmed', 'In Progress'].includes(o.status);
-                        if (view === 'done') return ['Done', 'Picked Up'].includes(o.status);
-                        return true;
-                    })" 
-                    :key="o.id" 
-                    class="rounded-[2.5rem] bg-card border border-border p-8 space-y-6 hover:shadow-2xl hover:border-primary/20 transition-all group relative overflow-hidden"
-                  >
-                        <div class="flex items-start justify-between relative z-10">
-                          <div>
-                            <p class="font-black text-[10px] text-muted-foreground/50 uppercase tracking-[0.2em] mb-1">{{ o.id }}</p>
-                            <h3 class="font-black text-2xl text-foreground group-hover:text-primary transition-colors tracking-tight">{{ o.customer }}</h3>
-                            <p class="text-[11px] text-muted-foreground font-bold inline-flex items-center gap-2 mt-2 bg-secondary/50 px-3 py-1 rounded-full border border-border/50">
-                              <Phone class="h-3.5 w-3.5 text-primary" /> {{ o.phone }}
+            <div class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
+                <article v-for="o in orders" :key="o.id"
+                    class="bg-white rounded-3xl border border-slate-200 p-6 space-y-5 hover:border-primary transition group relative overflow-hidden shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{{ o.id }}</p>
+                            <h3 class="text-xl font-bold text-slate-900">{{ o.customer }}</h3>
+                            <p class="text-xs text-slate-400 font-medium flex items-center gap-1.5 mt-1">
+                                <Phone class="h-3 w-3" /> {{ o.phone }}
                             </p>
-                          </div>
-                          <span :class="['inline-flex items-center gap-2 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ring-1 ring-border', getStatusClass(o.status)]">
-                            <span class="h-2 w-2 rounded-full bg-current animate-pulse" /> {{ o.status }}
-                          </span>
                         </div>
+                        <span :class="cn('px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm', getStatusClass(o.status))">
+                            {{ o.status }}
+                        </span>
+                    </div>
 
-                        <div class="rounded-3xl bg-secondary/30 p-6 border border-border/50 space-y-4 relative z-10">
-                            <ul class="space-y-3">
-                              <li v-for="(it, i) in o.items" :key="i" class="flex justify-between text-[11px] font-black uppercase tracking-tight text-foreground/70">
-                                <span class="flex items-center gap-2"><span class="h-1 w-1 bg-primary rounded-full" /> {{ it.name }}</span>
-                                <span class="bg-card px-2.5 py-1 rounded-lg border border-border text-foreground text-[10px]">×{{ it.qty }}</span>
-                              </li>
-                            </ul>
-                        </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl space-y-3">
+                        <ul class="space-y-2">
+                            <li v-for="(it, i) in o.items" :key="i" class="flex justify-between text-[11px] font-bold uppercase tracking-tight text-slate-600">
+                                <span>• {{ it.name }}</span>
+                                <span class="text-slate-400">×{{ it.qty }}</span>
+                            </li>
+                        </ul>
+                    </div>
 
-                        <div class="flex items-center justify-between border-t border-border/50 pt-6 relative z-10">
-                          <div class="space-y-1">
-                            <span class="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Schedule</span>
-                            <p class="text-[11px] font-black text-foreground uppercase tracking-tighter inline-flex items-center gap-2">
-                              <CalendarIcon class="h-3.5 w-3.5 text-primary" /> {{ o.scheduledAt }}
+                    <div class="flex items-center justify-between border-t border-slate-50 pt-4">
+                        <div class="space-y-0.5">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Jadwal</p>
+                            <p class="text-[11px] font-bold text-slate-800 uppercase flex items-center gap-1.5">
+                                <CalendarIcon class="h-3 w-3 text-primary" /> {{ o.scheduledAt }}
                             </p>
-                          </div>
-                          <div class="text-right space-y-1">
-                            <span class="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Assigned Staff</span>
-                            <p class="text-[11px] font-black text-foreground uppercase tracking-tighter inline-flex items-center gap-2">
-                              <User class="h-3.5 w-3.5 text-primary" /> {{ o.staff }}
-                            </p>
-                          </div>
                         </div>
+                        <div class="text-right space-y-0.5">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Staff</p>
+                            <p class="text-[11px] font-bold text-slate-800 uppercase flex items-center gap-1.5">
+                                <User class="h-3 w-3 text-primary" /> {{ o.staff }}
+                            </p>
+                        </div>
+                    </div>
 
-                        <div class="flex items-center justify-between pt-2 relative z-10">
-                          <div class="flex flex-col">
-                            <span class="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">Total Amount</span>
-                            <span class="font-black text-2xl text-primary tracking-tighter tabular-nums">{{ fmtIdr(o.total) }}</span>
-                          </div>
-                          <div class="flex gap-2">
-                            <Button size="sm" variant="ghost" class="rounded-2xl h-12 w-12 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border hover:border-destructive/30 transition-all" @click="cancelOrder(o.id)">
-                              <X class="h-5 w-5" />
+                    <div class="flex items-center justify-between pt-2">
+                        <div>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</p>
+                            <p class="text-xl font-bold text-slate-900 tabular-nums tracking-tight">{{ fmtIdr(o.total) }}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <Button size="icon" variant="ghost" class="rounded-xl h-10 w-10 text-slate-300 hover:text-rose-500 hover:bg-rose-50" @click="cancelOrder(o.id)">
+                                <X class="h-5 w-5" />
                             </Button>
-                            <Button v-if="o.status !== 'Picked Up'" size="sm" class="rounded-2xl h-12 px-8 bg-foreground text-card font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-lg active:scale-95" @click="advanceStatus(o.id)">
-                                <template v-if="o.status === 'Queued'">
-                                    <PlayCircle class="h-4 w-4 mr-2" /> Confirm
-                                </template>
-                                <template v-else-if="o.status === 'Confirmed'">
-                                    <Wrench class="h-4 w-4 mr-2" /> Process
-                                </template>
-                                <template v-else-if="o.status === 'In Progress'">
-                                    <CheckCircle2 class="h-4 w-4 mr-2" /> Ready
-                                </template>
-                                <template v-else-if="o.status === 'Done'">
-                                    <PackageCheck class="h-4 w-4 mr-2" /> Pickup
-                                </template>
+                            <Button v-if="o.status !== 'Picked Up'" size="sm" class="rounded-xl h-10 px-6 bg-slate-900 text-white font-bold uppercase tracking-wider hover:bg-primary transition shadow-md" @click="advanceStatus(o.id)">
+                                Update Status
                             </Button>
-                          </div>
                         </div>
-                        
-                        <!-- Card Decoration -->
-                        <div class="absolute -left-10 -top-10 h-40 w-40 bg-primary/5 rounded-full blur-[60px] pointer-events-none" />
-                  </article>
-                </div>
-              </TabsContent>
+                    </div>
+                </article>
             </div>
-          </Tabs>
         </div>
-      </div>
+    </main>
 
-      <!-- ===== Premium Receipt Dialog ===== -->
-      <Dialog v-model:open="receiptOpen">
-        <DialogContent class="rounded-[3rem] sm:max-w-md border-none shadow-3xl overflow-hidden p-0 bg-card">
-          <div class="bg-foreground p-10 text-card text-center relative overflow-hidden">
-            <div class="absolute -right-8 -top-8 h-48 w-48 rounded-full bg-primary/20 blur-[80px]" />
-            <div class="absolute -left-8 -bottom-8 h-48 w-48 rounded-full bg-primary/10 blur-[80px]" />
-            
-            <div class="mx-auto h-24 w-24 rounded-[2rem] bg-card text-primary flex items-center justify-center shadow-2xl relative z-10 scale-110 border-4 border-foreground">
-              <CheckCircle2 class="h-12 w-12" />
-            </div>
-            <DialogTitle class="text-3xl font-black mt-8 relative z-10 tracking-tighter">Booking Confirmed!</DialogTitle>
-            <p class="text-card/60 font-black text-[11px] uppercase tracking-[0.3em] mt-2 relative z-10">Invoice {{ lastOrder?.id }}</p>
-          </div>
-
-          <div class="p-10 space-y-8 bg-card">
-            <div v-if="lastOrder" class="space-y-4">
-              <div class="rounded-[2rem] bg-secondary/50 p-8 space-y-4 border border-border">
-                <div class="flex justify-between items-center"><span class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Customer</span><span class="font-black text-foreground uppercase text-xs">{{ lastOrder.customer }}</span></div>
-                <div class="flex justify-between items-center"><span class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Schedule</span><span class="font-black text-foreground uppercase text-xs">{{ lastOrder.scheduledAt }}</span></div>
-                <div class="flex justify-between items-center"><span class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Assigned Staff</span><span class="font-black text-foreground uppercase text-xs">{{ lastOrder.staff }}</span></div>
-                <div class="flex justify-between items-end border-t border-border pt-6 mt-2">
-                  <div class="flex flex-col">
-                    <span class="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Grand Total</span>
-                    <span class="font-black text-3xl text-primary tracking-tighter tabular-nums">{{ fmtIdr(lastOrder.total) }}</span>
-                  </div>
-                  <Badge class="bg-primary/10 text-primary border-primary/20 mb-1">PAID</Badge>
+    <!-- Receipt Dialog -->
+    <Dialog v-model:open="receiptOpen">
+        <DialogContent class="rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl max-w-md bg-white">
+            <div class="bg-slate-900 p-8 text-white text-center">
+                <div class="mx-auto h-16 w-16 rounded-2xl bg-primary flex items-center justify-center mb-4">
+                    <CheckCircle2 class="h-8 w-8" />
                 </div>
-              </div>
+                <h3 class="text-2xl font-bold tracking-tight">Booking Berhasil!</h3>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Invoice {{ lastOrder?.id }}</p>
             </div>
-            
-            <div class="grid grid-cols-1 gap-3">
-              <Button class="rounded-2xl h-16 bg-foreground text-card font-black uppercase tracking-[0.2em] shadow-xl hover:bg-primary transition-all active:scale-95" @click="receiptOpen = false">
-                <span class="flex items-center"><Receipt class="h-5 w-5 mr-3" /> Back to Terminal</span>
-              </Button>
-              <div class="flex gap-3">
-                <Button variant="outline" class="flex-1 rounded-2xl h-14 border-border text-muted-foreground font-black uppercase text-[10px] tracking-widest hover:bg-secondary">
-                  <Phone class="h-4 w-4 mr-2 text-emerald-500" /> WhatsApp
-                </Button>
-                <Button variant="outline" class="flex-1 rounded-2xl h-14 border-border text-muted-foreground font-black uppercase text-[10px] tracking-widest hover:bg-secondary">
-                  <Printer class="h-4 w-4 mr-2" /> Print PDF
-                </Button>
-              </div>
+
+            <div class="p-8 space-y-6">
+                <div v-if="lastOrder" class="space-y-3 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <div class="flex justify-between text-xs"><span class="text-slate-400 font-bold uppercase">Customer</span><span class="font-bold text-slate-800">{{ lastOrder.customer }}</span></div>
+                    <div class="flex justify-between text-xs"><span class="text-slate-400 font-bold uppercase">Jadwal</span><span class="font-bold text-slate-800">{{ lastOrder.scheduledAt }}</span></div>
+                    <div class="flex justify-between text-xs"><span class="text-slate-400 font-bold uppercase">Staff</span><span class="font-bold text-slate-800">{{ lastOrder.staff }}</span></div>
+                    <div class="border-t border-slate-200 pt-3 mt-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-slate-400 font-bold uppercase">Total Bayar</span>
+                            <span class="text-2xl font-bold text-primary tracking-tight">{{ fmtIdr(lastOrder.total) }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-2">
+                    <Button class="rounded-xl h-12 bg-slate-900 text-white font-bold uppercase tracking-widest" @click="receiptOpen = false">
+                        Selesai
+                    </Button>
+                    <div class="flex gap-2">
+                        <Button variant="outline" class="flex-1 rounded-xl h-11 text-xs font-bold uppercase border-slate-200">WhatsApp</Button>
+                        <Button variant="outline" class="flex-1 rounded-xl h-11 text-xs font-bold uppercase border-slate-200">Print</Button>
+                    </div>
+                </div>
             </div>
-          </div>
         </DialogContent>
-      </Dialog>
+    </Dialog>
+</div>
 </template>
 
 <style scoped>
