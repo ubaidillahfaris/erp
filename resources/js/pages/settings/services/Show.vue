@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { 
     ArrowLeft, Plus, Trash2, Settings2, Save,
     CheckCircle2, Clock, AlertCircle, 
@@ -9,7 +9,7 @@ import {
 } from 'lucide-vue-next';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
@@ -34,6 +34,7 @@ import {
 import { toast } from 'vue-sonner';
 import servicesRoutes from '@/routes/settings/services';
 import serviceTypesRoutes from '@/routes/settings/service-types';
+import servicePricingsRoutes from '@/routes/settings/service-pricings';
 import type { BreadcrumbItem } from '@/types';
 
 interface Pricing {
@@ -87,6 +88,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 const typeOpen = ref(false);
 const pricingOpen = ref(false);
 const selectedTypeId = ref<number | null>(null);
+const selectedPricingId = ref<number | null>(null);
+const isEditingPricing = ref(false);
 
 const typeForm = useForm({
     code: '',
@@ -95,7 +98,7 @@ const typeForm = useForm({
 });
 
 const pricingForm = useForm({
-    pricing_basis: 'per_kg',
+    pricing_basis: 'per_kg' as 'per_kg' | 'per_item' | 'per_unit',
     unit_name: 'kg',
     unit_price: 0,
     min_quantity: 0,
@@ -117,20 +120,55 @@ const addType = () => {
     });
 };
 
-const openPricingDialog = (typeId: number) => {
+const openPricingDialog = (typeId: number, pricing?: Pricing) => {
     selectedTypeId.value = typeId;
+    if (pricing) {
+        selectedPricingId.value = pricing.id;
+        isEditingPricing.value = true;
+        pricingForm.pricing_basis = pricing.pricing_basis;
+        pricingForm.unit_name = pricing.unit_name;
+        pricingForm.unit_price = pricing.unit_price / 100;
+        pricingForm.min_quantity = pricing.min_quantity;
+        pricingForm.max_quantity = pricing.max_quantity;
+        pricingForm.discount_pct = pricing.discount_pct;
+    } else {
+        selectedPricingId.value = null;
+        isEditingPricing.value = false;
+        pricingForm.reset();
+    }
     pricingOpen.value = true;
 };
 
-const addPricing = () => {
+const savePricing = () => {
     if (!selectedTypeId.value) return;
-    pricingForm.post(serviceTypesRoutes.storePricing.url(selectedTypeId.value), {
-        onSuccess: () => {
-            pricingOpen.value = false;
-            pricingForm.reset();
-            toast.success("Aturan harga ditambahkan");
-        }
-    });
+    
+    if (isEditingPricing.value && selectedPricingId.value) {
+        pricingForm.put(servicePricingsRoutes.update.url(selectedPricingId.value), {
+            onSuccess: () => {
+                pricingOpen.value = false;
+                pricingForm.reset();
+                toast.success("Aturan harga diperbarui");
+            }
+        });
+    } else {
+        pricingForm.post(serviceTypesRoutes.storePricing.url(selectedTypeId.value), {
+            onSuccess: () => {
+                pricingOpen.value = false;
+                pricingForm.reset();
+                toast.success("Aturan harga ditambahkan");
+            }
+        });
+    }
+};
+
+const deletePricing = (pricingId: number) => {
+    if (confirm("Hapus aturan harga ini?")) {
+        router.delete(servicePricingsRoutes.destroy.url(pricingId), {
+            onSuccess: () => {
+                toast.success("Aturan harga dihapus");
+            }
+        });
+    }
 };
 
 const syncStatuses = () => {
@@ -159,7 +197,7 @@ const formatCurrency = (value: number) => {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
-    }).format(value || 0);
+    }).format((value || 0) / 100);
 };
 
 const formatPricingValue = (p: Pricing) => {
@@ -236,9 +274,14 @@ const formatPricingValue = (p: Pricing) => {
                                                     <p class="text-[10px] font-semibold text-muted-foreground uppercase mt-1">per {{ pricing.unit_name }}</p>
                                                 </div>
                                             </div>
-                                            <button class="h-7 w-7 text-slate-200 group-hover:text-rose-400 transition-colors">
-                                                <Trash2 class="h-3.5 w-3.5" />
-                                            </button>
+                                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button @click="openPricingDialog(type.id, pricing)" variant="ghost" size="icon" class="h-7 w-7 text-slate-400 hover:text-primary">
+                                                    <Pencil class="h-3.5 w-3.5" />
+                                                </Button>
+                                                <Button @click="deletePricing(pricing.id)" variant="ghost" size="icon" class="h-7 w-7 text-slate-400 hover:text-rose-500">
+                                                    <Trash2 class="h-3.5 w-3.5" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div v-else class="py-6 text-center border border-dashed border-slate-200 rounded-xl">
@@ -386,7 +429,9 @@ const formatPricingValue = (p: Pricing) => {
         <Dialog v-model:open="pricingOpen">
             <DialogContent class="rounded-2xl border-slate-200 shadow-2xl max-w-sm">
                 <DialogHeader>
-                    <DialogTitle class="text-lg font-semibold uppercase tracking-tight">Aturan Harga</DialogTitle>
+                    <DialogTitle class="text-lg font-semibold uppercase tracking-tight">
+                        {{ isEditingPricing ? 'Edit Aturan Harga' : 'Aturan Harga Baru' }}
+                    </DialogTitle>
                     <DialogDescription class="text-xs font-medium">Tentukan basis perhitungan biaya.</DialogDescription>
                 </DialogHeader>
                 <div class="space-y-5 py-4">
@@ -410,10 +455,7 @@ const formatPricingValue = (p: Pricing) => {
                         </div>
                         <div class="space-y-2">
                             <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Harga Unit</Label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-slate-400">Rp</span>
-                                <Input type="number" v-model="pricingForm.unit_price" class="h-10 pl-8 rounded-lg font-semibold tabular-nums" />
-                            </div>
+                            <InputCurrency v-model="pricingForm.unit_price" class="h-10 rounded-lg font-semibold tabular-nums" />
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
@@ -428,7 +470,9 @@ const formatPricingValue = (p: Pricing) => {
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button @click="addPricing" :disabled="pricingForm.processing" primary class="w-full h-11 font-semibold uppercase tracking-widest text-[11px]">Simpan Harga</Button>
+                    <Button @click="savePricing" :disabled="pricingForm.processing" primary class="w-full h-11 font-semibold uppercase tracking-widest text-[11px]">
+                        {{ isEditingPricing ? 'Simpan Perubahan' : 'Simpan Harga' }}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

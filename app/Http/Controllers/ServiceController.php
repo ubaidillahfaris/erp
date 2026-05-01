@@ -82,9 +82,6 @@ class ServiceController extends Controller
         return back()->with('success', 'Service type added.');
     }
 
-    /**
-     * Store a new pricing rule.
-     */
     public function storePricing(Request $request, ServiceType $serviceType)
     {
         $validated = $request->validate([
@@ -102,6 +99,38 @@ class ServiceController extends Controller
         $serviceType->pricings()->create($validated);
 
         return back()->with('success', 'Pricing rule added.');
+    }
+
+    /**
+     * Update a pricing rule.
+     */
+    public function updatePricing(Request $request, ServicePricing $pricing)
+    {
+        $validated = $request->validate([
+            'pricing_basis' => 'required|string|in:per_kg,per_item,per_unit',
+            'unit_name' => 'required|string',
+            'unit_price' => 'required|numeric|min:0',
+            'min_quantity' => 'nullable|numeric|min:0',
+            'max_quantity' => 'nullable|numeric|min:0',
+            'discount_pct' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        // Convert to cents
+        $validated['unit_price'] = (int) ($validated['unit_price'] * 100);
+
+        $pricing->update($validated);
+
+        return back()->with('success', 'Pricing rule updated.');
+    }
+
+    /**
+     * Delete a pricing rule.
+     */
+    public function destroyPricing(ServicePricing $pricing)
+    {
+        $pricing->delete();
+
+        return back()->with('success', 'Pricing rule deleted.');
     }
 
     /**

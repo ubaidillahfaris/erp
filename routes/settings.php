@@ -45,6 +45,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('settings/services/{service}', [ServiceController::class, 'show'])->name('settings.services.show');
         Route::post('settings/services/{service}/types', [ServiceController::class, 'storeType'])->name('settings.services.store-type');
         Route::post('settings/service-types/{serviceType}/pricings', [ServiceController::class, 'storePricing'])->name('settings.service-types.store-pricing');
+        Route::put('settings/service-pricings/{pricing}', [ServiceController::class, 'updatePricing'])->name('settings.service-pricings.update');
+        Route::delete('settings/service-pricings/{pricing}', [ServiceController::class, 'destroyPricing'])->name('settings.service-pricings.destroy');
         Route::post('settings/services/{service}/statuses', [ServiceController::class, 'syncStatuses'])->name('settings.services.sync-statuses');
     });
 });

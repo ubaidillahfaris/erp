@@ -235,6 +235,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
         Route::get('service-orders/{service_order}', [ServiceOrderController::class, 'show'])->name('service-orders.show');
         Route::post('service-orders/{service_order}/items', [ServiceOrderController::class, 'addItem'])->name('service-orders.add-item');
         Route::patch('service-orders/{service_order}/status', [ServiceOrderController::class, 'updateStatus'])->name('service-orders.update-status');
+        Route::patch('service-orders/{service_order}/adjust-price', [ServiceOrderController::class, 'adjustPrice'])->name('service-orders.adjust-price');
         Route::post('service-orders/{service_order}/payments', [ServiceOrderController::class, 'recordPayment'])->name('service-orders.record-payment');
         Route::post('service-orders/{service_order}/void', [ServiceOrderController::class, 'void'])->name('service-orders.void');
     });

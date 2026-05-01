@@ -147,6 +147,17 @@ class ServiceOrderService
         });
     }
 
+    public function adjustPrice(ServiceOrder $order, int $newTotalAmount): void
+    {
+        DB::transaction(function () use ($order, $newTotalAmount) {
+            if ($order->status === 'posted' || $order->status === 'cancelled') {
+                throw new \Exception("Cannot adjust price for order with status: {$order->status}");
+            }
+
+            $order->update(['total_amount' => $newTotalAmount]);
+        });
+    }
+
     /**
      * Post journal entries for the order.
      */

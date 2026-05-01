@@ -178,4 +178,24 @@ class ServiceOrderController extends Controller
 
         return back()->with('success', 'Order voided.');
     }
+
+    /**
+     * Adjust the price of a service order manually.
+     */
+    public function adjustPrice(Request $request, ServiceOrder $serviceOrder)
+    {
+        $validated = $request->validate([
+            'total_amount' => 'required|numeric|min:0',
+        ]);
+
+        try {
+            $this->serviceOrderService->adjustPrice(
+                $serviceOrder,
+                (int) ($validated['total_amount'] * 100)
+            );
+            return back()->with('success', 'Harga order berhasil disesuaikan.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
 }
