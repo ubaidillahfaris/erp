@@ -12,8 +12,8 @@ class CheckPeriodLock
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Allow read-only access
-        if ($request->isMethod('GET') || $request->isMethod('HEAD')) {
+        // Allow read-only access or superadmin bypass
+        if ($request->isMethod('GET') || $request->isMethod('HEAD') || ($request->user() && $request->user()->hasRole('superadmin'))) {
             return $next($request);
         }
 

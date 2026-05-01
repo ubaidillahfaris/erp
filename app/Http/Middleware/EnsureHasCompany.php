@@ -16,7 +16,8 @@ class EnsureHasCompany
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && ! Auth::user()->company_id && ! $request->is('onboarding*')) {
+        $user = Auth::user();
+        if (Auth::check() && ! $user->company_id && ! $user->hasRole('superadmin') && ! $request->is('onboarding*')) {
             return redirect()->route('onboarding.show');
         }
 

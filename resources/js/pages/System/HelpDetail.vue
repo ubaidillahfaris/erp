@@ -138,7 +138,7 @@ function formatText(text: string) {
                         <User class="h-6 w-6" />
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-sm font-bold text-slate-900">Admin Warung ERP</span>
+                        <span class="text-sm font-bold text-slate-900">Admin valee ERP</span>
                         <span class="text-xs text-slate-500">Pusat Dokumentasi Sistem</span>
                     </div>
                 </div>

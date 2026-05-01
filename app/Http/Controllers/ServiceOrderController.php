@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\Employee;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\ServiceOrder;
@@ -27,26 +28,66 @@ class ServiceOrderController extends Controller
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
-                    'category_id' => $product->category_id,
-                    'unit_id' => $product->unit_id,
+                    'category' => $product->category?->name ?? 'Uncategorized',
                     'unit_symbol' => $product->unit->symbol,
                     'price' => (float) ($product->currentPrice?->retail_price ?? 0),
+                    'emoji' => $this->getEmojiForCategory($product->category?->name),
                 ];
             });
 
         $customers = Customer::whereHas('status', function ($query) {
             $query->where('name', 'Active');
-        })->get(['id', 'name']);
+        })->get(['id', 'name', 'phone']);
 
-        $warehouses = Warehouse::where('is_active', true)->get(['id', 'name']);
-        $defaultWarehouseId = Warehouse::where('is_default', true)->value('id');
+        $employees = Employee::where('status', 'active')->get(['id', 'name', 'position']);
 
-        return Inertia::render('ServiceOrders/Create', [
+        $orders = ServiceOrder::with(['customer', 'items.product'])
+            ->where('status', '!=', 'picked_up')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => $order->order_number,
+                    'customer' => $order->customer->name,
+                    'phone' => $order->customer->phone ?? '-',
+                    'items' => $order->items->map(fn($it) => ['name' => $it->product->name, 'qty' => $it->qty]),
+                    'staff' => $order->metadata['staff_name'] ?? 'Unassigned',
+                    'scheduledAt' => $order->estimated_at?->format('Y-m-d H:i') ?? $order->created_at->format('Y-m-d H:i'),
+                    'total' => (float) $order->items->sum('subtotal'),
+                    'status' => $this->mapStatus($order->status),
+                ];
+            });
+
+        return Inertia::render('ServiceOrders/Pos', [
             'products' => $products,
             'customers' => $customers,
-            'warehouses' => $warehouses,
-            'defaultWarehouseId' => $defaultWarehouseId,
+            'employees' => $employees,
+            'initialOrders' => $orders,
         ]);
+    }
+
+    private function getEmojiForCategory(?string $category): string
+    {
+        return match ($category) {
+            'Cleaning' => '🧹',
+            'AC' => '❄️',
+            'Plumbing' => '🔧',
+            'Electrical' => '⚡',
+            'Painting' => '🎨',
+            'Appliance' => '🌀',
+            default => '💼',
+        };
+    }
+
+    private function mapStatus(string $status): string
+    {
+        return match ($status) {
+            'pending' => 'Queued',
+            'processing' => 'In Progress',
+            'ready' => 'Done',
+            'picked_up' => 'Picked Up',
+            default => 'Queued',
+        };
     }
 
     /**
@@ -158,7 +199,7 @@ class ServiceOrderController extends Controller
                 'date' => now()->toDateString(),
                 'total_amount' => $totalAmount,
                 'received_amount' => $request->received_amount,
-                'change_amount' => max(0, $request->received_amount - totalAmount),
+                'change_amount' => max(0, $request->received_amount - $totalAmount),
                 'payment_method' => $request->payment_method,
                 'status' => 'completed',
             ]);

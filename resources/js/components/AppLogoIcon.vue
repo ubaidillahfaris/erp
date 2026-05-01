@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Store } from 'lucide-vue-next';
-import type { HTMLAttributes } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { computed, type HTMLAttributes } from 'vue';
 
 defineOptions({
     inheritAttrs: false,
@@ -11,10 +11,18 @@ type Props = {
 };
 
 defineProps<Props>();
+
+const page = usePage();
+const logoLetter = computed(() => {
+    const name = (page.props.name as string) || 'Valee';
+    return name.charAt(0).toUpperCase();
+});
 </script>
 
 <template>
-    <div :class="className" v-bind="$attrs" class="flex items-center justify-center">
-        <Store class="size-full fill-current" />
+    <div :class="className" v-bind="$attrs" class="flex items-center justify-center font-black select-none">
+        <span class="leading-none text-[1.2em]">
+            {{ logoLetter }}
+        </span>
     </div>
 </template>

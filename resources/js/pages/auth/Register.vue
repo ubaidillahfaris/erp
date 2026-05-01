@@ -13,10 +13,10 @@ import { store } from '@/routes/register';
 
 <template>
     <AuthBase
-        title="Create an account"
-        description="Enter your details below to create your account"
+        title="Join the ecosystem"
+        description="Start scaling your business with our all-in-one platform"
     >
-        <Head title="Register" />
+        <Head :title="`Register - ${$page.props.name}`" />
 
         <Form
             v-bind="store()"
@@ -24,9 +24,9 @@ import { store } from '@/routes/register';
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
-            <div class="grid gap-6">
+            <div class="grid gap-5">
                 <div class="grid gap-2">
-                    <Label for="name">Name</Label>
+                    <Label for="name" class="text-white/70">Full Name</Label>
                     <Input
                         id="name"
                         type="text"
@@ -35,13 +35,14 @@ import { store } from '@/routes/register';
                         :tabindex="1"
                         autocomplete="name"
                         name="name"
-                        placeholder="Full name"
+                        placeholder="John Doe"
+                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
                     />
                     <InputError :message="errors.name" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email" class="text-white/70">Email Address</Label>
                     <Input
                         id="email"
                         type="email"
@@ -49,13 +50,14 @@ import { store } from '@/routes/register';
                         :tabindex="2"
                         autocomplete="email"
                         name="email"
-                        placeholder="email@example.com"
+                        placeholder="name@company.com"
+                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
                     />
                     <InputError :message="errors.email" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password">Password</Label>
+                    <Label for="password" class="text-white/70">Password</Label>
                     <Input
                         id="password"
                         type="password"
@@ -63,13 +65,14 @@ import { store } from '@/routes/register';
                         :tabindex="3"
                         autocomplete="new-password"
                         name="password"
-                        placeholder="Password"
+                        placeholder="••••••••"
+                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
                     />
                     <InputError :message="errors.password" />
                 </div>
 
                 <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
+                    <Label for="password_confirmation" class="text-white/70">Confirm Password</Label>
                     <Input
                         id="password_confirmation"
                         type="password"
@@ -77,31 +80,30 @@ import { store } from '@/routes/register';
                         :tabindex="4"
                         autocomplete="new-password"
                         name="password_confirmation"
-                        placeholder="Confirm password"
+                        placeholder="••••••••"
+                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
                     />
                     <InputError :message="errors.password_confirmation" />
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-2 w-full"
+                    class="mt-4 w-full bg-primary text-white hover:bg-primary/90 shadow-coral h-10 font-bold rounded-xl transition-all active:scale-95"
                     tabindex="5"
                     :disabled="processing"
-                    data-test="register-user-button"
                 >
                     <Spinner v-if="processing" />
                     Create account
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
+            <div class="text-center text-sm text-white/40">
                 Already have an account?
                 <TextLink
                     :href="login()"
-                    class="underline underline-offset-4"
+                    class="text-primary hover:underline ml-1 font-medium"
                     :tabindex="6"
-                    >Log in</TextLink
-                >
+                >Sign in instead</TextLink>
             </div>
         </Form>
     </AuthBase>

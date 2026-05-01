@@ -15,7 +15,8 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue } from '@/components/ui/select';
+    SelectValue
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
@@ -49,7 +50,8 @@ const form = useForm({
     nama_pengeluaran: '',
     nominal: 0,
     notes: '',
-    add_another: false });
+    add_another: false
+});
 
 const submit = (addAnother = false) => {
     form.add_another = addAnother;
@@ -59,7 +61,8 @@ const submit = (addAnother = false) => {
                 form.reset('nama_pengeluaran', 'nominal', 'notes');
                 document.getElementById('nama_pengeluaran')?.focus();
             }
-        } });
+        }
+    });
 };
 </script>
 
@@ -76,7 +79,8 @@ const submit = (addAnother = false) => {
             </Link>
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-slate-900">Catat Biaya Operasional</h1>
-                <p class="text-sm text-slate-400 mt-0.5">Masukkan rincian pengeluaran operasional warung non-bahan baku.</p>
+                <p class="text-sm text-slate-400 mt-0.5">Masukkan rincian pengeluaran operasional valee non-bahan baku.
+                </p>
             </div>
         </div>
 
@@ -113,14 +117,9 @@ const submit = (addAnother = false) => {
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
-                            <CreatableSelect 
-                                v-model="form.jenis_pengeluaran" 
-                                :options="expenseTypes" 
-                                label="Jenis Pengeluaran (Label)"
-                                placeholder="Pilih atau Ketik Baru..." 
-                                :error="form.errors.jenis_pengeluaran"
-                                @create="handleCreateType"
-                            />
+                            <CreatableSelect v-model="form.jenis_pengeluaran" :options="expenseTypes"
+                                label="Jenis Pengeluaran (Label)" placeholder="Pilih atau Ketik Baru..."
+                                :error="form.errors.jenis_pengeluaran" @create="handleCreateType" />
                         </div>
                         <div class="flex flex-col gap-2">
                             <Label for="nominal">Nominal (Rp)</Label>

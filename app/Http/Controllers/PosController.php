@@ -19,6 +19,13 @@ class PosController extends Controller
     public function index(Request $request): Response
     {
         $user = auth()->user();
+        $businessType = $user->company?->business_type;
+
+        // Redirect service-based businesses to the Service POS
+        if ($businessType === 'laundry') {
+            return redirect()->route('service-orders.create');
+        }
+
         $isSuperAdmin = $user->hasRole('superadmin');
 
         $warehouseId = $request->input('warehouse_id');

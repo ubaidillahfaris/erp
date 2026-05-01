@@ -50,7 +50,9 @@ class DynamicMenuMiddleware
         // 3. Special Case: Home / Dashboard redirect
         if ($currentRouteName === 'dashboard' || $request->is('/')) {
             if (! $user->can('view dashboard')) {
-                return redirect()->route('pos.index');
+                $businessType = $user->company?->business_type;
+                $defaultRoute = config("business_presets.{$businessType}.default_route", 'pos.index');
+                return redirect()->route($defaultRoute);
             }
         }
 
@@ -65,7 +67,9 @@ class DynamicMenuMiddleware
         // For Inertia, we can redirect to a custom 403 page or the first allowed menu
         // But for now, let's just redirect to POS if they have access, or abort.
         if ($user->can('make sales')) {
-            return redirect()->route('pos.index')->with('error', 'Anda tidak memiliki akses ke halaman tersebut.');
+            $businessType = $user->company?->business_type;
+            $defaultRoute = config("business_presets.{$businessType}.default_route", 'pos.index');
+            return redirect()->route($defaultRoute)->with('error', 'Anda tidak memiliki akses ke halaman tersebut.');
         }
 
         abort(403, 'Akses ditolak.');

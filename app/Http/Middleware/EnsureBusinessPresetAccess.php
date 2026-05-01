@@ -36,13 +36,21 @@ class EnsureBusinessPresetAccess
             return $next($request);
         }
 
-        // 1. Get the preset for this business type
+        $businessType = strtolower($company->business_type);
         $presets = config('business_presets');
-        $preset = $presets[$company->business_type] ?? null;
+        $preset = $presets[$businessType] ?? null;
 
         // If no preset defined for this business type, allow everything (fail-safe)
         if (! $preset) {
             return $next($request);
+        }
+
+        // 1. Handle "POS" redirection for different business types
+        // If a business has a specific default_route (like Service POS), redirect them there if they try to access the standard POS.
+        if ($currentRouteName === 'pos.index') {
+            if (isset($preset['default_route']) && $preset['default_route'] !== 'pos.index') {
+                return redirect()->route($preset['default_route']);
+            }
         }
 
         // 2. Find the menu matching this route name to identify its module
@@ -58,7 +66,7 @@ class EnsureBusinessPresetAccess
 
         // 3. Check Module-level access
         if (! array_key_exists($moduleSlug, $allowedModules)) {
-            return $this->handleUnauthorized($request);
+            return $this->handleUnauthorized($request, $preset);
         }
 
         $moduleAccess = $allowedModules[$moduleSlug];
@@ -77,16 +85,24 @@ class EnsureBusinessPresetAccess
             }
         }
 
-        return $this->handleUnauthorized($request);
+        return $this->handleUnauthorized($request, $preset);
     }
 
     /**
      * Handle unauthorized access.
      */
-    protected function handleUnauthorized(Request $request)
+    protected function handleUnauthorized(Request $request, $preset = null)
     {
+        $defaultRoute = $preset['default_route'] ?? 'dashboard';
+        $currentRouteName = Route::currentRouteName();
+
         if ($request->header('X-Inertia')) {
-            return redirect()->route('dashboard')->with('error', 'Fitur ini tidak tersedia untuk tipe bisnis Anda.');
+            // Prevent redirect loop
+            if ($currentRouteName === $defaultRoute) {
+                abort(403, 'Fitur ini tidak tersedia untuk tipe bisnis Anda.');
+            }
+
+            return redirect()->route($defaultRoute)->with('error', 'Fitur ini tidak tersedia untuk tipe bisnis Anda.');
         }
 
         abort(403, 'Fitur ini tidak tersedia untuk tipe bisnis Anda.');

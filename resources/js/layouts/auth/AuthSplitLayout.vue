@@ -35,7 +35,7 @@ const props = defineProps<{
                     &ldquo;Transformasi digital bukan lagi pilihan, tapi keharusan untuk UMKM yang ingin naik
                     kelas.&rdquo;
                 </p>
-                <footer class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">— Tim Warung
+                <footer class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">— Tim valee
                     ERP</footer>
             </blockquote>
         </div>

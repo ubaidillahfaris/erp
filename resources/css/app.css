@@ -169,3 +169,19 @@
 @utility btn-secondary {
     @apply bg-slate-200 border-slate-200 text-slate-700 hover:bg-slate-300 transition-colors;
 }
+
+@utility bg-gradient-coral {
+    background: linear-gradient(135deg, hsl(25 90% 55%), hsl(15 90% 60%));
+}
+
+@utility shadow-coral {
+    box-shadow: 0 10px 30px -10px hsla(25, 90%, 55%, 0.5);
+}
+
+@utility bg-ink {
+    background-color: hsl(222 47% 4%);
+}
+
+@utility text-ink-foreground {
+    color: hsl(210 40% 98%);
+}

@@ -80,7 +80,7 @@ const submit = (addAnother = false) => {
             </Link>
             <div>
                 <h1 class="text-xl font-bold tracking-tight text-slate-900">Tambah Product Units</h1>
-                <p class="text-muted-foreground">Tambahkan satuan barang baru untuk sistem warung (misal: Kilogram,
+                <p class="text-muted-foreground">Tambahkan satuan barang baru untuk sistem valee (misal: Kilogram,
                     Pcs).</p>
             </div>
         </div>
@@ -120,7 +120,8 @@ const submit = (addAnother = false) => {
                         <div class="flex items-center justify-between">
                             <div class="space-y-1">
                                 <h3 class="text-lg font-medium">Unit Persamaan (Konversi)</h3>
-                                <p class="text-sm text-muted-foreground">Misal: 1 {{ form.symbol || 'Unit' }} = 12 Pcs</p>
+                                <p class="text-sm text-muted-foreground">Misal: 1 {{ form.symbol || 'Unit' }} = 12 Pcs
+                                </p>
                             </div>
                             <Button type="button" variant="outline" size="sm" @click="addConversion">
                                 <Plus class="mr-2 h-4 w-4" />
@@ -147,16 +148,12 @@ const submit = (addAnother = false) => {
                                             <Input type="number" step="0.0001" v-model="conv.rasio" required />
                                         </TableCell>
                                         <TableCell>
-                                            <CreatableSelect 
-                                                v-model="conv.to_unit_id" 
-                                                :options="allUnits" 
-                                                hide-label 
-                                                hide-error
-                                                placeholder="Pilih Unit"
-                                            />
+                                            <CreatableSelect v-model="conv.to_unit_id" :options="allUnits" hide-label
+                                                hide-error placeholder="Pilih Unit" />
                                         </TableCell>
                                         <TableCell>
-                                            <Button type="button" variant="ghost" size="icon" @click="removeConversion(idx)">
+                                            <Button type="button" variant="ghost" size="icon"
+                                                @click="removeConversion(idx)">
                                                 <Trash2 class="h-4 w-4 text-destructive" />
                                             </Button>
                                         </TableCell>
@@ -165,7 +162,8 @@ const submit = (addAnother = false) => {
                             </Table>
                         </div>
                         <div v-else class="text-center py-6 border border-dashed rounded-xl bg-muted/30">
-                            <p class="text-sm text-muted-foreground italic">Belum ada konversi satuan yang didefinisikan.</p>
+                            <p class="text-sm text-muted-foreground italic">Belum ada konversi satuan yang
+                                didefinisikan.</p>
                         </div>
                         <InputError :message="form.errors.conversions" />
                     </div>

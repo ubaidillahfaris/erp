@@ -1,89 +1,88 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/AuthLayout.vue';
+import AuthBase from '@/layouts/AuthLayout.vue';
 import { update } from '@/routes/password';
 
 const props = defineProps<{
     token: string;
     email: string;
 }>();
-
-const inputEmail = ref(props.email);
 </script>
 
 <template>
-    <AuthLayout
+    <AuthBase
         title="Reset password"
-        description="Please enter your new password below"
+        description="Please enter your new password below to reset your account access."
     >
         <Head title="Reset password" />
 
         <Form
             v-bind="update()"
-            :transform="(data) => ({ ...data, token, email })"
+            :defaults="{ token, email }"
             :reset-on-success="['password', 'password_confirmation']"
             v-slot="{ errors, processing }"
+            class="flex flex-col gap-6"
         >
-            <div class="grid gap-6">
+            <div class="grid gap-5">
                 <div class="grid gap-2">
-                    <Label for="email">Email</Label>
+                    <Label for="email" class="text-white/70">Email address</Label>
                     <Input
                         id="email"
                         type="email"
                         name="email"
+                        required
                         autocomplete="email"
-                        v-model="inputEmail"
-                        class="mt-1 block w-full"
-                        readonly
+                        placeholder="name@company.com"
+                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
                     />
-                    <InputError :message="errors.email" class="mt-2" />
+                    <InputError :message="errors.email" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        name="password"
-                        autocomplete="new-password"
-                        class="mt-1 block w-full"
-                        autofocus
-                        placeholder="Password"
-                    />
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="grid gap-2">
+                        <Label for="password" class="text-white/70">New Password</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            name="password"
+                            required
+                            autofocus
+                            autocomplete="new-password"
+                            placeholder="••••••••"
+                            class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
+                        />
+                    </div>
+                    <div class="grid gap-2">
+                        <Label for="password_confirmation" class="text-white/70">Confirm</Label>
+                        <Input
+                            id="password_confirmation"
+                            type="password"
+                            name="password_confirmation"
+                            required
+                            autocomplete="new-password"
+                            placeholder="••••••••"
+                            class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
+                        />
+                    </div>
+                </div>
+                <div class="col-span-2">
                     <InputError :message="errors.password" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">
-                        Confirm Password
-                    </Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        autocomplete="new-password"
-                        class="mt-1 block w-full"
-                        placeholder="Confirm password"
-                    />
-                    <InputError :message="errors.password_confirmation" />
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="mt-2 w-full bg-primary text-white hover:bg-primary/90 shadow-coral h-10 font-bold rounded-xl transition-all active:scale-95"
                     :disabled="processing"
-                    data-test="reset-password-button"
                 >
                     <Spinner v-if="processing" />
-                    Reset password
+                    Reset Password
                 </Button>
             </div>
         </Form>
-    </AuthLayout>
+    </AuthBase>
 </template>

@@ -10,6 +10,7 @@ import AuthBase from '@/layouts/AuthLayout.vue';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import { Github, Chrome } from 'lucide-vue-next';
 
 defineProps<{
     status?: string;
@@ -24,14 +25,14 @@ const loginWithSocial = (provider: string) => {
 
 <template>
     <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
+        title="Welcome back"
+        description="Enter your credentials to access your account"
     >
-        <Head title="Log in" />
+        <Head :title="`Login - ${$page.props.name}`" />
 
         <div
             v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
+            class="mb-4 text-center text-sm font-medium text-green-400 bg-green-500/10 py-2 rounded-lg border border-green-500/20"
         >
             {{ status }}
         </div>
@@ -42,9 +43,9 @@ const loginWithSocial = (provider: string) => {
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
-            <div class="grid gap-6">
+            <div class="grid gap-5">
                 <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
+                    <Label for="email" class="text-white/70">Email address</Label>
                     <Input
                         id="email"
                         type="email"
@@ -53,18 +54,19 @@ const loginWithSocial = (provider: string) => {
                         autofocus
                         :tabindex="1"
                         autocomplete="email"
-                        placeholder="email@example.com"
+                        placeholder="name@company.com"
+                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
                     />
                     <InputError :message="errors.email" />
                 </div>
 
                 <div class="grid gap-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
+                        <Label for="password" class="text-white/70">Password</Label>
                         <TextLink
                             v-if="canResetPassword"
                             :href="request()"
-                            class="text-sm"
+                            class="text-xs text-primary hover:text-primary/80 transition-colors"
                             :tabindex="5"
                         >
                             Forgot password?
@@ -77,70 +79,68 @@ const loginWithSocial = (provider: string) => {
                         required
                         :tabindex="2"
                         autocomplete="current-password"
-                        placeholder="Password"
+                        placeholder="••••••••"
+                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
                     />
                     <InputError :message="errors.password" />
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <input
-                            type="checkbox"
-                            id="remember"
-                            name="remember"
-                            :tabindex="3"
-                            class="h-4 w-4 rounded border-slate-200 bg-background ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 accent-primary cursor-pointer"
-                        />
-                        <Label for="remember" class="cursor-pointer">Remember me</Label>
-                    </div>
+                <div class="flex items-center space-x-3">
+                    <input
+                        type="checkbox"
+                        id="remember"
+                        name="remember"
+                        :tabindex="3"
+                        class="h-4 w-4 rounded border-white/20 bg-white/5 text-primary focus:ring-offset-0 focus:ring-1 focus:ring-primary/50 cursor-pointer"
+                    />
+                    <Label for="remember" class="text-xs text-white/50 cursor-pointer font-normal">Keep me logged in</Label>
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="mt-2 w-full bg-primary text-white hover:bg-primary/90 shadow-coral h-10 font-bold rounded-xl transition-all active:scale-95"
                     :tabindex="4"
                     :disabled="processing"
-                    data-test="login-button"
                 >
                     <Spinner v-if="processing" />
-                    Log in
+                    Sign in
                 </Button>
 
-                <div class="relative mt-6">
+                <div class="relative mt-2">
                     <div class="absolute inset-0 flex items-center">
-                        <span class="w-full border-t" />
+                        <span class="w-full border-t border-white/5" />
                     </div>
-                    <div class="relative flex justify-center text-xs uppercase">
-                        <span class="bg-background px-2 text-muted-foreground">Or continue with</span>
+                    <div class="relative flex justify-center text-[10px] uppercase tracking-widest">
+                        <span class="bg-[hsl(220_18%_12%)] px-2 text-white/30">Or continue with</span>
                     </div>
                 </div>
 
-                <div class="mt-6 grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-3">
                     <Button
                         variant="outline"
                         type="button"
-                        class="w-full hover:bg-slate-50 transition-colors"
+                        class="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-white/20 transition-all rounded-xl h-10"
                         @click="loginWithSocial('google')"
                     >
-                        Google
+                        <Chrome class="mr-2 h-4 w-4 text-white/60" /> Google
                     </Button>
                     <Button
                         variant="outline"
                         type="button"
-                        class="w-full hover:bg-slate-50 transition-colors"
+                        class="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-white/20 transition-all rounded-xl h-10"
                         @click="loginWithSocial('facebook')"
                     >
-                        Facebook
+                        <Github class="mr-2 h-4 w-4 text-white/60" /> Github
                     </Button>
                 </div>
             </div>
 
             <div
-                class="text-center text-sm text-muted-foreground"
+                class="text-center text-sm text-white/40"
                 v-if="canRegister"
             >
                 Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
+                <TextLink :href="register()" class="text-primary hover:underline ml-1" :tabindex="5">Create one for free</TextLink>
             </div>
         </Form>
     </AuthBase>

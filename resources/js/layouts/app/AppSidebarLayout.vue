@@ -68,7 +68,7 @@ onMounted(() => {
                         <span class="text-sm font-semibold tracking-wide text-primary uppercase">Initializing
                             Systems</span>
                     </div>
-                    <p class="text-xs text-muted-foreground font-medium">Menyiapkan Dashboard Martous...</p>
+                    <p class="text-xs text-muted-foreground font-medium">Menyiapkan Dashboard {{ $page.props.name }}...</p>
                 </div>
             </div>
         </div>

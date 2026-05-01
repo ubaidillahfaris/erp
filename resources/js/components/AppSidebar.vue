@@ -75,7 +75,7 @@ const groupedMenus = computed(() => {
                 class="flex items-center gap-3 group transition-transform active:scale-95 group-data-[collapsible=icon]:hidden">
                 <div
                     class="h-9 w-9 shrink-0 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-none ">
-                    <Store class="h-5 w-5" />
+                    <AppLogoIcon class="h-5 w-5" />
                 </div>
                 <span
                     class="text-xl font-black tracking-tighter text-slate-900 group-data-[collapsible=icon]:hidden dark:text-white">

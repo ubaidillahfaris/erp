@@ -61,6 +61,7 @@ return [
     'warkop' => [
         'name' => 'Warkop / Cafe',
         'modules' => [
+            'platform' => '*',  // Dashboard
             'transaksi' => '*',  // POS / Ordering
             'inventory' => '*',  // Ingredients
             'production' => '*',  // BOM / Recipe
@@ -73,6 +74,50 @@ return [
             'kitchen_display' => true,
         ],
         'default_route' => 'pos.index',
+    ],
+
+    'service' => [
+        'name' => 'Jasa / Service Terminal',
+        'modules' => [
+            'platform' => '*',
+            'transaksi' => [
+                'service-orders.create' => 'Service Terminal',
+                'service-orders.board' => 'Pipeline',
+                'sales.index' => 'History',
+            ],
+            'inventory' => '*', // For spare parts
+            'crm' => '*',
+            'finance' => '*',
+            'report' => '*',
+            'settings' => '*',
+        ],
+        'features' => [
+            'status_tracking' => true,
+            'staff_assignment' => true,
+        ],
+        'default_route' => 'service-orders.create',
+    ],
+
+    'bengkel' => [
+        'name' => 'Bengkel / Workshop',
+        'modules' => [
+            'platform' => '*',
+            'transaksi' => [
+                'service-orders.create' => 'Bengkel POS',
+                'service-orders.board' => 'Work Order',
+                'sales.index' => 'Riwayat',
+            ],
+            'inventory' => '*', // Spare parts are crucial
+            'purchasing' => '*',
+            'finance' => '*',
+            'report' => '*',
+            'settings' => '*',
+        ],
+        'features' => [
+            'spare_part_integration' => true,
+            'vehicle_tracking' => true,
+        ],
+        'default_route' => 'service-orders.create',
     ],
 
     'other' => [
