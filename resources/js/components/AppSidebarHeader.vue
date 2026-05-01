@@ -29,7 +29,7 @@ const user = computed(() => (page.props.auth as any).user);
             <Search
                 class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
             <input type="text" placeholder="Search or type a command"
-                class="w-full h-10 pl-10 pr-4 text-[13px] bg-secondary/50 border-transparent rounded-lg focus:bg-white focus:border-accent/20 focus:ring-4 focus:ring-accent/5 transition-all duration-200 placeholder:text-muted-foreground font-medium" />
+                class="w-full h-10 pl-10 pr-4 text-[13px] bg-secondary/50 border-transparent rounded-lg focus:bg-white focus:border-accent/20 focus:ring-4 focus:ring-accent/5 transition-all duration-200 placeholder:text-muted-foreground placeholder:font-normal font-medium" />
         </div>
     </div>
 

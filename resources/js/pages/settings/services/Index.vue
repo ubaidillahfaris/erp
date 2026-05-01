@@ -135,10 +135,10 @@ const formatCount = (count: number, label: string) => {
 
             <template #cell(identity)="{ row }">
                 <div class="flex flex-col gap-1">
-                    <span class="text-[11px] font-mono font-bold text-foreground/80 tracking-tight bg-slate-100 px-1.5 py-0.5 rounded w-fit">
+                    <span class="text-[11px] font-mono font-semibold text-foreground/80 tracking-tight bg-slate-100 px-1.5 py-0.5 rounded w-fit">
                         #{{ row.code }}
                     </span>
-                    <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-0.5">
+                    <span class="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest pl-0.5">
                         {{ row.service_category }}
                     </span>
                 </div>
@@ -150,8 +150,8 @@ const formatCount = (count: number, label: string) => {
                         <Layers class="h-4 w-4" />
                     </div>
                     <div class="min-w-0 pr-4">
-                        <p class="text-[13px] font-bold text-foreground truncate max-w-[300px] leading-none">{{ row.name }}</p>
-                        <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mt-1.5 opacity-70">
+                        <p class="text-[13px] font-semibold text-foreground truncate max-w-[300px] leading-none">{{ row.name }}</p>
+                        <p class="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mt-1.5 opacity-70">
                             {{ row.description || 'Tidak ada deskripsi' }}
                         </p>
                     </div>
@@ -160,17 +160,17 @@ const formatCount = (count: number, label: string) => {
 
             <template #cell(variants)="{ row }">
                 <div class="flex flex-col items-center gap-1">
-                    <span class="text-[13px] font-bold text-foreground tabular-nums leading-none">
+                    <span class="text-[13px] font-semibold text-foreground tabular-nums leading-none">
                         {{ row.service_types_count }}
                     </span>
-                    <span class="text-[10px] font-bold uppercase opacity-60 leading-none tracking-widest">Varian</span>
+                    <span class="text-[10px] font-semibold uppercase opacity-60 leading-none tracking-widest">Varian</span>
                 </div>
             </template>
 
             <template #cell(status)="{ row }">
                 <Badge 
                     :class="[
-                        'text-[10px] uppercase font-bold px-1.5 h-5',
+                        'text-[10px] uppercase font-semibold px-1.5 h-5',
                         row.is_active 
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-100' 
                             : 'bg-slate-100 text-slate-400 border-slate-200'
@@ -203,7 +203,7 @@ const formatCount = (count: number, label: string) => {
             <template #empty>
                 <div class="flex flex-col items-center gap-3 opacity-20 py-12">
                     <PackageOpen class="h-10 w-10 text-muted-foreground" />
-                    <p class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Katalog Jasa Kosong</p>
+                    <p class="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Katalog Jasa Kosong</p>
                 </div>
             </template>
         </DataTable>

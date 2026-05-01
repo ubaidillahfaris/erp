@@ -101,7 +101,7 @@ const handleOpenChange = (val: boolean) => {
             <Loader2 v-if="loading" class="h-3.5 w-3.5 shrink-0 text-muted-foreground animate-spin" />
             <Search v-else class="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <input v-model="searchTerm" :placeholder="searchPlaceholder"
-                class="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
+                class="flex h-10 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground placeholder:font-normal"
                 @keydown.enter.prevent @keydown.escape="open = false" />
         </div>
 

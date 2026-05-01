@@ -127,7 +127,7 @@ const handleVoid = () => {
         <template #actions>
             <div class="flex items-center gap-2">
                 <Badge 
-                    class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[11px] uppercase font-bold px-3 h-8 shadow-sm"
+                    class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[11px] uppercase font-semibold px-3 h-8 shadow-sm"
                     :class="{
                         'bg-amber-50 text-amber-600 border-amber-100': !order.current_status?.is_final,
                         'bg-slate-100 text-slate-500 border-slate-200': !order.current_status
@@ -140,14 +140,14 @@ const handleVoid = () => {
 
                 <Dialog v-model:open="isVoidDialogOpen">
                     <DialogTrigger as-child>
-                        <Button variant="outline" class="h-8 text-[10px] font-bold uppercase tracking-widest text-destructive hover:bg-destructive/5 hover:text-destructive border-destructive/20">
+                        <Button variant="outline" class="h-8 text-[10px] font-semibold uppercase tracking-widest text-destructive hover:bg-destructive/5 hover:text-destructive border-destructive/20">
                             <Ban class="h-3 w-3 mr-2" /> Batalkan Order
                         </Button>
                     </DialogTrigger>
                     <DialogContent class="rounded-3xl border-none shadow-2xl">
                         <form @submit.prevent="handleVoid">
                             <DialogHeader>
-                                <DialogTitle class="flex items-center gap-2 text-destructive font-black uppercase tracking-tight">
+                                <DialogTitle class="flex items-center gap-2 text-destructive font-semibold uppercase tracking-tight">
                                     <AlertCircle class="h-5 w-5" /> Batalkan Order
                                 </DialogTitle>
                                 <DialogDescription class="pt-2">
@@ -156,12 +156,12 @@ const handleVoid = () => {
                             </DialogHeader>
                             <div class="py-6 space-y-4">
                                 <div class="space-y-2">
-                                    <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Alasan Pembatalan</Label>
+                                    <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400 ml-1">Alasan Pembatalan</Label>
                                     <Textarea v-model="voidForm.reason" placeholder="Ketik alasan pembatalan..." class="rounded-xl border-slate-200 focus:ring-destructive/10" required />
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button type="submit" variant="destructive" :disabled="voidForm.processing" class="w-full h-12 font-bold uppercase tracking-widest">Konfirmasi Pembatalan</Button>
+                                <Button type="submit" variant="destructive" :disabled="voidForm.processing" class="w-full h-12 font-semibold uppercase tracking-widest">Konfirmasi Pembatalan</Button>
                             </DialogFooter>
                         </form>
                     </DialogContent>
@@ -179,12 +179,12 @@ const handleVoid = () => {
                     <Play class="h-5 w-5 fill-current" />
                 </div>
                 <div class="flex flex-col gap-1">
-                    <p class="text-sm font-bold text-slate-900 uppercase tracking-tight">Langkah Selanjutnya</p>
+                    <p class="text-sm font-semibold text-slate-900 uppercase tracking-tight">Langkah Selanjutnya</p>
                     <p class="text-[11px] text-slate-500 font-medium uppercase tracking-widest">Update progress servis ke tahap berikutnya:</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <Button v-for="s in next_statuses" :key="s.id" @click="changeStatus(s.status_code)" variant="outline" class="h-10 px-4 rounded-xl border-primary/20 text-primary hover:bg-primary hover:text-white font-bold gap-2 transition-all">
+                <Button v-for="s in next_statuses" :key="s.id" @click="changeStatus(s.status_code)" variant="outline" class="h-10 px-4 rounded-xl border-primary/20 text-primary hover:bg-primary hover:text-white font-semibold gap-2 transition-all">
                     {{ s.status_name }} <ChevronRight class="h-3.5 w-3.5" />
                 </Button>
             </div>
@@ -197,24 +197,24 @@ const handleVoid = () => {
                 <!-- Transaction Info -->
                 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                     <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                        <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <h3 class="text-[10px] font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                             <Receipt class="h-3.5 w-3.5" /> Ringkasan Order
                         </h3>
                     </div>
                     <div class="p-6 space-y-5">
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nomor Order</label>
-                            <p class="text-sm font-bold text-slate-900 font-mono">#{{ order.order_number }}</p>
+                            <label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Nomor Order</label>
+                            <p class="text-sm font-semibold text-slate-900 font-mono">#{{ order.order_number }}</p>
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Layanan Utama</label>
-                            <p class="text-sm font-bold text-slate-900">{{ order.service?.name }}</p>
+                            <label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Layanan Utama</label>
+                            <p class="text-sm font-semibold text-slate-900">{{ order.service?.name }}</p>
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Metode Bayar</label>
+                            <label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Metode Bayar</label>
                             <div class="flex items-center gap-2">
                                 <CreditCard class="h-3.5 w-3.5 text-primary" />
-                                <span class="text-sm font-bold text-slate-900 uppercase tracking-tight">{{ order.payment_method }}</span>
+                                <span class="text-sm font-semibold text-slate-900 uppercase tracking-tight">{{ order.payment_method }}</span>
                             </div>
                         </div>
                     </div>
@@ -223,7 +223,7 @@ const handleVoid = () => {
                 <!-- Customer Details -->
                 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                     <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/50">
-                        <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <h3 class="text-[10px] font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                             <User class="h-3.5 w-3.5" /> Pelanggan
                         </h3>
                     </div>
@@ -233,20 +233,20 @@ const handleVoid = () => {
                                 <User class="h-5 w-5 text-slate-400" />
                             </div>
                             <div class="flex flex-col">
-                                <p class="text-sm font-bold text-slate-900">{{ order.customer.name }}</p>
-                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-tight">{{ order.customer.phone || 'Member' }}</p>
+                                <p class="text-sm font-semibold text-slate-900">{{ order.customer.name }}</p>
+                                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-tight">{{ order.customer.phone || 'Member' }}</p>
                             </div>
                         </div>
                         <div v-else class="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-dashed border-slate-200">
                             <User class="h-5 w-5 text-slate-300" />
-                            <p class="text-xs font-bold uppercase tracking-widest text-slate-400 italic">Anonim / Walk-in</p>
+                            <p class="text-xs font-semibold uppercase tracking-widest text-slate-400 italic">Anonim / Walk-in</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Notes -->
                 <div v-if="order.notes" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2">Catatan Order</label>
+                    <label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400 block mb-2">Catatan Order</label>
                     <p class="text-xs text-slate-600 leading-relaxed font-medium italic">"{{ order.notes }}"</p>
                 </div>
             </div>
@@ -255,59 +255,59 @@ const handleVoid = () => {
             <div class="lg:col-span-2 flex flex-col gap-6">
                 <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                     <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                        <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                        <h3 class="text-[10px] font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-2">
                             <Layers class="h-3.5 w-3.5" /> Rincian Layanan
                         </h3>
-                        <Badge variant="outline" class="text-[10px] font-mono font-bold bg-white border-slate-200">{{ order.items.length }} Varian</Badge>
+                        <Badge variant="outline" class="text-[10px] font-mono font-semibold bg-white border-slate-200">{{ order.items.length }} Varian</Badge>
                     </div>
                     
                     <Table>
                         <TableHeader>
                             <TableRow class="bg-slate-50/30">
-                                <TableHead class="pl-6 w-full uppercase text-[10px] font-black tracking-widest">Varian Jasa</TableHead>
-                                <TableHead class="text-center px-4 uppercase text-[10px] font-black tracking-widest">Qty / Berat</TableHead>
-                                <TableHead class="text-right px-4 uppercase text-[10px] font-black tracking-widest">Harga</TableHead>
-                                <TableHead class="text-right pr-6 uppercase text-[10px] font-black tracking-widest">Subtotal</TableHead>
+                                <TableHead class="pl-6 w-full uppercase text-[10px] font-semibold tracking-widest">Varian Jasa</TableHead>
+                                <TableHead class="text-center px-4 uppercase text-[10px] font-semibold tracking-widest">Qty / Berat</TableHead>
+                                <TableHead class="text-right px-4 uppercase text-[10px] font-semibold tracking-widest">Harga</TableHead>
+                                <TableHead class="text-right pr-6 uppercase text-[10px] font-semibold tracking-widest">Subtotal</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             <TableRow v-for="item in order.items" :key="item.id" class="border-slate-50">
                                 <TableCell class="pl-6 py-4">
                                     <div class="flex flex-col gap-0.5">
-                                        <p class="text-[13px] font-bold text-slate-900">{{ item.service_type.name }}</p>
-                                        <p class="text-[10px] text-primary uppercase tracking-tighter font-black">{{ item.service_type.code }}</p>
+                                        <p class="text-[13px] font-semibold text-slate-900">{{ item.service_type.name }}</p>
+                                        <p class="text-[10px] text-primary uppercase tracking-tighter font-semibold">{{ item.service_type.code }}</p>
                                     </div>
                                 </TableCell>
-                                <TableCell class="text-center font-bold text-slate-900 text-[13px] tabular-nums">
-                                    {{ item.qty }} <span class="text-[10px] font-bold text-slate-400 uppercase ml-1">{{ item.unit_name || 'Unit' }}</span>
+                                <TableCell class="text-center font-semibold text-slate-900 text-[13px] tabular-nums">
+                                    {{ item.qty }} <span class="text-[10px] font-semibold text-slate-400 uppercase ml-1">{{ item.unit_name || 'Unit' }}</span>
                                 </TableCell>
-                                <TableCell class="text-right text-[12px] font-bold text-slate-600 tabular-nums">{{ formatCurrency(item.unit_price) }}</TableCell>
-                                <TableCell class="text-right pr-6 font-bold tabular-nums text-slate-900">{{ formatCurrency(item.subtotal) }}</TableCell>
+                                <TableCell class="text-right text-[12px] font-semibold text-slate-600 tabular-nums">{{ formatCurrency(item.unit_price) }}</TableCell>
+                                <TableCell class="text-right pr-6 font-semibold tabular-nums text-slate-900">{{ formatCurrency(item.subtotal) }}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
 
                     <div class="p-8 bg-slate-50/50 border-t border-slate-100 flex flex-col gap-3">
                         <div class="flex justify-between items-center text-slate-400">
-                            <span class="text-[10px] font-black uppercase tracking-widest">Subtotal Belanja</span>
-                            <span class="text-sm font-bold tabular-nums">{{ formatCurrency(order.total_amount) }}</span>
+                            <span class="text-[10px] font-semibold uppercase tracking-widest">Subtotal Belanja</span>
+                            <span class="text-sm font-semibold tabular-nums">{{ formatCurrency(order.total_amount) }}</span>
                         </div>
                         <div class="h-px bg-slate-200 mt-2 mb-1"></div>
                         <div class="flex justify-between items-center">
-                            <span class="text-xs font-black uppercase tracking-[0.2em] text-slate-900">Total Tagihan</span>
-                            <span class="text-3xl font-black text-slate-900 tabular-nums tracking-tighter">
+                            <span class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-900">Total Tagihan</span>
+                            <span class="text-3xl font-semibold text-slate-900 tabular-nums tracking-tighter">
                                 {{ formatCurrency(order.total_amount) }}
                             </span>
                         </div>
                         
                         <div class="flex justify-between items-center mt-2 px-4 py-3 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm">
                             <div class="flex flex-col">
-                                <span class="text-[9px] font-black uppercase tracking-widest text-emerald-600 opacity-70">Uang Diterima</span>
-                                <span class="text-sm font-bold text-emerald-700 tabular-nums">{{ formatCurrency(order.received_amount) }}</span>
+                                <span class="text-[9px] font-semibold uppercase tracking-widest text-emerald-600 opacity-70">Uang Diterima</span>
+                                <span class="text-sm font-semibold text-emerald-700 tabular-nums">{{ formatCurrency(order.received_amount) }}</span>
                             </div>
                             <div class="flex flex-col items-end">
-                                <span class="text-[9px] font-black uppercase tracking-widest text-emerald-600 opacity-70">Status Bayar</span>
-                                <span class="text-sm font-bold text-emerald-700 uppercase tracking-widest">Lunas</span>
+                                <span class="text-[9px] font-semibold uppercase tracking-widest text-emerald-600 opacity-70">Status Bayar</span>
+                                <span class="text-sm font-semibold text-emerald-700 uppercase tracking-widest">Lunas</span>
                             </div>
                         </div>
                     </div>

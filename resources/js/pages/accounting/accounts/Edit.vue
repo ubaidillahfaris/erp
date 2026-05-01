@@ -51,7 +51,7 @@ const submit = () => {
 
 <AppLayout :breadcrumbs="breadcrumbs">
     <div class="px-6 py-8 bg-slate-50 min-h-[calc(100vh-64px)] flex flex-col gap-6 font-sans">
-        
+
         <div class="flex items-center gap-4">
             <Link href="/accounting/accounts">
                 <Button variant="outline" size="icon" class="btn-secondary h-8 w-8 shrink-0">
@@ -63,23 +63,26 @@ const submit = () => {
                     Edit Akun: {{ account.code }}
                     <Lock v-if="isLocked" class="h-4 w-4 text-amber-500" />
                 </h1>
-                <p class="text-sm text-slate-400 mt-0.5">Update parameter akun atau sesuaikan nama komponen keuangan.</p>
+                <p class="text-sm text-slate-400 mt-0.5">Update parameter akun atau sesuaikan nama komponen keuangan.
+                </p>
             </div>
         </div>
 
-        <Card class="border border-slate-200 rounded-xl bg-white shadow-none max-w-3xl">
+        <Card class="border border-slate-200 rounded-xl bg-white shadow-none ">
             <div v-if="isLocked" class="bg-amber-50 px-6 py-3 border-b border-amber-100 flex items-center gap-3">
                 <AlertTriangle class="h-4 w-4 text-amber-600" />
-                <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Hard Guard Active: Mutable Data Blocked</span>
+                <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider">Hard Guard Active: Mutable
+                    Data Blocked</span>
             </div>
 
             <div class="px-6 py-4 border-b border-slate-100">
                 <h3 class="text-sm font-semibold text-slate-900 leading-none">Identitas Akun</h3>
                 <p class="text-xs text-slate-400 mt-1">
-                    {{ isLocked ? 'Beberapa bidang dikunci karena memiliki riwayat jurnal.' : 'Lengkapi detail informasi akun di bawah ini.' }}
+                    {{ isLocked ? 'Beberapa bidang dikunci karena memiliki riwayat jurnal.' : 'Lengkapi detail informasi
+                    akun di bawah ini.' }}
                 </p>
             </div>
-            
+
             <div class="p-6">
                 <form @submit.prevent="submit" class="flex flex-col gap-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -87,12 +90,8 @@ const submit = () => {
                         <div class="flex flex-col gap-2">
                             <Label for="code">Kode Akun</Label>
                             <div class="relative">
-                                <Input 
-                                    id="code" 
-                                    v-model="form.code" 
-                                    :disabled="isLocked"
-                                    class="h-10 bg-white border-slate-200 focus-visible:ring-accent font-mono font-bold disabled:bg-slate-50 disabled:text-slate-400" 
-                                />
+                                <Input id="code" v-model="form.code" :disabled="isLocked"
+                                    class="h-10 bg-white border-slate-200 focus-visible:ring-accent font-mono font-bold disabled:bg-slate-50 disabled:text-slate-400" />
                                 <Lock v-if="isLocked" class="absolute right-3 top-3 h-4 w-4 text-slate-300" />
                             </div>
                             <InputError :message="form.errors.code" />
@@ -102,7 +101,8 @@ const submit = () => {
                         <div class="flex flex-col gap-2">
                             <Label for="type">Tipe Akun</Label>
                             <Select v-model="form.type" :disabled="isLocked">
-                                <SelectTrigger class="h-10 bg-white border-slate-200 disabled:bg-slate-50 disabled:text-slate-400">
+                                <SelectTrigger
+                                    class="h-10 bg-white border-slate-200 disabled:bg-slate-50 disabled:text-slate-400">
                                     <SelectValue placeholder="Pilih Tipe" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -120,11 +120,8 @@ const submit = () => {
                     <!-- Name -->
                     <div class="flex flex-col gap-2">
                         <Label for="name">Nama Akun</Label>
-                        <Input 
-                            id="name" 
-                            v-model="form.name" 
-                            class="h-10 bg-white border-slate-200 focus-visible:ring-accent font-bold" 
-                        />
+                        <Input id="name" v-model="form.name"
+                            class="h-10 bg-white border-slate-200 focus-visible:ring-accent font-bold" />
                         <InputError :message="form.errors.name" />
                     </div>
 
@@ -133,7 +130,8 @@ const submit = () => {
                         <div class="flex flex-col gap-2">
                             <Label for="balance_type">Saldo Normal</Label>
                             <Select v-model="form.balance_type" :disabled="isLocked">
-                                <SelectTrigger class="h-10 bg-white border-slate-200 disabled:bg-slate-50 disabled:text-slate-400">
+                                <SelectTrigger
+                                    class="h-10 bg-white border-slate-200 disabled:bg-slate-50 disabled:text-slate-400">
                                     <SelectValue placeholder="Pilih Saldo" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -147,12 +145,10 @@ const submit = () => {
                         <div class="flex flex-col gap-2">
                             <Label for="is_active">Status Aktif</Label>
                             <div class="flex items-center h-10 px-3 rounded-md border border-slate-200 bg-white">
-                                <Switch 
-                                    id="is_active" 
-                                    :checked="form.is_active" 
-                                    @update:checked="(val: boolean) => form.is_active = val"
-                                />
-                                <span class="ml-3 text-xs font-semibold text-slate-500 italic">{{ form.is_active ? 'Akun Aktif' : 'Nonaktif' }}</span>
+                                <Switch id="is_active" :checked="form.is_active"
+                                    @update:checked="(val: boolean) => form.is_active = val" />
+                                <span class="ml-3 text-xs font-semibold text-slate-500 italic">{{ form.is_active ? 'Akun
+                                    Aktif' : 'Nonaktif' }}</span>
                             </div>
                         </div>
                     </div>
@@ -161,11 +157,8 @@ const submit = () => {
                         <Button as-child variant="ghost" class="h-10 px-6 text-slate-500 font-bold hover:bg-slate-100">
                             <Link href="/accounting/accounts">Cancel</Link>
                         </Button>
-                        <Button 
-                            type="submit" 
-                            :disabled="form.processing"
-                            class="h-10 px-8 bg-accent hover:bg-accent/90 text-white font-bold transition-all gap-2"
-                        >
+                        <Button type="submit" :disabled="form.processing"
+                            class="h-10 px-8 bg-accent hover:bg-accent/90 text-white font-bold transition-all gap-2">
                             <Save class="h-4 w-4" />
                             Simpan Perubahan
                         </Button>

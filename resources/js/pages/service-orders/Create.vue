@@ -114,7 +114,7 @@ const submit = () => {
             <div class="p-6 bg-white border-b border-slate-100 flex flex-col gap-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                        <h1 class="text-xl font-semibold text-slate-900 tracking-tight flex items-center gap-2">
                             <ShoppingBag class="h-5 w-5 text-primary" />
                             Catalog Layanan
                         </h1>
@@ -144,7 +144,7 @@ const submit = () => {
                 
                 <div v-if="filteredProducts.length === 0" class="flex flex-col items-center justify-center py-20 opacity-20">
                     <Info class="h-12 w-12 mb-4" />
-                    <p class="font-bold uppercase tracking-widest text-sm">Layanan tidak ditemukan</p>
+                    <p class="font-semibold uppercase tracking-widest text-sm">Layanan tidak ditemukan</p>
                 </div>
             </div>
         </div>

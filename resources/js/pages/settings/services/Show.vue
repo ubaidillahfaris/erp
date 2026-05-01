@@ -181,12 +181,12 @@ const formatPricingValue = (p: Pricing) => {
                         </Button>
                     </Link>
                     <div>
-                        <h1 class="text-xl font-bold tracking-tight text-slate-900">{{ service.name }}</h1>
-                        <p class="text-sm text-slate-400 mt-0.5 font-medium">Service Builder / SKU: <span class="font-mono font-bold">{{ service.code }}</span></p>
+                        <h1 class="text-xl font-semibold tracking-tight text-slate-900">{{ service.name }}</h1>
+                        <p class="text-sm text-slate-400 mt-0.5 font-medium">Service Builder / SKU: <span class="font-mono font-semibold">{{ service.code }}</span></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <Badge :class="service.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'" class="h-7 px-3 font-bold uppercase text-[10px]">
+                    <Badge :class="service.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'" class="h-7 px-3 font-semibold uppercase text-[10px]">
                         <CheckCircle2 v-if="service.is_active" class="w-3 h-3 mr-1.5" />
                         {{ service.is_active ? 'Aktif' : 'Non-Aktif' }}
                     </Badge>
@@ -201,9 +201,9 @@ const formatPricingValue = (p: Pricing) => {
                         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
                             <div class="flex items-center gap-2">
                                 <Layers class="w-4 h-4 text-primary" />
-                                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Varian & Tipe Layanan</h3>
+                                <h3 class="text-sm font-semibold text-slate-900 uppercase tracking-tight">Varian & Tipe Layanan</h3>
                             </div>
-                            <Button @click="typeOpen = true" variant="outline" size="sm" class="h-8 gap-2 text-[11px] font-bold uppercase tracking-wider">
+                            <Button @click="typeOpen = true" variant="outline" size="sm" class="h-8 gap-2 text-[11px] font-semibold uppercase tracking-wider">
                                 <Plus class="h-3.5 w-3.5" /> Tambah Tipe
                             </Button>
                         </div>
@@ -211,11 +211,11 @@ const formatPricingValue = (p: Pricing) => {
                             <div v-for="type in service.service_types" :key="type.id" class="border border-slate-100 rounded-xl overflow-hidden bg-white">
                                 <div class="px-4 py-3 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                        <Badge variant="outline" class="bg-white font-mono text-[10px] font-bold">{{ type.code }}</Badge>
-                                        <span class="text-sm font-bold text-slate-900">{{ type.name }}</span>
+                                        <Badge variant="outline" class="bg-white font-mono text-[10px] font-semibold">{{ type.code }}</Badge>
+                                        <span class="text-sm font-semibold text-slate-900">{{ type.name }}</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <Button @click="openPricingDialog(type.id)" variant="ghost" size="sm" class="h-7 px-2 text-[10px] font-black uppercase text-primary">
+                                        <Button @click="openPricingDialog(type.id)" variant="ghost" size="sm" class="h-7 px-2 text-[10px] font-semibold uppercase text-primary">
                                             <Plus class="h-3 w-3 mr-1" /> Harga
                                         </Button>
                                         <Button variant="ghost" size="icon" class="h-7 w-7 text-slate-300 hover:text-rose-500">
@@ -232,8 +232,8 @@ const formatPricingValue = (p: Pricing) => {
                                                     <Tag v-else class="h-4 w-4" />
                                                 </div>
                                                 <div>
-                                                    <p class="text-[13px] font-bold text-slate-900 tabular-nums leading-none">{{ formatCurrency(pricing.unit_price) }}</p>
-                                                    <p class="text-[10px] font-bold text-muted-foreground uppercase mt-1">per {{ pricing.unit_name }}</p>
+                                                    <p class="text-[13px] font-semibold text-slate-900 tabular-nums leading-none">{{ formatCurrency(pricing.unit_price) }}</p>
+                                                    <p class="text-[10px] font-semibold text-muted-foreground uppercase mt-1">per {{ pricing.unit_name }}</p>
                                                 </div>
                                             </div>
                                             <button class="h-7 w-7 text-slate-200 group-hover:text-rose-400 transition-colors">
@@ -242,14 +242,14 @@ const formatPricingValue = (p: Pricing) => {
                                         </div>
                                     </div>
                                     <div v-else class="py-6 text-center border border-dashed border-slate-200 rounded-xl">
-                                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest italic">Belum ada aturan harga</p>
+                                        <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest italic">Belum ada aturan harga</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div v-if="service.service_types.length === 0" class="py-12 text-center">
                                 <Layers class="h-10 w-10 text-slate-200 mx-auto mb-3" />
-                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest italic">Belum ada tipe layanan yang dikonfigurasi</p>
+                                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest italic">Belum ada tipe layanan yang dikonfigurasi</p>
                             </div>
                         </div>
                     </Card>
@@ -259,13 +259,13 @@ const formatPricingValue = (p: Pricing) => {
                         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
                             <div class="flex items-center gap-2">
                                 <ListOrdered class="w-4 h-4 text-primary" />
-                                <h3 class="text-sm font-bold text-slate-900 uppercase tracking-tight">Workflow / Alur Status</h3>
+                                <h3 class="text-sm font-semibold text-slate-900 uppercase tracking-tight">Workflow / Alur Status</h3>
                             </div>
                             <div class="flex items-center gap-2">
-                                <Button @click="addStatusRow" variant="outline" size="sm" class="h-8 gap-2 text-[11px] font-bold uppercase tracking-wider">
+                                <Button @click="addStatusRow" variant="outline" size="sm" class="h-8 gap-2 text-[11px] font-semibold uppercase tracking-wider">
                                     <Plus class="h-3.5 w-3.5" /> Status
                                 </Button>
-                                <Button @click="syncStatuses" :disabled="statusForm.processing" primary size="sm" class="h-8 gap-2 text-[11px] font-bold uppercase tracking-wider">
+                                <Button @click="syncStatuses" :disabled="statusForm.processing" primary size="sm" class="h-8 gap-2 text-[11px] font-semibold uppercase tracking-wider">
                                     <Save class="h-3.5 w-3.5" /> Simpan Alur
                                 </Button>
                             </div>
@@ -273,19 +273,19 @@ const formatPricingValue = (p: Pricing) => {
                         <div class="p-6">
                             <div class="space-y-3">
                                 <div v-for="(status, index) in statusForm.statuses" :key="index" class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/50 group">
-                                    <div class="w-6 text-center font-bold text-slate-300 text-[11px]">#{{ index + 1 }}</div>
+                                    <div class="w-6 text-center font-semibold text-slate-300 text-[11px]">#{{ index + 1 }}</div>
                                     <div class="flex-1 grid grid-cols-2 gap-3">
-                                        <Input v-model="status.status_code" placeholder="KODE" class="h-9 text-[11px] font-black uppercase tracking-widest rounded-lg" />
-                                        <Input v-model="status.status_name" placeholder="Nama Status" class="h-9 text-[12px] font-bold rounded-lg" />
+                                        <Input v-model="status.status_code" placeholder="KODE" class="h-9 text-[11px] font-semibold uppercase tracking-widest rounded-lg" />
+                                        <Input v-model="status.status_name" placeholder="Nama Status" class="h-9 text-[12px] font-semibold rounded-lg" />
                                     </div>
                                     <div class="flex items-center gap-4 px-2">
                                         <label class="flex items-center gap-1.5 cursor-pointer">
                                             <input type="checkbox" v-model="status.is_default_start" class="h-3.5 w-3.5 rounded border-slate-200 text-primary" />
-                                            <span class="text-[9px] font-bold uppercase tracking-tight text-slate-500">Mulai</span>
+                                            <span class="text-[9px] font-semibold uppercase tracking-tight text-slate-500">Mulai</span>
                                         </label>
                                         <label class="flex items-center gap-1.5 cursor-pointer">
                                             <input type="checkbox" v-model="status.is_final" class="h-3.5 w-3.5 rounded border-slate-200 text-primary" />
-                                            <span class="text-[9px] font-bold uppercase tracking-tight text-slate-500">Final</span>
+                                            <span class="text-[9px] font-semibold uppercase tracking-tight text-slate-500">Final</span>
                                         </label>
                                     </div>
                                     <Button @click="removeStatusRow(index)" variant="ghost" size="icon" class="h-8 w-8 text-slate-300 hover:text-rose-500">
@@ -294,7 +294,7 @@ const formatPricingValue = (p: Pricing) => {
                                 </div>
                                 <div v-if="statusForm.statuses.length === 0" class="py-12 text-center">
                                     <Clock class="h-10 w-10 text-slate-200 mx-auto mb-3" />
-                                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest italic">Belum ada alur kerja status</p>
+                                    <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest italic">Belum ada alur kerja status</p>
                                 </div>
                             </div>
                         </div>
@@ -307,28 +307,28 @@ const formatPricingValue = (p: Pricing) => {
                         <div class="px-6 py-4 border-b border-slate-100 bg-white">
                             <div class="flex items-center gap-2">
                                 <Tag class="w-4 h-4 text-primary" />
-                                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Informasi Utama</h3>
+                                <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Informasi Utama</h3>
                             </div>
                         </div>
                         <Table>
                             <TableBody>
                                 <TableRow>
                                     <TableCell class="bg-slate-50/50 w-1/2 font-medium text-slate-500 text-[11px] uppercase tracking-tight">ID Jasa / SKU</TableCell>
-                                    <TableCell class="font-mono font-bold text-[12px] uppercase">{{ service.code }}</TableCell>
+                                    <TableCell class="font-mono font-semibold text-[12px] uppercase">{{ service.code }}</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell class="bg-slate-50/50 font-medium text-slate-500 text-[11px] uppercase tracking-tight">Kategori</TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" class="font-bold py-0 h-5 text-[10px]">{{ service.service_category }}</Badge>
+                                        <Badge variant="outline" class="font-semibold py-0 h-5 text-[10px]">{{ service.service_category }}</Badge>
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell class="bg-slate-50/50 font-medium text-slate-500 text-[11px] uppercase tracking-tight">Total Tipe</TableCell>
-                                    <TableCell class="font-bold tabular-nums">{{ service.service_types.length }} Tipe</TableCell>
+                                    <TableCell class="font-semibold tabular-nums">{{ service.service_types.length }} Tipe</TableCell>
                                 </TableRow>
                                 <TableRow>
                                     <TableCell class="bg-slate-50/50 font-medium text-slate-500 text-[11px] uppercase tracking-tight">Order Masuk</TableCell>
-                                    <TableCell class="font-bold text-primary tabular-nums">0 Order</TableCell>
+                                    <TableCell class="font-semibold text-primary tabular-nums">0 Order</TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
@@ -336,7 +336,7 @@ const formatPricingValue = (p: Pricing) => {
 
                     <Card v-if="service.description" class="border-slate-200 shadow-none bg-slate-50/50">
                         <div class="p-6">
-                            <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Deskripsi Layanan</h3>
+                            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Deskripsi Layanan</h3>
                             <p class="text-[13px] text-slate-600 leading-relaxed font-medium">{{ service.description }}</p>
                         </div>
                     </Card>
@@ -344,7 +344,7 @@ const formatPricingValue = (p: Pricing) => {
                     <div class="p-4 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-3">
                         <AlertCircle class="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                         <div class="space-y-1">
-                            <p class="text-[11px] font-bold text-amber-900 uppercase">Petunjuk Konfigurasi</p>
+                            <p class="text-[11px] font-semibold text-amber-900 uppercase">Petunjuk Konfigurasi</p>
                             <p class="text-[10px] text-amber-700 leading-tight">
                                 Pastikan Anda memiliki minimal 1 tipe layanan dan 1 status bertanda "Mulai" agar jasa ini dapat muncul di menu POS Kasir.
                             </p>
@@ -358,27 +358,27 @@ const formatPricingValue = (p: Pricing) => {
         <Dialog v-model:open="typeOpen">
             <DialogContent class="rounded-2xl border-slate-200 shadow-2xl">
                 <DialogHeader>
-                    <DialogTitle class="text-lg font-bold uppercase tracking-tight">Tambah Tipe Layanan</DialogTitle>
+                    <DialogTitle class="text-lg font-semibold uppercase tracking-tight">Tambah Tipe Layanan</DialogTitle>
                     <DialogDescription class="text-xs font-medium">Misal: Reguler, Express, Kilat 4 Jam.</DialogDescription>
                 </DialogHeader>
                 <div class="space-y-4 py-4">
                     <div class="grid grid-cols-3 gap-3">
                         <div class="col-span-1 space-y-2">
-                            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Kode</Label>
-                            <Input v-model="typeForm.code" placeholder="REG" class="h-10 rounded-lg font-bold uppercase" />
+                            <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Kode</Label>
+                            <Input v-model="typeForm.code" placeholder="REG" class="h-10 rounded-lg font-semibold uppercase" />
                         </div>
                         <div class="col-span-2 space-y-2">
-                            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nama Tipe</Label>
-                            <Input v-model="typeForm.name" placeholder="Reguler (3 Hari)" class="h-10 rounded-lg font-bold" />
+                            <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Nama Tipe</Label>
+                            <Input v-model="typeForm.name" placeholder="Reguler (3 Hari)" class="h-10 rounded-lg font-semibold" />
                         </div>
                     </div>
                     <div class="space-y-2">
-                        <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Deskripsi Singkat</Label>
+                        <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Deskripsi Singkat</Label>
                         <Textarea v-model="typeForm.description" class="rounded-lg min-h-[80px] text-sm" />
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button @click="addType" :disabled="typeForm.processing" primary class="w-full h-11 font-bold uppercase tracking-widest text-[11px]">Simpan Tipe</Button>
+                    <Button @click="addType" :disabled="typeForm.processing" primary class="w-full h-11 font-semibold uppercase tracking-widest text-[11px]">Simpan Tipe</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -386,14 +386,14 @@ const formatPricingValue = (p: Pricing) => {
         <Dialog v-model:open="pricingOpen">
             <DialogContent class="rounded-2xl border-slate-200 shadow-2xl max-w-sm">
                 <DialogHeader>
-                    <DialogTitle class="text-lg font-bold uppercase tracking-tight">Aturan Harga</DialogTitle>
+                    <DialogTitle class="text-lg font-semibold uppercase tracking-tight">Aturan Harga</DialogTitle>
                     <DialogDescription class="text-xs font-medium">Tentukan basis perhitungan biaya.</DialogDescription>
                 </DialogHeader>
                 <div class="space-y-5 py-4">
                     <div class="space-y-2">
-                        <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Basis Harga</Label>
+                        <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Basis Harga</Label>
                         <Select v-model="pricingForm.pricing_basis">
-                            <SelectTrigger class="h-10 rounded-lg font-bold">
+                            <SelectTrigger class="h-10 rounded-lg font-semibold">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent class="rounded-xl border-slate-100">
@@ -405,30 +405,30 @@ const formatPricingValue = (p: Pricing) => {
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-2">
-                            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Nama Satuan</Label>
-                            <Input v-model="pricingForm.unit_name" placeholder="kg" class="h-10 rounded-lg font-bold" />
+                            <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Nama Satuan</Label>
+                            <Input v-model="pricingForm.unit_name" placeholder="kg" class="h-10 rounded-lg font-semibold" />
                         </div>
                         <div class="space-y-2">
-                            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Harga Unit</Label>
+                            <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Harga Unit</Label>
                             <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">Rp</span>
-                                <Input type="number" v-model="pricingForm.unit_price" class="h-10 pl-8 rounded-lg font-bold tabular-nums" />
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-slate-400">Rp</span>
+                                <Input type="number" v-model="pricingForm.unit_price" class="h-10 pl-8 rounded-lg font-semibold tabular-nums" />
                             </div>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-2">
-                            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Min. Kuantitas</Label>
-                            <Input type="number" v-model="pricingForm.min_quantity" class="h-10 rounded-lg font-bold" />
+                            <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Min. Kuantitas</Label>
+                            <Input type="number" v-model="pricingForm.min_quantity" class="h-10 rounded-lg font-semibold" />
                         </div>
                         <div class="space-y-2">
-                            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Diskon (%)</Label>
-                            <Input type="number" v-model="pricingForm.discount_pct" class="h-10 rounded-lg font-bold" />
+                            <Label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Diskon (%)</Label>
+                            <Input type="number" v-model="pricingForm.discount_pct" class="h-10 rounded-lg font-semibold" />
                         </div>
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button @click="addPricing" :disabled="pricingForm.processing" primary class="w-full h-11 font-bold uppercase tracking-widest text-[11px]">Simpan Harga</Button>
+                    <Button @click="addPricing" :disabled="pricingForm.processing" primary class="w-full h-11 font-semibold uppercase tracking-widest text-[11px]">Simpan Harga</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

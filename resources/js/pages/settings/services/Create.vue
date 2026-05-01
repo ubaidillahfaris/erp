@@ -56,14 +56,15 @@ const submit = (addAnother = false) => {
                 </Button>
             </Link>
             <div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-900">Tambah Jasa Baru</h1>
+                <h1 class="text-xl font-semibold tracking-tight text-slate-900">Tambah Jasa Baru</h1>
                 <p class="text-sm text-slate-400 mt-0.5 font-medium">Buat kategori layanan jasa dasar Anda di sini.</p>
             </div>
         </div>
 
-        <Card class="border border-slate-200 rounded-xl bg-white shadow-none max-w-3xl">
+        <Card class="border border-slate-200 rounded-xl bg-white shadow-none ">
             <div class="px-6 py-4 border-b border-slate-100">
-                <h3 class="text-sm font-semibold text-slate-900 leading-none uppercase tracking-tight">Informasi Layanan</h3>
+                <h3 class="text-sm font-semibold text-slate-900 leading-none uppercase tracking-tight">Informasi Layanan
+                </h3>
                 <p class="text-xs text-slate-400 mt-1">
                     Detail harga dan alur kerja bisa diatur setelah jasa dibuat.
                 </p>
@@ -73,13 +74,14 @@ const submit = (addAnother = false) => {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="flex flex-col gap-2">
                             <Label for="code">ID Layanan / Kode</Label>
-                            <Input id="code" v-model="form.code" placeholder="Misal: LND-01" class="font-bold uppercase" required />
+                            <Input id="code" v-model="form.code" placeholder="Misal: LND-01" class="font-semibold uppercase"
+                                required />
                             <InputError :message="form.errors.code" />
                         </div>
                         <div class="flex flex-col gap-2">
-                            <Label for="service_category">Kategori Jasa</Label>
+                            <Label for="service_category" class="font-medium">Kategori Jasa</Label>
                             <Select v-model="form.service_category">
-                                <SelectTrigger class="w-full font-bold">
+                                <SelectTrigger class="w-full font-semibold">
                                     <SelectValue placeholder="Pilih Kategori" />
                                 </SelectTrigger>
                                 <SelectContent class="rounded-xl border-slate-100 shadow-xl">
@@ -95,7 +97,8 @@ const submit = (addAnother = false) => {
 
                     <div class="flex flex-col gap-2">
                         <Label for="name">Nama Layanan</Label>
-                        <Input id="name" v-model="form.name" placeholder="Contoh: Cuci Satuan Premium" class="font-bold" required />
+                        <Input id="name" v-model="form.name" placeholder="Contoh: Cuci Satuan Premium" class="font-semibold"
+                            required />
                         <InputError :message="form.errors.name" />
                     </div>
 
@@ -111,7 +114,7 @@ const submit = (addAnother = false) => {
                         <input type="checkbox" id="is_active" v-model="form.is_active"
                             class="h-4 w-4 rounded border-slate-200 bg-background accent-primary cursor-pointer" />
                         <div class="grid gap-1.5 leading-none">
-                            <label for="is_active" class="text-sm font-bold leading-none cursor-pointer">
+                            <label for="is_active" class="text-sm font-semibold leading-none cursor-pointer">
                                 Status Aktif
                             </label>
                             <p class="text-xs text-muted-foreground font-medium">

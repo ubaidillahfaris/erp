@@ -151,7 +151,7 @@ const StatusPill = {
     props: ['icon', 'label', 'tone'],
     template: `
         <div :class="[
-            'h-9 px-3 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 transition-all',
+            'h-9 px-3 rounded-full text-[11px] font-semibold uppercase tracking-wider flex items-center gap-2 transition-all',
             tone === 'primary' ? 'bg-primary/10 text-primary' :
             tone === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
             'bg-slate-100 text-slate-500'
@@ -176,7 +176,7 @@ const StatusPill = {
                 </Link>
                 <div class="flex items-center gap-3">
                     <div class="leading-tight">
-                        <h1 class="text-base font-bold">Service Terminal</h1>
+                        <h1 class="text-base font-semibold">Service Terminal</h1>
                         <p class="text-xs text-slate-400 font-medium -mt-0.5">POS Jasa & Layanan</p>
                     </div>
                 </div>
@@ -194,7 +194,7 @@ const StatusPill = {
                     </Button>
                 </Link>
                 <Link href="/service-orders/board">
-                    <Button variant="ghost" size="sm" class="gap-2 rounded-full h-9 text-slate-500 font-bold">
+                    <Button variant="ghost" size="sm" class="gap-2 rounded-full h-9 text-slate-500 font-semibold">
                         <ClipboardList class="h-4 w-4" /> Board
                     </Button>
                 </Link>
@@ -220,11 +220,11 @@ const StatusPill = {
                     <div class="aspect-square w-full rounded-xl bg-slate-50 flex items-center justify-center mb-3 group-hover:bg-primary/5 transition-colors">
                         <Layers class="h-10 w-10 text-slate-300 group-hover:text-primary transition-colors" />
                     </div>
-                    <h3 class="text-[13px] font-bold leading-snug line-clamp-2 min-h-[2.4em] mb-2 text-slate-800">
+                    <h3 class="text-[13px] font-semibold leading-snug line-clamp-2 min-h-[2.4em] mb-2 text-slate-800">
                         {{ s.name }}
                     </h3>
                     <div class="flex items-center justify-between mt-auto">
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                             {{ s.service_category }}
                         </p>
                         <span class="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-primary group-hover:text-white flex items-center justify-center transition shrink-0">
@@ -240,7 +240,7 @@ const StatusPill = {
             <div class="p-5 border-b border-slate-200 bg-white">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900">Order Servis Baru</h2>
+                        <h2 class="text-lg font-semibold text-slate-900">Order Servis Baru</h2>
                         <p class="text-xs text-slate-400 font-medium flex items-center gap-1.5 mt-0.5 uppercase tracking-tighter">
                             <Store class="h-3 w-3" /> Counter Checkout
                         </p>
@@ -251,7 +251,7 @@ const StatusPill = {
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Pelanggan</label>
+                    <label class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Pelanggan</label>
                     <CreatableSelect v-model="selectedCustomerId" :options="customers"
                         placeholder="Cari atau tambah pelanggan..." displayExpr="name" valueExpr="id" hideLabel />
                 </div>
@@ -265,8 +265,8 @@ const StatusPill = {
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between">
                             <div class="min-w-0">
-                                <h4 class="text-sm font-bold text-slate-800 leading-tight truncate">{{ item.service_name }}</h4>
-                                <p class="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">{{ item.type_name }}</p>
+                                <h4 class="text-sm font-semibold text-slate-800 leading-tight truncate">{{ item.service_name }}</h4>
+                                <p class="text-[10px] font-semibold text-primary uppercase tracking-widest mt-1">{{ item.type_name }}</p>
                             </div>
                             <button @click="removeFromCart(idx)" class="text-slate-200 hover:text-rose-500 transition-colors">
                                 <X class="h-4 w-4" />
@@ -274,17 +274,17 @@ const StatusPill = {
                         </div>
                         <div class="mt-2 flex items-center justify-between border-t border-slate-100 pt-2">
                             <div class="flex flex-col">
-                                <span class="text-[11px] font-bold text-slate-900 tabular-nums">{{ item.qty }} {{ item.unit_name }}</span>
+                                <span class="text-[11px] font-semibold text-slate-900 tabular-nums">{{ item.qty }} {{ item.unit_name }}</span>
                                 <span class="text-[9px] text-slate-400 font-medium">@ {{ formatCurrency(item.unit_price) }}</span>
                             </div>
-                            <p class="text-sm font-bold tabular-nums text-slate-900">{{ formatCurrency(item.total) }}</p>
+                            <p class="text-sm font-semibold tabular-nums text-slate-900">{{ formatCurrency(item.total) }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div v-if="cart.length === 0" class="flex flex-col items-center justify-center h-full opacity-20 py-10">
                     <PackageOpen class="h-12 w-12 mb-3" />
-                    <p class="text-[11px] font-bold uppercase tracking-widest">Belum ada layanan</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest">Belum ada layanan</p>
                 </div>
             </div>
 
@@ -292,13 +292,13 @@ const StatusPill = {
             <div class="border-t border-slate-200 p-5 space-y-4 bg-white">
                 <div class="flex items-end justify-between">
                     <div>
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Estimasi Total</p>
-                        <p class="text-3xl font-bold tabular-nums text-slate-900 tracking-tight">{{ formatCurrency(totalAmount) }}</p>
+                        <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Estimasi Total</p>
+                        <p class="text-3xl font-semibold tabular-nums text-slate-900 tracking-tight">{{ formatCurrency(totalAmount) }}</p>
                     </div>
-                    <Badge variant="secondary" class="bg-primary/10 text-primary rounded-lg px-2.5 py-1 font-bold">{{ cart.length }} items</Badge>
+                    <Badge variant="secondary" class="bg-primary/10 text-primary rounded-lg px-2.5 py-1 font-semibold">{{ cart.length }} items</Badge>
                 </div>
                 <Button :disabled="cart.length === 0" @click="showPayment = true"
-                    class="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase tracking-widest shadow-xl shadow-slate-900/10 gap-3">
+                    class="w-full h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-semibold uppercase tracking-widest shadow-xl shadow-slate-900/10 gap-3">
                     <CircleDollarSign class="h-5 w-5" /> Bayar Sekarang
                 </Button>
             </div>
@@ -309,44 +309,44 @@ const StatusPill = {
     <Dialog v-model:open="showConfig">
         <DialogContent class="max-w-md rounded-3xl p-6 border-none shadow-2xl font-sans">
             <DialogHeader>
-                <DialogTitle class="text-xl font-bold tracking-tight">{{ selectedService?.name }}</DialogTitle>
-                <DialogDescription class="text-xs uppercase font-bold tracking-widest text-slate-400">Pilih Varian & Kuantitas</DialogDescription>
+                <DialogTitle class="text-xl font-semibold tracking-tight">{{ selectedService?.name }}</DialogTitle>
+                <DialogDescription class="text-xs uppercase font-semibold tracking-widest text-slate-400">Pilih Varian & Kuantitas</DialogDescription>
             </DialogHeader>
             <div class="py-6 space-y-6">
                 <div class="space-y-3">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Tipe Layanan</label>
+                    <label class="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Tipe Layanan</label>
                     <div class="grid grid-cols-2 gap-2">
                         <button v-for="t in selectedService?.service_types" :key="t.id"
                             @click="selectedType = t; selectedPricing = t.pricings[0]"
                             :class="cn('p-3 rounded-xl border-2 text-left transition-all', selectedType?.id === t.id ? 'border-primary bg-primary/5 ring-2 ring-primary/10' : 'border-slate-100 hover:border-slate-300 bg-slate-50/50')">
-                            <span class="text-xs font-bold block">{{ t.name }}</span>
-                            <span class="text-[9px] font-black uppercase text-slate-400">{{ t.code }}</span>
+                            <span class="text-xs font-semibold block">{{ t.name }}</span>
+                            <span class="text-[9px] font-semibold uppercase text-slate-400">{{ t.code }}</span>
                         </button>
                     </div>
                 </div>
 
                 <div v-if="selectedType" class="space-y-3">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Aturan Harga / Satuan</label>
+                    <label class="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Aturan Harga / Satuan</label>
                     <div class="grid grid-cols-1 gap-2">
                         <button v-for="p in selectedType.pricings" :key="p.id"
                             @click="selectedPricing = p"
                             :class="cn('flex items-center justify-between p-3 rounded-xl border-2 transition-all', selectedPricing?.id === p.id ? 'border-primary bg-primary/5 ring-2 ring-primary/10' : 'border-slate-100 bg-slate-50/50')">
                             <div class="flex items-center gap-3">
                                 <Weight class="h-4 w-4 text-slate-400" />
-                                <span class="text-xs font-bold uppercase">{{ p.unit_name }} ({{ p.pricing_basis.replace('per_', '') }})</span>
+                                <span class="text-xs font-semibold uppercase">{{ p.unit_name }} ({{ p.pricing_basis.replace('per_', '') }})</span>
                             </div>
-                            <span class="text-sm font-bold tabular-nums">{{ formatCurrency(p.unit_price) }}</span>
+                            <span class="text-sm font-semibold tabular-nums">{{ formatCurrency(p.unit_price) }}</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="space-y-3">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500">Kuantitas / Berat</label>
+                    <label class="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Kuantitas / Berat</label>
                     <div class="flex items-center gap-4 bg-slate-100 rounded-2xl p-2 h-16">
                         <button @click="qty = Math.max(0.1, qty - 1)" class="h-12 w-12 rounded-xl bg-white shadow-sm flex items-center justify-center active:scale-95 transition-all">
                             <Minus class="h-5 w-5" />
                         </button>
-                        <Input type="number" v-model.number="qty" step="0.1" class="flex-1 h-12 text-center text-2xl font-black border-none bg-transparent focus-visible:ring-0" />
+                        <Input type="number" v-model.number="qty" step="0.1" class="flex-1 h-12 text-center text-2xl font-semibold border-none bg-transparent focus-visible:ring-0" />
                         <button @click="qty += 1" class="h-12 w-12 rounded-xl bg-slate-900 text-white shadow-md flex items-center justify-center active:scale-95 transition-all">
                             <Plus class="h-5 w-5" />
                         </button>
@@ -354,7 +354,7 @@ const StatusPill = {
                 </div>
             </div>
             <DialogFooter>
-                <Button @click="addToCart" primary class="w-full h-14 rounded-2xl font-bold uppercase tracking-widest">Tambahkan Layanan</Button>
+                <Button @click="addToCart" primary class="w-full h-14 rounded-2xl font-semibold uppercase tracking-widest">Tambahkan Layanan</Button>
             </DialogFooter>
         </DialogContent>
     </Dialog>
@@ -364,30 +364,30 @@ const StatusPill = {
         <DialogContent class="max-w-md rounded-4xl p-0 overflow-hidden border-none shadow-2xl">
             <div class="p-8 space-y-8 bg-white">
                 <div>
-                    <h3 class="text-2xl font-black tracking-tight text-slate-900">Konfirmasi Order</h3>
+                    <h3 class="text-2xl font-semibold tracking-tight text-slate-900">Konfirmasi Order</h3>
                     <p class="text-sm text-slate-500 mt-1 font-medium">Lengkapi pembayaran untuk memproses servis.</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <button @click="form.payment_method = 'cash'" :class="cn('p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all', form.payment_method === 'cash' ? 'border-primary bg-primary/5' : 'border-slate-100')">
                         <Banknote class="h-6 w-6" />
-                        <span class="text-xs font-bold uppercase">Tunai</span>
+                        <span class="text-xs font-semibold uppercase">Tunai</span>
                     </button>
                     <button @click="form.payment_method = 'qris'" :class="cn('p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all', form.payment_method === 'qris' ? 'border-primary bg-primary/5' : 'border-slate-100')">
                         <QrCode class="h-6 w-6" />
-                        <span class="text-xs font-bold uppercase">QRIS</span>
+                        <span class="text-xs font-semibold uppercase">QRIS</span>
                     </button>
                 </div>
 
                 <div class="bg-slate-900 rounded-3xl p-6 text-white space-y-6">
                     <div class="flex justify-between items-end border-b border-slate-700/50 pb-4">
                         <div>
-                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Total Tagihan</p>
-                            <p class="text-3xl font-black tabular-nums">{{ formatCurrency(totalAmount) }}</p>
+                            <p class="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Total Tagihan</p>
+                            <p class="text-3xl font-semibold tabular-nums">{{ formatCurrency(totalAmount) }}</p>
                         </div>
-                        <Badge class="bg-emerald-500 text-white border-none font-bold">{{ cart.length }} Item</Badge>
+                        <Badge class="bg-emerald-500 text-white border-none font-semibold">{{ cart.length }} Item</Badge>
                     </div>
-                    <Button @click="submitOrder" :disabled="form.processing" primary class="w-full h-14 rounded-2xl text-slate-900 bg-white hover:bg-slate-100 font-black uppercase tracking-widest text-[11px]">
+                    <Button @click="submitOrder" :disabled="form.processing" primary class="w-full h-14 rounded-2xl text-slate-900 bg-white hover:bg-slate-100 font-semibold uppercase tracking-widest text-[11px]">
                         Bayar & Simpan Order
                     </Button>
                 </div>

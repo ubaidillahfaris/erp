@@ -40,7 +40,7 @@ defineProps<{
     <div class="relative hidden lg:block">
       <Search class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <input type="text" placeholder="Start searching here ..."
-        class="h-12 w-72 rounded-full pl-11 pr-4 bg-card border border-border/50 shadow-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent text-sm font-medium transition-all" />
+        class="h-12 w-72 rounded-full pl-11 pr-4 bg-card border border-border/50 shadow-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent text-sm font-medium transition-all placeholder:font-normal" />
     </div>
   </div>
 </header>

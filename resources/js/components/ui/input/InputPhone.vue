@@ -119,7 +119,7 @@ const handleInput = (event: Event) => {
             @input="handleInput"
             :placeholder="placeholder"
             :disabled="disabled"
-            class="flex-1 bg-transparent px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed font-medium"
+            class="flex-1 bg-transparent px-3 py-2 text-sm focus-visible:outline-none disabled:cursor-not-allowed font-medium placeholder:text-muted-foreground placeholder:font-normal"
         />
     </div>
 </template>

@@ -71,7 +71,7 @@ const handleInput = (event: Event) => {
             @input="handleInput"
             :placeholder="placeholder"
             :disabled="disabled"
-            class="w-full bg-transparent p-0 focus-visible:outline-none disabled:cursor-not-allowed font-medium"
+            class="w-full bg-transparent p-0 focus-visible:outline-none disabled:cursor-not-allowed font-medium placeholder:text-muted-foreground placeholder:font-normal"
         />
     </div>
 </template>

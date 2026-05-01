@@ -165,7 +165,7 @@ const hasActiveFilters = computed(() => {
                         </SelectContent>
                     </Select>
 
-                    <Button v-if="hasActiveFilters" variant="ghost" size="sm" class="h-9 px-2 text-xs text-muted-foreground hover:text-foreground font-bold uppercase tracking-tight" @click="resetFilters">
+                    <Button v-if="hasActiveFilters" variant="ghost" size="sm" class="h-9 px-2 text-xs text-muted-foreground hover:text-foreground font-semibold uppercase tracking-tight" @click="resetFilters">
                         <X class="h-3 w-3 mr-1" /> Reset
                     </Button>
                 </div>
@@ -177,8 +177,8 @@ const hasActiveFilters = computed(() => {
                         <ClipboardList class="h-4 w-4" />
                     </div>
                     <div class="min-w-0">
-                        <p class="text-[13px] font-bold text-foreground font-mono leading-none">#{{ row.order_number }}</p>
-                        <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-tighter mt-1.5">{{ formatDate(row.created_at) }}</p>
+                        <p class="text-[13px] font-semibold text-foreground font-mono leading-none">#{{ row.order_number }}</p>
+                        <p class="text-[11px] font-semibold text-muted-foreground uppercase tracking-tighter mt-1.5">{{ formatDate(row.created_at) }}</p>
                     </div>
                 </div>
             </template>
@@ -188,7 +188,7 @@ const hasActiveFilters = computed(() => {
                     <div class="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200/50">
                         <UserIcon class="h-3 w-3 text-slate-400" />
                     </div>
-                    <span class="text-[12px] font-bold text-foreground/80 leading-none" :class="!row.customer && 'italic opacity-50'">
+                    <span class="text-[12px] font-semibold text-foreground/80 leading-none" :class="!row.customer && 'italic opacity-50'">
                         {{ row.customer?.name || 'Walk-in' }}
                     </span>
                 </div>
@@ -196,20 +196,20 @@ const hasActiveFilters = computed(() => {
 
             <template #cell(items)="{ row }">
                 <div class="flex flex-col gap-1">
-                    <span class="text-[12px] font-bold text-foreground leading-none">{{ row.service?.name }}</span>
-                    <span class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60">{{ row.items_count || 0 }} Tipe Layanan</span>
+                    <span class="text-[12px] font-semibold text-foreground leading-none">{{ row.service?.name }}</span>
+                    <span class="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground opacity-60">{{ row.items_count || 0 }} Tipe Layanan</span>
                 </div>
             </template>
 
             <template #cell(total)="{ row }">
-                <span class="text-[13px] font-bold text-foreground tabular-nums">
+                <span class="text-[13px] font-semibold text-foreground tabular-nums">
                     {{ formatCurrency(row.total_amount) }}
                 </span>
             </template>
 
             <template #cell(status_badge)="{ row }">
                 <Badge 
-                    class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[10px] uppercase font-bold px-1.5 h-5 whitespace-nowrap"
+                    class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[10px] uppercase font-semibold px-1.5 h-5 whitespace-nowrap"
                     :class="{
                         'bg-amber-50 text-amber-600 border-amber-100': !row.current_status?.is_final,
                         'bg-slate-100 text-slate-500 border-slate-200': !row.current_status
@@ -231,7 +231,7 @@ const hasActiveFilters = computed(() => {
                 <div class="flex flex-col items-center gap-3 opacity-20 py-20 text-center">
                     <History class="h-12 w-12 text-muted-foreground" />
                     <div>
-                        <p class="text-sm font-bold uppercase tracking-widest text-muted-foreground">Belum ada riwayat servis</p>
+                        <p class="text-sm font-semibold uppercase tracking-widest text-muted-foreground">Belum ada riwayat servis</p>
                         <p class="text-xs text-muted-foreground mt-1">Gunakan POS Servis untuk membuat order baru</p>
                     </div>
                 </div>
