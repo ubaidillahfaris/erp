@@ -1,7 +1,0 @@
-72:                $newHpp = $production->total_cost / $production->actual_yield;
-89:            $materialCostCents = (int) round((float) ($production->total_cost ?? 0) * 100);
-41:            if ($production->status === 'in_progress' && is_null($production->total_cost)) {
-54:                $production->total_cost = $estimatedCost;
-144:        if ($production->status === 'in_progress' && is_null($production->total_cost)) {
-145:            $production->total_cost = (float) $estimatedTotal;
-206:                'total_cost' => $totalCost,

@@ -23,19 +23,24 @@ return [
             'transaksi' => [
                 'service-orders.create' => 'Order Laundry',
                 'service-orders.board' => 'Board Order',
-                'sales.index' => 'Riwayat Order',
+                'service-orders.index' => 'Daftar Order',
+                'sales.index' => 'Riwayat Penjualan',
             ],
             'crm' => [
                 'customer.index' => 'Daftar Pelanggan',
             ],
             'finance' => ['pengeluaran.index'], // Biaya Operasional only
-            'settings' => ['users.index'],
+            'settings' => [
+                'users.index',
+                'settings.services.index' => 'Katalog Jasa'
+            ],
         ],
         'features' => [
             'weight_based_billing' => true,
             'item_based_billing' => true,
             'status_tracking' => true,
         ],
+        'service_categories' => ['Laundry Kiloan', 'Laundry Satuan', 'Dry Cleaning', 'Setrika Saja'],
         'default_route' => 'service-orders.create',
     ],
 
@@ -55,6 +60,7 @@ return [
             'barcode_scanning' => true,
             'expiry_tracking' => true,
         ],
+        'service_categories' => ['Jasa Titip', 'Jasa Antar', 'Lainnya'],
         'default_route' => 'product.index',
     ],
 
@@ -73,6 +79,7 @@ return [
             'table_management' => true,
             'kitchen_display' => true,
         ],
+        'service_categories' => ['Sewa Ruangan', 'Jasa Antar', 'Lainnya'],
         'default_route' => 'pos.index',
     ],
 
@@ -83,18 +90,23 @@ return [
             'transaksi' => [
                 'service-orders.create' => 'Service Terminal',
                 'service-orders.board' => 'Pipeline',
-                'sales.index' => 'History',
+                'service-orders.index' => 'History Order',
+                'sales.index' => 'History Barang',
             ],
             'inventory' => '*', // For spare parts
             'crm' => '*',
             'finance' => '*',
             'report' => '*',
-            'settings' => '*',
+            'settings' => [
+                '*',
+                'settings.services.index' => 'Katalog Jasa'
+            ],
         ],
         'features' => [
             'status_tracking' => true,
             'staff_assignment' => true,
         ],
+        'service_categories' => ['Perbaikan', 'Pengecekan', 'Instalasi', 'Maintenance'],
         'default_route' => 'service-orders.create',
     ],
 
@@ -105,18 +117,23 @@ return [
             'transaksi' => [
                 'service-orders.create' => 'Bengkel POS',
                 'service-orders.board' => 'Work Order',
-                'sales.index' => 'Riwayat',
+                'service-orders.index' => 'Riwayat Servis',
+                'sales.index' => 'Riwayat Part',
             ],
             'inventory' => '*', // Spare parts are crucial
             'purchasing' => '*',
             'finance' => '*',
             'report' => '*',
-            'settings' => '*',
+            'settings' => [
+                '*',
+                'settings.services.index' => 'Katalog Jasa'
+            ],
         ],
         'features' => [
             'spare_part_integration' => true,
             'vehicle_tracking' => true,
         ],
+        'service_categories' => ['Service Rutin', 'Ganti Oli', 'Perbaikan Mesin', 'Body Repair'],
         'default_route' => 'service-orders.create',
     ],
 
@@ -132,6 +149,7 @@ return [
             'settings' => '*',
         ],
         'features' => [],
+        'service_categories' => ['Jasa Umum', 'Lainnya'],
         'default_route' => 'dashboard',
     ],
 ];

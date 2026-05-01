@@ -24,8 +24,8 @@ class CustomerFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'customer_type_id' => CustomerType::first() ?? 1,
-            'customer_status_id' => CustomerStatus::first() ?? 1,
+            'customer_type_id' => CustomerType::factory(),
+            'customer_status_id' => CustomerStatus::factory(),
             'name' => $this->faker->name(),
             'phone' => $this->faker->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),

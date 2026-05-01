@@ -5,6 +5,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use App\Http\Controllers\Settings\UserController;
+use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -35,5 +36,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('permission:manage roles')->group(function () {
         Route::resource('settings/roles', RoleController::class)->names('roles');
+    });
+
+    Route::middleware('permission:manage services')->group(function () {
+        Route::get('settings/services', [ServiceController::class, 'index'])->name('settings.services.index');
+        Route::get('settings/services/create', [ServiceController::class, 'create'])->name('settings.services.create');
+        Route::post('settings/services', [ServiceController::class, 'store'])->name('settings.services.store');
+        Route::get('settings/services/{service}', [ServiceController::class, 'show'])->name('settings.services.show');
+        Route::post('settings/services/{service}/types', [ServiceController::class, 'storeType'])->name('settings.services.store-type');
+        Route::post('settings/service-types/{serviceType}/pricings', [ServiceController::class, 'storePricing'])->name('settings.service-types.store-pricing');
+        Route::post('settings/services/{service}/statuses', [ServiceController::class, 'syncStatuses'])->name('settings.services.sync-statuses');
     });
 });

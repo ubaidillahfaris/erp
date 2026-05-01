@@ -2,44 +2,51 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use App\Traits\BelongsToCompany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class ServiceOrder extends Model
 {
-    use BelongsToCompany, HasFactory;
+    use Auditable, BelongsToCompany, HasFactory;
 
     protected $fillable = [
-        'customer_id',
-        'sale_id',
-        'order_type',
+        'company_id',
         'order_number',
-        'status',
-        'estimated_at',
-        'ready_at',
-        'picked_up_at',
-        'metadata',
+        'service_id',
+        'customer_type',
+        'party_type',
+        'party_id',
+        'order_date',
+        'completion_date',
+        'current_status_code',
         'notes',
+        'total_amount',
+        'total_paid',
+        'status',
+        'created_by',
+        'journal_entry_id',
     ];
 
     protected $casts = [
-        'metadata' => 'array',
-        'estimated_at' => 'datetime',
-        'ready_at' => 'datetime',
-        'picked_up_at' => 'datetime',
+        'order_date' => 'date',
+        'completion_date' => 'datetime',
+        'total_amount' => 'integer', // cents
+        'total_paid' => 'integer',   // cents
     ];
 
-    public function customer(): BelongsTo
+    public function service(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Service::class);
     }
 
-    public function sale(): BelongsTo
+    public function party(): MorphTo
     {
-        return $this->belongsTo(Sale::class);
+        return $this->morphTo();
     }
 
     public function items(): HasMany
@@ -47,15 +54,26 @@ class ServiceOrder extends Model
         return $this->hasMany(ServiceOrderItem::class);
     }
 
-    // Helper for Laundry: get weight from metadata
-    public function getWeightKgAttribute(): ?float
+    public function payments(): HasMany
     {
-        return $this->metadata['weight_kg'] ?? null;
+        return $this->hasMany(ServiceOrderPayment::class);
     }
 
-    // Helper for Laundry: get service type from metadata
-    public function getServiceTypeAttribute(): ?string
+    public function journalEntry(): BelongsTo
     {
-        return $this->metadata['service_type'] ?? null;
+        return $this->belongsTo(JournalEntry::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the remaining balance in cents.
+     */
+    public function getBalanceAttribute(): int
+    {
+        return max(0, $this->total_amount - $this->total_paid);
     }
 }

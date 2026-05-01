@@ -11,6 +11,7 @@ class Customer extends Model
     use BelongsToCompany, HasFactory;
 
     protected $fillable = [
+        'company_id',
         'user_id',
         'customer_type_id',
         'customer_status_id',

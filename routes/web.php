@@ -226,13 +226,17 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
         Route::post('accounting/depreciation/post', [DepreciationController::class, 'post'])->name('accounting.depreciation.post');
     });
 
-    // 8. SERVICE ORDERS (Laundry, etc)
+    // 8. SERVICE ORDERS (Comprehensive)
     Route::middleware(['permission:make sales', 'period_lock'])->group(function () {
+        Route::get('service-orders', [ServiceOrderController::class, 'index'])->name('service-orders.index');
+        Route::get('service-orders/board', [ServiceOrderController::class, 'board'])->name('service-orders.board');
         Route::get('service-orders/create', [ServiceOrderController::class, 'create'])->name('service-orders.create');
         Route::post('service-orders', [ServiceOrderController::class, 'store'])->name('service-orders.store');
-        Route::get('service-orders/board', [ServiceOrderController::class, 'board'])->name('service-orders.board');
+        Route::get('service-orders/{service_order}', [ServiceOrderController::class, 'show'])->name('service-orders.show');
+        Route::post('service-orders/{service_order}/items', [ServiceOrderController::class, 'addItem'])->name('service-orders.add-item');
         Route::patch('service-orders/{service_order}/status', [ServiceOrderController::class, 'updateStatus'])->name('service-orders.update-status');
-        Route::post('service-orders/{service_order}/pay', [ServiceOrderController::class, 'pay'])->name('service-orders.pay');
+        Route::post('service-orders/{service_order}/payments', [ServiceOrderController::class, 'recordPayment'])->name('service-orders.record-payment');
+        Route::post('service-orders/{service_order}/void', [ServiceOrderController::class, 'void'])->name('service-orders.void');
     });
 
     // Help Page

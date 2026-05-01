@@ -36,6 +36,7 @@ class RoleAndPermissionSeeder extends Seeder
             'view payables',
             'manage assets',
             'post depreciation',
+            'manage services',
         ];
 
         foreach ($permissions as $permission) {

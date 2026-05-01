@@ -1,0 +1,130 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Service;
+use App\Models\ServiceType;
+use App\Models\ServicePricing;
+use App\Models\ServiceProcessingStatus;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class ServiceController extends Controller
+{
+    /**
+     * Display a listing of services.
+     */
+    public function index(Request $request): Response
+    {
+        return Inertia::render('settings/services/Index', [
+            'services' => Service::withCount(['serviceTypes', 'orders'])->paginate(10),
+            'filters' => $request->only(['search', 'category']),
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new service.
+     */
+    public function create(): Response
+    {
+        $businessType = auth()->user()->company->business_type ?? 'other';
+        $categories = config("business_presets.{$businessType}.service_categories", ['Jasa Umum', 'Lainnya']);
+
+        return Inertia::render('settings/services/Create', [
+            'available_categories' => $categories
+        ]);
+    }
+
+    /**
+     * Store a newly created service.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string|unique:services,code',
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'service_category' => 'required|string',
+        ]);
+
+        $validated['created_by'] = auth()->id();
+        $service = Service::create($validated);
+
+        return redirect()->route('settings.services.show', $service)
+            ->with('success', 'Service created successfully.');
+    }
+
+    /**
+     * Display the specified service and its configuration.
+     */
+    public function show(Service $service): Response
+    {
+        return Inertia::render('settings/services/Show', [
+            'service' => $service->load(['serviceTypes.pricings', 'processingStatuses']),
+        ]);
+    }
+
+    /**
+     * Store a new service type.
+     */
+    public function storeType(Request $request, Service $service)
+    {
+        $validated = $request->validate([
+            'code' => 'required|string',
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+        ]);
+
+        $service->serviceTypes()->create($validated);
+
+        return back()->with('success', 'Service type added.');
+    }
+
+    /**
+     * Store a new pricing rule.
+     */
+    public function storePricing(Request $request, ServiceType $serviceType)
+    {
+        $validated = $request->validate([
+            'pricing_basis' => 'required|string|in:per_kg,per_item,per_unit',
+            'unit_name' => 'required|string',
+            'unit_price' => 'required|numeric|min:0',
+            'min_quantity' => 'nullable|numeric|min:0',
+            'max_quantity' => 'nullable|numeric|min:0',
+            'discount_pct' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        // Convert to cents
+        $validated['unit_price'] = (int) ($validated['unit_price'] * 100);
+
+        $serviceType->pricings()->create($validated);
+
+        return back()->with('success', 'Pricing rule added.');
+    }
+
+    /**
+     * Store/Update processing statuses.
+     */
+    public function syncStatuses(Request $request, Service $service)
+    {
+        $validated = $request->validate([
+            'statuses' => 'required|array',
+            'statuses.*.status_code' => 'required|string',
+            'statuses.*.status_name' => 'required|string',
+            'statuses.*.sequence_order' => 'required|integer',
+            'statuses.*.is_default_start' => 'required|boolean',
+            'statuses.*.is_final' => 'required|boolean',
+        ]);
+
+        DB::transaction(function () use ($service, $validated) {
+            $service->processingStatuses()->delete();
+            foreach ($validated['statuses'] as $status) {
+                $service->processingStatuses()->create($status);
+            }
+        });
+
+        return back()->with('success', 'Statuses synchronized.');
+    }
+}

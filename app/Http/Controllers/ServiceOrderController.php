@@ -3,221 +3,179 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\Employee;
-use App\Models\Product;
-use App\Models\Sale;
+use App\Models\Service;
 use App\Models\ServiceOrder;
-use App\Models\Warehouse;
+use App\Models\ServiceProcessingStatus;
+use App\Models\Vendor;
+use App\Services\ServiceOrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ServiceOrderController extends Controller
 {
+    public function __construct(protected ServiceOrderService $serviceOrderService) {}
+
     /**
-     * Display the Service Order POS page (Laundry).
+     * Display a listing of service orders.
      */
-    public function create(Request $request): Response
+    public function index(Request $request): Response
     {
-        $products = Product::where('is_active', true)
-            ->where('type', 'service')
-            ->with(['currentPrice', 'unit', 'category'])
-            ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'category' => $product->category?->name ?? 'Uncategorized',
-                    'unit_symbol' => $product->unit->symbol,
-                    'price' => (float) ($product->currentPrice?->retail_price ?? 0),
-                    'emoji' => $this->getEmojiForCategory($product->category?->name),
-                ];
-            });
+        $query = ServiceOrder::with(['service.processingStatuses', 'party'])
+            ->orderBy('created_at', 'desc');
 
-        $customers = Customer::whereHas('status', function ($query) {
-            $query->where('name', 'Active');
-        })->get(['id', 'name', 'phone']);
+        if ($request->service_id) {
+            $query->where('service_id', $request->service_id);
+        }
 
-        $employees = Employee::where('status', 'active')->get(['id', 'name', 'position']);
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
 
-        $orders = ServiceOrder::with(['customer', 'items.product'])
-            ->where('status', '!=', 'picked_up')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($order) {
-                return [
-                    'id' => $order->order_number,
-                    'customer' => $order->customer->name,
-                    'phone' => $order->customer->phone ?? '-',
-                    'items' => $order->items->map(fn($it) => ['name' => $it->product->name, 'qty' => $it->qty]),
-                    'staff' => $order->metadata['staff_name'] ?? 'Unassigned',
-                    'scheduledAt' => $order->estimated_at?->format('Y-m-d H:i') ?? $order->created_at->format('Y-m-d H:i'),
-                    'total' => (float) $order->items->sum('subtotal'),
-                    'status' => $this->mapStatus($order->status),
-                ];
-            });
-
-        return Inertia::render('ServiceOrders/Pos', [
-            'products' => $products,
-            'customers' => $customers,
-            'employees' => $employees,
-            'initialOrders' => $orders,
+        return Inertia::render('service-orders/Index', [
+            'orders' => $query->paginate(10)->withQueryString(),
+            'services' => Service::all(),
+            'statuses' => ServiceProcessingStatus::select('status_code as code', 'status_name as name')->distinct()->get(),
+            'filters' => $request->only(['search', 'status', 'date_start', 'date_end']),
         ]);
     }
 
-    private function getEmojiForCategory(?string $category): string
+    /**
+     * Display a kanban board of service orders.
+     */
+    public function board(Request $request): Response
     {
-        return match ($category) {
-            'Cleaning' => '🧹',
-            'AC' => '❄️',
-            'Plumbing' => '🔧',
-            'Electrical' => '⚡',
-            'Painting' => '🎨',
-            'Appliance' => '🌀',
-            default => '💼',
-        };
-    }
+        $query = ServiceOrder::with(['service.processingStatuses', 'party'])
+            ->where('status', '!=', 'cancelled')
+            ->orderBy('created_at', 'desc');
 
-    private function mapStatus(string $status): string
-    {
-        return match ($status) {
-            'pending' => 'Queued',
-            'processing' => 'In Progress',
-            'ready' => 'Done',
-            'picked_up' => 'Picked Up',
-            default => 'Queued',
-        };
+        return Inertia::render('service-orders/Board', [
+            'orders' => $query->get(),
+            'services' => Service::with('processingStatuses')->get(),
+        ]);
     }
 
     /**
-     * Store a newly created Service Order.
+     * Show the form for creating a new service order.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('service-orders/Pos', [
+            'services' => Service::with('serviceTypes.pricings')->where('is_active', true)->get(),
+            'customers' => Customer::all(),
+            'vendors' => Vendor::all(),
+        ]);
+    }
+
+    /**
+     * Store a newly created service order.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'customer_id' => 'required|exists:customers,id',
-            'order_type' => 'required|string',
-            'estimated_at' => 'nullable|date',
-            'notes' => 'nullable|string',
-            'metadata' => 'nullable|array',
+            'service_id' => 'required|exists:services,id',
+            'customer_type' => 'required|in:customer,vendor',
+            'party_id' => 'required|integer',
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.unit_id' => 'required|exists:units,id',
-            'items.*.qty' => 'required|numeric|min:0.001',
-            'items.*.price' => 'required|numeric|min:0',
+            'items.*.service_type_id' => 'required|exists:service_types,id',
+            'items.*.quantity' => 'required|numeric|min:0.001',
+            'items.*.notes' => 'nullable|string',
         ]);
 
-        return DB::transaction(function () use ($validated) {
-            $prefix = strtoupper(substr($validated['order_type'], 0, 3));
-            $orderNumber = $prefix.'-'.now()->format('Ymd').'-'.strtoupper(bin2hex(random_bytes(2)));
+        $partyClass = $validated['customer_type'] === 'customer' ? Customer::class : Vendor::class;
+        $party = $partyClass::findOrFail($validated['party_id']);
 
-            $order = ServiceOrder::create([
-                'customer_id' => $validated['customer_id'],
-                'order_type' => $validated['order_type'],
-                'order_number' => $orderNumber,
-                'status' => 'pending',
-                'estimated_at' => $validated['estimated_at'],
-                'notes' => $validated['notes'],
-                'metadata' => $validated['metadata'],
-            ]);
+        $order = $this->serviceOrderService->createOrder(
+            $validated['service_id'],
+            $party,
+            $validated['items'],
+            $validated['customer_type']
+        );
 
-            foreach ($validated['items'] as $item) {
-                $order->items()->create([
-                    'product_id' => $item['product_id'],
-                    'unit_id' => $item['unit_id'],
-                    'qty' => $item['qty'],
-                    'price' => $item['price'],
-                    'subtotal' => $item['qty'] * $item['price'],
-                ]);
-            }
-
-            return redirect()->route('service-orders.board')->with('success', 'Order berhasil dibuat: '.$orderNumber);
-        });
+        return redirect()->route('service-orders.show', $order)
+            ->with('success', 'Order created successfully.');
     }
 
     /**
-     * Display the Service Order Board.
+     * Display the specified service order.
      */
-    public function board(): Response
+    public function show(ServiceOrder $serviceOrder): Response
     {
-        $orders = ServiceOrder::with(['customer', 'items.product'])
-            ->where('status', '!=', 'picked_up')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return Inertia::render('ServiceOrders/Board', [
-            'orders' => $orders,
+        return Inertia::render('service-orders/Show', [
+            'order' => $serviceOrder->load(['service.processingStatuses', 'items.serviceType', 'payments.creator', 'party', 'journalEntry.items.account']),
         ]);
     }
 
     /**
-     * Update the status of a Service Order.
+     * Add an item to an existing order.
+     */
+    public function addItem(Request $request, ServiceOrder $serviceOrder)
+    {
+        $validated = $request->validate([
+            'service_type_id' => 'required|exists:service_types,id',
+            'quantity' => 'required|numeric|min:0.001',
+            'notes' => 'nullable|string',
+        ]);
+
+        $this->serviceOrderService->addItem(
+            $serviceOrder,
+            $validated['service_type_id'],
+            $validated['quantity'],
+            $validated['notes'] ?? null
+        );
+
+        return back()->with('success', 'Item added to order.');
+    }
+
+    /**
+     * Update the status of the service order.
      */
     public function updateStatus(Request $request, ServiceOrder $serviceOrder)
     {
-        $request->validate([
-            'status' => 'required|string|in:pending,processing,ready,picked_up,cancelled',
+        $validated = $request->validate([
+            'status_code' => 'required|string',
         ]);
 
-        $status = $request->status;
-        $updateData = ['status' => $status];
+        $this->serviceOrderService->updateStatus($serviceOrder, $validated['status_code']);
 
-        if ($status === 'ready') {
-            $updateData['ready_at'] = now();
-        } elseif ($status === 'picked_up') {
-            $updateData['picked_up_at'] = now();
-        }
-
-        $serviceOrder->update($updateData);
-
-        return back()->with('success', 'Status order berhasil diperbarui.');
+        return back()->with('success', 'Status updated.');
     }
 
     /**
-     * Process payment for a Service Order.
+     * Record a payment for the service order.
      */
-    public function pay(Request $request, ServiceOrder $serviceOrder)
+    public function recordPayment(Request $request, ServiceOrder $serviceOrder)
     {
-        $request->validate([
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:0',
             'payment_method' => 'required|string',
-            'received_amount' => 'required|numeric|min:0',
-            'warehouse_id' => 'required|exists:warehouses,id',
+            'notes' => 'nullable|string',
         ]);
 
-        if ($serviceOrder->sale_id) {
-            return back()->withErrors(['pay' => 'Order ini sudah dibayar.']);
-        }
+        // Convert to cents
+        $amountCents = (int) ($validated['amount'] * 100);
 
-        return DB::transaction(function () use ($request, $serviceOrder) {
-            $totalAmount = $serviceOrder->items->sum('subtotal');
-            $invoiceNumber = 'IV-SVC-'.now()->format('ymd').strtoupper(bin2hex(random_bytes(2)));
+        $this->serviceOrderService->recordPayment(
+            $serviceOrder,
+            $amountCents,
+            $validated['payment_method'],
+            $validated['notes'] ?? null
+        );
 
-            $sale = Sale::create([
-                'invoice_number' => $invoiceNumber,
-                'warehouse_id' => $request->warehouse_id,
-                'date' => now()->toDateString(),
-                'total_amount' => $totalAmount,
-                'received_amount' => $request->received_amount,
-                'change_amount' => max(0, $request->received_amount - $totalAmount),
-                'payment_method' => $request->payment_method,
-                'status' => 'completed',
-            ]);
+        return back()->with('success', 'Payment recorded.');
+    }
 
-            foreach ($serviceOrder->items as $item) {
-                $sale->items()->create([
-                    'product_id' => $item->product_id,
-                    'unit_id' => $item->unit_id,
-                    'qty' => $item->qty,
-                    'price' => $item->price,
-                    'cost' => 0, // Services usually have 0 direct cost in this context
-                    'subtotal' => $item->subtotal,
-                ]);
-            }
+    /**
+     * Void the service order.
+     */
+    public function void(Request $request, ServiceOrder $serviceOrder)
+    {
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
 
-            $serviceOrder->update(['sale_id' => $sale->id]);
+        $this->serviceOrderService->void($serviceOrder, $request->reason);
 
-            return back()->with('success', 'Pembayaran berhasil diproses.');
-        });
+        return back()->with('success', 'Order voided.');
     }
 }

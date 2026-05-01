@@ -12,6 +12,7 @@ class Vendor extends Model
     use BelongsToCompany, HasFactory;
 
     protected $fillable = [
+        'company_id',
         'name',
         'address',
         'latitude',

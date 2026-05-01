@@ -6,31 +6,28 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ServiceOrderItem extends Model
+class ServicePricing extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'service_order_id',
         'service_type_id',
-        'quantity',
+        'pricing_basis',
+        'unit_name',
         'unit_price',
+        'min_quantity',
+        'max_quantity',
         'discount_pct',
-        'subtotal',
-        'notes',
+        'is_active',
     ];
 
     protected $casts = [
-        'quantity' => 'decimal:3',
         'unit_price' => 'integer', // cents
+        'min_quantity' => 'decimal:3',
+        'max_quantity' => 'decimal:3',
         'discount_pct' => 'decimal:2',
-        'subtotal' => 'integer',   // cents
+        'is_active' => 'boolean',
     ];
-
-    public function serviceOrder(): BelongsTo
-    {
-        return $this->belongsTo(ServiceOrder::class);
-    }
 
     public function serviceType(): BelongsTo
     {
