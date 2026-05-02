@@ -76,10 +76,10 @@ const isExpired = (dateString: string | null) => {
                 </Link>
                 <div>
                     <div class="flex items-center gap-2">
-                        <h1 class="text-xl font-black tracking-tight text-slate-900">{{ company.name }}</h1>
-                        <Badge variant="outline" class="h-5 px-1.5 text-[10px] font-bold border-slate-200 text-slate-400">TENANT ID: #{{ company.id }}</Badge>
+                        <h1 class="text-xl font-black tracking-tight text-slate-900 uppercase">Tenant Add-ons</h1>
+                        <Badge variant="outline" class="h-5 px-1.5 text-[10px] font-bold border-slate-200 text-slate-400 uppercase">Tenant: {{ company.name }}</Badge>
                     </div>
-                    <p class="text-sm text-slate-400 mt-0.5">Manage granular feature overrides and subscription add-ons for this company.</p>
+                    <p class="text-sm text-slate-400 mt-0.5">Override tier limits or provision specific modules for this company.</p>
                 </div>
             </div>
         </div>
@@ -96,16 +96,19 @@ const isExpired = (dateString: string | null) => {
                     </div>
                     <div class="p-5 flex flex-col gap-4">
                         <div class="grid gap-2">
-                            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Select Feature</Label>
+                            <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Select Menu / Feature</Label>
                             <Select v-model="form.feature_key">
-                                <SelectTrigger class="h-10 border-slate-200 rounded-xl font-bold text-xs shadow-none">
-                                    <SelectValue placeholder="Select a feature to override..." />
+                                <SelectTrigger class="h-11 border-slate-200 rounded-xl font-bold text-[13px] shadow-none">
+                                    <SelectValue placeholder="Choose a menu..." />
                                 </SelectTrigger>
-                                <SelectContent class="font-sans max-h-[300px]">
+                                <SelectContent class="font-sans max-h-[400px]">
                                     <SelectGroup v-for="(features, moduleName) in availableFeatures" :key="moduleName">
-                                        <SelectLabel class="text-[10px] font-black uppercase tracking-[0.2em] text-accent pt-3 pb-1">{{ moduleName }}</SelectLabel>
-                                        <SelectItem v-for="feature in features" :key="feature.feature_key" :value="feature.feature_key">
-                                            <span class="text-xs font-bold">{{ feature.feature_key }}</span>
+                                        <SelectLabel class="text-[10px] font-black uppercase tracking-[0.3em] text-accent pt-4 pb-1.5 px-4 bg-slate-50/50">{{ moduleName }}</SelectLabel>
+                                        <SelectItem v-for="feature in features" :key="feature.feature_key" :value="feature.feature_key" class="py-3 cursor-pointer">
+                                            <div class="flex flex-col gap-0.5">
+                                                <span class="text-[13px] font-bold text-slate-900">{{ feature.name }}</span>
+                                                <span class="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-tighter">{{ feature.feature_key }}</span>
+                                            </div>
                                         </SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
@@ -117,30 +120,26 @@ const isExpired = (dateString: string | null) => {
                             <Label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Expiration (Optional)</Label>
                             <div class="relative">
                                 <Calendar class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
-                                <Input type="date" v-model="form.expires_at" class="h-10 pl-10 border-slate-200 rounded-xl font-bold text-xs shadow-none" />
+                                <Input type="date" v-model="form.expires_at" class="h-11 pl-10 border-slate-200 rounded-xl font-bold text-xs shadow-none" />
                             </div>
-                            <p class="text-[10px] text-slate-400">Leave empty for lifetime access.</p>
                         </div>
 
-                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
                             <div class="space-y-0.5">
-                                <Label class="text-[11px] font-bold text-slate-700 uppercase">Status</Label>
-                                <p class="text-[10px] text-slate-400">Override value</p>
+                                <Label class="text-[11px] font-bold text-slate-700 uppercase">Override Value</Label>
+                                <p class="text-[10px] text-slate-400">{{ form.is_enabled ? 'Force Grant' : 'Force Deny' }}</p>
                             </div>
-                            <Switch :checked="form.is_enabled" @update:checked="form.is_enabled = $event" />
+                            <Switch 
+                                :checked="form.is_enabled" 
+                                @update:checked="form.is_enabled = $event" 
+                                class="data-[state=checked]:bg-emerald-500"
+                            />
                         </div>
 
-                        <Button @click="submit" class="w-full bg-accent hover:bg-accent/90 text-white font-black uppercase tracking-widest text-xs h-11 rounded-xl shadow-lg shadow-accent/20 mt-2" :disabled="form.processing">
-                            Apply Override
+                        <Button @click="submit" class="w-full bg-accent hover:bg-accent/90 text-white font-black uppercase tracking-widest text-[11px] h-12 rounded-xl shadow-lg shadow-accent/20 mt-2" :disabled="form.processing">
+                            Apply Add-on
                         </Button>
                     </div>
-                </div>
-
-                <div class="p-5 bg-amber-50 rounded-2xl border border-amber-100 flex gap-3">
-                    <Info class="h-5 w-5 text-amber-500 shrink-0" />
-                    <p class="text-xs text-amber-800 leading-relaxed">
-                        <span class="font-bold">Pro-tip:</span> Overrides take absolute precedence over Tier defaults. Use this to grant trial access to premium modules.
-                    </p>
                 </div>
             </div>
 
@@ -150,7 +149,7 @@ const isExpired = (dateString: string | null) => {
                     <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                         <h2 class="text-xs font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
                             <ShieldCheck class="h-4 w-4 text-emerald-500" />
-                            Active Feature Overrides
+                            Active Overrides
                         </h2>
                         <Badge variant="outline" class="h-6 font-mono text-[10px] font-bold border-slate-100 text-slate-400">COUNT: {{ overrides.length }}</Badge>
                     </div>
@@ -166,7 +165,7 @@ const isExpired = (dateString: string | null) => {
                                     <XCircle v-else class="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h3 class="text-[13px] font-black text-slate-900 tracking-tight">{{ override.feature_key }}</h3>
+                                    <h3 class="text-[13px] font-black text-slate-900 tracking-tight uppercase">{{ override.feature_key }}</h3>
                                     <div class="flex items-center gap-3 mt-1">
                                         <div class="flex items-center gap-1.5">
                                             <Clock class="h-3 w-3 text-slate-300" />
@@ -183,7 +182,7 @@ const isExpired = (dateString: string | null) => {
 
                             <div class="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Badge :variant="override.is_enabled ? 'default' : 'destructive'" class="h-6 text-[10px] font-black tracking-widest px-2 shadow-none">
-                                    {{ override.is_enabled ? 'GRANTED' : 'DENIED' }}
+                                    {{ override.is_enabled ? 'ENABLED' : 'DISABLED' }}
                                 </Badge>
                                 <Button variant="ghost" size="icon" @click="deleteOverride(override.id)" class="h-8 w-8 text-slate-300 hover:text-rose-600 hover:bg-rose-50">
                                     <Trash2 class="h-4 w-4" />
@@ -193,8 +192,7 @@ const isExpired = (dateString: string | null) => {
 
                         <div v-if="overrides.length === 0" class="flex flex-col items-center justify-center py-20 text-center opacity-20">
                             <Puzzle class="h-12 w-12 text-slate-400 mb-4" />
-                            <p class="text-xs font-black uppercase tracking-widest text-slate-500">No Active Overrides</p>
-                            <p class="text-[11px] text-slate-400 mt-1 max-w-[200px]">This tenant is strictly following their Tier limits.</p>
+                            <p class="text-xs font-black uppercase tracking-widest text-slate-500">No Custom Overrides</p>
                         </div>
                     </div>
                 </div>

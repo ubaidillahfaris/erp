@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\Menu;
 use App\Models\Tier;
 use App\Models\TierFeature;
 use App\Models\CompanyFeatureOverride;
@@ -14,15 +15,15 @@ class TenantManagerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Company::query()->with(['tier']);
+        $query = Company::with('tier');
 
         if ($request->has('search')) {
             $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('business_type', 'like', '%' . $request->search . '%');
+                ->orWhere('business_type', 'like', '%' . $request->search . '%');
         }
 
         $tenants = $query->paginate($request->per_page ?? 10)
-                         ->withQueryString();
+            ->withQueryString();
 
         return Inertia::render('Admin/System/Tenants/Index', [
             'tenants' => $tenants,
@@ -47,12 +48,18 @@ class TenantManagerController extends Controller
     public function showOverrides(Company $company)
     {
         $overrides = CompanyFeatureOverride::where('company_id', $company->id)->get();
-        
-        // Get all available features to choose from
-        $allFeatures = TierFeature::select('feature_key', 'module_id')
-            ->with('module:id,name')
+
+        // Get all available features to choose from (all menus)
+        $allFeatures = Menu::with('module:id,name')
             ->get()
-            ->groupBy('module.name');
+            ->map(function ($menu) {
+                return [
+                    'name' => $menu->name,
+                    'feature_key' => $menu->feature_key ?? $menu->route_name,
+                    'module_name' => $menu->module ? $menu->module->name : 'General',
+                ];
+            })
+            ->groupBy('module_name');
 
         return Inertia::render('Admin/System/Tenants/Overrides', [
             'company' => $company,
@@ -66,12 +73,24 @@ class TenantManagerController extends Controller
         $request->validate([
             'feature_key' => 'required|string',
             'is_enabled' => 'required|boolean',
-            'expires_at' => 'nullable|date|after:now',
+            'expires_at' => 'nullable|date',
         ]);
+
+        // Ensure menu has feature_key
+        $menu = Menu::where('feature_key', $request->feature_key)
+            ->orWhere('route_name', $request->feature_key)
+            ->first();
+
+        if ($menu && !$menu->feature_key) {
+            $menu->update(['feature_key' => $request->feature_key]);
+        }
 
         CompanyFeatureOverride::updateOrCreate(
             ['company_id' => $company->id, 'feature_key' => $request->feature_key],
-            ['is_enabled' => $request->is_enabled, 'expires_at' => $request->expires_at]
+            [
+                'is_enabled' => $request->is_enabled,
+                'expires_at' => $request->expires_at,
+            ]
         );
 
         return back()->with('success', 'Feature override updated.');
@@ -80,6 +99,6 @@ class TenantManagerController extends Controller
     public function destroyOverride(Company $company, CompanyFeatureOverride $override)
     {
         $override->delete();
-        return back()->with('success', 'Override removed.');
+        return back()->with('success', 'Feature override removed.');
     }
 }

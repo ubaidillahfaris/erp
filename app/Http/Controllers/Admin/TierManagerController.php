@@ -21,12 +21,18 @@ class TierManagerController extends Controller
 
     public function showFeatures(Tier $tier)
     {
-        // Get all unique feature keys defined in menus, grouped by module
-        $availableFeatures = Menu::whereNotNull('feature_key')
-            ->select('feature_key', 'module_id', 'name')
-            ->with('module:id,name')
+        // Get ALL menus in the system, grouped by module
+        // We use route_name as a fallback for feature_key if it's missing
+        $availableFeatures = Menu::with('module:id,name')
             ->get()
-            ->groupBy(fn($item) => $item->module ? $item->module->name : 'General');
+            ->map(function($menu) {
+                return [
+                    'name' => $menu->name,
+                    'feature_key' => $menu->feature_key ?? $menu->route_name,
+                    'module_name' => $menu->module ? $menu->module->name : 'General',
+                ];
+            })
+            ->groupBy('module_name');
 
         // Current features for this tier
         $currentFeatures = $tier->features()->pluck('feature_key')->toArray();
@@ -45,12 +51,19 @@ class TierManagerController extends Controller
             'features.*' => 'string',
         ]);
 
-        // Clear existing and re-add
+        // Clear existing
         $tier->features()->delete();
 
         foreach ($request->features as $featureKey) {
-            // Find the module_id for this feature from menus
-            $menu = Menu::where('feature_key', $featureKey)->first();
+            // Find if this is an existing feature_key or a route_name
+            $menu = Menu::where('feature_key', $featureKey)
+                ->orWhere('route_name', $featureKey)
+                ->first();
+
+            // If the menu didn't have a feature_key, let's assign it now so the logic works globally
+            if ($menu && !$menu->feature_key) {
+                $menu->update(['feature_key' => $featureKey]);
+            }
 
             TierFeature::create([
                 'tier_id' => $tier->id,

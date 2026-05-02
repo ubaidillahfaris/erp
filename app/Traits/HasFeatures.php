@@ -22,7 +22,7 @@ trait HasFeatures
 
         $cacheKey = "company_{$company->id}_feature_{$featureKey}";
 
-        return Cache::tags(["company_{$company->id}"])->remember($cacheKey, 3600, function () use ($company, $featureKey) {
+        return Cache::remember($cacheKey, 3600, function () use ($company, $featureKey) {
             // 1. Check if the key itself is a Module Slug and check its global status
             $module = \App\Models\Module::where('slug', $featureKey)->first();
             if ($module && !$module->is_active) {
