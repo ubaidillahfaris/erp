@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input, InputCurrency } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { toast } from 'vue-sonner';
 
 defineOptions({ layout: AppLayout });
@@ -143,6 +142,16 @@ const submitPriceAdjustment = () => {
     });
 };
 
+const finalizeOrder = (orderId: number) => {
+    if (confirm('Selesaikan order ini sekarang?')) {
+        router.patch(serviceOrdersRoutes.finalize.url(orderId), {}, {
+            preserveScroll: true,
+            onSuccess: () => toast.success("Order telah diselesaikan"),
+            onError: (err) => toast.error(Object.values(err)[0] as string || "Gagal menyelesaikan order")
+        });
+    }
+};
+
 const getStatusColor = (code: string) => {
     const c = code.toLowerCase();
     if (c.includes('pending') || c.includes('wait')) return 'amber';
@@ -218,20 +227,44 @@ const getStatusColor = (code: string) => {
                             <Label for="code">Kode</Label>
                             <Input id="code" v-model="stepForm.code" placeholder="CUCI" class="rounded-xl" />
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="flex items-center space-x-2">
-                                <Switch id="is_start" :checked="stepForm.is_start" @update:checked="s => stepForm.is_start = s" />
-                                <Label for="is_start">Step Awal</Label>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <Switch id="is_final" :checked="stepForm.is_final" @update:checked="s => stepForm.is_final = s" />
-                                <Label for="is_final">Step Akhir</Label>
+                        <div class="space-y-3">
+                            <Label class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Kategori Proses</Label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <!-- Normal Step -->
+                                <label :class="[
+                                    'relative flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all gap-2',
+                                    !stepForm.is_start && !stepForm.is_final ? 'border-orange-500 bg-orange-50/50' : 'border-slate-100 bg-white hover:bg-slate-50'
+                                ]">
+                                    <input type="radio" name="step_type" class="sr-only" :checked="!stepForm.is_start && !stepForm.is_final" @change="() => { stepForm.is_start = false; stepForm.is_final = false; }" />
+                                    <ListTodo class="h-4 w-4" :class="!stepForm.is_start && !stepForm.is_final ? 'text-orange-500' : 'text-slate-400'" />
+                                    <span class="text-[9px] font-bold uppercase tracking-tight" :class="!stepForm.is_start && !stepForm.is_final ? 'text-orange-700' : 'text-slate-500'">Normal</span>
+                                </label>
+
+                                <!-- Start Step -->
+                                <label :class="[
+                                    'relative flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all gap-2',
+                                    stepForm.is_start ? 'border-blue-500 bg-blue-50/50' : 'border-slate-100 bg-white hover:bg-slate-50'
+                                ]">
+                                    <input type="radio" name="step_type" class="sr-only" :checked="stepForm.is_start" @change="() => { stepForm.is_start = true; stepForm.is_final = false; }" />
+                                    <Clock class="h-4 w-4" :class="stepForm.is_start ? 'text-blue-500' : 'text-slate-400'" />
+                                    <span class="text-[9px] font-bold uppercase tracking-tight" :class="stepForm.is_start ? 'text-blue-700' : 'text-slate-500'">Mulai</span>
+                                </label>
+
+                                <!-- Final Step -->
+                                <label :class="[
+                                    'relative flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all gap-2',
+                                    stepForm.is_final ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-100 bg-white hover:bg-slate-50'
+                                ]">
+                                    <input type="radio" name="step_type" class="sr-only" :checked="stepForm.is_final" @change="() => { stepForm.is_start = false; stepForm.is_final = true; }" />
+                                    <CheckCircle2 class="h-4 w-4" :class="stepForm.is_final ? 'text-emerald-500' : 'text-slate-400'" />
+                                    <span class="text-[9px] font-bold uppercase tracking-tight" :class="stepForm.is_final ? 'text-emerald-700' : 'text-slate-500'">Selesai</span>
+                                </label>
                             </div>
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button @click="submitStep" :disabled="stepForm.processing" class="w-full rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold uppercase tracking-widest text-[10px]">
-                            {{ stepForm.processing ? 'Menyimpan...' : 'Simpan Proses' }}
+                        <Button @click="submitStep" :disabled="stepForm.processing" class="w-full rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold uppercase tracking-widest text-[10px] h-11 shadow-lg shadow-slate-900/10 active:scale-[0.98]">
+                            {{ stepForm.processing ? 'Menyimpan...' : 'Simpan Konfigurasi Step' }}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -272,7 +305,7 @@ const getStatusColor = (code: string) => {
             <draggable
                 v-model="localOrdersByStep[0]"
                 group="orders"
-                @change="(evt) => onDragChange(evt, 0)"
+                @change="onDragChange($event, 0)"
                 item-key="id"
                 class="flex-1 overflow-y-auto space-y-4 pr-3 custom-scrollbar pb-20 -mr-3"
                 ghost-class="opacity-50"
@@ -296,6 +329,15 @@ const getStatusColor = (code: string) => {
                         </div>
                         <div class="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
                             <p class="text-xs font-semibold text-slate-900 tabular-nums leading-none">{{ fmtIdr(order.total_amount) }}</p>
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                class="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl"
+                                title="Selesaikan Langsung"
+                                @click.stop="finalizeOrder(order.id)"
+                            >
+                                <CheckCircle2 class="h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
                 </template>
@@ -323,7 +365,7 @@ const getStatusColor = (code: string) => {
             </div>
 
             <!-- Column Body -->
-            <draggable v-model="localOrdersByStep[step.id]" group="orders" @change="(evt) => onDragChange(evt, step.id)"
+            <draggable v-model="localOrdersByStep[step.id]" group="orders" @change="onDragChange($event, step.id)"
                 item-key="id" class="flex-1 overflow-y-auto space-y-4 pr-3 custom-scrollbar pb-20 -mr-3"
                 ghost-class="opacity-50">
                 <template #item="{ element: order }">
@@ -357,6 +399,16 @@ const getStatusColor = (code: string) => {
 
                         <div class="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
                             <p class="text-xs font-semibold text-slate-900 tabular-nums leading-none">{{ fmtIdr(order.total_amount) }}</p>
+                            <Button 
+                                v-if="!step.is_final"
+                                variant="ghost" 
+                                size="icon" 
+                                class="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl"
+                                title="Selesaikan Langsung"
+                                @click.stop="finalizeOrder(order.id)"
+                            >
+                                <CheckCircle2 class="h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
                 </template>

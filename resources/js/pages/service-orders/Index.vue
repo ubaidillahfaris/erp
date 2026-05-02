@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { Head, router, Link } from '@inertiajs/vue3';
-import debounce from 'lodash/debounce';
+import { ref, watch, computed } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { 
     Search, FileText, User as UserIcon, 
     ShoppingCart, CreditCard, ChevronRight,
     Calendar, CircleCheck, CircleAlert, Filter,
-    X, ClipboardList, Clock, History
+    X, ClipboardList, Clock, History, Plus, RotateCcw
 } from 'lucide-vue-next';
-import { ref, watch, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 import DataTable from '@/components/DataTable.vue';
@@ -16,6 +15,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'vue-sonner';
+import serviceOrdersRoutes from '@/routes/service-orders';
+import { useDebounceFn } from '@vueuse/core';
+import { cn, fmtIdr } from '@/lib/utils';
 
 // Persistent Layout Fix
 defineOptions({ layout: AppLayout });
@@ -62,7 +65,7 @@ const columns = [
     { key: 'status_badge', label: 'Progress Status', sortKey: 'current_status_code' },
 ];
 
-watch([search, date_start, date_end, status, perPage, sort, direction], debounce(() => {
+const debouncedFilter = useDebounceFn(() => {
     router.get('/service-orders', {
         search: search.value || undefined,
         date_start: date_start.value || undefined,
@@ -72,19 +75,13 @@ watch([search, date_start, date_end, status, perPage, sort, direction], debounce
         sort: sort.value || undefined,
         direction: sort.value ? (direction.value || 'asc') : undefined
     }, { preserveState: true, replace: true, preserveScroll: true });
-}, 300));
+}, 300);
+
+watch([search, date_start, date_end, status, perPage, sort, direction], debouncedFilter);
 
 const handleSortChange = (payload: { key: string, direction: 'asc' | 'desc' | null }) => {
     sort.value = payload.key || '';
     direction.value = payload.direction || '';
-};
-
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format((value || 0) / 100);
 };
 
 const formatDate = (dateString: string) => {
@@ -101,6 +98,16 @@ const resetFilters = () => {
     date_start.value = '';
     date_end.value = '';
     status.value = 'all';
+};
+
+const finalizeOrder = (orderId: number) => {
+    if (confirm('Selesaikan order ini sekarang?')) {
+        router.patch(serviceOrdersRoutes.finalize.url(orderId), {}, {
+            preserveScroll: true,
+            onSuccess: () => toast.success("Order telah diselesaikan"),
+            onError: (err) => toast.error(Object.values(err)[0] as string || "Gagal menyelesaikan order")
+        });
+    }
 };
 
 const hasActiveFilters = computed(() => {
@@ -203,7 +210,7 @@ const hasActiveFilters = computed(() => {
 
             <template #cell(total)="{ row }">
                 <span class="text-[13px] font-semibold text-foreground tabular-nums">
-                    {{ formatCurrency(row.total_amount) }}
+                    {{ fmtIdr(row.total_amount) }}
                 </span>
             </template>
 
@@ -222,9 +229,21 @@ const hasActiveFilters = computed(() => {
             </template>
 
             <template #actions="{ row }">
-                <Link :href="`/service-orders/${row.id}`" class="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-secondary transition-all">
-                    <ChevronRight class="h-4 w-4 text-muted-foreground" />
-                </Link>
+                <div class="flex items-center gap-1">
+                    <Button 
+                        v-if="!row.production_step?.is_final"
+                        variant="ghost" 
+                        size="icon" 
+                        class="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
+                        title="Selesaikan Langsung"
+                        @click="finalizeOrder(row.id)"
+                    >
+                        <CircleCheck class="h-4 w-4" />
+                    </Button>
+                    <Link :href="serviceOrdersRoutes.show.url(row.id)" class="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-secondary transition-all">
+                        <ChevronRight class="h-4 w-4 text-muted-foreground" />
+                    </Link>
+                </div>
             </template>
 
             <template #empty>

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Company;
+use App\Observers\CompanyObserver;
 use App\Models\Customer;
 use App\Models\Journal;
 use App\Models\Pengeluaran;
@@ -56,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
         Sale::observe(SaleObserver::class);
         SaleItem::observe(SaleItemObserver::class);
         Purchase::observe(PurchaseObserver::class);
+        Company::observe(CompanyObserver::class);
 
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()

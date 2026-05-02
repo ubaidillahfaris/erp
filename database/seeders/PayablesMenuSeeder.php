@@ -16,10 +16,9 @@ class PayablesMenuSeeder extends Seeder
     {
         // Ensure Finance module exists (safety)
         $module = Module::updateOrCreate(
-            ['id' => 5],
+            ['slug' => 'finance'],
             [
                 'name' => 'Finance',
-                'slug' => 'finance',
                 'order_priority' => 5,
                 'is_active' => true,
             ]

@@ -13,27 +13,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
         $this->call([
             ModuleSeeder::class,
-            CustomerTypeSeeder::class,
-            CustomerStatusSeeder::class,
-            NasabahStatusSeeder::class,
+            ServiceMenuSeeder::class,
             RoleAndPermissionSeeder::class,
             MenuSeeder::class,
             MenuRoleSeeder::class,
-            UnitConversionSeeder::class,
-            // BakeryStoreSeeder::class,
-            ChartOfAccountsSeeder::class,
             AccountingMenuSeeder::class,
-            MaterialAndPlasticSeeder::class,
-            UserSeeder::class,
             SalesMenuSeeder::class,
-            PayableSeeder::class,
             TransaksiModuleSeeder::class,
             PayablesMenuSeeder::class,
-            EmployeeSeeder::class,
             NewFeaturesMenuSeeder::class,
         ]);
     }

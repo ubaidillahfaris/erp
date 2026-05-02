@@ -5,14 +5,29 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Models\Account;
+use App\Models\Company;
 use Illuminate\Database\Seeder;
 
 class ChartOfAccountsSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Run the database seeds for all companies or a specific one.
      */
-    public function run(): void
+    public function run(?int $companyId = null): void
+    {
+        $companies = $companyId 
+            ? Company::where('id', $companyId)->get() 
+            : Company::all();
+
+        foreach ($companies as $company) {
+            $this->seedForCompany($company->id);
+        }
+    }
+
+    /**
+     * Seed default accounts for a specific company.
+     */
+    public function seedForCompany(int $companyId): void
     {
         $accounts = [
             [
@@ -132,7 +147,14 @@ class ChartOfAccountsSeeder extends Seeder
         ];
 
         foreach ($accounts as $account) {
-            Account::updateOrCreate(['code' => $account['code']], $account);
+            Account::updateOrCreate(
+                [
+                    'code' => $account['code'],
+                    'company_id' => $companyId
+                ], 
+                array_merge($account, ['company_id' => $companyId])
+            );
         }
     }
 }
+

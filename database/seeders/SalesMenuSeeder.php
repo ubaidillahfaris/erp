@@ -16,8 +16,8 @@ class SalesMenuSeeder extends Seeder
     {
         // Ensure Transaksi module exists (safety)
         $module = Module::updateOrCreate(
-            ['id' => 10],
-            ['name' => 'Transaksi', 'slug' => 'transaksi', 'order_priority' => 5, 'is_active' => true]
+            ['slug' => 'transaksi'],
+            ['name' => 'Transaksi', 'order_priority' => 5, 'is_active' => true]
         );
 
         $menu = Menu::updateOrCreate(

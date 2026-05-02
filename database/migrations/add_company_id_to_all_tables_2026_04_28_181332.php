@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::table('accounts', function (Blueprint $table) {
             $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('cascade');
+            $table->unique(['code', 'company_id']);
         });
 
         Schema::table('audit_logs', function (Blueprint $table) {

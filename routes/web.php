@@ -238,6 +238,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
         Route::post('service-orders/{service_order}/items', [ServiceOrderController::class, 'addItem'])->name('service-orders.add-item');
         Route::patch('service-orders/{service_order}/status', [ServiceOrderController::class, 'updateStatus'])->name('service-orders.update-status');
         Route::patch('service-orders/{service_order}/step', [ServiceOrderController::class, 'updateStep'])->name('service-orders.update-step');
+        Route::patch('service-orders/{service_order}/finalize', [ServiceOrderController::class, 'finalize'])->name('service-orders.finalize');
         Route::post('service-orders/steps', [ServiceOrderController::class, 'storeStep'])->name('service-orders.steps.store');
         Route::delete('service-orders/steps/{step}', [ServiceOrderController::class, 'destroyStep'])->name('service-orders.steps.destroy');
         Route::patch('service-orders/{service_order}/adjust-price', [ServiceOrderController::class, 'adjustPrice'])->name('service-orders.adjust-price');

@@ -16,7 +16,7 @@ class TransaksiModuleSeeder extends Seeder
     {
         // 1. Ensure Transaksi module exists
         $transaksiModule = Module::updateOrCreate(
-            ['id' => 10],
+            ['slug' => 'transaksi'],
             [
                 'name' => 'Transaksi',
                 'slug' => 'transaksi',

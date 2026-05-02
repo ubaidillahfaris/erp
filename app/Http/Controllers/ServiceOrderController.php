@@ -6,7 +6,6 @@ use App\Models\Customer;
 use App\Models\ProductionStep;
 use App\Models\Service;
 use App\Models\ServiceOrder;
-use App\Models\ServiceProcessingStatus;
 use App\Models\Vendor;
 use App\Services\ServiceOrderService;
 use Illuminate\Http\Request;
@@ -15,9 +14,7 @@ use Inertia\Response;
 
 class ServiceOrderController extends Controller
 {
-    public function __construct(protected ServiceOrderService $serviceOrderService)
-    {
-    }
+    public function __construct(protected ServiceOrderService $serviceOrderService) {}
 
     /**
      * Display a listing of service orders.
@@ -106,9 +103,9 @@ class ServiceOrderController extends Controller
         // Get next steps for this order based on current step
         $nextSteps = [];
         if ($serviceOrder->production_step_id) {
-            $nextSteps = \App\Models\ProductionStep::where('parent_step_id', $serviceOrder->production_step_id)->get();
+            $nextSteps = ProductionStep::where('parent_step_id', $serviceOrder->production_step_id)->get();
         } else {
-            $nextSteps = \App\Models\ProductionStep::where('company_id', $serviceOrder->company_id)
+            $nextSteps = ProductionStep::where('company_id', $serviceOrder->company_id)
                 ->where('is_start', true)
                 ->get();
         }
@@ -165,6 +162,7 @@ class ServiceOrderController extends Controller
 
         try {
             $this->serviceOrderService->updateProductionStep($serviceOrder, $validated['production_step_id']);
+
             return back()->with('success', 'Production step updated.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -186,7 +184,10 @@ class ServiceOrderController extends Controller
         ]);
 
         $validated['company_id'] = auth()->user()->company_id;
-        \App\Models\ProductionStep::create($validated);
+        $validated['is_start'] = $request->boolean('is_start');
+        $validated['is_final'] = $request->boolean('is_final');
+
+        ProductionStep::create($validated);
 
         return back()->with('success', 'Step created successfully.');
     }
@@ -194,14 +195,37 @@ class ServiceOrderController extends Controller
     /**
      * Remove a production step.
      */
-    public function destroyStep(\App\Models\ProductionStep $step)
+    public function destroyStep(ProductionStep $step)
     {
         if (ServiceOrder::where('production_step_id', $step->id)->exists()) {
             return back()->withErrors(['error' => 'Cannot delete step that is currently in use by orders.']);
         }
 
         $step->delete();
+
         return back()->with('success', 'Step deleted successfully.');
+    }
+
+    /**
+     * Fast-track order to final step.
+     */
+    public function finalize(ServiceOrder $serviceOrder)
+    {
+        $finalStep = ProductionStep::where('company_id', $serviceOrder->company_id)
+            ->where('is_final', true)
+            ->first();
+
+        if (! $finalStep) {
+            return back()->withErrors(['error' => 'Belum ada step produksi yang ditandai sebagai "Step Akhir". Harap atur di Kanban Board.']);
+        }
+
+        try {
+            $this->serviceOrderService->updateProductionStep($serviceOrder, $finalStep->id);
+
+            return back()->with('success', "Order #{$serviceOrder->order_number} berhasil diselesaikan.");
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 
     /**

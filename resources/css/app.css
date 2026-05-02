@@ -68,6 +68,17 @@
     --shadow-xl:  0 20px 40px -8px rgb(0 0 0 / 0.12);
     --shadow-2xl: 0 32px 64px -12px rgb(0 0 0 / 0.18);
     --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+    --color-hero: hsl(210 20% 96%);
+    --color-surface: hsl(0 0% 100%);
+    --color-lavender: hsl(252 62% 90%);
+    --color-lavender-soft: hsl(252 62% 95%);
+    --color-lavender-deep: hsl(252 62% 40%);
+    --color-peach: hsl(25 90% 85%);
+    --color-peach-soft: hsl(25 90% 95%);
+    
+    --shadow-soft: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+    --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
 }
 
 :root {
