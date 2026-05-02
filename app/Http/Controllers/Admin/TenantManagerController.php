@@ -48,9 +48,21 @@ class TenantManagerController extends Controller
         return back()->with('success', "Tier for {$company->name} updated.");
     }
 
-    public function showOverrides(Company $company)
+    public function showOverrides(Company $company, Request $request)
     {
-        $overrides = CompanyFeatureOverride::where('company_id', $company->id)->get();
+        $overrides = CompanyFeatureOverride::where('company_id', $company->id)
+            ->paginate($request->per_page ?? 10)
+            ->withQueryString();
+
+        // Attach human-readable menu names to overrides
+        $overrides->getCollection()->transform(function ($override) {
+            $menu = Menu::where('feature_key', $override->feature_key)
+                ->orWhere('route_name', $override->feature_key)
+                ->first();
+            
+            $override->feature_name = $menu ? $menu->name : $override->feature_key;
+            return $override;
+        });
 
         // Get all available features to choose from (all menus)
         $allFeatures = Menu::with('module:id,name')
@@ -68,7 +80,25 @@ class TenantManagerController extends Controller
             'company' => $company,
             'overrides' => $overrides,
             'availableFeatures' => $allFeatures,
+            'filters' => $request->only(['per_page']),
         ]);
+    }
+
+    public function bulkDestroyOverride(Request $request, Company $company)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:company_feature_overrides,id',
+        ]);
+
+        CompanyFeatureOverride::where('company_id', $company->id)
+            ->whereIn('id', $request->ids)
+            ->delete();
+
+        $company->flushFeatureCache();
+        app(\App\Services\RoleService::class)->clearAllMenuCaches();
+
+        return back()->with('success', 'Selected overrides removed.');
     }
 
     public function storeOverride(Request $request, Company $company)

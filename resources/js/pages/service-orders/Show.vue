@@ -58,6 +58,7 @@ interface Order {
     received_amount: number;
     payment_method: string;
     notes: string | null;
+    status: string;
     production_step_id: number | null;
     production_step: Step | null;
     customer: any | null;
@@ -128,6 +129,14 @@ const handleVoid = () => {
         <template #actions>
             <div class="flex items-center gap-2">
                 <Badge 
+                    v-if="order.status === 'cancelled'"
+                    class="bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-50 text-[11px] uppercase font-semibold px-3 h-8 shadow-sm"
+                >
+                    <Ban class="h-3.5 w-3.5 mr-1.5" />
+                    Dibatalkan
+                </Badge>
+                <Badge 
+                    v-else
                     class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[11px] uppercase font-semibold px-3 h-8 shadow-sm"
                     :class="{
                         'bg-amber-50 text-amber-600 border-amber-100': !order.production_step?.is_final,
@@ -139,7 +148,7 @@ const handleVoid = () => {
                     {{ order.production_step?.name || 'PENDING' }}
                 </Badge>
 
-                <Dialog v-model:open="isVoidDialogOpen">
+                <Dialog v-if="order.status !== 'cancelled'" v-model:open="isVoidDialogOpen">
                     <DialogTrigger as-child>
                         <Button variant="outline" class="h-8 text-[10px] font-semibold uppercase tracking-widest text-destructive hover:bg-destructive/5 hover:text-destructive border-destructive/20">
                             <Ban class="h-3 w-3 mr-2" /> Batalkan Order
@@ -174,7 +183,7 @@ const handleVoid = () => {
     <div class="w-full max-w-7xl mx-auto flex flex-col gap-6">
         
         <!-- Workflow / Status Transition Panel -->
-        <div v-if="next_steps.length > 0" class="bg-white border-2 border-primary/20 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div v-if="next_steps.length > 0 && order.status !== 'cancelled'" class="bg-white border-2 border-primary/20 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
             <div class="flex items-start gap-4">
                 <div class="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                     <Play class="h-5 w-5 fill-current" />
@@ -296,19 +305,36 @@ const handleVoid = () => {
                         <div class="h-px bg-slate-200 mt-2 mb-1"></div>
                         <div class="flex justify-between items-center">
                             <span class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-900">Total Tagihan</span>
-                            <span class="text-3xl font-semibold text-slate-900 tabular-nums tracking-tighter">
+                            <span class="text-3xl font-semibold text-slate-900 tabular-nums tracking-tighter" :class="{'line-through text-slate-400': order.status === 'cancelled'}">
                                 {{ formatCurrency(order.total_amount) }}
                             </span>
                         </div>
                         
-                        <div class="flex justify-between items-center mt-2 px-4 py-3 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm">
+                        <div :class="[
+                            'flex justify-between items-center mt-2 px-4 py-3 rounded-xl border shadow-sm transition-colors',
+                            order.status === 'cancelled' ? 'bg-slate-50 border-slate-200' : 'bg-emerald-50 border-emerald-100'
+                        ]">
                             <div class="flex flex-col">
-                                <span class="text-[9px] font-semibold uppercase tracking-widest text-emerald-600 opacity-70">Uang Diterima</span>
-                                <span class="text-sm font-semibold text-emerald-700 tabular-nums">{{ formatCurrency(order.received_amount) }}</span>
+                                <span :class="[
+                                    'text-[9px] font-semibold uppercase tracking-widest opacity-70',
+                                    order.status === 'cancelled' ? 'text-slate-500' : 'text-emerald-600'
+                                ]">Uang Diterima</span>
+                                <span :class="[
+                                    'text-sm font-semibold tabular-nums',
+                                    order.status === 'cancelled' ? 'text-slate-500' : 'text-emerald-700'
+                                ]">{{ formatCurrency(order.received_amount) }}</span>
                             </div>
                             <div class="flex flex-col items-end">
-                                <span class="text-[9px] font-semibold uppercase tracking-widest text-emerald-600 opacity-70">Status Bayar</span>
-                                <span class="text-sm font-semibold text-emerald-700 uppercase tracking-widest">Lunas</span>
+                                <span :class="[
+                                    'text-[9px] font-semibold uppercase tracking-widest opacity-70',
+                                    order.status === 'cancelled' ? 'text-slate-500' : 'text-emerald-600'
+                                ]">Status Bayar</span>
+                                <span :class="[
+                                    'text-sm font-semibold uppercase tracking-widest',
+                                    order.status === 'cancelled' ? 'text-slate-500' : 'text-emerald-700'
+                                ]">
+                                    {{ order.status === 'cancelled' ? 'Batal' : 'Lunas' }}
+                                </span>
                             </div>
                         </div>
                     </div>

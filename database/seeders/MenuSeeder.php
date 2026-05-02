@@ -44,6 +44,16 @@ class MenuSeeder extends Seeder
             'order_priority' => 20,
         ]);
 
+        $this->seedMenu([
+            'name' => 'Service Orders',
+            'path' => '/service-orders',
+            'route_name' => 'service-orders.index',
+            'icon' => 'ClipboardList',
+            'permission_name' => 'make sales',
+            'module_slug' => 'transaksi',
+            'order_priority' => 25,
+        ]);
+
         // Inventory (Slug: inventory)
         $this->seedMenu([
             'name' => 'Product (Barang)',

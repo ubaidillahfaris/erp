@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 interface Option {
     value: string | number;
     label: string;
+    group?: string; // NEW: Group identifier
 }
 
 interface Props {
@@ -39,7 +40,7 @@ watch(searchTerm, (val) => {
     emit('search', val);
 });
 
-// Fix Bug 2: compare as string untuk handle number vs string mismatch
+// Compare as string to handle number vs string mismatch
 const selectedLabel = computed(() => {
     if (props.modelValue === null || props.modelValue === undefined || props.modelValue === '') {
         return null;
@@ -50,15 +51,32 @@ const selectedLabel = computed(() => {
     return option ? option.label : null;
 });
 
-// Fix Bug 1: filter manual, tidak pakai ComboboxRoot filtering
-const filteredOptions = computed(() => {
-    // If we are doing server-side search, we might not want to filter locally 
-    // but usually it's fine to do both.
-    if (!searchTerm.value.trim()) return props.options;
-    const term = searchTerm.value.toLowerCase();
-    return props.options.filter(opt =>
-        opt.label.toLowerCase().includes(term)
-    );
+// Grouped options for rendering
+const groupedOptions = computed(() => {
+    let options = props.options;
+    
+    if (searchTerm.value.trim()) {
+        const term = searchTerm.value.toLowerCase();
+        options = options.filter(opt =>
+            opt.label.toLowerCase().includes(term) || 
+            (opt.group && opt.group.toLowerCase().includes(term))
+        );
+    }
+
+    // Grouping logic
+    const groups: Record<string, Option[]> = {};
+    const noGroup: Option[] = [];
+
+    options.forEach(opt => {
+        if (opt.group) {
+            if (!groups[opt.group]) groups[opt.group] = [];
+            groups[opt.group].push(opt);
+        } else {
+            noGroup.push(opt);
+        }
+    });
+
+    return { groups, noGroup };
 });
 
 const selectOption = (option: Option) => {
@@ -71,7 +89,7 @@ const clearSelection = () => {
     emit('update:modelValue', null);
 };
 
-// Reset search saat popover dibuka
+// Reset search when popover opens
 const handleOpenChange = (val: boolean) => {
     open.value = val;
     if (val) {
@@ -85,12 +103,15 @@ const handleOpenChange = (val: boolean) => {
 <Popover :open="open" @update:open="handleOpenChange">
     <PopoverTrigger as-child>
         <Button variant="outline" role="combobox" :aria-expanded="open" :disabled="disabled" :class="cn(
-            'w-full justify-between h-10 rounded-xl border-slate-200 shadow-none px-3 font-medium hover:bg-slate-50 transition-colors',
+            'w-full justify-between h-10 rounded-xl border-slate-200 shadow-none px-3 font-medium hover:bg-slate-50 transition-colors text-[13px]',
             !selectedLabel && 'text-muted-foreground font-normal',
             props.class
         )">
             <span class="truncate">{{ selectedLabel ?? placeholder }}</span>
-            <ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            <div class="flex items-center">
+                <Check v-if="selectedLabel" class="h-3.5 w-3.5 shrink-0 text-accent opacity-50 cursor-pointer hover:opacity-100" @click.stop="clearSelection" />
+                <ChevronsUpDown v-else class="h-4 w-4 shrink-0 opacity-50" />
+            </div>
         </Button>
     </PopoverTrigger>
 
@@ -106,24 +127,47 @@ const handleOpenChange = (val: boolean) => {
         </div>
 
         <!-- Options list -->
-        <div class="p-1 max-h-60 overflow-y-auto">
-            <template v-if="filteredOptions.length > 0">
-                <button v-for="option in filteredOptions" :key="option.value" type="button"
+        <div class="p-1 max-h-80 overflow-y-auto overflow-x-hidden">
+            <template v-if="Object.keys(groupedOptions.groups).length > 0 || groupedOptions.noGroup.length > 0">
+                <!-- Grouped Items -->
+                <div v-for="(items, groupName) in groupedOptions.groups" :key="groupName" class="mb-2">
+                    <div class="px-3 py-1.5 text-[10px] font-semibold text-accent uppercase tracking-wider bg-slate-50/80 rounded-md mb-1">
+                        {{ groupName }}
+                    </div>
+                    <button v-for="option in items" :key="option.value" type="button"
+                        @click="selectOption(option)"
+                        class="relative flex w-full cursor-pointer select-none items-center rounded-lg py-2.5 pl-9 pr-3 text-[13px] outline-none hover:bg-slate-50 focus:bg-slate-50 transition-colors text-left"
+                        :class="{
+                            'text-accent font-semibold bg-accent/5': option.value.toString() === modelValue?.toString()
+                        }">
+                        <span v-if="option.value.toString() === modelValue?.toString()"
+                            class="absolute left-3 flex h-4 w-4 items-center justify-center">
+                            <Check class="h-4 w-4" />
+                        </span>
+                        <span class="truncate">{{ option.label }}</span>
+                    </button>
+                </div>
+
+                <!-- Ungrouped Items -->
+                <button v-for="option in groupedOptions.noGroup" :key="option.value" type="button"
                     @click="selectOption(option)"
-                    class="relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none hover:bg-slate-50 focus:bg-slate-50 transition-colors text-left"
+                    class="relative flex w-full cursor-pointer select-none items-center rounded-lg py-2.5 pl-9 pr-3 text-[13px] outline-none hover:bg-slate-50 focus:bg-slate-50 transition-colors text-left"
                     :class="{
-                        'text-accent font-semibold': option.value.toString() === modelValue?.toString()
+                        'text-accent font-semibold bg-accent/5': option.value.toString() === modelValue?.toString()
                     }">
                     <span v-if="option.value.toString() === modelValue?.toString()"
-                        class="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                        <Check class="h-3.5 w-3.5" />
+                        class="absolute left-3 flex h-4 w-4 items-center justify-center">
+                        <Check class="h-4 w-4" />
                     </span>
                     <span class="truncate">{{ option.label }}</span>
                 </button>
             </template>
 
-            <div v-else class="py-6 text-center text-sm text-muted-foreground">
-                Tidak ditemukan.
+            <div v-else class="py-10 text-center text-sm text-muted-foreground">
+                <div class="flex flex-col items-center gap-2">
+                    <Search class="h-8 w-8 opacity-20" />
+                    <p class="text-xs font-medium uppercase tracking-widest opacity-40">Tidak ditemukan</p>
+                </div>
             </div>
         </div>
     </PopoverContent>

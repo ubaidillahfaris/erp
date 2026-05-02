@@ -54,20 +54,9 @@ class EnsureBusinessPresetAccess
      */
     protected function handleUnauthorized(Request $request)
     {
-        $defaultRoute = 'dashboard';
-        $currentRouteName = Route::currentRouteName();
-
-        $message = 'Fitur ini tidak tersedia untuk paket langganan Anda.';
-
-        if ($request->header('X-Inertia')) {
-            // Prevent redirect loop
-            if ($currentRouteName === $defaultRoute) {
-                abort(403, $message);
-            }
-
-            return redirect()->route($defaultRoute)->with('error', $message);
-        }
-
-        abort(403, $message);
+        return \Inertia\Inertia::render('Error', [
+            'status' => 403,
+            'message' => 'Fitur ini tidak tersedia untuk paket langganan Anda.'
+        ])->toResponse($request)->setStatusCode(403);
     }
 }

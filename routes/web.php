@@ -206,6 +206,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
         Route::put('admin/system/tenants/{company}/tier', [TenantManagerController::class, 'updateTier'])->name('admin.tenants.tier');
         Route::get('admin/system/tenants/{company}/overrides', [TenantManagerController::class, 'showOverrides'])->name('admin.tenants.overrides');
         Route::post('admin/system/tenants/{company}/overrides', [TenantManagerController::class, 'storeOverride'])->name('admin.tenants.overrides.store');
+        Route::delete('admin/system/tenants/{company}/overrides/bulk', [TenantManagerController::class, 'bulkDestroyOverride'])->name('admin.tenants.overrides.bulk-destroy');
         Route::delete('admin/system/tenants/{company}/overrides/{override}', [TenantManagerController::class, 'destroyOverride'])->name('admin.tenants.overrides.destroy');
 
         // Tier Manager
