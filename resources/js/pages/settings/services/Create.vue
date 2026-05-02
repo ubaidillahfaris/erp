@@ -13,7 +13,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import type { BreadcrumbItem } from '@/types';
 
 const props = defineProps<{
-    available_categories: string[];
+    available_categories: Array<{ id: number, name: string }>;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,7 +26,7 @@ const form = useForm({
     code: '',
     name: '',
     description: '',
-    service_category: props.available_categories[0] || 'Other',
+    service_category_id: props.available_categories[0]?.id || '',
     is_active: true,
     add_another: false
 });
@@ -79,19 +79,18 @@ const submit = (addAnother = false) => {
                             <InputError :message="form.errors.code" />
                         </div>
                         <div class="flex flex-col gap-2">
-                            <Label for="service_category" class="font-medium">Kategori Jasa</Label>
-                            <Select v-model="form.service_category">
+                            <Label for="service_category_id" class="font-medium">Kategori Jasa</Label>
+                            <Select v-model="form.service_category_id">
                                 <SelectTrigger class="w-full font-semibold">
                                     <SelectValue placeholder="Pilih Kategori" />
                                 </SelectTrigger>
                                 <SelectContent class="rounded-xl border-slate-100 shadow-xl">
-                                    <SelectItem v-for="cat in available_categories" :key="cat" :value="cat">
-                                        {{ cat }}
+                                    <SelectItem v-for="cat in available_categories" :key="cat.id" :value="cat.id.toString()">
+                                        {{ cat.name }}
                                     </SelectItem>
-                                    <SelectItem value="Other">Lainnya</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <InputError :message="form.errors.service_category" />
+                            <InputError :message="form.errors.service_category_id" />
                         </div>
                     </div>
 

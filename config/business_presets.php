@@ -32,7 +32,7 @@ return [
             'finance' => ['pengeluaran.index'], // Biaya Operasional only
             'settings' => [
                 'users.index',
-                'settings.services.index' => 'Katalog Jasa'
+                'settings.services.index' => 'Katalog Jasa',
             ],
         ],
         'features' => [
@@ -41,6 +41,34 @@ return [
             'status_tracking' => true,
         ],
         'service_categories' => ['Laundry Kiloan', 'Laundry Satuan', 'Dry Cleaning', 'Setrika Saja'],
+        'default_route' => 'service-orders.create',
+    ],
+
+    'event_organizer' => [
+        'name' => 'Event Organizer',
+        'modules' => [
+            'platform' => '*',                   // Dashboard
+            'transaksi' => [
+                'service-orders.create' => 'Order Event',
+                'service-orders.board' => 'Board Event',
+                'service-orders.index' => 'Daftar Event',
+                'sales.index' => 'Riwayat Penjualan',
+            ],
+            'crm' => [
+                'customer.index' => 'Daftar Pelanggan',
+            ],
+            'finance' => ['pengeluaran.index'], // Biaya Operasional only
+            'settings' => [
+                'users.index',
+                'settings.services.index' => 'Katalog Jasa',
+            ],
+        ],
+        'features' => [
+            'weight_based_billing' => true,
+            'item_based_billing' => true,
+            'status_tracking' => true,
+        ],
+        'service_categories' => ['Event Kiloan', 'Event Satuan', 'Dry Cleaning', 'Setrika Saja'],
         'default_route' => 'service-orders.create',
     ],
 
@@ -99,7 +127,7 @@ return [
             'report' => '*',
             'settings' => [
                 '*',
-                'settings.services.index' => 'Katalog Jasa'
+                'settings.services.index' => 'Katalog Jasa',
             ],
         ],
         'features' => [
@@ -126,7 +154,7 @@ return [
             'report' => '*',
             'settings' => [
                 '*',
-                'settings.services.index' => 'Katalog Jasa'
+                'settings.services.index' => 'Katalog Jasa',
             ],
         ],
         'features' => [

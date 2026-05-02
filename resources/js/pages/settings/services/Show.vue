@@ -71,6 +71,10 @@ interface Service {
     name: string;
     description: string | null;
     service_category: string;
+    category?: {
+        id: number;
+        name: string;
+    };
     is_active: boolean;
     service_types: ServiceType[];
 }
@@ -362,7 +366,7 @@ const formatPricingValue = (p: Pricing) => {
                                 <TableRow>
                                     <TableCell class="bg-slate-50/50 font-medium text-slate-500 text-[11px] uppercase tracking-tight">Kategori</TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" class="font-semibold py-0 h-5 text-[10px]">{{ service.service_category }}</Badge>
+                                        <Badge variant="outline" class="font-semibold py-0 h-5 text-[10px]">{{ service.category?.name || service.service_category }}</Badge>
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>

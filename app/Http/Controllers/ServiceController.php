@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductionStep;
 use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\ServiceOrder;
 use App\Models\ServicePricing;
 use App\Models\ServiceType;
@@ -20,7 +21,7 @@ class ServiceController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('settings/services/Index', [
-            'services' => Service::withCount(['serviceTypes', 'orders'])->paginate(10),
+            'services' => Service::with(['category'])->withCount(['serviceTypes', 'orders'])->paginate(10),
             'filters' => $request->only(['search', 'category']),
         ]);
     }
@@ -30,8 +31,7 @@ class ServiceController extends Controller
      */
     public function create(): Response
     {
-        $businessType = auth()->user()->company->business_type ?? 'other';
-        $categories = config("business_presets.{$businessType}.service_categories", ['Jasa Umum', 'Lainnya']);
+        $categories = ServiceCategory::where('company_id', auth()->user()->company_id)->get();
 
         return Inertia::render('settings/services/Create', [
             'available_categories' => $categories,
@@ -47,7 +47,7 @@ class ServiceController extends Controller
             'code' => 'required|string|unique:services,code',
             'name' => 'required|string',
             'description' => 'nullable|string',
-            'service_category' => 'required|string',
+            'service_category_id' => 'required|exists:service_categories,id',
         ]);
 
         $validated['created_by'] = auth()->id();
@@ -63,7 +63,7 @@ class ServiceController extends Controller
     public function show(Service $service): Response
     {
         return Inertia::render('settings/services/Show', [
-            'service' => $service->load(['serviceTypes.pricings']),
+            'service' => $service->load(['serviceTypes.pricings', 'category']),
             'production_steps' => ProductionStep::where('company_id', auth()->user()->company_id)
                 ->orderBy('sequence_order')
                 ->get(),

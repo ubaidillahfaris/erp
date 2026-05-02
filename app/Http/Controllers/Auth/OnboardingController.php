@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\ServiceCategory;
 use App\Services\RoleService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,9 +34,20 @@ class OnboardingController extends Controller
             'owner_id' => Auth::id(),
         ]);
 
+        // Seed default service categories from config
+        $categories = config("business_presets.{$company->business_type}.service_categories", ['Jasa Umum', 'Lainnya']);
+        foreach ($categories as $categoryName) {
+            ServiceCategory::create([
+                'company_id' => $company->id,
+                'name' => $categoryName,
+            ]);
+        }
+
         Auth::user()->update([
             'company_id' => $company->id,
         ]);
+
+        Auth::user()->assignRole('owner');
 
         app(RoleService::class)->clearMenuCache(Auth::user());
 

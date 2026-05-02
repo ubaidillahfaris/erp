@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\ServiceCategoryController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\RoleController;
 use App\Http\Controllers\Settings\TwoFactorAuthenticationController;
 use App\Http\Controllers\Settings\UserController;
-use App\Http\Controllers\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -48,5 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('settings/service-pricings/{pricing}', [ServiceController::class, 'updatePricing'])->name('settings.service-pricings.update');
         Route::delete('settings/service-pricings/{pricing}', [ServiceController::class, 'destroyPricing'])->name('settings.service-pricings.destroy');
         Route::post('settings/services/{service}/statuses', [ServiceController::class, 'syncStatuses'])->name('settings.services.sync-statuses');
+        Route::delete('settings/service-categories/bulk-destroy', [ServiceCategoryController::class, 'bulkDestroy'])->name('settings.service-categories.bulk-destroy');
+        Route::resource('settings/service-categories', ServiceCategoryController::class)->names('settings.service-categories');
     });
 });

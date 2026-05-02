@@ -47,6 +47,10 @@ interface Service {
     name: string;
     description: string | null;
     service_category: string;
+    category?: {
+        id: number;
+        name: string;
+    };
     is_active: boolean;
     service_types_count: number;
     orders_count: number;
@@ -126,11 +130,16 @@ const formatCount = (count: number, label: string) => {
             :total-count="services.total"
         >
             <template #header-actions>
-                <!-- Reuse the same pattern for Add button -->
-                <Button primary @click="router.visit('/settings/services/create')">
-                    <Plus class="h-4 w-4" />
-                    Tambah Jasa
-                </Button>
+                <div class="flex items-center gap-2">
+                    <Button variant="outline" @click="router.visit('/settings/service-categories')">
+                        <Tag class="h-4 w-4" />
+                        Kelola Kategori
+                    </Button>
+                    <Button primary @click="router.visit('/settings/services/create')">
+                        <Plus class="h-4 w-4" />
+                        Tambah Jasa
+                    </Button>
+                </div>
             </template>
 
             <template #cell(identity)="{ row }">
@@ -139,7 +148,7 @@ const formatCount = (count: number, label: string) => {
                         #{{ row.code }}
                     </span>
                     <span class="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest pl-0.5">
-                        {{ row.service_category }}
+                        {{ row.category?.name || row.service_category }}
                     </span>
                 </div>
             </template>

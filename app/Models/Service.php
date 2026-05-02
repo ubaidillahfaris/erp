@@ -18,10 +18,16 @@ class Service extends Model
         'code',
         'name',
         'description',
-        'service_category',
+        'service_category', // Keep for backward compatibility/migration
+        'service_category_id',
         'is_active',
         'created_by',
     ];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ServiceCategory::class, 'service_category_id');
+    }
 
     protected $casts = [
         'is_active' => 'boolean',

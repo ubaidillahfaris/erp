@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, useForm, usePage, Link, router } from '@inertiajs/vue3';
+import * as serviceOrdersRoutes from '@/routes/service-orders';
 import { 
     Calendar, User, CreditCard, FileText, 
     ArrowLeft, Ban, CheckCircle2, AlertCircle,

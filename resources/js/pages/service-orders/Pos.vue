@@ -46,6 +46,10 @@ interface Service {
     code: string;
     name: string;
     service_category: string;
+    category?: {
+        id: number;
+        name: string;
+    };
     service_types: ServiceType[];
 }
 
@@ -289,7 +293,7 @@ const StatusPill = {
                     </h3>
                     <div class="flex items-center justify-between mt-auto">
                         <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                            {{ s.service_category }}
+                            {{ s.category?.name || s.service_category }}
                         </p>
                         <span
                             class="h-8 w-8 rounded-full bg-slate-100 group-hover:bg-primary group-hover:text-white flex items-center justify-center transition shrink-0">

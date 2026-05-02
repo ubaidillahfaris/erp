@@ -22,45 +22,5 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         $admin->assignRole('superadmin');
-
-        // 1. Owner / Super Admin
-        $owner = User::firstOrCreate([
-            'email' => 'owner@warung.com',
-        ], [
-            'name' => 'Owner Warung',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
-        $owner->assignRole('superadmin');
-
-        // 2. Production Manager (Manufaktur Plastik)
-        $productsi = User::firstOrCreate([
-            'email' => 'productsi@warung.com',
-        ], [
-            'name' => 'Manager Productsi Plastik',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
-        $productsi->assignRole('superadmin'); // Production needs high access for BOM/Stock
-
-        // 3. Store / Sales Manager (Toko Bangunan)
-        $sales = User::firstOrCreate([
-            'email' => 'sales@warung.com',
-        ], [
-            'name' => 'Store Manager Bangunan',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
-        $sales->assignRole('superadmin');
-
-        // 4. Cashier
-        $kasir = User::firstOrCreate([
-            'email' => 'kasir@warung.com',
-        ], [
-            'name' => 'Kasir Toko',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
-        ]);
-        $kasir->assignRole('cashier');
     }
 }
