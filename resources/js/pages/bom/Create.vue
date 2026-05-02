@@ -5,7 +5,7 @@ import { ArrowLeft, Plus, Save, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { index as bomIndex, store } from '@/actions/App/Http/Controllers/BOMController';
 import quickUnitAction from '@/actions/App/Http/Controllers/QuickCreateUnitController';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import CreatableSelect from '@/components/ui/input/CreatableSelect.vue';
 import Combobox from '@/components/ui/combobox/Combobox.vue';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

@@ -32,11 +32,6 @@ class Service extends Model
         return $this->hasMany(ServiceType::class);
     }
 
-    public function processingStatuses(): HasMany
-    {
-        return $this->hasMany(ServiceProcessingStatus::class)->orderBy('sequence_order');
-    }
-
     public function orders(): HasMany
     {
         return $this->hasMany(ServiceOrder::class);

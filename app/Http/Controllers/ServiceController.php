@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Service;
 use App\Models\ServiceType;
 use App\Models\ServicePricing;
-use App\Models\ServiceProcessingStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -62,7 +61,7 @@ class ServiceController extends Controller
     public function show(Service $service): Response
     {
         return Inertia::render('settings/services/Show', [
-            'service' => $service->load(['serviceTypes.pricings', 'processingStatuses']),
+            'service' => $service->load(['serviceTypes.pricings']),
         ]);
     }
 
@@ -133,27 +132,5 @@ class ServiceController extends Controller
         return back()->with('success', 'Pricing rule deleted.');
     }
 
-    /**
-     * Store/Update processing statuses.
-     */
-    public function syncStatuses(Request $request, Service $service)
-    {
-        $validated = $request->validate([
-            'statuses' => 'required|array',
-            'statuses.*.status_code' => 'required|string',
-            'statuses.*.status_name' => 'required|string',
-            'statuses.*.sequence_order' => 'required|integer',
-            'statuses.*.is_default_start' => 'required|boolean',
-            'statuses.*.is_final' => 'required|boolean',
-        ]);
 
-        DB::transaction(function () use ($service, $validated) {
-            $service->processingStatuses()->delete();
-            foreach ($validated['statuses'] as $status) {
-                $service->processingStatuses()->create($status);
-            }
-        });
-
-        return back()->with('success', 'Statuses synchronized.');
-    }
 }

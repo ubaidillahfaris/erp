@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-vue-next';
 import { Plus, Trash2 } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { index as satuanIndex, store as satuanStore } from '@/actions/App/Http/Controllers/UnitController';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import CreatableSelect from '@/components/ui/input/CreatableSelect.vue';
 import FormActionButtons from '@/components/FormActionButtons.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';

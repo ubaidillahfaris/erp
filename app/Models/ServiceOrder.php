@@ -23,7 +23,7 @@ class ServiceOrder extends Model
         'party_id',
         'order_date',
         'completion_date',
-        'current_status_code',
+        'production_step_id',
         'notes',
         'total_amount',
         'total_paid',
@@ -37,11 +37,17 @@ class ServiceOrder extends Model
         'completion_date' => 'datetime',
         'total_amount' => 'integer', // cents
         'total_paid' => 'integer',   // cents
+        'production_step_id' => 'integer',
     ];
 
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function productionStep(): BelongsTo
+    {
+        return $this->belongsTo(ProductionStep::class);
     }
 
     public function party(): MorphTo

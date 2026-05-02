@@ -20,7 +20,7 @@ class ServiceOrderFactory extends Factory
             'party_type' => Customer::class,
             'party_id' => Customer::factory(),
             'order_date' => now()->toDateString(),
-            'current_status_code' => 'pending',
+            'production_step_id' => null,
             'total_amount' => 1000000,
             'total_paid' => 0,
             'status' => 'draft',

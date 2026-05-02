@@ -2,7 +2,7 @@
 import { ShoppingBag, UserPlus, Minus, Plus, Wallet } from 'lucide-vue-next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import CreatableSelect from '@/components/ui/input/CreatableSelect.vue';
 
 interface CartItem {
     product_id: number;

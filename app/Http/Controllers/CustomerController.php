@@ -14,7 +14,7 @@ class CustomerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request): Response
+    public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10);
         $sort = $request->input('sort') ?: 'created_at';
@@ -30,6 +30,10 @@ class CustomerController extends Controller
             ->orderBy($sort, $direction)
             ->paginate($perPage)
             ->withQueryString();
+
+        if ($request->wantsJson()) {
+            return response()->json($customers);
+        }
 
         return Inertia::render('Customer/Index', [
             'customers' => $customers,

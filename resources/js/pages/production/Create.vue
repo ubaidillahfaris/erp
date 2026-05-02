@@ -5,7 +5,7 @@ import { ArrowLeft } from 'lucide-vue-next';
 import { watch, ref } from 'vue';
 import bomIndexAction from '@/actions/App/Http/Controllers/BOMController';
 import { store, index } from '@/actions/App/Http/Controllers/ProductionController';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import CreatableSelect from '@/components/ui/input/CreatableSelect.vue';
 import FormActionButtons from '@/components/FormActionButtons.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';

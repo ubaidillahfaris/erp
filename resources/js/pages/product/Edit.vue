@@ -36,7 +36,7 @@ watch(() => form.type, (newType) => {
 import { edit as editBomAction, create as createBomAction } from '@/actions/App/Http/Controllers/BOMController';
 import { index, update as updateAction } from '@/actions/App/Http/Controllers/ProductController';
 import quickUnitAction from '@/actions/App/Http/Controllers/QuickCreateUnitController';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import CreatableSelect from '@/components/ui/input/CreatableSelect.vue';
 import FormActionButtons from '@/components/FormActionButtons.vue';
 import InputError from '@/components/InputError.vue';
 import Combobox from '@/components/ui/combobox/Combobox.vue';

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\ProductionStep;
 use App\Models\Service;
 use App\Models\ServiceOrder;
 use App\Models\ServiceProcessingStatus;
@@ -14,14 +15,16 @@ use Inertia\Response;
 
 class ServiceOrderController extends Controller
 {
-    public function __construct(protected ServiceOrderService $serviceOrderService) {}
+    public function __construct(protected ServiceOrderService $serviceOrderService)
+    {
+    }
 
     /**
      * Display a listing of service orders.
      */
     public function index(Request $request): Response
     {
-        $query = ServiceOrder::with(['service.processingStatuses', 'party'])
+        $query = ServiceOrder::with(['service', 'party', 'productionStep'])
             ->orderBy('created_at', 'desc');
 
         if ($request->service_id) {
@@ -35,7 +38,7 @@ class ServiceOrderController extends Controller
         return Inertia::render('service-orders/Index', [
             'orders' => $query->paginate(10)->withQueryString(),
             'services' => Service::all(),
-            'statuses' => ServiceProcessingStatus::select('status_code as code', 'status_name as name')->distinct()->get(),
+            'steps' => ProductionStep::select('id', 'name', 'code')->orderBy('sequence_order')->get(),
             'filters' => $request->only(['search', 'status', 'date_start', 'date_end']),
         ]);
     }
@@ -45,13 +48,12 @@ class ServiceOrderController extends Controller
      */
     public function board(Request $request): Response
     {
-        $query = ServiceOrder::with(['service.processingStatuses', 'party'])
-            ->where('status', '!=', 'cancelled')
-            ->orderBy('created_at', 'desc');
-
         return Inertia::render('service-orders/Board', [
-            'orders' => $query->get(),
-            'services' => Service::with('processingStatuses')->get(),
+            'steps' => ProductionStep::orderBy('sequence_order')->get(),
+            'orders' => ServiceOrder::with(['party', 'productionStep'])
+                ->where('status', '!=', 'cancelled')
+                ->where('status', '!=', 'posted')
+                ->get(),
         ]);
     }
 
@@ -62,8 +64,6 @@ class ServiceOrderController extends Controller
     {
         return Inertia::render('service-orders/Pos', [
             'services' => Service::with('serviceTypes.pricings')->where('is_active', true)->get(),
-            'customers' => Customer::all(),
-            'vendors' => Vendor::all(),
         ]);
     }
 
@@ -101,8 +101,21 @@ class ServiceOrderController extends Controller
      */
     public function show(ServiceOrder $serviceOrder): Response
     {
+        $serviceOrder->load(['party', 'service', 'items.serviceType', 'productionStep', 'payments.creator', 'journalEntry.items.account']);
+
+        // Get next steps for this order based on current step
+        $nextSteps = [];
+        if ($serviceOrder->production_step_id) {
+            $nextSteps = \App\Models\ProductionStep::where('parent_step_id', $serviceOrder->production_step_id)->get();
+        } else {
+            $nextSteps = \App\Models\ProductionStep::where('company_id', $serviceOrder->company_id)
+                ->where('is_start', true)
+                ->get();
+        }
+
         return Inertia::render('service-orders/Show', [
-            'order' => $serviceOrder->load(['service.processingStatuses', 'items.serviceType', 'payments.creator', 'party', 'journalEntry.items.account']),
+            'order' => $serviceOrder,
+            'next_steps' => $nextSteps,
         ]);
     }
 
@@ -139,6 +152,56 @@ class ServiceOrderController extends Controller
         $this->serviceOrderService->updateStatus($serviceOrder, $validated['status_code']);
 
         return back()->with('success', 'Status updated.');
+    }
+
+    /**
+     * Update the production step of the service order (from Kanban).
+     */
+    public function updateStep(Request $request, ServiceOrder $serviceOrder)
+    {
+        $validated = $request->validate([
+            'production_step_id' => 'required|exists:production_steps,id',
+        ]);
+
+        try {
+            $this->serviceOrderService->updateProductionStep($serviceOrder, $validated['production_step_id']);
+            return back()->with('success', 'Production step updated.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Store a new production step.
+     */
+    public function storeStep(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50',
+            'parent_step_id' => 'nullable|exists:production_steps,id',
+            'sequence_order' => 'required|integer',
+            'is_start' => 'boolean',
+            'is_final' => 'boolean',
+        ]);
+
+        $validated['company_id'] = auth()->user()->company_id;
+        \App\Models\ProductionStep::create($validated);
+
+        return back()->with('success', 'Step created successfully.');
+    }
+
+    /**
+     * Remove a production step.
+     */
+    public function destroyStep(\App\Models\ProductionStep $step)
+    {
+        if (ServiceOrder::where('production_step_id', $step->id)->exists()) {
+            return back()->withErrors(['error' => 'Cannot delete step that is currently in use by orders.']);
+        }
+
+        $step->delete();
+        return back()->with('success', 'Step deleted successfully.');
     }
 
     /**
@@ -193,6 +256,7 @@ class ServiceOrderController extends Controller
                 $serviceOrder,
                 (int) ($validated['total_amount'] * 100)
             );
+
             return back()->with('success', 'Harga order berhasil disesuaikan.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());

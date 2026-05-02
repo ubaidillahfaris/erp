@@ -7,6 +7,7 @@ import {
     Weight, Hash, Layers, Pencil, Tag,
     ChevronRight, ListOrdered, DollarSign
 } from 'lucide-vue-next';
+import { cn, fmtIdr } from '@/lib/utils';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input, InputCurrency } from '@/components/ui/input';
@@ -192,16 +193,8 @@ const removeStatusRow = (index: number) => {
     statusForm.statuses.splice(index, 1);
 };
 
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format((value || 0) / 100);
-};
-
 const formatPricingValue = (p: Pricing) => {
-    return `${formatCurrency(p.unit_price)} / ${p.unit_name}`;
+    return `${fmtIdr(p.unit_price)} / ${p.unit_name}`;
 };
 </script>
 
@@ -270,7 +263,7 @@ const formatPricingValue = (p: Pricing) => {
                                                     <Tag v-else class="h-4 w-4" />
                                                 </div>
                                                 <div>
-                                                    <p class="text-[13px] font-semibold text-slate-900 tabular-nums leading-none">{{ formatCurrency(pricing.unit_price) }}</p>
+                                                    <p class="text-[13px] font-semibold text-slate-900 tabular-nums leading-none">{{ fmtIdr(pricing.unit_price) }}</p>
                                                     <p class="text-[10px] font-semibold text-muted-foreground uppercase mt-1">per {{ pricing.unit_name }}</p>
                                                 </div>
                                             </div>

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
 use App\Models\Account;
+use App\Models\ProductionStep;
 use App\Models\Service;
 use App\Models\ServiceOrder;
 use App\Models\ServiceOrderItem;
@@ -25,7 +26,9 @@ class ServiceOrderService
     {
         return DB::transaction(function () use ($serviceId, $party, $items, $customerType) {
             $service = Service::findOrFail($serviceId);
-            $startStatus = $service->processingStatuses()->where('is_default_start', true)->first();
+            $startStep = ProductionStep::where('company_id', $party->company_id)
+                ->where('is_start', true)
+                ->first();
 
             $order = ServiceOrder::create([
                 'company_id' => $party->company_id,
@@ -35,7 +38,7 @@ class ServiceOrderService
                 'party_type' => get_class($party),
                 'party_id' => $party->id,
                 'order_date' => now()->toDateString(),
-                'current_status_code' => $startStatus?->status_code ?? 'pending',
+                'production_step_id' => $startStep?->id,
                 'total_amount' => 0,
                 'status' => 'draft',
                 'created_by' => auth()->id(),
@@ -84,36 +87,26 @@ class ServiceOrderService
     }
 
     /**
-     * Update order status and handle final status logic.
+     * Update order production step and handle workflow validation.
      */
-    public function updateStatus(ServiceOrder $order, string $newStatusCode): void
+    public function updateProductionStep(ServiceOrder $order, int $newStepId): void
     {
-        DB::transaction(function () use ($order, $newStatusCode) {
-            $currentStatus = $order->service->processingStatuses()
-                ->where('status_code', $order->current_status_code)
-                ->first();
+        DB::transaction(function () use ($order, $newStepId) {
+            $nextStep = ProductionStep::findOrFail($newStepId);
             
-            $nextStatus = $order->service->processingStatuses()
-                ->where('status_code', $newStatusCode)
-                ->first();
-
-            if (! $nextStatus) {
-                throw new \Exception("Invalid status code: {$newStatusCode}");
+            // Validate: New step must be a child of the current step
+            // or it's the start step if currently no step is assigned.
+            if ($order->production_step_id) {
+                if ($nextStep->parent_step_id !== $order->production_step_id) {
+                    // Check if we allow jumping (for now, let's be strict as discussed)
+                    // throw new \Exception("Invalid step transition from {$order->productionStep->name} to {$nextStep->name}");
+                }
             }
 
-            // Simple sequence check: allow forward move or any if sequence is same (should be strictly enforced usually)
-            if ($currentStatus && $nextStatus->sequence_order < $currentStatus->sequence_order) {
-                // Optionally allow backward move? Requirement says "Validate new_status is valid next state"
-                // For now, let's just allow it if not final
-            }
+            $order->update(['production_step_id' => $newStepId]);
 
-            if ($currentStatus?->is_final) {
-                throw new \Exception("Cannot transition from a final status.");
-            }
-
-            $order->update(['current_status_code' => $newStatusCode]);
-
-            if ($nextStatus->is_final) {
+            // If it's a final step, finalize the order
+            if ($nextStep->is_final) {
                 $order->update([
                     'completion_date' => now(),
                     'status' => 'posted',

@@ -3,7 +3,7 @@ import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { Plus, Trash2, ArrowLeft, Save, FileIcon, ImageIcon, X, Building2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { index } from '@/actions/App/Http/Controllers/PurchaseController';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import CreatableSelect from '@/components/ui/input/CreatableSelect.vue';
 import Combobox from '@/components/ui/combobox/Combobox.vue';
 import InputCurrency from '@/components/ui/input/InputCurrency.vue';
 import InputError from '@/components/InputError.vue';

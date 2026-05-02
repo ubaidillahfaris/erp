@@ -22,6 +22,7 @@ use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\QuickCreateCustomerController;
 use App\Http\Controllers\QuickCreateUnitController;
 use App\Http\Controllers\QuickCreateVendorController;
 use App\Http\Controllers\RestockController;
@@ -90,6 +91,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
     Route::middleware('permission:manage customers')->group(function () {
         Route::delete('customers/bulk-destroy', [CustomerController::class, 'bulkDestroy'])->name('customer.bulk-destroy');
         Route::resource('customers', CustomerController::class)->names('customer');
+        Route::post('customer/quick', QuickCreateCustomerController::class)->name('customer.quick');
 
         // Customer Prices
         Route::get('customer-prices', [CustomerPriceController::class, 'listAll'])->name('customer.prices.all');
@@ -235,6 +237,9 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
         Route::get('service-orders/{service_order}', [ServiceOrderController::class, 'show'])->name('service-orders.show');
         Route::post('service-orders/{service_order}/items', [ServiceOrderController::class, 'addItem'])->name('service-orders.add-item');
         Route::patch('service-orders/{service_order}/status', [ServiceOrderController::class, 'updateStatus'])->name('service-orders.update-status');
+        Route::patch('service-orders/{service_order}/step', [ServiceOrderController::class, 'updateStep'])->name('service-orders.update-step');
+        Route::post('service-orders/steps', [ServiceOrderController::class, 'storeStep'])->name('service-orders.steps.store');
+        Route::delete('service-orders/steps/{step}', [ServiceOrderController::class, 'destroyStep'])->name('service-orders.steps.destroy');
         Route::patch('service-orders/{service_order}/adjust-price', [ServiceOrderController::class, 'adjustPrice'])->name('service-orders.adjust-price');
         Route::post('service-orders/{service_order}/payments', [ServiceOrderController::class, 'recordPayment'])->name('service-orders.record-payment');
         Route::post('service-orders/{service_order}/void', [ServiceOrderController::class, 'void'])->name('service-orders.void');

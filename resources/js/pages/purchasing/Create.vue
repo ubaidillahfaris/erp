@@ -4,7 +4,7 @@ import { toast } from 'vue-sonner';
 import { Plus, Trash2, ArrowLeft, Save, Building2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { store, index } from '@/actions/App/Http/Controllers/PurchaseController';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import CreatableSelect from '@/components/ui/input/CreatableSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

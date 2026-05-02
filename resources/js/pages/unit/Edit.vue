@@ -3,7 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Plus, Trash2, ArrowLeft } from 'lucide-vue-next';
 import { ref, watch, onMounted } from 'vue';
 import { index as satuanIndex, update as satuanUpdate } from '@/actions/App/Http/Controllers/UnitController';
-import CreatableSelect from '@/components/CreatableSelect.vue';
+import CreatableSelect from '@/components/ui/input/CreatableSelect.vue';
 import FormActionButtons from '@/components/FormActionButtons.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';

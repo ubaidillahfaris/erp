@@ -29,10 +29,10 @@ import type { BreadcrumbItem } from '@/types';
 // Persistent Layout Fix
 defineOptions({ layout: AppLayout });
 
-interface Status {
+interface Step {
     id: number;
-    status_code: string;
-    status_name: string;
+    name: string;
+    code: string;
     is_final: boolean;
 }
 
@@ -57,8 +57,8 @@ interface Order {
     received_amount: number;
     payment_method: string;
     notes: string | null;
-    current_status_code: string;
-    current_status: Status | null;
+    production_step_id: number | null;
+    production_step: Step | null;
     customer: any | null;
     service: any;
     items: OrderItem[];
@@ -66,7 +66,7 @@ interface Order {
 
 const props = defineProps<{
     order: Order;
-    next_statuses: Status[];
+    next_steps: Step[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -78,7 +78,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency', currency: 'IDR', minimumFractionDigits: 0
-    }).format(value || 0);
+    }).format((value || 0) / 100);
 };
 
 const formatDate = (dateString: string, includeTime = true) => {
@@ -93,11 +93,11 @@ const formatDate = (dateString: string, includeTime = true) => {
     return new Date(dateString).toLocaleDateString('id-ID', options);
 };
 
-const changeStatus = (statusCode: string) => {
-    router.post(`/service-orders/${props.order.id}/status`, {
-        status_code: statusCode
+const updateStep = (stepId: number) => {
+    router.patch(serviceOrdersRoutes.updateStep.url(props.order.id), {
+        production_step_id: stepId
     }, {
-        onSuccess: () => toast.success('Status order diperbarui')
+        onSuccess: () => toast.success('Progress servis diperbarui')
     });
 };
 
@@ -129,13 +129,13 @@ const handleVoid = () => {
                 <Badge 
                     class="bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-50 text-[11px] uppercase font-semibold px-3 h-8 shadow-sm"
                     :class="{
-                        'bg-amber-50 text-amber-600 border-amber-100': !order.current_status?.is_final,
-                        'bg-slate-100 text-slate-500 border-slate-200': !order.current_status
+                        'bg-amber-50 text-amber-600 border-amber-100': !order.production_step?.is_final,
+                        'bg-slate-100 text-slate-500 border-slate-200': !order.production_step
                     }"
                 >
-                    <Clock v-if="!order.current_status?.is_final" class="h-3.5 w-3.5 mr-1.5" />
+                    <Clock v-if="!order.production_step?.is_final" class="h-3.5 w-3.5 mr-1.5" />
                     <CheckCircle2 v-else class="h-3.5 w-3.5 mr-1.5" />
-                    {{ order.current_status?.status_name || 'PENDING' }}
+                    {{ order.production_step?.name || 'PENDING' }}
                 </Badge>
 
                 <Dialog v-model:open="isVoidDialogOpen">
@@ -173,7 +173,7 @@ const handleVoid = () => {
     <div class="w-full max-w-7xl mx-auto flex flex-col gap-6">
         
         <!-- Workflow / Status Transition Panel -->
-        <div v-if="next_statuses.length > 0" class="bg-white border-2 border-primary/20 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div v-if="next_steps.length > 0" class="bg-white border-2 border-primary/20 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
             <div class="flex items-start gap-4">
                 <div class="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                     <Play class="h-5 w-5 fill-current" />
@@ -184,8 +184,8 @@ const handleVoid = () => {
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <Button v-for="s in next_statuses" :key="s.id" @click="changeStatus(s.status_code)" variant="outline" class="h-10 px-4 rounded-xl border-primary/20 text-primary hover:bg-primary hover:text-white font-semibold gap-2 transition-all">
-                    {{ s.status_name }} <ChevronRight class="h-3.5 w-3.5" />
+                <Button v-for="s in next_steps" :key="s.id" @click="updateStep(s.id)" variant="outline" class="h-10 px-4 rounded-xl border-primary/20 text-primary hover:bg-primary hover:text-white font-semibold gap-2 transition-all">
+                    {{ s.name }} <ChevronRight class="h-3.5 w-3.5" />
                 </Button>
             </div>
         </div>
