@@ -12,6 +12,7 @@ use App\Models\ServiceOrderItem;
 use App\Models\ServicePricing;
 use App\Models\ServiceType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -67,7 +68,7 @@ class ServiceOrderService
 
             $unitPrice = $pricing->unit_price;
             $discountPct = $pricing->discount_pct ?? 0;
-            
+
             // Calculate subtotal in cents
             $subtotal = (int) round(($quantity * $unitPrice) * (1 - ($discountPct / 100)));
 
@@ -93,7 +94,7 @@ class ServiceOrderService
     {
         DB::transaction(function () use ($order, $newStepId) {
             $nextStep = ProductionStep::findOrFail($newStepId);
-            
+
             // Validate: New step must be a child of the current step
             // or it's the start step if currently no step is assigned.
             if ($order->production_step_id) {
@@ -156,11 +157,14 @@ class ServiceOrderService
      */
     public function postJournal(ServiceOrder $order): void
     {
-        $revAccount = Account::where('code', '4201')->firstOrFail(); // Service Revenue
-        $expAccount = Account::where('code', '6401')->firstOrFail(); // Service Expense
-        $arAccount = Account::where('code', '1102')->firstOrFail();  // AR
-        $apAccount = Account::where('code', '2101')->firstOrFail();  // AP
-        $cashAccount = Account::where('code', '1101')->firstOrFail(); // Cash/Bank
+        try {
+            $revAccount = Account::where('company_id', $order->company_id)->where('code', '4201')->firstOrFail(); // Service Revenue
+            $expAccount = Account::where('company_id', $order->company_id)->where('code', '6401')->firstOrFail(); // Service Expense
+            $arAccount = Account::where('company_id', $order->company_id)->where('code', '1102')->firstOrFail();  // AR
+            $apAccount = Account::where('company_id', $order->company_id)->where('code', '2101')->firstOrFail();  // AP
+        } catch (ModelNotFoundException $e) {
+            throw new \Exception('Gagal posting jurnal: Akun perkiraan default (COA) belum lengkap untuk perusahaan ini. Harap pastikan Chart of Accounts sudah di-generate.');
+        }
 
         $items = [];
         $description = "Service Order #{$order->order_number}";
@@ -223,7 +227,7 @@ class ServiceOrderService
                     'payment_date' => now()->toDateString(),
                     'payment_method' => $payment->payment_method,
                     'amount' => -$payment->amount,
-                    'notes' => "VOID REVERSAL: " . ($reason ?? 'Order cancelled'),
+                    'notes' => 'VOID REVERSAL: '.($reason ?? 'Order cancelled'),
                     'created_by' => auth()->id(),
                 ]);
             }
@@ -231,7 +235,7 @@ class ServiceOrderService
             $order->update([
                 'status' => 'cancelled',
                 'total_paid' => 0,
-                'notes' => ($order->notes ? $order->notes . "\n" : "") . "VOIDED: " . $reason,
+                'notes' => ($order->notes ? $order->notes."\n" : '').'VOIDED: '.$reason,
             ]);
         });
     }
@@ -254,7 +258,7 @@ class ServiceOrderService
 
         $this->journalService->record(new JournalEntryData(
             items: $reverseItems,
-            description: "VOID: #{$order->order_number} " . ($reason ?? ""),
+            description: "VOID: #{$order->order_number} ".($reason ?? ''),
             date: now(),
             journalable: $order,
             ref_number: "VOID-{$originalEntry->ref_number}"
@@ -275,7 +279,7 @@ class ServiceOrderService
             ->first();
 
         if (! $pricing) {
-            // Fallback to first active if no brackets match? 
+            // Fallback to first active if no brackets match?
             // Or throw exception. Requirement says "look up ServicePricing... Auto-calculate price"
             $pricing = $type->pricings()->where('is_active', true)->first();
         }
@@ -292,6 +296,7 @@ class ServiceOrderService
         $prefix = strtoupper(substr($service->code, 0, 3));
         $date = now()->format('ymd');
         $random = strtoupper(Str::random(4));
+
         return "{$prefix}-{$date}-{$random}";
     }
 }

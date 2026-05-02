@@ -36,9 +36,10 @@ class ServiceOrderController extends Controller
             ->when($request->date_end, fn ($q, $date) => $q->whereDate('created_at', '<=', $date))
             ->orderBy('created_at', 'desc');
 
-        // Default filters for Kanban view if not explicitly searching/filtering status
+        // Default filters for Kanban view: exclude cancelled orders, but show posted (completed) ones
+        // so they appear in the final column.
         if ($view === 'kanban' && ! $request->status && ! $request->search) {
-            $query->whereNotIn('status', ['cancelled', 'posted']);
+            $query->where('status', '!=', 'cancelled');
         }
 
         return Inertia::render('service-orders/Index', [

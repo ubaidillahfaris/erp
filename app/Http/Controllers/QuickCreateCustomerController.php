@@ -19,8 +19,8 @@ class QuickCreateCustomerController extends Controller
         ]);
 
         $customer = Customer::create(array_merge($validated, [
-            'customer_type_id' => CustomerType::where('name', 'Regular')->first()?->id ?? 1,
-            'customer_status_id' => CustomerStatus::where('name', 'Active')->first()?->id ?? 1,
+            'customer_type_id' => CustomerType::where('name', 'Regular')->first()?->id ?? CustomerType::first()?->id,
+            'customer_status_id' => CustomerStatus::where('name', 'Active')->first()?->id ?? CustomerStatus::first()?->id,
         ]));
 
         return response()->json([

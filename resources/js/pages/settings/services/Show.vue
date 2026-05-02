@@ -73,11 +73,11 @@ interface Service {
     service_category: string;
     is_active: boolean;
     service_types: ServiceType[];
-    processing_statuses: Status[];
 }
 
 const props = defineProps<{
     service: Service;
+    production_steps: Status[];
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -108,7 +108,14 @@ const pricingForm = useForm({
 });
 
 const statusForm = useForm({
-    statuses: props.service.processing_statuses.map(s => ({ ...s }))
+    statuses: props.production_steps.map(s => ({ 
+        id: s.id,
+        code: s.status_code || (s as any).code,
+        name: s.status_name || (s as any).name,
+        sequence_order: s.sequence_order,
+        is_start: s.is_default_start || (s as any).is_start,
+        is_final: s.is_final
+    }))
 });
 
 const addType = () => {
@@ -181,12 +188,12 @@ const syncStatuses = () => {
 const addStatusRow = () => {
     statusForm.statuses.push({
         id: 0,
-        status_code: '',
-        status_name: '',
+        code: '',
+        name: '',
         sequence_order: statusForm.statuses.length + 1,
-        is_default_start: statusForm.statuses.length === 0,
+        is_start: statusForm.statuses.length === 0,
         is_final: false
-    });
+    } as any);
 };
 
 const removeStatusRow = (index: number) => {
@@ -311,12 +318,12 @@ const formatPricingValue = (p: Pricing) => {
                                 <div v-for="(status, index) in statusForm.statuses" :key="index" class="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/50 group">
                                     <div class="w-6 text-center font-semibold text-slate-300 text-[11px]">#{{ index + 1 }}</div>
                                     <div class="flex-1 grid grid-cols-2 gap-3">
-                                        <Input v-model="status.status_code" placeholder="KODE" class="h-9 text-[11px] font-semibold uppercase tracking-widest rounded-lg" />
-                                        <Input v-model="status.status_name" placeholder="Nama Status" class="h-9 text-[12px] font-semibold rounded-lg" />
+                                        <Input v-model="status.code" placeholder="KODE" class="h-9 text-[11px] font-semibold uppercase tracking-widest rounded-lg" />
+                                        <Input v-model="status.name" placeholder="Nama Status" class="h-9 text-[12px] font-semibold rounded-lg" />
                                     </div>
                                     <div class="flex items-center gap-4 px-2">
                                         <label class="flex items-center gap-1.5 cursor-pointer">
-                                            <input type="checkbox" v-model="status.is_default_start" class="h-3.5 w-3.5 rounded border-slate-200 text-primary" />
+                                            <input type="checkbox" v-model="status.is_start" class="h-3.5 w-3.5 rounded border-slate-200 text-primary" />
                                             <span class="text-[9px] font-semibold uppercase tracking-tight text-slate-500">Mulai</span>
                                         </label>
                                         <label class="flex items-center gap-1.5 cursor-pointer">

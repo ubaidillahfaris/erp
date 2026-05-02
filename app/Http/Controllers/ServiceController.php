@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductionStep;
 use App\Models\Service;
-use App\Models\ServiceType;
 use App\Models\ServicePricing;
+use App\Models\ServiceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -32,7 +33,7 @@ class ServiceController extends Controller
         $categories = config("business_presets.{$businessType}.service_categories", ['Jasa Umum', 'Lainnya']);
 
         return Inertia::render('settings/services/Create', [
-            'available_categories' => $categories
+            'available_categories' => $categories,
         ]);
     }
 
@@ -62,6 +63,9 @@ class ServiceController extends Controller
     {
         return Inertia::render('settings/services/Show', [
             'service' => $service->load(['serviceTypes.pricings']),
+            'production_steps' => ProductionStep::where('company_id', auth()->user()->company_id)
+                ->orderBy('sequence_order')
+                ->get(),
         ]);
     }
 
@@ -132,5 +136,54 @@ class ServiceController extends Controller
         return back()->with('success', 'Pricing rule deleted.');
     }
 
+    /**
+     * Sync production steps for the company.
+     */
+    public function syncStatuses(Request $request, Service $service)
+    {
+        $validated = $request->validate([
+            'statuses' => 'present|array',
+            'statuses.*.id' => 'nullable|integer',
+            'statuses.*.code' => 'required|string',
+            'statuses.*.name' => 'required|string',
+            'statuses.*.sequence_order' => 'required|integer',
+            'statuses.*.is_start' => 'boolean',
+            'statuses.*.is_final' => 'boolean',
+        ]);
 
+        $companyId = auth()->user()->company_id;
+
+        DB::transaction(function () use ($companyId, $validated) {
+            // Get current step IDs to see which ones were removed
+            $currentIds = collect($validated['statuses'])->pluck('id')->filter()->toArray();
+
+            // Delete steps that were removed (and not in use)
+            ProductionStep::where('company_id', $companyId)
+                ->whereNotIn('id', $currentIds)
+                ->each(function ($step) {
+                    if (! ServiceOrder::where('production_step_id', $step->id)->exists()) {
+                        $step->delete();
+                    }
+                });
+
+            // Update or create steps
+            foreach ($validated['statuses'] as $statusData) {
+                ProductionStep::updateOrCreate(
+                    [
+                        'id' => $statusData['id'] > 0 ? $statusData['id'] : null,
+                        'company_id' => $companyId,
+                    ],
+                    [
+                        'code' => $statusData['code'],
+                        'name' => $statusData['name'],
+                        'sequence_order' => $statusData['sequence_order'],
+                        'is_start' => $statusData['is_start'] ?? false,
+                        'is_final' => $statusData['is_final'] ?? false,
+                    ]
+                );
+            }
+        });
+
+        return back()->with('success', 'Alur kerja produksi diperbarui.');
+    }
 }

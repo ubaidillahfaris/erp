@@ -55,8 +55,9 @@ class ServiceMenuSeeder extends Seeder
             ],
         ];
 
-        // Cleanup old menu
-        Menu::where('route_name', 'service-orders.board')->delete();
+        // Cleanup legacy menus from various modules/states
+        Menu::whereIn('route_name', ['service-orders.board', 'pos.index'])->delete();
+        Menu::whereIn('name', ['Board Order', 'Order Laundry', 'Order Laundry / POS', 'Daftar Order'])->delete();
 
         foreach ($menus as $menuData) {
             Menu::updateOrCreate(
