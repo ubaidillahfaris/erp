@@ -31,6 +31,7 @@ class ServiceOrderController extends Controller
                     });
             })
             ->when($request->service_id, fn ($q, $id) => $q->where('service_id', $id))
+            ->when($request->production_step_id, fn ($q, $id) => $q->where('production_step_id', $id))
             ->when($request->status, fn ($q, $status) => $q->where('status', $status))
             ->when($request->date_start, fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
             ->when($request->date_end, fn ($q, $date) => $q->whereDate('created_at', '<=', $date))
@@ -46,7 +47,7 @@ class ServiceOrderController extends Controller
             'orders' => $query->paginate($view === 'kanban' ? 50 : 10)->withQueryString(),
             'services' => Service::all(),
             'steps' => ProductionStep::orderBy('sequence_order')->get(),
-            'filters' => $request->only(['search', 'status', 'date_start', 'date_end', 'view', 'service_id']),
+            'filters' => $request->only(['search', 'status', 'date_start', 'date_end', 'view', 'service_id', 'production_step_id']),
         ]);
     }
 

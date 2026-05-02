@@ -18,7 +18,10 @@ use Illuminate\Support\Str;
 
 class ServiceOrderService
 {
-    public function __construct(protected JournalService $journalService) {}
+    public function __construct(
+        protected JournalService $journalService,
+        protected StornoService $stornoService
+    ) {}
 
     /**
      * Create a new service order.
@@ -210,59 +213,7 @@ class ServiceOrderService
      */
     public function void(ServiceOrder $order, ?string $reason = null): void
     {
-        DB::transaction(function () use ($order, $reason) {
-            if ($order->status === 'cancelled') {
-                return;
-            }
-
-            // Reversing journal
-            if ($order->journal_entry_id) {
-                $this->reverseJournal($order, $reason);
-            }
-
-            // Refund payments by creating negative payments
-            foreach ($order->payments as $payment) {
-                $order->payments()->create([
-                    'company_id' => $order->company_id,
-                    'payment_date' => now()->toDateString(),
-                    'payment_method' => $payment->payment_method,
-                    'amount' => -$payment->amount,
-                    'notes' => 'VOID REVERSAL: '.($reason ?? 'Order cancelled'),
-                    'created_by' => auth()->id(),
-                ]);
-            }
-
-            $order->update([
-                'status' => 'cancelled',
-                'total_paid' => 0,
-                'notes' => ($order->notes ? $order->notes."\n" : '').'VOIDED: '.$reason,
-            ]);
-        });
-    }
-
-    protected function reverseJournal(ServiceOrder $order, ?string $reason): void
-    {
-        $originalEntry = $order->journalEntry()->with('items')->first();
-        if (! $originalEntry) {
-            return;
-        }
-
-        $reverseItems = [];
-        foreach ($originalEntry->items as $item) {
-            $reverseItems[] = new JournalItemData(
-                account_id: $item->account_id,
-                amount: $item->debit ?: $item->credit,
-                type: $item->debit ? 'credit' : 'debit'
-            );
-        }
-
-        $this->journalService->record(new JournalEntryData(
-            items: $reverseItems,
-            description: "VOID: #{$order->order_number} ".($reason ?? ''),
-            date: now(),
-            journalable: $order,
-            ref_number: "VOID-{$originalEntry->ref_number}"
-        ));
+        $this->stornoService->perform($order, $reason);
     }
 
     protected function lookupPricing(ServiceType $type, float $quantity): ServicePricing

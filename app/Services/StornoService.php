@@ -7,6 +7,7 @@ use App\DTOs\JournalEntryData;
 use App\DTOs\JournalItemData;
 use App\Models\JournalEntry;
 use App\Models\Sale;
+use App\Models\ServiceOrder;
 use App\Models\StockMovement;
 use App\Models\StockOpname;
 use Illuminate\Database\Eloquent\Model;
@@ -41,6 +42,10 @@ class StornoService
 
             if ($model instanceof Sale) {
                 return $this->stornoSale($model, $reason);
+            }
+
+            if ($model instanceof ServiceOrder) {
+                return $this->stornoServiceOrder($model, $reason);
             }
 
             // Future modules can be added here (Purchasing, etc.)
@@ -168,5 +173,38 @@ class StornoService
                 'notes' => 'STORNO: '.($reason ?: "Cancellation of transaction #{$model->id}"),
             ]);
         }
+    }
+
+    /**
+     * Specific logic for voiding a Service Order.
+     */
+    protected function stornoServiceOrder(ServiceOrder $order, ?string $reason): bool
+    {
+        if ($order->status === 'cancelled') {
+            return true;
+        }
+
+        // Refund payments by creating negative payments
+        foreach ($order->payments as $payment) {
+            $order->payments()->create([
+                'company_id' => $order->company_id,
+                'payment_date' => now()->toDateString(),
+                'payment_method' => $payment->payment_method,
+                'amount' => -$payment->amount,
+                'notes' => 'STORNO: '.($reason ?: 'Order cancelled'),
+                'created_by' => auth()->id(),
+            ]);
+        }
+
+        $order->update([
+            'status' => 'cancelled',
+            'total_paid' => 0,
+            'storno_at' => now(),
+            'storno_reason' => $reason,
+        ]);
+
+        Log::info("Void performed for Service Order #{$order->order_number}");
+
+        return true;
     }
 }
