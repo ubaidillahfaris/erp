@@ -42,6 +42,9 @@ class TenantManagerController extends Controller
             'tier_id' => $request->tier_id,
         ]);
 
+        $company->flushFeatureCache();
+        app(\App\Services\RoleService::class)->clearAllMenuCaches();
+
         return back()->with('success', "Tier for {$company->name} updated.");
     }
 
@@ -93,12 +96,19 @@ class TenantManagerController extends Controller
             ]
         );
 
+        $company->flushFeatureCache();
+        app(\App\Services\RoleService::class)->clearAllMenuCaches();
+
         return back()->with('success', 'Feature override updated.');
     }
 
     public function destroyOverride(Company $company, CompanyFeatureOverride $override)
     {
         $override->delete();
+        
+        $company->flushFeatureCache();
+        app(\App\Services\RoleService::class)->clearAllMenuCaches();
+
         return back()->with('success', 'Feature override removed.');
     }
 }

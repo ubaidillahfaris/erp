@@ -20,7 +20,9 @@ trait HasFeatures
             return false;
         }
 
-        $cacheKey = "company_{$company->id}_feature_{$featureKey}";
+        // Get the current version of the company cache (Poor man's tagging)
+        $version = Cache::get("company_{$company->id}_cache_version", 1);
+        $cacheKey = "company_{$company->id}_v{$version}_feature_{$featureKey}";
 
         return Cache::remember($cacheKey, 3600, function () use ($company, $featureKey) {
             // 1. Check if the key itself is a Module Slug and check its global status
@@ -57,17 +59,14 @@ trait HasFeatures
     }
 
     /**
-     * Check if a module is active for the company.
+     * Increment the cache version for a company to effectively flush its feature cache.
      */
-    public function hasModule(string $moduleSlug): bool
+    public function flushFeatureCache(): void
     {
-        $company = $this instanceof \App\Models\Company ? $this : $this->company;
-
-        if (!$company) {
-            return false;
+        $companyId = $this instanceof \App\Models\Company ? $this->id : $this->company_id;
+        
+        if ($companyId) {
+            Cache::increment("company_{$companyId}_cache_version");
         }
-
-        // Implementation for module activation check via company_modules table
-        return $company->modules()->where('slug', $moduleSlug)->where('is_active', true)->exists();
     }
 }

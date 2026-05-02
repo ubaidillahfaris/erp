@@ -72,6 +72,14 @@ class TierManagerController extends Controller
             ]);
         }
 
+        // Surgical flush for all companies in this tier
+        \App\Models\Company::where('tier_id', $tier->id)->get()->each(function($company) {
+            $company->flushFeatureCache();
+        });
+
+        // Clear all user menu caches to update sidebars
+        app(\App\Services\RoleService::class)->clearAllMenuCaches();
+
         return redirect()->route('admin.tiers.index')->with('success', "Features for {$tier->name} updated.");
     }
 }
