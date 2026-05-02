@@ -20,42 +20,37 @@ trait HasFeatures
             return false;
         }
 
-        // Get the current version of the company cache (Poor man's tagging)
-        $version = Cache::get("company_{$company->id}_cache_version", 1);
-        $cacheKey = "company_{$company->id}_v{$version}_feature_{$featureKey}";
+        // NO CACHE - REAL TIME CHECK
+        // 1. Check Override (Real-time Expiry) - OVERRIDE IS KING
+        $override = CompanyFeatureOverride::where('company_id', $company->id)
+            ->where('feature_key', $featureKey)
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->first();
 
-        return Cache::remember($cacheKey, 3600, function () use ($company, $featureKey) {
-            // 1. Check if the key itself is a Module Slug and check its global status
-            $module = \App\Models\Module::where('slug', $featureKey)->first();
-            if ($module && !$module->is_active) {
-                return false;
-            }
+        if ($override) {
+            return (bool) $override->is_enabled;
+        }
 
-            // 2. Check Override (Real-time Expiry)
-            $override = CompanyFeatureOverride::where('company_id', $company->id)
-                ->where('feature_key', $featureKey)
-                ->where(function ($q) {
-                    $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
-                })
-                ->first();
+        // 2. Check if the key itself is a Module Slug and check its global status
+        $module = \App\Models\Module::where('slug', $featureKey)->first();
+        if ($module && !$module->is_active) {
+            return false;
+        }
 
-            if ($override) {
-                return (bool) $override->is_enabled;
-            }
+        // 3. Fallback to Tier Default + Global Module Check
+        $tierFeature = TierFeature::with('module')
+            ->where('tier_id', $company->tier_id)
+            ->where('feature_key', $featureKey)
+            ->first();
 
-            // 3. Fallback to Tier Default + Global Module Check
-            $tierFeature = TierFeature::with('module')
-                ->where('tier_id', $company->tier_id)
-                ->where('feature_key', $featureKey)
-                ->first();
+        if (!$tierFeature) {
+            return false;
+        }
 
-            if (!$tierFeature) {
-                return false;
-            }
-
-            // If feature exists in tier, it only works if its module is active globally
-            return (bool) ($tierFeature->module?->is_active ?? true);
-        });
+        // If feature exists in tier, it only works if its module is active globally
+        return (bool) ($tierFeature->module?->is_active ?? true);
     }
 
     /**
