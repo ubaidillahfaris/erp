@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Menu extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $fillable = [
         'parent_id',
@@ -19,6 +20,7 @@ class Menu extends Model
         'permission_name',
         'group_name',
         'order_priority',
+        'feature_key',
         'is_active',
         'module_id',
     ];

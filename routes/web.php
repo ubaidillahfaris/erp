@@ -5,6 +5,8 @@ use App\Http\Controllers\Accounting\AgingReportController;
 use App\Http\Controllers\Accounting\JournalController;
 use App\Http\Controllers\Accounting\PeriodLockController;
 use App\Http\Controllers\Accounting\TrialBalanceController;
+use App\Http\Controllers\Admin\TenantManagerController;
+use App\Http\Controllers\Admin\TierManagerController;
 use App\Http\Controllers\Auth\OnboardingController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\BOMController;
@@ -37,6 +39,7 @@ use App\Http\Controllers\System\HelpController;
 use App\Http\Controllers\UnitController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\Admin\ModuleManagerController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
@@ -178,6 +181,39 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
         });
     });
 
+    // 9. SYSTEM & PLATFORM MANAGEMENT (Superadmin)
+    Route::middleware('permission:system.manage')->group(function () {
+        Route::get('admin/system', function () {
+            return inertia('Admin/System/Index', [
+                'stats' => [
+                    'modules' => \App\Models\Module::count(),
+                    'active_modules' => \App\Models\Module::active()->count(),
+                    'tenants' => \App\Models\Company::count(),
+                    'tiers' => \App\Models\Tier::count(),
+                ]
+            ]);
+        })->name('admin.system.index');
+
+        // Module Registry
+        Route::get('admin/system/modules', [ModuleManagerController::class, 'index'])->name('admin.modules.index');
+        Route::post('admin/system/modules', [ModuleManagerController::class, 'store'])->name('admin.modules.store');
+        Route::put('admin/system/modules/{module}', [ModuleManagerController::class, 'update'])->name('admin.modules.update');
+        Route::delete('admin/system/modules/{module}', [ModuleManagerController::class, 'destroy'])->name('admin.modules.destroy');
+        Route::post('admin/system/modules/{module}/toggle', [ModuleManagerController::class, 'toggle'])->name('admin.modules.toggle');
+
+        // Tenant Manager
+        Route::get('admin/system/tenants', [TenantManagerController::class, 'index'])->name('admin.tenants.index');
+        Route::put('admin/system/tenants/{company}/tier', [TenantManagerController::class, 'updateTier'])->name('admin.tenants.tier');
+        Route::get('admin/system/tenants/{company}/overrides', [TenantManagerController::class, 'showOverrides'])->name('admin.tenants.overrides');
+        Route::post('admin/system/tenants/{company}/overrides', [TenantManagerController::class, 'storeOverride'])->name('admin.tenants.overrides.store');
+        Route::delete('admin/system/tenants/{company}/overrides/{override}', [TenantManagerController::class, 'destroyOverride'])->name('admin.tenants.overrides.destroy');
+
+        // Tier Manager
+        Route::get('admin/system/tiers', [TierManagerController::class, 'index'])->name('admin.tiers.index');
+        Route::get('admin/system/tiers/{tier}/features', [TierManagerController::class, 'showFeatures'])->name('admin.tiers.features');
+        Route::post('admin/system/tiers/{tier}/features', [TierManagerController::class, 'syncFeatures'])->name('admin.tiers.features.sync');
+    });
+
     // 5. SALES MANAGEMENT (void sales, returns)
     Route::middleware(['permission:void sales'])->group(function () {
         Route::get('sales', [SalesController::class, 'index'])->name('sales.index');
@@ -251,4 +287,4 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
     Route::get('/help/{slug}', [HelpController::class, 'show'])->name('help.show');
 });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';

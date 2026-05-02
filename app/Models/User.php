@@ -15,10 +15,12 @@ use Laravel\Sanctum\HasApiTokens;
 use Laravel\Scout\Searchable;
 use Spatie\Permission\Traits\HasRoles;
 
+use App\Traits\HasFeatures;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use BelongsToCompany, HasApiTokens, HasFactory, HasRoles, Notifiable, Searchable, TwoFactorAuthenticatable;
+    use BelongsToCompany, HasApiTokens, HasFactory, HasFeatures, HasRoles, Notifiable, Searchable, TwoFactorAuthenticatable;
 
     /**
      * The attributes that are mass assignable.
