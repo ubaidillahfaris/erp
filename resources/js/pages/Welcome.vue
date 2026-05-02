@@ -24,31 +24,31 @@ defineProps<{
         <div class="absolute bottom-0 right-1/4 h-80 w-80 bg-peach/20 blur-[120px] pointer-events-none rounded-full" />
         
         <div class="relative z-10">
-          <h1 class="mx-auto max-w-4xl text-5xl md:text-8xl font-semibold tracking-tighter text-foreground leading-[1.05] mb-8">
+          <h1 class="mx-auto max-w-4xl text-4xl md:text-6xl font-semibold tracking-tighter text-foreground leading-[1.1] mb-6 animate-fade-in-up">
             Amplify Your Customer<br />
             <span class="text-primary italic">Engagement</span> Efforts
           </h1>
           
-          <p class="mx-auto mt-8 max-w-xl text-lg md:text-xl text-muted-foreground leading-relaxed">
+          <p class="mx-auto mt-6 max-w-xl text-base md:text-lg text-muted-foreground leading-relaxed animate-fade-in-up [animation-delay:200ms]">
             True CallerID protects your brand, boosts contact rates and improves experiences.
           </p>
           
-          <div class="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div class="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up [animation-delay:400ms]">
             <Link :href="register()" class="w-full sm:w-auto">
-              <Button class="w-full sm:w-auto rounded-full bg-gradient-coral hover:opacity-90 text-white h-16 px-14 text-xl font-semibold transition-all hover:scale-[1.03] active:scale-95 shadow-coral border-none">
-                Book a Demo <ArrowRight class="ml-2 h-6 w-6" />
+              <Button class="w-full sm:w-auto rounded-full bg-gradient-coral hover:opacity-90 text-white h-12 px-8 text-base font-semibold transition-all hover:scale-[1.02] active:scale-95 shadow-coral border-none">
+                Book a Demo <ArrowRight class="ml-2 h-4 w-4" />
               </Button>
             </Link>
             
             <Link :href="login()" class="w-full sm:w-auto">
-              <Button variant="outline" class="w-full sm:w-auto rounded-full bg-white/40 backdrop-blur-md border-foreground/5 hover:bg-white/60 text-foreground h-16 px-14 text-xl font-semibold transition-all hover:scale-[1.03] active:scale-95">
+              <Button variant="outline" class="w-full sm:w-auto rounded-full bg-white/40 backdrop-blur-md border-foreground/5 hover:bg-white/60 text-foreground h-12 px-8 text-base font-semibold transition-all hover:scale-[1.02] active:scale-95">
                 Connect with us
               </Button>
             </Link>
           </div>
         </div>
 
-        <FloatingMockups />
+        <FloatingMockups class="animate-fade-in-up [animation-delay:600ms]" />
       </section>
     </div>
 
@@ -73,10 +73,10 @@ defineProps<{
     <footer class="border-t border-border mt-12 py-12 bg-surface/30">
       <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
         <div class="flex items-center gap-3">
-          <div class="h-8 w-8 rounded-full bg-foreground flex items-center justify-center text-background font-semibold text-sm">
-            {{ ($page.props.name || 'T').charAt(0) }}
+          <div class="h-7 w-7 rounded-full bg-foreground flex items-center justify-center">
+            <div class="h-3 w-3 rounded-full bg-background" />
           </div>
-          <span class="font-semibold text-2xl tracking-tighter">{{ $page.props.name || 'TrueCaller' }}</span>
+          <span class="font-semibold text-2xl tracking-tighter">Valee</span>
         </div>
         
         <div class="flex gap-8 text-sm font-medium text-muted-foreground">
@@ -86,7 +86,7 @@ defineProps<{
         </div>
         
         <p class="text-sm text-muted-foreground">
-          © 2026 {{ $page.props.name || 'TrueCaller' }}. All rights reserved.
+          © 2026 Valee. All rights reserved.
         </p>
       </div>
     </footer>
@@ -94,5 +94,19 @@ defineProps<{
 </template>
 
 <style scoped>
-/* Custom animations if needed */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fade-in-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
 </style>

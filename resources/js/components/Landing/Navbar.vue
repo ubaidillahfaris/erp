@@ -14,7 +14,7 @@ const links = ["Services", "Solutions", "Resources", "Company"];
       <div class="h-7 w-7 rounded-full bg-foreground flex items-center justify-center">
         <div class="h-3 w-3 rounded-full bg-background" />
       </div>
-      <span class="font-semibold text-xl tracking-tighter">{{ $page.props.name || 'TrueCaller' }}</span>
+      <span class="font-semibold text-2xl tracking-tighter">Valee</span>
     </div>
     
     <div class="hidden lg:flex items-center gap-10 text-base font-medium text-foreground/70">

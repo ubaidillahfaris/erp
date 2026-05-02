@@ -43,9 +43,9 @@ const loginWithSocial = (provider: string) => {
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
-            <div class="grid gap-5">
-                <div class="grid gap-2">
-                    <Label for="email" class="text-white/70">Email address</Label>
+            <div class="grid gap-4">
+                <div class="grid gap-1.5">
+                    <Label for="email" class="text-foreground/70 font-medium ml-1 text-xs">Email address</Label>
                     <Input
                         id="email"
                         type="email"
@@ -55,18 +55,18 @@ const loginWithSocial = (provider: string) => {
                         :tabindex="1"
                         autocomplete="email"
                         placeholder="name@company.com"
-                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
+                        class="bg-white/60 border-foreground/5 text-foreground placeholder:text-foreground/20 focus:border-primary/30 focus:ring-primary/10 rounded-2xl h-11 text-sm"
                     />
                     <InputError :message="errors.email" />
                 </div>
 
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password" class="text-white/70">Password</Label>
+                <div class="grid gap-1.5">
+                    <div class="flex items-center justify-between ml-1">
+                        <Label for="password" class="text-foreground/70 font-medium text-xs">Password</Label>
                         <TextLink
                             v-if="canResetPassword"
                             :href="request()"
-                            class="text-xs text-primary hover:text-primary/80 transition-colors"
+                            class="text-[10px] text-primary hover:underline transition-colors"
                             :tabindex="5"
                         >
                             Forgot password?
@@ -80,25 +80,25 @@ const loginWithSocial = (provider: string) => {
                         :tabindex="2"
                         autocomplete="current-password"
                         placeholder="••••••••"
-                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
+                        class="bg-white/60 border-foreground/5 text-foreground placeholder:text-foreground/20 focus:border-primary/30 focus:ring-primary/10 rounded-2xl h-11 text-sm"
                     />
                     <InputError :message="errors.password" />
                 </div>
 
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 ml-1">
                     <input
                         type="checkbox"
                         id="remember"
                         name="remember"
                         :tabindex="3"
-                        class="h-4 w-4 rounded border-white/20 bg-white/5 text-primary focus:ring-offset-0 focus:ring-1 focus:ring-primary/50 cursor-pointer"
+                        class="h-3.5 w-3.5 rounded border-foreground/10 bg-white/60 text-primary focus:ring-offset-0 focus:ring-1 focus:ring-primary/30 cursor-pointer"
                     />
-                    <Label for="remember" class="text-xs text-white/50 cursor-pointer font-normal">Keep me logged in</Label>
+                    <Label for="remember" class="text-[10px] text-muted-foreground cursor-pointer font-medium">Keep me logged in</Label>
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-2 w-full bg-primary text-white hover:bg-primary/90 shadow-coral h-10 font-bold rounded-xl transition-all active:scale-95"
+                    class="mt-1 w-full bg-gradient-coral text-white hover:opacity-90 shadow-coral h-11 font-semibold text-base rounded-2xl transition-all active:scale-95"
                     :tabindex="4"
                     :disabled="processing"
                 >
@@ -106,12 +106,12 @@ const loginWithSocial = (provider: string) => {
                     Sign in
                 </Button>
 
-                <div class="relative mt-2">
+                <div class="relative mt-1">
                     <div class="absolute inset-0 flex items-center">
-                        <span class="w-full border-t border-white/5" />
+                        <span class="w-full border-t border-foreground/5" />
                     </div>
-                    <div class="relative flex justify-center text-[10px] uppercase tracking-widest">
-                        <span class="bg-[hsl(220_18%_12%)] px-2 text-white/30">Or continue with</span>
+                    <div class="relative flex justify-center text-[9px] uppercase tracking-widest">
+                        <span class="bg-white/80 backdrop-blur px-3 text-muted-foreground/40">Or continue with</span>
                     </div>
                 </div>
 
@@ -119,28 +119,28 @@ const loginWithSocial = (provider: string) => {
                     <Button
                         variant="outline"
                         type="button"
-                        class="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-white/20 transition-all rounded-xl h-10"
+                        class="bg-white/60 border-foreground/5 text-foreground hover:bg-white/80 transition-all rounded-2xl h-10 text-xs"
                         @click="loginWithSocial('google')"
                     >
-                        <Chrome class="mr-2 h-4 w-4 text-white/60" /> Google
+                        <Chrome class="mr-2 h-3.5 w-3.5 opacity-70" /> Google
                     </Button>
                     <Button
                         variant="outline"
                         type="button"
-                        class="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:border-white/20 transition-all rounded-xl h-10"
-                        @click="loginWithSocial('facebook')"
+                        class="bg-white/60 border-foreground/5 text-foreground hover:bg-white/80 transition-all rounded-2xl h-10 text-xs"
+                        @click="loginWithSocial('github')"
                     >
-                        <Github class="mr-2 h-4 w-4 text-white/60" /> Github
+                        <Github class="mr-2 h-3.5 w-3.5 opacity-70" /> Github
                     </Button>
                 </div>
             </div>
 
             <div
-                class="text-center text-sm text-white/40"
+                class="text-center text-xs text-muted-foreground/60"
                 v-if="canRegister"
             >
                 Don't have an account?
-                <TextLink :href="register()" class="text-primary hover:underline ml-1" :tabindex="5">Create one for free</TextLink>
+                <TextLink :href="register()" class="text-primary font-semibold hover:underline ml-1" :tabindex="5">Create one for free</TextLink>
             </div>
         </Form>
     </AuthBase>

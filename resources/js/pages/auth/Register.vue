@@ -24,9 +24,9 @@ import { store } from '@/routes/register';
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
-            <div class="grid gap-5">
-                <div class="grid gap-2">
-                    <Label for="name" class="text-white/70">Full Name</Label>
+            <div class="grid gap-4">
+                <div class="grid gap-1.5">
+                    <Label for="name" class="text-foreground/70 font-medium ml-1 text-xs">Full Name</Label>
                     <Input
                         id="name"
                         type="text"
@@ -36,13 +36,13 @@ import { store } from '@/routes/register';
                         autocomplete="name"
                         name="name"
                         placeholder="John Doe"
-                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
+                        class="bg-white/60 border-foreground/5 text-foreground placeholder:text-foreground/20 focus:border-primary/30 focus:ring-primary/10 rounded-2xl h-11 text-sm"
                     />
                     <InputError :message="errors.name" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="email" class="text-white/70">Email Address</Label>
+                <div class="grid gap-1.5">
+                    <Label for="email" class="text-foreground/70 font-medium ml-1 text-xs">Email Address</Label>
                     <Input
                         id="email"
                         type="email"
@@ -51,13 +51,13 @@ import { store } from '@/routes/register';
                         autocomplete="email"
                         name="email"
                         placeholder="name@company.com"
-                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
+                        class="bg-white/60 border-foreground/5 text-foreground placeholder:text-foreground/20 focus:border-primary/30 focus:ring-primary/10 rounded-2xl h-11 text-sm"
                     />
                     <InputError :message="errors.email" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="password" class="text-white/70">Password</Label>
+                <div class="grid gap-1.5">
+                    <Label for="password" class="text-foreground/70 font-medium ml-1 text-xs">Password</Label>
                     <Input
                         id="password"
                         type="password"
@@ -66,13 +66,13 @@ import { store } from '@/routes/register';
                         autocomplete="new-password"
                         name="password"
                         placeholder="••••••••"
-                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
+                        class="bg-white/60 border-foreground/5 text-foreground placeholder:text-foreground/20 focus:border-primary/30 focus:ring-primary/10 rounded-2xl h-11 text-sm"
                     />
                     <InputError :message="errors.password" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="password_confirmation" class="text-white/70">Confirm Password</Label>
+                <div class="grid gap-1.5">
+                    <Label for="password_confirmation" class="text-foreground/70 font-medium ml-1 text-xs">Confirm Password</Label>
                     <Input
                         id="password_confirmation"
                         type="password"
@@ -81,14 +81,14 @@ import { store } from '@/routes/register';
                         autocomplete="new-password"
                         name="password_confirmation"
                         placeholder="••••••••"
-                        class="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-10"
+                        class="bg-white/60 border-foreground/5 text-foreground placeholder:text-foreground/20 focus:border-primary/30 focus:ring-primary/10 rounded-2xl h-11 text-sm"
                     />
                     <InputError :message="errors.password_confirmation" />
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full bg-primary text-white hover:bg-primary/90 shadow-coral h-10 font-bold rounded-xl transition-all active:scale-95"
+                    class="mt-2 w-full bg-gradient-coral text-white hover:opacity-90 shadow-coral h-11 font-semibold text-base rounded-2xl transition-all active:scale-95"
                     tabindex="5"
                     :disabled="processing"
                 >
@@ -97,13 +97,13 @@ import { store } from '@/routes/register';
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-white/40">
+            <div class="text-center text-xs text-muted-foreground/60">
                 Already have an account?
-                <TextLink
+                <Link
                     :href="login()"
-                    class="text-primary hover:underline ml-1 font-medium"
+                    class="text-primary hover:underline ml-1 font-semibold"
                     :tabindex="6"
-                >Sign in instead</TextLink>
+                >Sign in instead</Link>
             </div>
         </Form>
     </AuthBase>
