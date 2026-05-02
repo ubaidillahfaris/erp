@@ -231,7 +231,7 @@ Route::middleware(['auth', 'verified', 'dynamic_menu', 'ensure_company', 'busine
     // 8. SERVICE ORDERS (Comprehensive)
     Route::middleware(['permission:make sales', 'period_lock'])->group(function () {
         Route::get('service-orders', [ServiceOrderController::class, 'index'])->name('service-orders.index');
-        Route::get('service-orders/board', [ServiceOrderController::class, 'board'])->name('service-orders.board');
+        Route::redirect('service-orders/board', 'service-orders', 301);
         Route::get('service-orders/create', [ServiceOrderController::class, 'create'])->name('service-orders.create');
         Route::post('service-orders', [ServiceOrderController::class, 'store'])->name('service-orders.store');
         Route::get('service-orders/{service_order}', [ServiceOrderController::class, 'show'])->name('service-orders.show');

@@ -21,36 +21,31 @@ class ServiceOrderController extends Controller
      */
     public function index(Request $request): Response
     {
+        $view = $request->query('view', 'kanban');
+
         $query = ServiceOrder::with(['service', 'party', 'productionStep'])
+            ->when($request->search, function ($q, $search) {
+                $q->where('order_number', 'like', "%{$search}%")
+                    ->orWhereHas('party', function ($qp) use ($search) {
+                        $qp->where('name', 'like', "%{$search}%");
+                    });
+            })
+            ->when($request->service_id, fn ($q, $id) => $q->where('service_id', $id))
+            ->when($request->status, fn ($q, $status) => $q->where('status', $status))
+            ->when($request->date_start, fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
+            ->when($request->date_end, fn ($q, $date) => $q->whereDate('created_at', '<=', $date))
             ->orderBy('created_at', 'desc');
 
-        if ($request->service_id) {
-            $query->where('service_id', $request->service_id);
-        }
-
-        if ($request->status) {
-            $query->where('status', $request->status);
+        // Default filters for Kanban view if not explicitly searching/filtering status
+        if ($view === 'kanban' && ! $request->status && ! $request->search) {
+            $query->whereNotIn('status', ['cancelled', 'posted']);
         }
 
         return Inertia::render('service-orders/Index', [
-            'orders' => $query->paginate(10)->withQueryString(),
+            'orders' => $query->paginate($view === 'kanban' ? 50 : 10)->withQueryString(),
             'services' => Service::all(),
-            'steps' => ProductionStep::select('id', 'name', 'code')->orderBy('sequence_order')->get(),
-            'filters' => $request->only(['search', 'status', 'date_start', 'date_end']),
-        ]);
-    }
-
-    /**
-     * Display a kanban board of service orders.
-     */
-    public function board(Request $request): Response
-    {
-        return Inertia::render('service-orders/Board', [
             'steps' => ProductionStep::orderBy('sequence_order')->get(),
-            'orders' => ServiceOrder::with(['party', 'productionStep'])
-                ->where('status', '!=', 'cancelled')
-                ->where('status', '!=', 'posted')
-                ->get(),
+            'filters' => $request->only(['search', 'status', 'date_start', 'date_end', 'view', 'service_id']),
         ]);
     }
 

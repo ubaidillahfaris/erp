@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Services\RoleService;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class ServiceMenuSeeder extends Seeder
 {
@@ -33,22 +34,13 @@ class ServiceMenuSeeder extends Seeder
                 'order_priority' => 50,
             ],
             [
-                'route_name' => 'service-orders.board',
-                'name' => 'Pipeline Order',
-                'path' => '/service-orders/board',
+                'route_name' => 'service-orders.index',
+                'name' => 'Manajemen Order',
+                'path' => '/service-orders',
                 'icon' => 'ClipboardList',
                 'permission_name' => 'make sales',
                 'module_id' => $transaksiModule?->id,
                 'order_priority' => 51,
-            ],
-            [
-                'route_name' => 'service-orders.index',
-                'name' => 'Riwayat Servis',
-                'path' => '/service-orders',
-                'icon' => 'History',
-                'permission_name' => 'make sales',
-                'module_id' => $transaksiModule?->id,
-                'order_priority' => 52,
             ],
 
             // SETTINGS SECTION
@@ -62,6 +54,9 @@ class ServiceMenuSeeder extends Seeder
                 'order_priority' => 90,
             ],
         ];
+
+        // Cleanup old menu
+        Menu::where('route_name', 'service-orders.board')->delete();
 
         foreach ($menus as $menuData) {
             Menu::updateOrCreate(
@@ -101,7 +96,7 @@ class ServiceMenuSeeder extends Seeder
         }
 
         // Clear Caches
-        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
         app(RoleService::class)->clearAllMenuCaches();
     }
 }
