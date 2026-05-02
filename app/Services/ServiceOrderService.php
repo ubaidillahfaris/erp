@@ -39,7 +39,7 @@ class ServiceOrderService
                 'order_number' => $this->generateOrderNumber($service),
                 'service_id' => $serviceId,
                 'customer_type' => $customerType,
-                'party_type' => get_class($party),
+                'party_type' => $party->getMorphClass(),
                 'party_id' => $party->id,
                 'order_date' => now()->toDateString(),
                 'production_step_id' => $startStep?->id,

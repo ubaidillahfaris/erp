@@ -9,6 +9,7 @@ use App\Models\ServiceOrder;
 use App\Models\Vendor;
 use App\Services\ServiceOrderService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,14 +22,25 @@ class ServiceOrderController extends Controller
      */
     public function index(Request $request): Response
     {
+        Log::emergency('!!!! ServiceOrderController@index accessed', $request->all());
         $view = $request->query('view', 'kanban');
 
         $query = ServiceOrder::with(['service', 'party', 'productionStep'])
             ->when($request->search, function ($q, $search) {
-                $q->where('order_number', 'like', "%{$search}%")
-                    ->orWhereHas('party', function ($qp) use ($search) {
-                        $qp->where('name', 'like', "%{$search}%");
-                    });
+                Log::emergency('ServiceOrder Search:', ['query' => $search]);
+                $q->where(function ($query) use ($search) {
+                    $query->where('order_number', 'ilike', "%{$search}%")
+                        ->orWhereIn('party_id', function ($sub) use ($search) {
+                            $sub->select('id')->from('customers')
+                                ->where('name', 'ilike', "%{$search}%")
+                                ->orWhere('phone', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereIn('party_id', function ($sub) use ($search) {
+                            $sub->select('id')->from('vendors')
+                                ->where('name', 'ilike', "%{$search}%")
+                                ->orWhere('phone', 'ilike', "%{$search}%");
+                        });
+                });
             })
             ->when($request->service_id, fn ($q, $id) => $q->where('service_id', $id))
             ->when($request->production_step_id, fn ($q, $id) => $q->where('production_step_id', $id))

@@ -63,6 +63,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 const view = ref(props.filters.view || 'kanban');
 const search = ref(props.filters.search || '');
+console.log('Search Initialized:', search.value);
 const date_start = ref(props.filters.date_start || '');
 const date_end = ref(props.filters.date_end || '');
 const status = ref(props.filters.status || 'all');
@@ -82,6 +83,11 @@ const columns = [
 ];
 
 const debouncedFilter = useDebounceFn(() => {
+    console.log('Debounced Filter Executing:', {
+        search: search.value,
+        serviceId: serviceId.value,
+        stepId: productionStepId.value
+    });
     router.get('/service-orders', {
         view: view.value,
         search: search.value || undefined,
